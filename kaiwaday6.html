@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Học Tiếng Nhật Siêu Tốc - Ngày 6</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7fafc;
+        }
+        .jp-font {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        ruby rt {
+            font-size: 0.7em;
+            font-weight: 500;
+            user-select: none;
+        }
+        .hide-furigana ruby rt {
+            visibility: hidden;
+        }
+        .transition-height {
+            transition: max-height 0.5s ease-in-out;
+        }
+        .correct-char { color: #16a34a; }
+        .incorrect-char { color: #dc2626; text-decoration: underline; }
+        
+        /* --- NEW STYLES FOR UPGRADES --- */
+        /* Progress Bar */
+        .progress-bar-container {
+            background-color: #e5e7eb; /* gray-200 */
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background-color: #22c55e; /* green-500 */
+            transition: width 0.5s ease-in-out;
+        }
+        /* Fade transition for conversation */
+        .content-fade {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .fading-out {
+            opacity: 0;
+        }
+        /* Quiz feedback icons */
+        .feedback-icon {
+            display: inline-block;
+            margin-right: 0.5rem;
+            font-weight: bold;
+        }
+        .feedback-correct { color: #16a34a; }
+        .feedback-incorrect { color: #dc2626; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div id="app" class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-sky-700 jp-font" id="main-title"></h1>
+            <p class="text-gray-500 mt-2">Bài học về so sánh, yêu cầu và các quy định.</p>
+        </header>
+
+        <!-- Progress Bar Section -->
+        <div class="mb-8">
+            <h3 class="font-bold text-center mb-2">Tiến độ bài học</h3>
+            <div class="progress-bar-container w-full h-4">
+                <div id="lesson-progress-bar" class="progress-bar h-full text-xs text-white text-center" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <main class="space-y-8">
+            <!-- Settings Panel -->
+            <div class="bg-white p-4 rounded-xl shadow-md border border-gray-200">
+                <h3 class="font-bold text-lg mb-3 text-gray-700">Bảng điều khiển</h3>
+                <div class="flex flex-wrap gap-4">
+                    <button id="toggle-furigana" class="toggle-btn">Bật Furigana</button>
+                    <button id="toggle-romaji" class="toggle-btn">Hiện Romaji</button>
+                    <button id="toggle-vietnamese" class="toggle-btn">Hiện Tiếng Việt</button>
+                </div>
+            </div>
+
+            <!-- Conversation Section -->
+            <section id="conversation-section" class="lesson-section"></section>
+
+            <!-- Reading Section -->
+            <section id="reading-section" class="lesson-section"></section>
+
+            <!-- Grammar Section -->
+            <section id="grammar-section" class="lesson-section"></section>
+            
+            <!-- Quiz Section -->
+            <section id="quiz-section" class="lesson-section"></section>
+        </main>
+
+        <footer class="text-center mt-12 text-gray-400 text-sm">
+            <p>Copyright by AzaCan, 2025</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- DATA FOR DAY 6 ---
+        const day6Data = {
+            title: "Ngày 6: So sánh và Yêu cầu",
+            conversation: {
+                id: 'conversation',
+                title: "今日の会話 (Hội thoại trong ngày)",
+                context: "Bối cảnh: Tanaka và Suzuki đang ở trong thư viện.",
+                modes: {
+                    polite: {
+                        name: "Thể lịch sự (丁寧形)",
+                        dialogue: [
+                            { speaker: "Tanaka", jp: "鈴木[すずき]さん、この図書館[としょかん]にはたくさん本[ほん]がありますね。", romaji: "Suzuki-san, kono toshokan ni wa takusan hon ga arimasu ne.", vi: "Anh Suzuki, trong thư viện này có nhiều sách thật nhỉ." },
+                            { speaker: "Suzuki", jp: "ええ。あ、田中[たなか]さん、日本語[にほんご]の小説[しょうせつ]と漫画[まんが]とどちらが面白[おもしろ]いですか。", romaji: "Ee. A, Tanaka-san, nihongo no shousetsu to manga to dochira ga omoshiroi desu ka.", vi: "Vâng. À, anh Tanaka, tiểu thuyết tiếng Nhật và truyện tranh thì cái nào thú vị hơn ạ?" },
+                            { speaker: "Tanaka", jp: "私[わたし]は漫画[まんが]のほうがおもしろいと思[おも]います。ところで、ここで電話[でんわ]を使[つか]ってはいけませんよ。", romaji: "Watashi wa manga no hou ga omoshiroi to omoimasu. Tokorode, koko de denwa o tsukatte wa ikemasen yo.", vi: "Tôi nghĩ truyện tranh thú vị hơn. Nhân tiện, không được dùng điện thoại ở đây đâu đấy." },
+                            { speaker: "Suzuki", jp: "すみません。じゃ、コーヒーを飲[の]んでもいいですか。", romaji: "Sumimasen. Ja, koohii o nonde mo ii desu ka.", vi: "Tôi xin lỗi. Vậy, tôi uống cà phê có được không?" },
+                            { speaker: "Tanaka", jp: "いいえ、だめです。飲[の]み物[もの]を飲[の]まないでください。静[しず]かにしてください。", romaji: "Iie, dame desu. Nomimono o nomanai de kudasai. Shizuka ni shite kudasai.", vi: "Không, không được ạ. Xin đừng uống đồ uống. Xin hãy giữ yên lặng." },
+                            { speaker: "Suzuki", jp: "はい、分[わ]かりました。ありがとうございます。", romaji: "Hai, wakarimashita. Arigatou gozaimasu.", vi: "Vâng, tôi hiểu rồi. Cảm ơn anh." }
+                        ]
+                    },
+                    casual: {
+                        name: "Thể thông thường (普通形)",
+                        dialogue: [
+                            { speaker: "Tanaka", jp: "鈴木[すずき]くん、この図書館[としょかん]、本[ほん]がたくさんあるね。", romaji: "Suzuki-kun, kono toshokan, hon ga takusan aru ne.", vi: "Suzuki, thư viện này nhiều sách ghê." },
+                            { speaker: "Suzuki", jp: "うん。ねえ、田中[たなか]さん、日本語[にほんご]の小説[しょうせつ]と漫画[まんが]ってどっちが面白[おもしろ]い？", romaji: "Un. Nee, Tanaka-san, nihongo no shousetsu to manga tte dotchi ga omoshiroi?", vi: "Ừ. Này Tanaka, tiểu thuyết tiếng Nhật với manga cái nào hay hơn?" },
+                            { speaker: "Tanaka", jp: "俺[おれ]は漫画[まんが]のほうが面白[おもしろ]いと思[おも]うよ。ところで、ここで電話[でんわ]を使[つか]っちゃだめだよ。", romaji: "Ore wa manga no hou ga omoshiroi to omou yo. Tokorode, koko de denwa o tsukatcha dame da yo.", vi: "Tớ nghĩ là manga hay hơn đấy. À mà này, ở đây không được dùng điện thoại đâu." },
+                            { speaker: "Suzuki", jp: "あ、ごめん。じゃ、コーヒー飲[の]んでもいい？", romaji: "A, gomen. Ja, koohii nonde mo ii?", vi: "À, xin lỗi. Vậy, uống cà phê được không?" },
+                            { speaker: "Tanaka", jp: "ううん、だめ。飲[の]み物[もの]は飲[の]まないで。静[しず]かにしてね。", romaji: "Uun, dame. Nomimono wa nomanai de. Shizuka ni shite ne.", vi: "Không, không được. Đừng uống nước. Giữ im lặng nhé." },
+                            { speaker: "Suzuki", jp: "うん、分[わ]かった。ありがとう。", romaji: "Un, wakatta. Arigatou.", vi: "Ừ, hiểu rồi. Cảm ơn." }
+                        ]
+                    }
+                }
+            },
+            reading: {
+                id: 'reading',
+                title: "今日の読み物 (Bài đọc ngắn)",
+                content: {
+                    jp: "私[わたし]の寮[りょう]に二人[ふたり]の友人[ゆうじん]がいます。一人[ひとり]は田中[たなか]さんです。田中[たなか]さんは私[わたし]より背[せ]が高[たか]いです。彼[かれ]はクラスで一番[いちばん]元気[げんき]な人[ひと]です。もう一人[ひとり]は鈴木[すずき]さんです。鈴木[すずき]さんは親切[しんせつ]ですが、あまり話[はな]しません。寮[りょう]の規則[きそく]です。部屋[へや]でタバコを吸[す]ってはいけません。夜[よる]11時[じゅういちじ]から、大[おお]きな声[こえ]で話[はな]さないでください。",
+                    romaji: "Watashi no ryou ni futari no yuujin ga imasu. Hitori wa Tanaka-san desu. Tanaka-san wa watashi yori se ga takai desu. Kare wa kurasu de ichiban genki na hito desu. Mou hitori wa Suzuki-san desu. Suzuki-san wa shinsetsu desu ga, amari hanashimasen. Ryou no kisoku desu. Heya de tabako o sutte wa ikemasen. Yoru juuichiji kara, ookina koe de hanasanai de kudasai.",
+                    vi: "Trong ký túc xá của tôi có hai người bạn. Một người là anh Tanaka. Anh Tanaka cao hơn tôi. Anh ấy là người khỏe mạnh nhất trong lớp. Một người nữa là anh Suzuki. Anh Suzuki tốt bụng nhưng không hay nói nhiều. Đây là quy định của ký túc xá. Không được hút thuốc trong phòng. Từ 11 giờ đêm, xin đừng nói chuyện lớn tiếng."
+                }
+            },
+            grammar: {
+                id: 'grammar',
+                title: "今日の文法 (Tổng hợp ngữ pháp)",
+                points: [
+                    { rule: "あります / います", meaning: "Có (tồn tại)", formula: "N(vật) が あります / N(người/vật) が います", example: "机[つくえ]の上[うえ]に本[ほん]があります。/ 教室[きょうしつ]に学生[がくせい]がいます。", example_vi: "Trên bàn có quyển sách. / Trong lớp có học sinh." },
+                    { rule: "N1 は N2 より A です", meaning: "N1 ... hơn N2", formula: "N1 は N2 より + Tính từ", example: "飛行機[ひこうき]は電車[でんしゃ]より速[はや]いです。", example_vi: "Máy bay nhanh hơn tàu điện." },
+                    { rule: "N1 と N2 とどちらが A ですか", meaning: "Giữa N1 và N2, cái nào ... hơn?", formula: "N1 と N2 とどちらが + Tính từ + ですか", example: "犬[いぬ]と猫[ねこ]とどちらが好[す]きですか。", example_vi: "Bạn thích chó và mèo, con nào hơn?" },
+                    { rule: "～で～が一番 A です", meaning: "... là nhất trong phạm vi ...", formula: "(Phạm vi)で(Đối tượng)が一番 + Tính từ + です", example: "クラスで誰[だれ]が一番[いちばん]親切[しんせつ]ですか。", example_vi: "Trong lớp ai là người tốt bụng nhất?" },
+                    { rule: "Vては いけません", meaning: "Không được làm V (cấm đoán)", formula: "Vて + は いけません", example: "ここで写真[しゃしん]を撮[と]ってはいけません。", example_vi: "Không được chụp ảnh ở đây." },
+                    { rule: "Vてください", meaning: "Hãy làm V / Vui lòng làm V", formula: "Vて + ください", example: "名前[なまえ]を書[か]いてください。", example_vi: "Xin hãy viết tên." },
+                    { rule: "Vないで ください", meaning: "Xin đừng làm V", formula: "Vない + で ください", example: "心配[しんぱい]しないでください。", example_vi: "Xin đừng lo lắng." }
+                ]
+            },
+            quiz: {
+                id: 'quiz',
+                title: "練習とテスト (Luyện tập & Kiểm tra)",
+                questions: [
+                    { type: "mcq", question: "このかばんはそのかばん（___）可愛[かわい]いです。", options: ["より", "と", "が"], answer: "より" },
+                    { rule: "Vては いけません", meaning: "Không được làm V (cấm đoán)", formula: "Vて + は いけません", example: "ここで写真[しゃしん]を撮[と]ってはいけません。", example_vi: "Không được chụp ảnh ở đây." },
+                    { type: "mcq", question: "クラスで誰が（___）元気ですか。", options: ["より", "どちら", "一番"], answer: "一番" },
+                    { type: "audio", jp: "ここでタバコを吸わないでください。", question: "Nghe và gõ lại câu bạn vừa nghe:" }
+                ]
+            }
+        };
+
+        // --- STATE MANAGEMENT & SETTINGS ---
+        let settings = {
+            hideFurigana: false,
+            showRomaji: false,
+            showVietnamese: false
+        };
+
+        let progress = {
+            conversation: false,
+            reading: false,
+            grammar: false,
+            quiz: false
+        };
+
+        function saveSettings() {
+            localStorage.setItem('jpAppSettings_day6', JSON.stringify(settings));
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('jpAppSettings_day6');
+            if (saved) {
+                settings = JSON.parse(saved);
+            }
+        }
+
+        function applySettings() {
+            // Buttons
+            updateToggleButtonUI('toggle-furigana', !settings.hideFurigana, 'Ẩn Furigana', 'Hiện Furigana');
+            updateToggleButtonUI('toggle-romaji', settings.showRomaji, 'Ẩn Romaji', 'Hiện Romaji');
+            updateToggleButtonUI('toggle-vietnamese', settings.showVietnamese, 'Ẩn Tiếng Việt', 'Hiện Tiếng Việt');
+            
+            // Content
+            document.getElementById('app').classList.toggle('hide-furigana', settings.hideFurigana);
+            document.querySelectorAll('.romaji-text').forEach(el => el.classList.toggle('hidden', !settings.showRomaji));
+            document.querySelectorAll('.vi-text').forEach(el => el.classList.toggle('hidden', !settings.showVietnamese));
+        }
+
+        function updateToggleButtonUI(buttonId, isActive, activeText, inactiveText) {
+            const button = document.getElementById(buttonId);
+            button.textContent = isActive ? activeText : inactiveText;
+            button.classList.toggle('bg-sky-500', isActive);
+            button.classList.toggle('text-white', isActive);
+            button.classList.toggle('bg-gray-200', !isActive);
+            button.classList.toggle('text-gray-700', !isActive);
+        }
+
+        // --- PROGRESS ---
+        function updateProgress(sectionId) {
+            if (progress.hasOwnProperty(sectionId) && !progress[sectionId]) {
+                progress[sectionId] = true;
+                updateProgressBar();
+            }
+        }
+
+        function updateProgressBar() {
+            const completed = Object.values(progress).filter(Boolean).length;
+            const total = Object.keys(progress).length;
+            const percentage = (completed / total) * 100;
+            const bar = document.getElementById('lesson-progress-bar');
+            bar.style.width = `${percentage}%`;
+            bar.textContent = `${Math.round(percentage)}%`;
+        }
+
+
+        // --- UTILITY FUNCTIONS ---
+        function parseFurigana(text) {
+            return text.replace(/([^\[\]]+)\[(.+?)\]/g, '<ruby>$1<rt>$2</rt></ruby>');
+        }
+
+        function speak(text) {
+            speechSynthesis.cancel(); // Stop any previous speech
+            const cleanText = text.replace(/\[.*?\]/g, '');
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = 'ja-JP';
+            utterance.rate = 0.9;
+            speechSynthesis.speak(utterance);
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderConversation() {
+            const section = document.getElementById('conversation-section');
+            const data = day6Data.conversation;
+            section.innerHTML = `
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-2xl font-bold mb-1 jp-font">${data.title}</h2>
+                    <p class="text-gray-500 mb-4">${data.context}</p>
+                    <div class="flex items-center justify-center space-x-2 mb-6 p-1 bg-gray-100 rounded-full">
+                        <button id="convo-mode-polite" class="convo-mode-btn flex-1 py-2 px-4 rounded-full bg-sky-600 text-white shadow">Thể lịch sự</button>
+                        <button id="convo-mode-casual" class="convo-mode-btn flex-1 py-2 px-4 rounded-full">Thể thông thường</button>
+                    </div>
+                    <div id="conversation-content" class="space-y-4 content-fade"></div>
+                </div>
+            `;
+            renderDialogue('polite');
+            updateProgress(data.id);
+        }
+        
+        function renderDialogue(mode) {
+            const container = document.getElementById('conversation-content');
+            const dialogue = day6Data.conversation.modes[mode].dialogue;
+
+            container.innerHTML = dialogue.map((line) => `
+                <div class="dialogue-line p-4 rounded-lg bg-gray-50 border">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 rounded-full ${line.speaker === 'Tanaka' ? 'bg-sky-100' : 'bg-emerald-100'} flex items-center justify-center font-bold text-sky-800">${line.speaker.charAt(0)}</div>
+                        <div class="flex-1">
+                            <p class="font-bold text-gray-800">${line.speaker}</p>
+                            <p class="jp-font text-lg mt-1 leading-relaxed">${parseFurigana(line.jp)}</p>
+                            <p class="romaji-text text-sm text-gray-500 mt-1">${line.romaji}</p>
+                            <p class="vi-text text-sm text-emerald-700 mt-1">${line.vi}</p>
+                            <div class="mt-3 flex items-center space-x-3">
+                                <button class="speak-btn" data-text="${line.jp}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                                </button>
+                                <div class="w-full">
+                                    <input type="text" class="typing-input w-full p-2 border rounded-md bg-white text-base" data-correct="${line.jp.replace(/\[.*?\]/g, '')}" placeholder="Luyện gõ ở đây...">
+                                    <div class="typing-feedback text-xs mt-1 h-4"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            attachEventListenersToRenderedContent(container);
+            applySettings();
+        }
+
+        function renderReading() {
+            const section = document.getElementById('reading-section');
+            const data = day6Data.reading;
+            section.innerHTML = `
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-2xl font-bold mb-2 jp-font">${data.title}</h2>
+                    <div class="reading-content p-4 rounded-lg bg-gray-50 border">
+                        <p class="jp-font text-lg leading-relaxed">${parseFurigana(data.content.jp)}</p>
+                        <p class="romaji-text text-sm text-gray-500 mt-2">${data.content.romaji}</p>
+                        <p class="vi-text text-sm text-emerald-700 mt-2">${data.content.vi}</p>
+                        <div class="mt-4 flex items-center space-x-3">
+                             <button class="speak-btn" data-text="${data.content.jp}">
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                             </button>
+                             <div class="w-full">
+                                 <input type="text" class="typing-input w-full p-2 border rounded-md bg-white text-base" data-correct="${data.content.jp.replace(/\[.*?\]/g, '')}" placeholder="Luyện gõ ở đây...">
+                                 <div class="typing-feedback text-xs mt-1 h-4"></div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            attachEventListenersToRenderedContent(section);
+            updateProgress(data.id);
+        }
+
+        function renderGrammar() {
+            const section = document.getElementById('grammar-section');
+            const data = day6Data.grammar;
+            section.innerHTML = `
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-2xl font-bold mb-4 jp-font">${data.title}</h2>
+                    <div class="space-y-3">
+                        ${data.points.map((point) => `
+                            <div class="grammar-point border border-gray-200 rounded-lg overflow-hidden">
+                                <button class="grammar-toggle w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100">
+                                    <span class="font-bold text-sky-800 jp-font text-lg">${point.rule}</span>
+                                    <svg class="w-5 h-5 transform transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                </button>
+                                <div class="grammar-details max-h-0 overflow-hidden transition-height">
+                                    <div class="p-4 border-t border-gray-200">
+                                        <p><strong>Ý nghĩa:</strong> ${point.meaning}</p>
+                                        <p><strong>Công thức:</strong> <code class="bg-gray-200 text-red-600 px-1 rounded">${point.formula}</code></p>
+                                        <div class="mt-2 p-3 bg-sky-50 rounded-md">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <p class="jp-font">${parseFurigana(point.example)}</p>
+                                                    <p class="vi-text text-sm text-emerald-700 mt-1">${point.example_vi}</p>
+                                                </div>
+                                                <button class="speak-btn" data-text="${point.example}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            attachEventListenersToRenderedContent(section);
+            updateProgress(data.id);
+        }
+
+        function renderQuiz() {
+            const section = document.getElementById('quiz-section');
+            const data = day6Data.quiz;
+            section.innerHTML = `
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-2xl font-bold mb-4 jp-font">${data.title}</h2>
+                    <div id="quiz-content" class="space-y-6">
+                        ${data.questions.map((q, index) => {
+                            if (q.type === 'mcq') {
+                                return `
+                                    <div class="quiz-question" data-answer="${q.answer}">
+                                        <p class="mb-2 jp-font">${index + 1}. ${parseFurigana(q.question)}</p>
+                                        <div class="flex flex-col space-y-2">
+                                            ${q.options.map(opt => `<button class="mcq-option text-left p-3 border rounded-lg hover:bg-gray-100">${opt}</button>`).join('')}
+                                        </div>
+                                        <div class="feedback mt-2 text-sm h-5"></div>
+                                    </div>
+                                `;
+                            }
+                            if (q.type === 'fill') {
+                                return `
+                                    <div class="quiz-question" data-answer="${q.answer}">
+                                        <p class="mb-2 jp-font">${index + 1}. ${parseFurigana(q.question)}</p>
+                                        <input type="text" class="fill-input w-full p-2 border rounded-md">
+                                        <div class="feedback mt-2 text-sm h-5"></div>
+                                    </div>
+                                `;
+                            }
+                            if (q.type === 'audio') {
+                                return `
+                                    <div class="quiz-question" data-answer="${q.jp.replace(/\[.*?\]/g, '')}">
+                                        <p class="mb-2 jp-font">${index + 1}. ${q.question}</p>
+                                        <button class="speak-btn mb-2 flex items-center" data-text="${q.jp}">
+                                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sky-600"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                                           <span class="ml-2">Nghe</span>
+                                        </button>
+                                        <input type="text" class="fill-input w-full p-2 border rounded-md">
+                                        <div class="feedback mt-2 text-sm h-5"></div>
+                                    </div>
+                                `;
+                            }
+                        }).join('')}
+                    </div>
+                    <button id="check-quiz-btn" class="mt-6 w-full bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 transition-colors">Kiểm tra đáp án</button>
+                    <div id="quiz-result" class="mt-4 text-center font-bold"></div>
+                </div>
+            `;
+            attachEventListenersToRenderedContent(section);
+        }
+
+        // --- EVENT LISTENERS ---
+        function attachEventListenersToRenderedContent(container) {
+            container.querySelectorAll('.speak-btn').forEach(btn => {
+                btn.onclick = () => speak(btn.dataset.text);
+            });
+
+            container.querySelectorAll('.typing-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const correctText = e.target.dataset.correct;
+                    const userText = e.target.value;
+                    const feedbackContainer = e.target.nextElementSibling;
+                    let styledText = '';
+                    for (let i = 0; i < userText.length; i++) {
+                        styledText += `<span class="${userText[i] === correctText[i] ? 'correct-char' : 'incorrect-char'}">${userText[i]}</span>`;
+                    }
+                    feedbackContainer.innerHTML = styledText;
+                    if (userText === correctText) {
+                        feedbackContainer.innerHTML = '<span class="text-green-600 font-bold">Chính xác! 🎉</span>';
+                    }
+                });
+            });
+            
+            container.querySelectorAll('.grammar-toggle').forEach(button => {
+                button.addEventListener('click', () => {
+                    const details = button.nextElementSibling;
+                    const icon = button.querySelector('svg');
+                    if (details.style.maxHeight && details.style.maxHeight !== '0px') {
+                        details.style.maxHeight = '0px';
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        details.style.maxHeight = details.scrollHeight + 'px';
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                });
+            });
+        }
+
+        function setupGlobalEventListeners() {
+            document.getElementById('toggle-furigana').addEventListener('click', () => {
+                settings.hideFurigana = !settings.hideFurigana;
+                saveSettings();
+                applySettings();
+            });
+            document.getElementById('toggle-romaji').addEventListener('click', () => {
+                settings.showRomaji = !settings.showRomaji;
+                saveSettings();
+                applySettings();
+            });
+            document.getElementById('toggle-vietnamese').addEventListener('click', () => {
+                settings.showVietnamese = !settings.showVietnamese;
+                saveSettings();
+                applySettings();
+            });
+
+            document.getElementById('convo-mode-polite').addEventListener('click', (e) => {
+                const container = document.getElementById('conversation-content');
+                container.classList.add('fading-out');
+                setTimeout(() => {
+                    renderDialogue('polite');
+                    container.classList.remove('fading-out');
+                    e.target.classList.add('bg-sky-600', 'text-white', 'shadow');
+                    document.getElementById('convo-mode-casual').classList.remove('bg-sky-600', 'text-white', 'shadow');
+                }, 300);
+            });
+            document.getElementById('convo-mode-casual').addEventListener('click', (e) => {
+                const container = document.getElementById('conversation-content');
+                container.classList.add('fading-out');
+                setTimeout(() => {
+                    renderDialogue('casual');
+                    container.classList.remove('fading-out');
+                    e.target.classList.add('bg-sky-600', 'text-white', 'shadow');
+                    document.getElementById('convo-mode-polite').classList.remove('bg-sky-600', 'text-white', 'shadow');
+                }, 300);
+            });
+            
+            document.getElementById('check-quiz-btn').addEventListener('click', () => {
+                const questions = document.querySelectorAll('.quiz-question');
+                let score = 0;
+                questions.forEach(q => {
+                    const answer = q.dataset.answer;
+                    const feedback = q.querySelector('.feedback');
+                    let isCorrect = false;
+
+                    const selectedOption = q.querySelector('.mcq-option.bg-sky-200');
+                    if (selectedOption) {
+                        isCorrect = selectedOption.textContent === answer;
+                        selectedOption.classList.add(isCorrect ? 'border-green-500' : 'border-red-500');
+                    }
+                    
+                    const input = q.querySelector('.fill-input');
+                    if (input) {
+                        isCorrect = input.value.trim() === answer;
+                        input.classList.add(isCorrect ? 'border-green-500' : 'border-red-500');
+                    }
+
+                    if (isCorrect) {
+                        score++;
+                        feedback.innerHTML = `<span class="feedback-icon feedback-correct">✔️</span><span class="text-green-600 font-bold">Đúng!</span>`;
+                    } else {
+                        feedback.innerHTML = `<span class="feedback-icon feedback-incorrect">❌</span><span class="text-red-600 font-bold">Sai! Đáp án đúng là: ${answer}</span>`;
+                    }
+                });
+                
+                document.getElementById('quiz-result').innerHTML = `Bạn đã trả lời đúng ${score}/${questions.length} câu!`;
+                updateProgress(day6Data.quiz.id);
+            });
+            
+            document.querySelectorAll('.mcq-option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    opt.parentElement.querySelectorAll('.mcq-option').forEach(sibling => {
+                        sibling.classList.remove('bg-sky-200', 'border-sky-500');
+                    });
+                    opt.classList.add('bg-sky-200', 'border-sky-500');
+                });
+            });
+        }
+        
+        // --- INITIALIZATION ---
+        function init() {
+            document.getElementById('main-title').textContent = day6Data.title;
+            loadSettings();
+            renderConversation();
+            renderReading();
+            renderGrammar();
+            renderQuiz();
+            setupGlobalEventListeners();
+            applySettings();
+            updateProgressBar();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
