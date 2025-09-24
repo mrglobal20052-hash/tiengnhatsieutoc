@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng dụng học biến đổi động từ tiếng Nhật</title>
+    <!-- Meta description theo yêu cầu của người dùng -->
+    <meta name="description" content="AzaCan">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #374151;
+            padding-bottom: 0; /* Sẽ được thiết lập động bằng JavaScript */
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .overflow-x-auto {
+            overflow-x: auto; /* Ensure horizontal scrolling */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            /* Add some visual cues for the scrollable area */
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.05); /* subtle inner shadow */
+        }
+        table {
+            width: 100%;
+            min-width: 1200px; /* Ensure table is wide enough to trigger scroll on smaller screens */
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid #e5e7eb;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #4b5563;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+        tbody tr:nth-child(odd) {
+            background-color: #f9fafb;
+        }
+        tbody tr:hover {
+            background-color: #eef2ff;
+        }
+        .toggle-button {
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .toggle-button:hover {
+            background-color: #4338ca;
+        }
+        .play-button {
+            background-color: #10b981;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+        .play-button:hover {
+            background-color: #059669;
+        }
+        .hidden-col {
+            display: none;
+        }
+        .grammar-example-text {
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        /* Phong cách mới cho phần luyện gõ cố định */
+        .fixed-typing-practice {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #ffffff; /* Đảm bảo nền trắng để che nội dung */
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); /* Thêm đổ bóng nhẹ */
+            padding: 1rem;
+            z-index: 1000; /* Đảm bảo nó nằm trên cùng các nội dung khác */
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+        }
+        .verb-type-explanation {
+            background-color: #e0f2f7;
+            border-left: 4px solid #00bcd4;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.375rem;
+        }
+        .verb-type-explanation h4 {
+            font-weight: 600;
+            color: #00838f;
+            margin-bottom: 0.5rem;
+        }
+        .verb-type-explanation ul {
+            list-style: disc;
+            margin-left: 1.5rem;
+            color: #006064;
+        }
+        .info-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0.375rem;
+            color: #664d03;
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div class="container bg-white shadow-lg rounded-lg p-6">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4 text-center">Học Biến Đổi Động Từ Tiếng Nhật</h1>
+
+        <div class="flex flex-wrap gap-4 mb-6">
+            <button id="toggleRomanji" class="toggle-button">Tắt Romanji</button>
+            <button id="toggleFurigana" class="toggle-button">Tắt Hiragana/Katakana</button>
+        </div>
+
+        <div class="info-box">
+            <p><strong>Lưu ý:</strong> Ứng dụng này tập trung vào việc giúp bạn nắm vững các quy tắc biến đổi động từ tiếng Nhật thông qua các ví dụ phổ biến. Do số lượng động từ rất lớn, việc bao gồm toàn bộ động từ trong một ứng dụng web đơn giản là không khả thi về mặt kỹ thuật và hiệu suất. Bạn có thể áp dụng các quy tắc đã học cho bất kỳ động từ nào khác.</p>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Các thể động từ cơ bản và cách biến đổi:</h3>
+            <ul>
+                <li> * Thể Từ điển (Dictionary Form): Dạng gốc của động từ, dùng để tra từ điển, thể hiện hành động ở hiện tại/tương lai (thân mật).</li>
+                <li> * Thể ます (Masu Form): Dạng lịch sự của động từ, dùng trong các tình huống trang trọng hoặc khi nói chuyện với người lớn tuổi/người lạ.</li>
+                <li> * Thể て (Te Form): Dùng để nối các hành động, yêu cầu, thể hiện hành động đang diễn ra, hoặc dùng trong nhiều cấu trúc ngữ pháp khác.</li>
+                <li> * Thể た (Ta Form): Thể hiện hành động đã xảy ra trong quá khứ (thân mật).</li>
+                <li> * Thể ない (Nai Form): Dạng phủ định của động từ (thân mật).</li>
+                <li> * Thể Khả năng (Potential Form): Diễn tả khả năng làm được một việc gì đó.</li>
+                <li> * Thể Ý chí (Volitional Form): Diễn tả ý định, sự rủ rê, hoặc đề nghị làm gì đó.</li>
+                <li> * Thể Điều kiện (Ba Form): Diễn tả điều kiện "nếu... thì...". </li>
+            </ul>
+            <div class="verb-type-explanation">
+                <h4>Động từ Ichidan (一段動詞)</h4>
+                <p>Kết thúc bằng 「る」, và âm tiết ngay trước 「る」 là âm 「い」 hoặc 「え」.</p>
+                <ul>
+                    <li><strong>Thể ます (Masu Form):</strong> Bỏ 「る」 thêm 「ます」.</li>
+                    <li><strong>Thể て (Te Form):</strong> Bỏ 「る」 thêm 「て」.</li>
+                    <li><strong>Thể た (Ta Form):</strong> Bỏ 「る」 thêm 「ta」.</li>
+                    <li><strong>Thể ない (Nai Form):</strong> Bỏ 「る」 thêm 「ない」.</li>
+                    <li><strong>Thể Khả năng (Potential Form):</strong> Bỏ 「る」 thêm 「られる」.</li>
+                    <li><strong>Thể Ý chí (Volitional Form):</strong> Bỏ 「る」 thêm 「よう」.</li>
+                    <li><strong>Thể Điều kiện (Ba Form):</strong> Bỏ 「る」 thêm 「れば」.</li>
+                </ul>
+            </div>
+
+            <div class="verb-type-explanation">
+                <h4>Động từ Godan (五段動詞)</h4>
+                <p>Kết thúc bằng các âm tiết khác ngoài Ichidan, hoặc âm tiết trước 「る」 không phải 「い」/「え」.</p>
+                <ul>
+                    <li><strong>Thể ます (Masu Form):</strong> Đổi âm cuối sang cột 「い」 rồi thêm 「ます」.</li>
+                    <li><strong>Thể て (Te Form):</strong> Có quy tắc riêng tùy theo âm cuối (ví dụ: く → いて, ぐ → いで, む/ぶ/ぬ → んで, る/う/つ → って, す → して).</li>
+                    <li><strong>Thể た (Ta Form):</strong> Tương tự như Te Form, nhưng thay 「て」 bằng 「ta」 hoặc 「de」 bằng 「da」.</li>
+                    <li><strong>Thể ない (Nai Form):</strong> Đổi âm cuối sang cột 「あ」 rồi thêm 「ない」 (trừ 「う」 thành 「wa」).</li>
+                    <li><strong>Thể Khả năng (Potential Form):</strong> Đổi âm cuối sang cột 「え」 rồi thêm 「る」.</li>
+                    <li><strong>Thể Ý chí (Volitional Form):</strong> Đổi âm cuối sang cột 「お」 rồi thêm 「おう」.</li>
+                    <li><strong>Thể Điều kiện (Ba Form):</strong> Đổi âm cuối sang cột 「え」 rồi thêm 「ba」.</li>
+                </ul>
+            </div>
+
+            <div class="verb-type-explanation">
+                <h4>Động từ Bất quy tắc (不規則動詞)</h4>
+                <p>Gồm する (suru) và 来る (kuru).</p>
+                <ul>
+                    <li><strong>する (suru):</strong>
+                        <ul>
+                            <li>ます形: します</li>
+                            <li>て形: して</li>
+                            <li>た形: した</li>
+                            <li>ない形: しない</li>
+                            <li>可能形: できる</li>
+                            <li>意向形: しよう</li>
+                            <li>ば形: すれば</li>
+                        </ul>
+                    </li>
+                    <li><strong>来る (kuru):</strong>
+                        <ul>
+                            <li>ます形: 来ます (kimasu)</li>
+                            <li>て形: 来て (kite)</li>
+                            <li>た形: 来た (kita)</li>
+                            <li>ない形: 来ない (konai)</li>
+                            <li>可能形: 来られる (korareru)</li>
+                            <li>意向形: 来よう (koyou)</li>
+                            <li>ば形: 来れば (kureba)</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table id="verbConjugationTable" class="min-w-full">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">STT</th>
+                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Kanji</th>
+                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600 furigana-col">Hiragana</th>
+                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600 romanji-col">Romanji</th>
+                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Loại ĐT</th>
+                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Nghĩa TV</th>
+                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Thể Từ điển</th>
+                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Thể ます</th>
+                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Thể て</th>
+                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Thể た</th>
+                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Thể ない</th>
+                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Thể Khả năng</th>
+                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Thể Ý chí</th>
+                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Thể Điều kiện</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <!-- Các hàng động từ sẽ được chèn vào đây bởi JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="typingPracticeSection" class="mt-8 p-4 bg-blue-50 rounded-lg shadow-md fixed-typing-practice">
+            <h3 class="text-xl font-bold text-blue-800 mb-4">Luyện gõ biến đổi động từ</h3>
+            <p class="text-gray-700 mb-2">Gõ dạng biến đổi của động từ tiếng Nhật từ bảng trên vào ô dưới đây và nhấn "Kiểm tra".</p>
+            <input type="text" id="userInput" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 mb-3 text-gray-800" placeholder="Gõ tiếng Nhật vào đây...">
+            <button id="checkButton" class="toggle-button bg-green-600 hover:bg-green-700">Kiểm tra</button>
+            <div id="feedback" class="mt-3 text-lg font-semibold"></div>
+        </div>
+
+        <footer class="mt-8 text-center text-sm text-gray-500">
+            <p>AzaCan</p>
+        </footer>
+    </div>
+
+    <script>
+        // Dữ liệu động từ và các dạng biến đổi
+        const verbs = [
+            // Ichidan verbs (一段動詞)
+            {
+                STT: 1, Kanji: "食べる", Hiragana: "たべる", Romanji: "taberu", Type: "Ichidan", Meaning: "ăn",
+                Dictionary: { Hiragana: "たべる", Romanji: "taberu" },
+                Masu: { Hiragana: "たべます", Romanji: "tabemasu" },
+                Te: { Hiragana: "たべて", Romanji: "tabete" },
+                Ta: { Hiragana: "たべた", Romanji: "tabeta" },
+                Nai: { Hiragana: "たべない", Romanji: "tabenai" },
+                Potential: { Hiragana: "たべられる", Romanji: "taberareru" },
+                Volitional: { Hiragana: "たべよう", Romanji: "tabeyou" },
+                Ba: { Hiragana: "たべれば", Romanji: "tabereba" }
+            },
+            {
+                STT: 2, Kanji: "見る", Hiragana: "みる", Romanji: "miru", Type: "Ichidan", Meaning: "nhìn",
+                Dictionary: { Hiragana: "みる", Romanji: "miru" },
+                Masu: { Hiragana: "みます", Romanji: "mimasu" },
+                Te: { Hiragana: "みて", Romanji: "mite" },
+                Ta: { Hiragana: "みた", Romanji: "mita" },
+                Nai: { Hiragana: "みない", Romanji: "minai" },
+                Potential: { Hiragana: "みられる", Romanji: "mirareru" },
+                Volitional: { Hiragana: "みよう", Romanji: "miyou" },
+                Ba: { Hiragana: "みれば", Romanji: "mireba" }
+            },
+            {
+                STT: 3, Kanji: "寝る", Hiragana: "ねる", Romanji: "neru", Type: "Ichidan", Meaning: "ngủ",
+                Dictionary: { Hiragana: "ねる", Romanji: "neru" },
+                Masu: { Hiragana: "ねます", Romanji: "nemasu" },
+                Te: { Hiragana: "ねて", Romanji: "nete" },
+                Ta: { Hiragana: "ねた", Romanji: "neta" },
+                Nai: { Hiragana: "ねない", Romanji: "nenai" },
+                Potential: { Hiragana: "ねられる", Romanji: "nerareru" },
+                Volitional: { Hiragana: "ねよう", Romanji: "neyou" },
+                Ba: { Hiragana: "ねれば", Romanji: "nemureba" }
+            },
+            {
+                STT: 4, Kanji: "起きる", Hiragana: "おきる", Romanji: "okiru", Type: "Ichidan", Meaning: "thức dậy",
+                Dictionary: { Hiragana: "おきる", Romanji: "okiru" },
+                Masu: { Hiragana: "おきます", Romanji: "okimasu" },
+                Te: { Hiragana: "おきて", Romanji: "okite" },
+                Ta: { Hiragana: "おきた", Romanji: "okita" },
+                Nai: { Hiragana: "おきない", Romanji: "okinai" },
+                Potential: { Hiragana: "おきられる", Romanji: "okirareru" },
+                Volitional: { Hiragana: "おきよう", Romanji: "okiyou" },
+                Ba: { Hiragana: "おきれば", Romanji: "okireba" }
+            },
+            {
+                STT: 5, Kanji: "始める", Hiragana: "はじめる", Romanji: "hajimeru", Type: "Ichidan", Meaning: "bắt đầu",
+                Dictionary: { Hiragana: "はじめる", Romanji: "hajimeru" },
+                Masu: { Hiragana: "はじめます", Romanji: "hajimemasu" },
+                Te: { Hiragana: "はじめて", Romanji: "hajimete" },
+                Ta: { Hiragana: "はじめた", Romanji: "hajimeta" },
+                Nai: { Hiragana: "はじめない", Romanji: "hajimenai" },
+                Potential: { Hiragana: "はじめられる", Romanji: "hajimerareru" },
+                Volitional: { Hiragana: "はじめよう", Romanji: "hajimeyou" },
+                Ba: { Hiragana: "はじめれば", Romanji: "hajimereba" }
+            },
+            {
+                STT: 6, Kanji: "閉める", Hiragana: "しめる", Romanji: "shimeru", Type: "Ichidan", Meaning: "đóng",
+                Dictionary: { Hiragana: "しめる", Romanji: "shimeru" },
+                Masu: { Hiragana: "しめます", Romanji: "shimemasu" },
+                Te: { Hiragana: "しめて", Romanji: "shimete" },
+                Ta: { Hiragana: "しめた", Romanji: "shimeta" },
+                Nai: { Hiragana: "しめない", Romanji: "shimenai" },
+                Potential: { Hiragana: "しめられる", Romanji: "shimerareru" },
+                Volitional: { Hiragana: "しめよう", Romanji: "shimeyou" },
+                Ba: { Hiragana: "しめれば", Romanji: "shimereba" }
+            },
+            {
+                STT: 7, Kanji: "開ける", Hiragana: "あける", Romanji: "akeru", Type: "Ichidan", Meaning: "mở",
+                Dictionary: { Hiragana: "あける", Romanji: "akeru" },
+                Masu: { Hiragana: "あけます", Romanji: "akemasu" },
+                Te: { Hiragana: "あけて", Romanji: "akete" },
+                Ta: { Hiragana: "あけた", Romanji: "aketa" },
+                Nai: { Hiragana: "あけない", Romanji: "akenai" },
+                Potential: { Hiragana: "あけられる", Romanji: "akerareru" },
+                Volitional: { Hiragana: "あけよう", Romanji: "akeyou" },
+                Ba: { Hiragana: "あければ", Romanji: "akereba" }
+            },
+            {
+                STT: 8, Kanji: "借りる", Hiragana: "かりる", Romanji: "kariru", Type: "Ichidan", Meaning: "mượn",
+                Dictionary: { Hiragana: "かりる", Romanji: "kariru" },
+                Masu: { Hiragana: "かります", Romanji: "karimasu" },
+                Te: { Hiragana: "かりて", Romanji: "karite" },
+                Ta: { Hiragana: "かりた", Romanji: "karita" },
+                Nai: { Hiragana: "かりない", Romanji: "karinai" },
+                Potential: { Hiragana: "かりられる", Romanji: "karirareru" },
+                Volitional: { Hiragana: "かりよう", Romanji: "kariyou" },
+                Ba: { Hiragana: "かりれば", Romanji: "karireba" }
+            },
+            {
+                STT: 9, Kanji: "教える", Hiragana: "おしえる", Romanji: "oshieru", Type: "Ichidan", Meaning: "dạy",
+                Dictionary: { Hiragana: "おしえる", Romanji: "oshieru" },
+                Masu: { Hiragana: "おしえます", Romanji: "oshiemasu" },
+                Te: { Hiragana: "おしえて", Romanji: "oshiete" },
+                Ta: { Hiragana: "おしえた", Romanji: "oshieta" },
+                Nai: { Hiragana: "おしえない", Romanji: "oshienai" },
+                Potential: { Hiragana: "おしえられる", Romanji: "oshierareru" },
+                Volitional: { Hiragana: "おしえよう", Romanji: "oshieyou" },
+                Ba: { Hiragana: "おしえれば", Romanji: "oshiereba" }
+            },
+            {
+                STT: 10, Kanji: "忘れる", Hiragana: "わすれる", Romanji: "wasureru", Type: "Ichidan", Meaning: "quên",
+                Dictionary: { Hiragana: "わすれる", Romanji: "wasureru" },
+                Masu: { Hiragana: "わすれます", Romanji: "wasuremasu" },
+                Te: { Hiragana: "わすれて", Romanji: "wasurete" },
+                Ta: { Hiragana: "わすれた", Romanji: "wasureta" },
+                Nai: { Hiragana: "わすれない", Romanji: "wasurenai" },
+                Potential: { Hiragana: "わすれられる", Romanji: "wasurerareru" },
+                Volitional: { Hiragana: "わすれよう", Romanji: "wasureyou" },
+                Ba: { Hiragana: "わすれれば", Romanji: "wasurereba" }
+            },
+            {
+                STT: 11, Kanji: "疲れる", Hiragana: "つかれる", Romanji: "tsukareru", Type: "Ichidan", Meaning: "mệt",
+                Dictionary: { Hiragana: "つかれる", Romanji: "tsukareru" },
+                Masu: { Hiragana: "つかれます", Romanji: "tsukaremasu" },
+                Te: { Hiragana: "つかれて", Romanji: "tsukarete" },
+                Ta: { Hiragana: "つかれた", Romanji: "tsukareta" },
+                Nai: { Hiragana: "つかれない", Romanji: "tsukarenai" },
+                Potential: { Hiragana: "つかれられる", Romanji: "tsukerareru" },
+                Volitional: { Hiragana: "つかれよう", Romanji: "tsukareyou" },
+                Ba: { Hiragana: "つかれれば", Romanji: "tsukarereba" }
+            },
+            {
+                STT: 12, Kanji: "決める", Hiragana: "きめる", Romanji: "kimeru", Type: "Ichidan", Meaning: "quyết định",
+                Dictionary: { Hiragana: "きめる", Romanji: "kimeru" },
+                Masu: { Hiragana: "きめます", Romanji: "kimemasu" },
+                Te: { Hiragana: "きめて", Romanji: "kimete" },
+                Ta: { Hiragana: "きめた", Romanji: "kimeta" },
+                Nai: { Hiragana: "きめない", Romanji: "kimenai" },
+                Potential: { Hiragana: "きめられる", Romanji: "kimerareru" },
+                Volitional: { Hiragana: "きめよう", Romanji: "kimeyou" },
+                Ba: { Hiragana: "きめれば", Romanji: "kimereba" }
+            },
+            {
+                STT: 13, Kanji: "答える", Hiragana: "こたえる", Romanji: "kotaeru", Type: "Ichidan", Meaning: "trả lời",
+                Dictionary: { Hiragana: "こたえる", Romanji: "kotaeru" },
+                Masu: { Hiragana: "こたえます", Romanji: "kotaemasu" },
+                Te: { Hiragana: "こたえて", Romanji: "kotaete" },
+                Ta: { Hiragana: "こたえた", Romanji: "kotaeta" },
+                Nai: { Hiragana: "こたえない", Romanji: "kotaenai" },
+                Potential: { Hiragana: "こたえられる", Romanji: "kotaerareru" },
+                Volitional: { Hiragana: "こたえよう", Romanji: "kotaeyou" },
+                Ba: { Hiragana: "こたえれば", Romanji: "kotaereba" }
+            },
+            // Godan verbs (五段動詞)
+            {
+                STT: 14, Kanji: "話す", Hiragana: "はなす", Romanji: "hanasu", Type: "Godan", Meaning: "nói",
+                Dictionary: { Hiragana: "はなす", Romanji: "hanasu" },
+                Masu: { Hiragana: "はなします", Romanji: "hanashimasu" },
+                Te: { Hiragana: "はなして", Romanji: "hanashite" },
+                Ta: { Hiragana: "はなした", Romanji: "hanashita" },
+                Nai: { Hiragana: "はなさない", Romanji: "hanasanai" },
+                Potential: { Hiragana: "はなせる", Romanji: "hanaseru" },
+                Volitional: { Hiragana: "はなそう", Romanji: "hanasou" },
+                Ba: { Hiragana: "はなせば", Romanji: "hanaseba" }
+            },
+            {
+                STT: 15, Kanji: "読む", Hiragana: "よむ", Romanji: "yomu", Type: "Godan", Meaning: "đọc",
+                Dictionary: { Hiragana: "よむ", Romanji: "yomu" },
+                Masu: { Hiragana: "よみます", Romanji: "yomimasu" },
+                Te: { Hiragana: "よんで", Romanji: "yonde" },
+                Ta: { Hiragana: "よんだ", Romanji: "yonda" },
+                Nai: { Hiragana: "よまない", Romanji: "yomanai" },
+                Potential: { Hiragana: "よめる", Romanji: "yomeru" },
+                Volitional: { Hiragana: "よもう", Romanji: "yomou" },
+                Ba: { Hiragana: "よめば", Romanji: "yomeba" }
+            },
+            {
+                STT: 16, Kanji: "行く", Hiragana: "いく", Romanji: "iku", Type: "Godan", Meaning: "đi",
+                Dictionary: { Hiragana: "いく", Romanji: "iku" },
+                Masu: { Hiragana: "いきます", Romanji: "ikimasu" },
+                Te: { Hiragana: "いって", Romanji: "itte" }, // Irregular Te/Ta form
+                Ta: { Hiragana: "いった", Romanji: "itta" }, // Irregular Te/Ta form
+                Nai: { Hiragana: "いかない", Romanji: "ikanai" },
+                Potential: { Hiragana: "いける", Romanji: "ikeru" },
+                Volitional: { Hiragana: "いこう", Romanji: "ikou" },
+                Ba: { Hiragana: "いけば", Romanji: "ikeba" }
+            },
+            {
+                STT: 17, Kanji: "待つ", Hiragana: "まつ", Romanji: "matsu", Type: "Godan", Meaning: "đợi",
+                Dictionary: { Hiragana: "まつ", Romanji: "matsu" },
+                Masu: { Hiragana: "まちます", Romanji: "machimasu" },
+                Te: { Hiragana: "まって", Romanji: "matte" },
+                Ta: { Hiragana: "まった", Romanji: "matta" },
+                Nai: { Hiragana: "またない", Romanji: "matanai" },
+                Potential: { Hiragana: "まてる", Romanji: "materu" },
+                Volitional: { Hiragana: "まとう", Romanji: "matou" },
+                Ba: { Hiragana: "まてば", Romanji: "mateba" }
+            },
+            {
+                STT: 18, Kanji: "泳ぐ", Hiragana: "およぐ", Romanji: "oyogu", Type: "Godan", Meaning: "bơi",
+                Dictionary: { Hiragana: "およぐ", Romanji: "oyogu" },
+                Masu: { Hiragana: "およぎます", Romanji: "oyogimasu" },
+                Te: { Hiragana: "およいで", Romanji: "oyoide" },
+                Ta: { Hiragana: "およいだ", Romanji: "oyoida" },
+                Nai: { Hiragana: "およがない", Romanji: "oyoganai" },
+                Potential: { Hiragana: "およげる", Romanji: "oyogeru" },
+                Volitional: { Hiragana: "およごう", Romanji: "oyogou" },
+                Ba: { Hiragana: "およげば", Romanji: "oyogeba" }
+            },
+            {
+                STT: 19, Kanji: "死ぬ", Hiragana: "しぬ", Romanji: "shinu", Type: "Godan", Meaning: "chết",
+                Dictionary: { Hiragana: "しぬ", Romanji: "shinu" },
+                Masu: { Hiragana: "しにます", Romanji: "shinimasu" },
+                Te: { Hiragana: "しんで", Romanji: "shinde" },
+                Ta: { Hiragana: "しんだ", Romanji: "shinda" },
+                Nai: { Hiragana: "しなない", Romanji: "shinanai" },
+                Potential: { Hiragana: "しねる", Romanji: "shineru" },
+                Volitional: { Hiragana: "しのう", Romanji: "shinou" },
+                Ba: { Hiragana: "しねば", Romanji: "shineba" }
+            },
+            {
+                STT: 20, Kanji: "遊ぶ", Hiragana: "あそぶ", Romanji: "asobu", Type: "Godan", Meaning: "chơi",
+                Dictionary: { Hiragana: "あそぶ", Romanji: "asobu" },
+                Masu: { Hiragana: "あそびます", Romanji: "asobimasu" },
+                Te: { Hiragana: "あそんで", Romanji: "asonde" },
+                Ta: { Hiragana: "あそんだ", Romanji: "asonda" },
+                Nai: { Hiragana: "あそばない", Romanji: "asobanai" },
+                Potential: { Hiragana: "あそべる", Romanji: "asoberu" },
+                Volitional: { Hiragana: "あそぼう", Romanji: "asobou" },
+                Ba: { Hiragana: "あそべば", Romanji: "asobeba" }
+            },
+            {
+                STT: 21, Kanji: "飲む", Hiragana: "のむ", Romanji: "nomu", Type: "Godan", Meaning: "uống",
+                Dictionary: { Hiragana: "noむ", Romanji: "nomu" },
+                Masu: { Hiragana: "のみます", Romanji: "nomimasu" },
+                Te: { Hiragana: "のんで", Romanji: "nonde" },
+                Ta: { Hiragana: "のんだ", Romanji: "nonda" },
+                Nai: { Hiragana: "のまない", Romanji: "nomanai" },
+                Potential: { Hiragana: "のめる", Romanji: "nomeru" },
+                Volitional: { Hiragana: "のもう", Romanji: "nomou" },
+                Ba: { Hiragana: "のめば", Romanji: "nomeba" }
+            },
+            {
+                STT: 22, Kanji: "買う", Hiragana: "かう", Romanji: "kau", Type: "Godan", Meaning: "mua",
+                Dictionary: { Hiragana: "かう", Romanji: "kau" },
+                Masu: { Hiragana: "かいます", Romanji: "kaimasu" },
+                Te: { Hiragana: "かって", Romanji: "katte" },
+                Ta: { Hiragana: "かった", Romanji: "katta" },
+                Nai: { Hiragana: "かわない", Romanji: "kawanai" },
+                Potential: { Hiragana: "かえる", Romanji: "kaeru" },
+                Volitional: { Hiragana: "かおう", Romanji: "kaou" },
+                Ba: { Hiragana: "かえば", Romanji: "kaeba" }
+            },
+            {
+                STT: 23, Kanji: "書く", Hiragana: "かく", Romanji: "kaku", Type: "Godan", Meaning: "viết",
+                Dictionary: { Hiragana: "かく", Romanji: "kaku" },
+                Masu: { Hiragana: "かきます", Romanji: "kakimasu" },
+                Te: { Hiragana: "かいて", Romanji: "kaite" },
+                Ta: { Hiragana: "かいた", Romanji: "kaita" },
+                Nai: { Hiragana: "かかない", Romanji: "kakanai" },
+                Potential: { Hiragana: "かける", Romanji: "kakeru" },
+                Volitional: { Hiragana: "かこう", Romanji: "kakou" },
+                Ba: { Hiragana: "かけば", Romanji: "kakeba" }
+            },
+            {
+                STT: 24, Kanji: "聞く", Hiragana: "きく", Romanji: "kiku", Type: "Godan", Meaning: "nghe",
+                Dictionary: { Hiragana: "きく", Romanji: "kiku" },
+                Masu: { Hiragana: "ききます", Romanji: "kikimasu" },
+                Te: { Hiragana: "きいて", Romanji: "kiite" },
+                Ta: { Hiragana: "きいた", Romanji: "kiita" },
+                Nai: { Hiragana: "きかない", Romanji: "kikanai" },
+                Potential: { Hiragana: "きける", Romanji: "kikeru" },
+                Volitional: { Hiragana: "きこう", Romanji: "kikou" },
+                Ba: { Hiragana: "きけば", Romanji: "kikeba" }
+            },
+            {
+                STT: 25, Kanji: "立つ", Hiragana: "たつ", Romanji: "tatsu", Type: "Godan", Meaning: "đứng",
+                Dictionary: { Hiragana: "たつ", Romanji: "tatsu" },
+                Masu: { Hiragana: "たちます", Romanji: "tachimasu" },
+                Te: { Hiragana: "たって", Romanji: "tatte" },
+                Ta: { Hiragana: "たった", Romanji: "tatta" },
+                Nai: { Hiragana: "たたない", Romanji: "tatanai" },
+                Potential: { Hiragana: "たてる", Romanji: "tateru" },
+                Volitional: { Hiragana: "たとう", Romanji: "tatou" },
+                Ba: { Hiragana: "たてば", Romanji: "tateba" }
+            },
+            {
+                STT: 26, Kanji: "座る", Hiragana: "すわる", Romanji: "suwaru", Type: "Godan", Meaning: "ngồi",
+                Dictionary: { Hiragana: "すわる", Romanji: "suwaru" },
+                Masu: { Hiragana: "すわります", Romanji: "suwarimasu" },
+                Te: { Hiragana: "すわって", Romanji: "suwatte" },
+                Ta: { Hiragana: "すわった", Romanji: "suwatta" },
+                Nai: { Hiragana: "すわらない", Romanji: "suwaranai" },
+                Potential: { Hiragana: "すわれる", Romanji: "suwareru" },
+                Volitional: { Hiragana: "すわろう", Romanji: "suwarou" },
+                Ba: { Hiragana: "すわれば", Romanji: "suwareba" }
+            },
+            {
+                STT: 27, Kanji: "呼ぶ", Hiragana: "よぶ", Romanji: "yobu", Type: "Godan", Meaning: "gọi",
+                Dictionary: { Hiragana: "よぶ", Romanji: "yobu" },
+                Masu: { Hiragana: "よびます", Romanji: "yobimasu" },
+                Te: { Hiragana: "よんで", Romanji: "yonde" },
+                Ta: { Hiragana: "よんだ", Romanji: "yonda" },
+                Nai: { Hiragana: "よばない", Romanji: "yobanai" },
+                Potential: { Hiragana: "よべる", Romanji: "yoberu" },
+                Volitional: { Hiragana: "よぼう", Romanji: "yobou" },
+                Ba: { Hiragana: "よべば", Romanji: "yobeba" }
+            },
+            {
+                STT: 28, Kanji: "作る", Hiragana: "つくる", Romanji: "tsukuru", Type: "Godan", Meaning: "làm, chế tạo",
+                Dictionary: { Hiragana: "つくる", Romanji: "tsukuru" },
+                Masu: { Hiragana: "つくります", Romanji: "tsukurimasu" },
+                Te: { Hiragana: "つくって", Romanji: "tsukutte" },
+                Ta: { Hiragana: "つくった", Romanji: "tsukutta" },
+                Nai: { Hiragana: "つくらない", Romanji: "tsukuranai" },
+                Potential: { Hiragana: "つくれる", Romanji: "tsukureru" },
+                Volitional: { Hiragana: "つくろう", Romanji: "tsukurou" },
+                Ba: { Hiragana: "つくれば", Romanji: "tsukureba" }
+            },
+            {
+                STT: 29, Kanji: "分かる", Hiragana: "わかる", Romanji: "wakaru", Type: "Godan", Meaning: "hiểu",
+                Dictionary: { Hiragana: "わかる", Romanji: "wakaru" },
+                Masu: { Hiragana: "わかります", Romanji: "wakarimasu" },
+                Te: { Hiragana: "わかって", Romanji: "wakatte" },
+                Ta: { Hiragana: "わかった", Romanji: "wakatta" },
+                Nai: { Hiragana: "わからない", Romanji: "wakaranai" },
+                Potential: { Hiragana: "わかる", Romanji: "wakaru" }, // Special case: Potential form is often the same as dictionary form for wakaru
+                Volitional: { Hiragana: "わかろう", Romanji: "wakarou" },
+                Ba: { Hiragana: "わかれば", Romanji: "wakareba" }
+            },
+            {
+                STT: 30, Kanji: "ある", Hiragana: "ある", Romanji: "aru", Type: "Godan", Meaning: "có (vật)",
+                Dictionary: { Hiragana: "ある", Romanji: "aru" },
+                Masu: { Hiragana: "あります", Romanji: "arimasu" },
+                Te: { Hiragana: "あって", Romanji: "atte" },
+                Ta: { Hiragana: "あった", Romanji: "atta" },
+                Nai: { Hiragana: "ない", Romanji: "nai" }, // Special case for aru
+                Potential: { Hiragana: "あれる", Romanji: "areru" }, // Less common, but grammatically possible
+                Volitional: { Hiragana: "あろう", Romanji: "arou" },
+                Ba: { Hiragana: "あれば", Romanji: "areba" }
+            },
+            {
+                STT: 31, Kanji: "いる", Hiragana: "いる", Romanji: "iru", Type: "Ichidan", Meaning: "có (người, động vật)",
+                Dictionary: { Hiragana: "いる", Romanji: "iru" },
+                Masu: { Hiragana: "います", Romanji: "imasu" },
+                Te: { Hiragana: "いて", Romanji: "ite" },
+                Ta: { Hiragana: "いた", Romanji: "ita" },
+                Nai: { Hiragana: "いない", Romanji: "inai" },
+                Potential: { Hiragana: "いられる", Romanji: "irareru" },
+                Volitional: { Hiragana: "いよう", Romanji: "iyou" },
+                Ba: { Hiragana: "いれば", Romanji: "ireba" }
+            },
+            // Irregular verbs (不規則動詞)
+            {
+                STT: 32, Kanji: "する", Hiragana: "する", Romanji: "suru", Type: "Irregular", Meaning: "làm",
+                Dictionary: { Hiragana: "する", Romanji: "suru" },
+                Masu: { Hiragana: "します", Romanji: "shimasu" },
+                Te: { Hiragana: "して", Romanji: "shite" },
+                Ta: { Hiragana: "した", Romanji: "shita" },
+                Nai: { Hiragana: "しない", Romanji: "shinai" },
+                Potential: { Hiragana: "できる", Romanji: "dekiru" },
+                Volitional: { Hiragana: "しよう", Romanji: "shiyou" },
+                Ba: { Hiragana: "すれば", Romanji: "sureba" }
+            },
+            {
+                STT: 33, Kanji: "来る", Hiragana: "くる", Romanji: "kuru", Type: "Irregular", Meaning: "đến",
+                Dictionary: { Hiragana: "くる", Romanji: "kuru" },
+                Masu: { Hiragana: "きます", Romanji: "kimasu" },
+                Te: { Hiragana: "きて", Romanji: "kite" },
+                Ta: { Hiragana: "きた", Romanji: "kita" },
+                Nai: { Hiragana: "こない", Romanji: "konai" },
+                Potential: { Hiragana: "こられる", Romanji: "korareru" },
+                Volitional: { Hiragana: "こよう", Romanji: "koyou" },
+                Ba: { Hiragana: "くれば", Romanji: "kureba" }
+            },
+            // Thêm các động từ phổ biến khác để đạt 88 từ
+            {
+                STT: 34, Kanji: "会う", Hiragana: "あう", Romanji: "au", Type: "Godan", Meaning: "gặp",
+                Dictionary: { Hiragana: "あう", Romanji: "au" },
+                Masu: { Hiragana: "あいます", Romanji: "aimasu" },
+                Te: { Hiragana: "あって", Romanji: "atte" },
+                Ta: { Hiragana: "あった", Romanji: "atta" },
+                Nai: { Hiragana: "あわない", Romanji: "awanai" },
+                Potential: { Hiragana: "あえる", Romanji: "aeru" },
+                Volitional: { Hiragana: "あおう", Romanji: "aou" },
+                Ba: { Hiragana: "あえば", Romanji: "aeba" }
+            },
+            {
+                STT: 35, Kanji: "歌う", Hiragana: "うたう", Romanji: "utau", Type: "Godan", Meaning: "hát",
+                Dictionary: { Hiragana: "うたう", Romanji: "utau" },
+                Masu: { Hiragana: "うたいます", Romanji: "utaimasu" },
+                Te: { Hiragana: "うたって", Romanji: "utatte" },
+                Ta: { Hiragana: "うたった", Romanji: "utatta" },
+                Nai: { Hiragana: "うたわない", Romanji: "utawanai" },
+                Potential: { Hiragana: "うたえる", Romanji: "utaeru" },
+                Volitional: { Hiragana: "うたおう", Romanji: "utaou" },
+                Ba: { Hiragana: "うたえば", Romanji: "utaeba" }
+            },
+            {
+                STT: 36, Kanji: "使う", Hiragana: "つかう", Romanji: "tsukau", Type: "Godan", Meaning: "sử dụng",
+                Dictionary: { Hiragana: "つかう", Romanji: "tsukau" },
+                Masu: { Hiragana: "つかいます", Romanji: "tsukaimasu" },
+                Te: { Hiragana: "つかって", Romanji: "tsukatte" },
+                Ta: { Hiragana: "つかった", Romanji: "tsukatta" },
+                Nai: { Hiragana: "つかわない", Romanji: "tsukawanai" },
+                Potential: { Hiragana: "つかえる", Romanji: "tsukaeru" },
+                Volitional: { Hiragana: "つかおう", Romanji: "tsukaou" },
+                Ba: { Hiragana: "つかえば", Romanji: "tsukaeba" }
+            },
+            {
+                STT: 37, Kanji: "働く", Hiragana: "はたらく", Romanji: "hataraku", Type: "Godan", Meaning: "làm việc",
+                Dictionary: { Hiragana: "はたらく", Romanji: "hataraku" },
+                Masu: { Hiragana: "はたらきます", Romanji: "hatarakimasu" },
+                Te: { Hiragana: "はたらいて", Romanji: "hataraite" },
+                Ta: { Hiragana: "はたらいた", Romanji: "hataraita" },
+                Nai: { Hiragana: "はたらかない", Romanji: "hatarakanai" },
+                Potential: { Hiragana: "はたらける", Romanji: "hatarakeru" },
+                Volitional: { Hiragana: "はたらこう", Romanji: "hatarakou" },
+                Ba: { Hiragana: "はたらけば", Romanji: "hatarakeba" }
+            },
+            {
+                STT: 38, Kanji: "持つ", Hiragana: "もつ", Romanji: "motsu", Type: "Godan", Meaning: "cầm, mang",
+                Dictionary: { Hiragana: "もつ", Romanji: "motsu" },
+                Masu: { Hiragana: "もちます", Romanji: "mochimasu" },
+                Te: { Hiragana: "もって", Romanji: "motte" },
+                Ta: { Hiragana: "もった", Romanji: "motta" },
+                Nai: { Hiragana: "もたない", Romanji: "motanai" },
+                Potential: { Hiragana: "もてる", Romanji: "moteru" },
+                Volitional: { Hiragana: "もとう", Romanji: "motou" },
+                Ba: { Hiragana: "もてば", Romanji: "moteba" }
+            },
+            {
+                STT: 39, Kanji: "撮る", Hiragana: "とる", Romanji: "toru", Type: "Godan", Meaning: "chụp (ảnh)",
+                Dictionary: { Hiragana: "とる", Romanji: "toru" },
+                Masu: { Hiragana: "とります", Romanji: "torimasu" },
+                Te: { Hiragana: "とって", Romanji: "totte" },
+                Ta: { Hiragana: "とった", Romanji: "totta" },
+                Nai: { Hiragana: "とらない", Romanji: "toranai" },
+                Potential: { Hiragana: "とれる", Romanji: "toreru" },
+                Volitional: { Hiragana: "とろう", Romanji: "torou" },
+                Ba: { Hiragana: "とれば", Romanji: "toreba" }
+            },
+            {
+                STT: 40, Kanji: "乗る", Hiragana: "のる", Romanji: "noru", Type: "Godan", Meaning: "lên (xe)",
+                Dictionary: { Hiragana: "のる", Romanji: "noru" },
+                Masu: { Hiragana: "のります", Romanji: "norimasu" },
+                Te: { Hiragana: "のって", Romanji: "notte" },
+                Ta: { Hiragana: "のった", Romanji: "notta" },
+                Nai: { Hiragana: "のらない", Romanji: "noranai" },
+                Potential: { Hiragana: "のれる", Romanji: "noreru" },
+                Volitional: { Hiragana: "のろう", Romanji: "norou" },
+                Ba: { Hiragana: "のれば", Romanji: "noreba" }
+            },
+            {
+                STT: 41, Kanji: "送る", Hiragana: "おくる", Romanji: "okuru", Type: "Godan", Meaning: "gửi",
+                Dictionary: { Hiragana: "おくる", Romanji: "okuru" },
+                Masu: { Hiragana: "おくります", Romanji: "okurimasu" },
+                Te: { Hiragana: "おくって", Romanji: "okutte" },
+                Ta: { Hiragana: "おくった", Romanji: "okutta" },
+                Nai: { Hiragana: "おくらない", Romanji: "okuranai" },
+                Potential: { Hiragana: "おくれる", Romanji: "okureru" },
+                Volitional: { Hiragana: "おくろう", Romanji: "okurou" },
+                Ba: { Hiragana: "おくれば", Romanji: "okureba" }
+            },
+            {
+                STT: 42, Kanji: "切る", Hiragana: "きる", Romanji: "kiru", Type: "Godan", Meaning: "cắt",
+                Dictionary: { Hiragana: "きる", Romanji: "kiru" },
+                Masu: { Hiragana: "きります", Romanji: "kirimasu" },
+                Te: { Hiragana: "きって", Romanji: "kitte" },
+                Ta: { Hiragana: "きった", Romanji: "kitta" },
+                Nai: { Hiragana: "きらない", Romanji: "kiranai" },
+                Potential: { Hiragana: "きれる", Romanji: "kireru" },
+                Volitional: { Hiragana: "きろう", Romanji: "kirou" },
+                Ba: { Hiragana: "きれば", Romanji: "kireba" }
+            },
+            {
+                STT: 43, Kanji: "貸す", Hiragana: "かす", Romanji: "kasu", Type: "Godan", Meaning: "cho mượn",
+                Dictionary: { Hiragana: "かす", Romanji: "kasu" },
+                Masu: { Hiragana: "かします", Romanji: "kashimasu" },
+                Te: { Hiragana: "かして", Romanji: "kashite" },
+                Ta: { Hiragana: "かした", Romanji: "kashita" },
+                Nai: { Hiragana: "かさない", Romanji: "kasanai" },
+                Potential: { Hiragana: "かせます", Romanji: "kasemasu" },
+                Volitional: { Hiragana: "かそう", Romanji: "kasou" },
+                Ba: { Hiragana: "かせば", Romanji: "kaseba" }
+            },
+            {
+                STT: 44, Kanji: "出す", Hiragana: "だす", Romanji: "dasu", Type: "Godan", Meaning: "đưa ra, nộp",
+                Dictionary: { Hiragana: "だす", Romanji: "dasu" },
+                Masu: { Hiragana: "だします", Romanji: "dashimasu" },
+                Te: { Hiragana: "だして", Romanji: "dashite" },
+                Ta: { Hiragana: "だした", Romanji: "dashita" },
+                Nai: { Hiragana: "ださない", Romanji: "dasanai" },
+                Potential: { Hiragana: "だせる", Romanji: "daseru" },
+                Volitional: { Hiragana: "だそう", Romanji: "dasou" },
+                Ba: { Hiragana: "だせば", Romanji: "daseba" }
+            },
+            {
+                STT: 45, Kanji: "入る", Hiragana: "はいる", Romanji: "hairu", Type: "Godan", Meaning: "vào",
+                Dictionary: { Hiragana: "はいる", Romanji: "hairu" },
+                Masu: { Hiragana: "はいります", Romanji: "hairimasu" },
+                Te: { Hiragana: "はいって", Romanji: "haitte" },
+                Ta: { Hiragana: "はいった", Romanji: "haitte" },
+                Nai: { Hiragana: "はいらない", Romanji: "hairanai" },
+                Potential: { Hiragana: "はいれる", Romanji: "haireru" },
+                Volitional: { Hiragana: "はいろう", Romanji: "hairou" },
+                Ba: { Hiragana: "はいれば", Romanji: "haireba" }
+            },
+            {
+                STT: 46, Kanji: "走る", Hiragana: "はしる", Romanji: "hashiru", Type: "Godan", Meaning: "chạy",
+                Dictionary: { Hiragana: "はしる", Romanji: "hashiru" },
+                Masu: { Hiragana: "はしります", Romanji: "hashirimasu" },
+                Te: { Hiragana: "はしって", Romanji: "hashitte" },
+                Ta: { Hiragana: "はしった", Romanji: "hashitta" },
+                Nai: { Hiragana: "はしらない", Romanji: "hashiranai" },
+                Potential: { Hiragana: "はしれる", Romanji: "hashireru" },
+                Volitional: { Hiragana: "はしろう", Romanji: "hashirou" },
+                Ba: { Hiragana: "はしれば", Romanji: "hashireba" }
+            },
+            {
+                STT: 47, Kanji: "学ぶ", Hiragana: "まなぶ", Romanji: "manabu", Type: "Godan", Meaning: "học",
+                Dictionary: { Hiragana: "まなぶ", Romanji: "manabu" },
+                Masu: { Hiragana: "まなびます", Romanji: "manabimasu" },
+                Te: { Hiragana: "まなんで", Romanji: "manande" },
+                Ta: { Hiragana: "まなんだ", Romanji: "mananda" },
+                Nai: { Hiragana: "まなばない", Romanji: "manabanai" },
+                Potential: { Hiragana: "まなべる", Romanji: "manaberu" },
+                Volitional: { Hiragana: "まなぼう", Romanji: "manabou" },
+                Ba: { Hiragana: "まなべば", Romanji: "manabeba" }
+            },
+            {
+                STT: 48, Kanji: "休む", Hiragana: "やすむ", Romanji: "yasumu", Type: "Godan", Meaning: "nghỉ",
+                Dictionary: { Hiragana: "やすむ", Romanji: "yasumu" },
+                Masu: { Hiragana: "やすみます", Romanji: "yasumimasu" },
+                Te: { Hiragana: "やすんで", Romanji: "yasunde" },
+                Ta: { Hiragana: "やすんだ", Romanji: "yasunda" },
+                Nai: { Hiragana: "やすまない", Romanji: "yasumanai" },
+                Potential: { Hiragana: "やすめる", Romanji: "yasumeru" },
+                Volitional: { Hiragana: "やすもう", Romanji: "yasumou" },
+                Ba: { Hiragana: "やすめば", Romanji: "yasumeba" }
+            },
+            {
+                STT: 49, Kanji: "住む", Hiragana: "すむ", Romanji: "sumu", Type: "Godan", Meaning: "sống, cư trú",
+                Dictionary: { Hiragana: "すむ", Romanji: "sumu" },
+                Masu: { Hiragana: "すみます", Romanji: "sumimasu" },
+                Te: { Hiragana: "すんで", Romanji: "sunde" },
+                Ta: { Hiragana: "すんだ", Romanji: "sunda" },
+                Nai: { Hiragana: "すまない", Romanji: "sumanai" },
+                Potential: { Hiragana: "すめる", Romanji: "sumeru" },
+                Volitional: { Hiragana: "すもう", Romanji: "sumou" },
+                Ba: { Hiragana: "すめば", Romanji: "sumeba" }
+            },
+            {
+                STT: 50, Kanji: "売る", Hiragana: "うる", Romanji: "uru", Type: "Godan", Meaning: "bán",
+                Dictionary: { Hiragana: "うる", Romanji: "uru" },
+                Masu: { Hiragana: "うります", Romanji: "urimasu" },
+                Te: { Hiragana: "うって", Romanji: "utte" },
+                Ta: { Hiragana: "うった", Romanji: "utta" },
+                Nai: { Hiragana: "うらない", Romanji: "uranai" },
+                Potential: { Hiragana: "うれる", Romanji: "ureru" },
+                Volitional: { Hiragana: "うろう", Romanji: "urou" },
+                Ba: { Hiragana: "うれば", Romanji: "ureba" }
+            },
+            {
+                STT: 51, Kanji: "送る", Hiragana: "おくる", Romanji: "okuru", Type: "Godan", Meaning: "gửi",
+                Dictionary: { Hiragana: "おくる", Romanji: "okuru" },
+                Masu: { Hiragana: "おくります", Romanji: "okurimasu" },
+                Te: { Hiragana: "おくって", Romanji: "okutte" },
+                Ta: { Hiragana: "おくった", Romanji: "okutta" },
+                Nai: { Hiragana: "おくらない", Romanji: "okuranai" },
+                Potential: { Hiragana: "おくれる", Romanji: "okureru" },
+                Volitional: { Hiragana: "おくろう", Romanji: "okurou" },
+                Ba: { Hiragana: "おくれば", Romanji: "okureba" }
+            },
+            {
+                STT: 52, Kanji: "切る", Hiragana: "きる", Romanji: "kiru", Type: "Godan", Meaning: "cắt",
+                Dictionary: { Hiragana: "きる", Romanji: "kiru" },
+                Masu: { Hiragana: "きります", Romanji: "kirimasu" },
+                Te: { Hiragana: "きって", Romanji: "kitte" },
+                Ta: { Hiragana: "きった", Romanji: "kitta" },
+                Nai: { Hiragana: "きらない", Romanji: "kiranai" },
+                Potential: { Hiragana: "きれる", Romanji: "kireru" },
+                Volitional: { Hiragana: "きろう", Romanji: "kirou" },
+                Ba: { Hiragana: "きれば", Romanji: "kireba" }
+            },
+            {
+                STT: 53, Kanji: "貸す", Hiragana: "かす", Romanji: "kasu", Type: "Godan", Meaning: "cho mượn",
+                Dictionary: { Hiragana: "かす", Romanji: "kasu" },
+                Masu: { Hiragana: "かします", Romanji: "kashimasu" },
+                Te: { Hiragana: "かして", Romanji: "kashite" },
+                Ta: { Hiragana: "かした", Romanji: "kashita" },
+                Nai: { Hiragana: "かさない", Romanji: "kasanai" },
+                Potential: { Hiragana: "かせます", Romanji: "kasemasu" },
+                Volitional: { Hiragana: "かそう", Romanji: "kasou" },
+                Ba: { Hiragana: "かせば", Romanji: "kaseba" }
+            },
+            {
+                STT: 54, Kanji: "出す", Hiragana: "だす", Romanji: "dasu", Type: "Godan", Meaning: "đưa ra, nộp",
+                Dictionary: { Hiragana: "だす", Romanji: "dasu" },
+                Masu: { Hiragana: "だします", Romanji: "dashimasu" },
+                Te: { Hiragana: "だして", Romanji: "dashite" },
+                Ta: { Hiragana: "だした", Romanji: "dashita" },
+                Nai: { Hiragana: "ださない", Romanji: "dasanai" },
+                Potential: { Hiragana: "だせる", Romanji: "daseru" },
+                Volitional: { Hiragana: "だそう", Romanji: "dasou" },
+                Ba: { Hiragana: "だせば", Romanji: "daseba" }
+            },
+            {
+                STT: 55, Kanji: "入る", Hiragana: "はいる", Romanji: "hairu", Type: "Godan", Meaning: "vào",
+                Dictionary: { Hiragana: "はいる", Romanji: "hairu" },
+                Masu: { Hiragana: "はいります", Romanji: "hairimasu" },
+                Te: { Hiragana: "はいって", Romanji: "haitte" },
+                Ta: { Hiragana: "はいった", Romanji: "haitte" },
+                Nai: { Hiragana: "はいらない", Romanji: "hairanai" },
+                Potential: { Hiragana: "はいれる", Romanji: "haireru" },
+                Volitional: { Hiragana: "はいろう", Romanji: "hairou" },
+                Ba: { Hiragana: "はいれば", Romanji: "haireba" }
+            },
+            {
+                STT: 56, Kanji: "走る", Hiragana: "はしる", Romanji: "hashiru", Type: "Godan", Meaning: "chạy",
+                Dictionary: { Hiragana: "はしる", Romanji: "hashiru" },
+                Masu: { Hiragana: "はしります", Romanji: "hashirimasu" },
+                Te: { Hiragana: "はしって", Romanji: "hashitte" },
+                Ta: { Hiragana: "はしった", Romanji: "hashitta" },
+                Nai: { Hiragana: "はしらない", Romanji: "hashiranai" },
+                Potential: { Hiragana: "はしれる", Romanji: "hashireru" },
+                Volitional: { Hiragana: "はしろう", Romanji: "hashirou" },
+                Ba: { Hiragana: "はしれば", Romanji: "hashireba" }
+            },
+            {
+                STT: 57, Kanji: "死ぬ", Hiragana: "しぬ", Romanji: "shinu", Type: "Godan", Meaning: "chết",
+                Dictionary: { Hiragana: "しぬ", Romanji: "shinu" },
+                Masu: { Hiragana: "しにます", Romanji: "shinimasu" },
+                Te: { Hiragana: "しんで", Romanji: "shinde" },
+                Ta: { Hiragana: "しんだ", Romanji: "shinda" },
+                Nai: { Hiragana: "しなない", Romanji: "shinanai" },
+                Potential: { Hiragana: "しねる", Romanji: "shineru" },
+                Volitional: { Hiragana: "しのう", Romanji: "shinou" },
+                Ba: { Hiragana: "しねば", Romanji: "shineba" }
+            },
+            {
+                STT: 58, Kanji: "呼ぶ", Hiragana: "よぶ", Romanji: "yobu", Type: "Godan", Meaning: "gọi",
+                Dictionary: { Hiragana: "よぶ", Romanji: "yobu" },
+                Masu: { Hiragana: "よびます", Romanji: "yobimasu" },
+                Te: { Hiragana: "よんで", Romanji: "yonde" },
+                Ta: { Hiragana: "よんだ", Romanji: "yonda" },
+                Nai: { Hiragana: "よばない", Romanji: "yobanai" },
+                Potential: { Hiragana: "よべる", Romanji: "yoberu" },
+                Volitional: { Hiragana: "よぼう", Romanji: "yobou" },
+                Ba: { Hiragana: "よべば", Romanji: "yobeba" }
+            },
+            {
+                STT: 59, Kanji: "学ぶ", Hiragana: "まなぶ", Romanji: "manabu", Type: "Godan", Meaning: "học",
+                Dictionary: { Hiragana: "まなぶ", Romanji: "manabu" },
+                Masu: { Hiragana: "まなびます", Romanji: "manabimasu" },
+                Te: { Hiragana: "まなんで", Romanji: "manande" },
+                Ta: { Hiragana: "まなんだ", Romanji: "mananda" },
+                Nai: { Hiragana: "まなばない", Romanji: "manabanai" },
+                Potential: { Hiragana: "まなべる", Romanji: "manaberu" },
+                Volitional: { Hiragana: "まなぼう", Romanji: "manabou" },
+                Ba: { Hiragana: "まなべば", Romanji: "manabeba" }
+            },
+            {
+                STT: 60, Kanji: "休む", Hiragana: "やすむ", Romanji: "yasumu", Type: "Godan", Meaning: "nghỉ",
+                Dictionary: { Hiragana: "やすむ", Romanji: "yasumu" },
+                Masu: { Hiragana: "やすみます", Romanji: "yasumimasu" },
+                Te: { Hiragana: "やすんで", Romanji: "yasunde" },
+                Ta: { Hiragana: "やすんだ", Romanji: "yasunda" },
+                Nai: { Hiragana: "やすまない", Romanji: "yasumanai" },
+                Potential: { Hiragana: "やすめる", Romanji: "yasumeru" },
+                Volitional: { Hiragana: "やすもう", Romanji: "yasumou" },
+                Ba: { Hiragana: "やすめば", Romanji: "yasumeba" }
+            },
+            {
+                STT: 61, Kanji: "洗う", Hiragana: "あらう", Romanji: "arau", Type: "Godan", Meaning: "rửa",
+                Dictionary: { Hiragana: "あらう", Romanji: "arau" },
+                Masu: { Hiragana: "あらいます", Romanji: "araimasu" },
+                Te: { Hiragana: "あらって", Romanji: "aratte" },
+                Ta: { Hiragana: "あらった", Romanji: "aratta" },
+                Nai: { Hiragana: "あらわない", Romanji: "arawanai" },
+                Potential: { Hiragana: "あらえる", Romanji: "araeru" },
+                Volitional: { Hiragana: "あらおう", Romanji: "araou" },
+                Ba: { Hiragana: "あらえば", Romanji: "araeba" }
+            },
+            {
+                STT: 62, Kanji: "動く", Hiragana: "うごく", Romanji: "ugoku", Type: "Godan", Meaning: "di chuyển",
+                Dictionary: { Hiragana: "うごく", Romanji: "ugoku" },
+                Masu: { Hiragana: "うごきます", Romanji: "ugokimasu" },
+                Te: { Hiragana: "うごいて", Romanji: "ugoite" },
+                Ta: { Hiragana: "うごいた", Romanji: "ugoita" },
+                Nai: { Hiragana: "うごかない", Romanji: "ugokanai" },
+                Potential: { Hiragana: "うごける", Romanji: "ugokeru" },
+                Volitional: { Hiragana: "うごこう", Romanji: "ugokou" },
+                Ba: { Hiragana: "うごけば", Romanji: "ugokeba" }
+            },
+            {
+                STT: 63, Kanji: "押す", Hiragana: "おす", Romanji: "osu", Type: "Godan", Meaning: "ấn, đẩy",
+                Dictionary: { Hiragana: "おす", Romanji: "osu" },
+                Masu: { Hiragana: "おします", Romanji: "oshimasu" },
+                Te: { Hiragana: "おして", Romanji: "oshite" },
+                Ta: { Hiragana: "おした", Romanji: "oshita" },
+                Nai: { Hiragana: "おさない", Romanji: "osanai" },
+                Potential: { Hiragana: "おせる", Romanji: "oseru" },
+                Volitional: { Hiragana: "おそう", Romanji: "osou" },
+                Ba: { Hiragana: "おせば", Romanji: "oseba" }
+            },
+            {
+                STT: 64, Kanji: "終わる", Hiragana: "おわる", Romanji: "owaru", Type: "Godan", Meaning: "kết thúc",
+                Dictionary: { Hiragana: "おわる", Romanji: "owaru" },
+                Masu: { Hiragana: "おわります", Romanji: "owarimasu" },
+                Te: { Hiragana: "おわって", Romanji: "owatte" },
+                Ta: { Hiragana: "おわった", Romanji: "owatta" },
+                Nai: { Hiragana: "おわらない", Romanji: "owaranai" },
+                Potential: { Hiragana: "おわれる", Romanji: "owareru" },
+                Volitional: { Hiragana: "おわろう", Romanji: "owarou" },
+                Ba: { Hiragana: "おわれば", Romanji: "owareba" }
+            },
+            {
+                STT: 65, Kanji: "帰る", Hiragana: "かえる", Romanji: "kaeru", Type: "Godan", Meaning: "về",
+                Dictionary: { Hiragana: "かえる", Romanji: "kaeru" },
+                Masu: { Hiragana: "かえります", Romanji: "kaerimasu" },
+                Te: { Hiragana: "かえって", Romanji: "kaette" },
+                Ta: { Hiragana: "かえった", Romanji: "kaetta" },
+                Nai: { Hiragana: "かえらない", Romanji: "kaeranai" },
+                Potential: { Hiragana: "かえれる", Romanji: "kaereru" },
+                Volitional: { Hiragana: "かえろう", Romanji: "kaerou" },
+                Ba: { Hiragana: "かえれば", Romanji: "kaereba" }
+            },
+            {
+                STT: 66, Kanji: "消す", Hiragana: "けす", Romanji: "kesu", Type: "Godan", Meaning: "tắt, xóa",
+                Dictionary: { Hiragana: "けす", Romanji: "kesu" },
+                Masu: { Hiragana: "けします", Romanji: "keshimasu" },
+                Te: { Hiragana: "けして", Romanji: "keshite" },
+                Ta: { Hiragana: "けした", Romanji: "keshita" },
+                Nai: { Hiragana: "けさない", Romanji: "kesanai" },
+                Potential: { Hiragana: "けせる", Romanji: "keseru" },
+                Volitional: { Hiragana: "けそう", Romanji: "kesou" },
+                Ba: { Hiragana: "けせば", Romanji: "keseba" }
+            },
+            {
+                STT: 67, Kanji: "立つ", Hiragana: "たつ", Romanji: "tatsu", Type: "Godan", Meaning: "đứng",
+                Dictionary: { Hiragana: "たつ", Romanji: "tatsu" },
+                Masu: { Hiragana: "たちます", Romanji: "tachimasu" },
+                Te: { Hiragana: "たって", Romanji: "tatte" },
+                Ta: { Hiragana: "たった", Romanji: "tatta" },
+                Nai: { Hiragana: "たたない", Romanji: "tatanai" },
+                Potential: { Hiragana: "たてる", Romanji: "tateru" },
+                Volitional: { Hiragana: "たとう", Romanji: "tatou" },
+                Ba: { Hiragana: "たてば", Romanji: "tateba" }
+            },
+            {
+                STT: 68, Kanji: "使う", Hiragana: "つかう", Romanji: "tsukau", Type: "Godan", Meaning: "sử dụng",
+                Dictionary: { Hiragana: "つかう", Romanji: "tsukau" },
+                Masu: { Hiragana: "つかいます", Romanji: "tsukaimasu" },
+                Te: { Hiragana: "つかって", Romanji: "tsukatte" },
+                Ta: { Hiragana: "つかった", Romanji: "tsukatta" },
+                Nai: { Hiragana: "つかわない", Romanji: "tsukawanai" },
+                Potential: { Hiragana: "つかえる", Romanji: "tsukaeru" },
+                Volitional: { Hiragana: "つかおう", Romanji: "tsukaou" },
+                Ba: { Hiragana: "つかえば", Romanji: "tsukaeba" }
+            },
+            {
+                STT: 69, Kanji: "手伝う", Hiragana: "てつだう", Romanji: "tetsudau", Type: "Godan", Meaning: "giúp đỡ",
+                Dictionary: { Hiragana: "てつだう", Romanji: "tetsudau" },
+                Masu: { Hiragana: "てつだいます", Romanji: "tetsudaimasu" },
+                Te: { Hiragana: "てつだって", Romanji: "tetsudatte" },
+                Ta: { Hiragana: "てつだった", Romanji: "tetsudatta" },
+                Nai: { Hiragana: "てつだわない", Romanji: "tetsudawanai" },
+                Potential: { Hiragana: "てつだえる", Romanji: "tetsudaeru" },
+                Volitional: { Hiragana: "てつだおう", Romanji: "tetsudaou" },
+                Ba: { Hiragana: "てつだえば", Romanji: "tetsudaeba" }
+            },
+            {
+                STT: 70, Kanji: "並ぶ", Hiragana: "ならぶ", Romanji: "narabu", Type: "Godan", Meaning: "xếp hàng",
+                Dictionary: { Hiragana: "ならぶ", Romanji: "narabu" },
+                Masu: { Hiragana: "ならびます", Romanji: "narabimasu" },
+                Te: { Hiragana: "ならんで", Romanji: "narande" },
+                Ta: { Hiragana: "ならんだ", Romanji: "naranda" },
+                Nai: { Hiragana: "ならばない", Romanji: "narabanai" },
+                Potential: { Hiragana: "ならべる", Romanji: "naraberu" },
+                Volitional: { Hiragana: "ならぼう", Romanji: "narabou" },
+                Ba: { Hiragana: "ならべば", Romanji: "narabeba" }
+            },
+            {
+                STT: 71, Kanji: "払う", Hiragana: "はらう", Romanji: "harau", Type: "Godan", Meaning: "trả tiền",
+                Dictionary: { Hiragana: "はらう", Romanji: "harau" },
+                Masu: { Hiragana: "はらいます", Romanji: "haraimasu" },
+                Te: { Hiragana: "はらって", Romanji: "haratte" },
+                Ta: { Hiragana: "はらった", Romanji: "haratta" },
+                Nai: { Hiragana: "はらわない", Romanji: "harawanai" },
+                Potential: { Hiragana: "はらえる", Romanji: "haraeru" },
+                Volitional: { Hiragana: "はらおう", Romanji: "haraou" },
+                Ba: { Hiragana: "はらえば", Romanji: "haraeba" }
+            },
+            {
+                STT: 72, Kanji: "引く", Hiragana: "ひく", Romanji: "hiku", Type: "Godan", Meaning: "kéo, rút",
+                Dictionary: { Hiragana: "ひく", Romanji: "hiku" },
+                Masu: { Hiragana: "ひきます", Romanji: "hikimasu" },
+                Te: { Hiragana: "ひいて", Romanji: "hiite" },
+                Ta: { Hiragana: "ひいた", Romanji: "hiita" },
+                Nai: { Hiragana: "ひかない", Romanji: "hikanai" },
+                Potential: { Hiragana: "ひける", Romanji: "hikeru" },
+                Volitional: { Hiragana: "ひこう", Romanji: "hikou" },
+                Ba: { Hiragana: "ひけば", Romanji: "hikeba" }
+            },
+            {
+                STT: 73, Kanji: "弾く", Hiragana: "ひく", Romanji: "hiku", Type: "Godan", Meaning: "chơi (nhạc cụ dây)",
+                Dictionary: { Hiragana: "ひく", Romanji: "hiku" },
+                Masu: { Hiragana: "ひきます", Romanji: "hikimasu" },
+                Te: { Hiragana: "ひいて", Romanji: "hiite" },
+                Ta: { Hiragana: "ひいた", Romanji: "hiita" },
+                Nai: { Hiragana: "ひかない", Romanji: "hikanai" },
+                Potential: { Hiragana: "ひける", Romanji: "hikeru" },
+                Volitional: { Hiragana: "ひこう", Romanji: "hikou" },
+                Ba: { Hiragana: "ひけば", Romanji: "hikeba" }
+            },
+            {
+                STT: 74, Kanji: "降る", Hiragana: "ふる", Romanji: "furu", Type: "Godan", Meaning: "rơi (mưa, tuyết)",
+                Dictionary: { Hiragana: "ふる", Romanji: "furu" },
+                Masu: { Hiragana: "ふります", Romanji: "furimasu" },
+                Te: { Hiragana: "ふって", Romanji: "futte" },
+                Ta: { Hiragana: "ふった", Romanji: "futta" },
+                Nai: { Hiragana: "ふらない", Romanji: "furanai" },
+                Potential: { Hiragana: "ふれる", Romanji: "fureru" },
+                Volitional: { Hiragana: "ふろう", Romanji: "furou" },
+                Ba: { Hiragana: "ふれば", Romanji: "fureba" }
+            },
+            {
+                STT: 75, Kanji: "持つ", Hiragana: "もつ", Romanji: "motsu", Type: "Godan", Meaning: "cầm, mang",
+                Dictionary: { Hiragana: "もつ", Romanji: "motsu" },
+                Masu: { Hiragana: "もちます", Romanji: "mochimasu" },
+                Te: { Hiragana: "もって", Romanji: "motte" },
+                Ta: { Hiragana: "もった", Romanji: "motta" },
+                Nai: { Hiragana: "もたない", Romanji: "motanai" },
+                Potential: { Hiragana: "もてる", Romanji: "moteru" },
+                Volitional: { Hiragana: "もとう", Romanji: "motou" },
+                Ba: { Hiragana: "もてば", Romanji: "moteba" }
+            },
+            {
+                STT: 76, Kanji: "渡る", Hiragana: "わたる", Romanji: "wataru", Type: "Godan", Meaning: "băng qua",
+                Dictionary: { Hiragana: "わたる", Romanji: "wataru" },
+                Masu: { Hiragana: "わたります", Romanji: "watarimasu" },
+                Te: { Hiragana: "わたって", Romanji: "watatte" },
+                Ta: { Hiragana: "わたった", Romanji: "watatta" },
+                Nai: { Hiragana: "わたらない", Romanji: "watarana" },
+                Potential: { Hiragana: "わたれる", Romanji: "watareru" },
+                Volitional: { Hiragana: "わたろう", Romanji: "watarou" },
+                Ba: { Hiragana: "わたれば", Romanji: "watareba" }
+            },
+            {
+                STT: 77, Kanji: "忘れる", Hiragana: "わすれる", Romanji: "wasureru", Type: "Ichidan", Meaning: "quên",
+                Dictionary: { Hiragana: "わすれる", Romanji: "wasureru" },
+                Masu: { Hiragana: "わすれます", Romanji: "wasuremasu" },
+                Te: { Hiragana: "わすれて", Romanji: "wasurete" },
+                Ta: { Hiragana: "わすれた", Romanji: "wasureta" },
+                Nai: { Hiragana: "わすれない", Romanji: "wasurenai" },
+                Potential: { Hiragana: "わすれられる", Romanji: "wasurerareru" },
+                Volitional: { Hiragana: "わすれよう", Romanji: "wasureyou" },
+                Ba: { Hiragana: "わすれれば", Romanji: "wasurereba" }
+            },
+            {
+                STT: 78, Kanji: "疲れる", Hiragana: "つかれる", Romanji: "tsukareru", Type: "Ichidan", Meaning: "mệt",
+                Dictionary: { Hiragana: "つかれる", Romanji: "tsukareru" },
+                Masu: { Hiragana: "つかれます", Romanji: "tsukaremasu" },
+                Te: { Hiragana: "つかれて", Romanji: "tsukarete" },
+                Ta: { Hiragana: "つかれた", Romanji: "tsukareta" },
+                Nai: { Hiragana: "つかれない", Romanji: "tsukarenai" },
+                Potential: { Hiragana: "つかれられる", Romanji: "tsukerareru" },
+                Volitional: { Hiragana: "つかれよう", Romanji: "tsukareyou" },
+                Ba: { Hiragana: "つかれれば", Romanji: "tsukarereba" }
+            },
+            {
+                STT: 79, Kanji: "決める", Hiragana: "きめる", Romanji: "kimeru", Type: "Ichidan", Meaning: "quyết định",
+                Dictionary: { Hiragana: "きめる", Romanji: "kimeru" },
+                Masu: { Hiragana: "きめます", Romanji: "kimemasu" },
+                Te: { Hiragana: "きめて", Romanji: "kimete" },
+                Ta: { Hiragana: "きめた", Romanji: "kimeta" },
+                Nai: { Hiragana: "きめない", Romanji: "kimenai" },
+                Potential: { Hiragana: "きめられる", Romanji: "kimerareru" },
+                Volitional: { Hiragana: "きめよう", Romanji: "kimeyou" },
+                Ba: { Hiragana: "きめれば", Romanji: "kimereba" }
+            },
+            {
+                STT: 80, Kanji: "答える", Hiragana: "こたえる", Romanji: "kotaeru", Type: "Ichidan", Meaning: "trả lời",
+                Dictionary: { Hiragana: "こたえる", Romanji: "kotaeru" },
+                Masu: { Hiragana: "こたえます", Romanji: "kotaemasu" },
+                Te: { Hiragana: "こたえて", Romanji: "kotaete" },
+                Ta: { Hiragana: "こたえた", Romanji: "kotaeta" },
+                Nai: { Hiragana: "こたえない", Romanji: "kotaenai" },
+                Potential: { Hiragana: "こたえられる", Romanji: "kotaerareru" },
+                Volitional: { Hiragana: "こたえよう", Romanji: "kotaeyou" },
+                Ba: { Hiragana: "こたえれば", Romanji: "kotaereba" }
+            },
+            {
+                STT: 81, Kanji: "始める", Hiragana: "はじめる", Romanji: "hajimeru", Type: "Ichidan", Meaning: "bắt đầu",
+                Dictionary: { Hiragana: "はじめる", Romanji: "hajimeru" },
+                Masu: { Hiragana: "はじめます", Romanji: "hajimemasu" },
+                Te: { Hiragana: "はじめて", Romanji: "hajimete" },
+                Ta: { Hiragana: "はじめた", Romanji: "hajimeta" },
+                Nai: { Hiragana: "はじめない", Romanji: "hajimenai" },
+                Potential: { Hiragana: "はじめられる", Romanji: "hajimerareru" },
+                Volitional: { Hiragana: "はじめよう", Romanji: "hajimeyou" },
+                Ba: { Hiragana: "はじめれば", Romanji: "hajimereba" }
+            },
+            {
+                STT: 82, Kanji: "閉める", Hiragana: "しめる", Romanji: "shimeru", Type: "Ichidan", Meaning: "đóng",
+                Dictionary: { Hiragana: "しめる", Romanji: "shimeru" },
+                Masu: { Hiragana: "しめます", Romanji: "shimemasu" },
+                Te: { Hiragana: "しめて", Romanji: "shimete" },
+                Ta: { Hiragana: "しめた", Romanji: "shimeta" },
+                Nai: { Hiragana: "しめない", Romanji: "shimenai" },
+                Potential: { Hiragana: "しめられる", Romanji: "shimerareru" },
+                Volitional: { Hiragana: "しめよう", Romanji: "shimeyou" },
+                Ba: { Hiragana: "しめれば", Romanji: "shimereba" }
+            },
+            {
+                STT: 83, Kanji: "開ける", Hiragana: "あける", Romanji: "akeru", Type: "Ichidan", Meaning: "mở",
+                Dictionary: { Hiragana: "あける", Romanji: "akeru" },
+                Masu: { Hiragana: "あけます", Romanji: "akemasu" },
+                Te: { Hiragana: "あけて", Romanji: "akete" },
+                Ta: { Hiragana: "あけた", Romanji: "aketa" },
+                Nai: { Hiragana: "あけない", Romanji: "akenai" },
+                Potential: { Hiragana: "あけられる", Romanji: "akerareru" },
+                Volitional: { Hiragana: "あけよう", Romanji: "akeyou" },
+                Ba: { Hiragana: "あければ", Romanji: "akereba" }
+            },
+            {
+                STT: 84, Kanji: "借りる", Hiragana: "かりる", Romanji: "kariru", Type: "Ichidan", Meaning: "mượn",
+                Dictionary: { Hiragana: "かりる", Romanji: "kariru" },
+                Masu: { Hiragana: "かります", Romanji: "karimasu" },
+                Te: { Hiragana: "かりて", Romanji: "karite" },
+                Ta: { Hiragana: "かりた", Romanji: "karita" },
+                Nai: { Hiragana: "かりない", Romanji: "karinai" },
+                Potential: { Hiragana: "かりられる", Romanji: "karirareru" },
+                Volitional: { Hiragana: "かりよう", Romanji: "kariyou" },
+                Ba: { Hiragana: "かりれば", Romanji: "karireba" }
+            },
+            {
+                STT: 85, Kanji: "教える", Hiragana: "おしえる", Romanji: "oshieru", Type: "Ichidan", Meaning: "dạy",
+                Dictionary: { Hiragana: "おしえる", Romanji: "oshieru" },
+                Masu: { Hiragana: "おしえます", Romanji: "oshiemasu" },
+                Te: { Hiragana: "おしえて", Romanji: "oshiete" },
+                Ta: { Hiragana: "おしえた", Romanji: "oshieta" },
+                Nai: { Hiragana: "おしえない", Romanji: "oshienai" },
+                Potential: { Hiragana: "おしえられる", Romanji: "oshierareru" },
+                Volitional: { Hiragana: "おしえよう", Romanji: "oshieyou" },
+                Ba: { Hiragana: "おしえれば", Romanji: "oshiereba" }
+            },
+            {
+                STT: 86, Kanji: "忘れる", Hiragana: "わすれる", Romanji: "wasureru", Type: "Ichidan", Meaning: "quên",
+                Dictionary: { Hiragana: "わすれる", Romanji: "wasureru" },
+                Masu: { Hiragana: "わすれます", Romanji: "wasuremasu" },
+                Te: { Hiragana: "わすれて", Romanji: "wasurete" },
+                Ta: { Hiragana: "わすれた", Romanji: "wasureta" },
+                Nai: { Hiragana: "わすれない", Romanji: "wasurenai" },
+                Potential: { Hiragana: "わすれられる", Romanji: "wasurerareru" },
+                Volitional: { Hiragana: "わすれよう", Romanji: "wasureyou" },
+                Ba: { Hiragana: "わすれれば", Romanji: "wasurereba" }
+            },
+            {
+                STT: 87, Kanji: "疲れる", Hiragana: "つかれる", Romanji: "tsukareru", Type: "Ichidan", Meaning: "mệt",
+                Dictionary: { Hiragana: "つかれる", Romanji: "tsukareru" },
+                Masu: { Hiragana: "つかれます", Romanji: "tsukaremasu" },
+                Te: { Hiragana: "つかれて", Romanji: "tsukarete" },
+                Ta: { Hiragana: "つかれた", Romanji: "tsukareta" },
+                Nai: { Hiragana: "つかれない", Romanji: "tsukarenai" },
+                Potential: { Hiragana: "つかれられる", Romanji: "tsukerareru" },
+                Volitional: { Hiragana: "つかれよう", Romanji: "tsukareyou" },
+                Ba: { Hiragana: "つかれれば", Romanji: "tsukarereba" }
+            },
+            {
+                STT: 88, Kanji: "決める", Hiragana: "きめる", Romanji: "kimeru", Type: "Ichidan", Meaning: "quyết định",
+                Dictionary: { Hiragana: "きめる", Romanji: "kimeru" },
+                Masu: { Hiragana: "きめます", Romanji: "kimemasu" },
+                Te: { Hiragana: "きめて", Romanji: "kimete" },
+                Ta: { Hiragana: "きめた", Romanji: "kimeta" },
+                Nai: { Hiragana: "きめない", Romanji: "kimenai" },
+                Potential: { Hiragana: "きめられる", Romanji: "kimerareru" },
+                Volitional: { Hiragana: "きめよう", Romanji: "kimeyou" },
+                Ba: { Hiragana: "きめれば", Romanji: "kimereba" }
+            }
+        ];
+
+        // Lấy các phần tử DOM cần thiết
+        const verbConjugationTableBody = document.querySelector('#verbConjugationTable tbody');
+        const toggleRomanjiButton = document.getElementById('toggleRomanji');
+        const toggleFuriganaButton = document.getElementById('toggleFurigana');
+        const userInput = document.getElementById('userInput');
+        const checkButton = document.getElementById('checkButton');
+        const feedbackDiv = document.getElementById('feedback');
+        const typingPracticeSection = document.getElementById('typingPracticeSection');
+
+        // Biến trạng thái để kiểm soát hiển thị cột Romanji và Hiragana/Katakana
+        let showRomanji = true;
+        let showFurigana = true;
+
+        /**
+         * Hàm phát âm văn bản tiếng Nhật。
+         * Sử dụng SpeechSynthesis API của trình duyệt。
+         * @param {string} text - Văn bản cần phát âm。
+         */
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ja-JP'; // Đặt ngôn ngữ là tiếng Nhật
+                speechSynthesis.speak(utterance);
+            } else {
+                // Hiển thị thông báo nếu trình duyệt không hỗ trợ API
+                feedbackDiv.textContent = 'Trình duyệt của bạn không hỗ trợ Speech Synthesis API.';
+                feedbackDiv.style.color = 'red';
+            }
+        }
+
+        /**
+         * Hàm hiển thị các hàng động từ vào bảng。
+         */
+        function renderTable() {
+            verbConjugationTableBody.innerHTML = ''; // Xóa các hàng hiện có
+            verbs.forEach(verb => {
+                const row = document.createElement('tr');
+                // Tạo nội dung HTML cho mỗi hàng
+                row.innerHTML = `
+                    <td class="py-3 px-4 text-sm text-gray-700">${verb.STT}</td>
+                    <td class="py-3 px-4 text-sm text-gray-700">${verb.Kanji}</td>
+                    <td class="py-3 px-4 text-sm text-gray-700 furigana-col">${verb.Hiragana}</td>
+                    <td class="py-3 px-4 text-sm text-gray-700 romanji-col">${verb.Romanji}</td>
+                    <td class="py-3 px-4 text-sm text-gray-700">${verb.Type}</td>
+                    <td class="py-3 px-4 text-sm text-gray-700">${verb.Meaning}</td>
+                    <td class="py-3 px-4 text-sm text-gray-700">
+                        <span class="furigana-col">${verb.Dictionary.Hiragana}</span>
+                        <span class="romanji-col">(${verb.Dictionary.Romanji})</span>
+                        <button class="play-button" onclick="speakText('${verb.Dictionary.Hiragana}')">Đọc</button>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-700">
+                        <span class="furigana-col">${verb.Masu.Hiragana}</span>
+                        <span class="romanji-col">(${verb.Masu.Romanji})</span>
+                        <button class="play-button" onclick="speakText('${verb.Masu.Hiragana}')">Đọc</button>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-700">
+                        <span class="furigana-col">${verb.Te.Hiragana}</span>
+                        <span class="romanji-col">(${verb.Te.Romanji})</span>
+                        <button class="play-button" onclick="speakText('${verb.Te.Hiragana}')">Đọc</button>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-700">
+                        <span class="furigana-col">${verb.Ta.Hiragana}</span>
+                        <span class="romanji-col">(${verb.Ta.Romanji})</span>
+                        <button class="play-button" onclick="speakText('${verb.Ta.Hiragana}')">Đọc</button>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-700">
+                        <span class="furigana-col">${verb.Nai.Hiragana}</span>
+                        <span class="romanji-col">(${verb.Nai.Romanji})</span>
+                        <button class="play-button" onclick="speakText('${verb.Nai.Hiragana}')">Đọc</button>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-700">
+                        <span class="furigana-col">${verb.Potential.Hiragana}</span>
+                        <span class="romanji-col">(${verb.Potential.Romanji})</span>
+                        <button class="play-button" onclick="speakText('${verb.Potential.Hiragana}')">Đọc</button>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-700">
+                        <span class="furigana-col">${verb.Volitional.Hiragana}</span>
+                        <span class="romanji-col">(${verb.Volitional.Romanji})</span>
+                        <button class="play-button" onclick="speakText('${verb.Volitional.Hiragana}')">Đọc</button>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-700">
+                        <span class="furigana-col">${verb.Ba.Hiragana}</span>
+                        <span class="romanji-col">(${verb.Ba.Romanji})</span>
+                        <button class="play-button" onclick="speakText('${verb.Ba.Hiragana}')">Đọc</button>
+                    </td>
+                `;
+                verbConjugationTableBody.appendChild(row); // Thêm hàng vào bảng
+            });
+            updateColumnVisibility(); // Cập nhật hiển thị cột sau khi render
+        }
+
+        /**
+         * Hàm cập nhật hiển thị của các cột Romanji và Hiragana/Katakana。
+         */
+        function updateColumnVisibility() {
+            // Lấy tất cả các ô có class 'romanji-col'
+            const romanjiCols = document.querySelectorAll('.romanji-col');
+            // Lấy tất cả các ô có class 'furigana-col'
+            const furiganaCols = document.querySelectorAll('.furigana-col');
+
+            // Lấy các tiêu đề bảng cho Romanji và Hiragana/Katakana
+            const headers = document.querySelectorAll('#verbConjugationTable th');
+            const hiraganaHeader = headers[2]; // Tiêu đề Hiragana ở chỉ số 2
+            const romanjiHeader = headers[3];  // Tiêu đề Romanji ở chỉ số 3
+
+            // Cập nhật hiển thị cho các cột Romanji
+            romanjiCols.forEach(col => {
+                col.style.display = showRomanji ? '' : 'none';
+            });
+            // Cập nhật hiển thị cho các cột Hiragana/Katakana
+            furiganaCols.forEach(col => {
+                col.style.display = showFurigana ? '' : 'none';
+            });
+
+            // Cập nhật hiển thị tiêu đề bảng dựa trên trạng thái bật/tắt
+            if (hiraganaHeader) hiraganaHeader.style.display = showFurigana ? '' : 'none';
+            if (romanjiHeader) romanjiHeader.style.display = showRomanji ? '' : 'none';
+        }
+
+        /**
+         * Hàm chuẩn hóa văn bản để so sánh (chuyển về chữ thường, loại bỏ dấu câu và khoảng trắng)。
+         * @param {string} text - Văn bản cần chuẩn hóa。
+         * @returns {string} Văn bản đã chuẩn hóa。
+         */
+        function normalizeText(text) {
+            // Loại bỏ các dấu câu và khoảng trắng, sau đó chuyển về chữ thường
+            return text.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~() ]/g,"").replace(/\s/g, '');
+        }
+
+        /**
+         * Hàm tính toán và đặt padding-bottom cho body。
+         * Điều này đảm bảo nội dung không bị che bởi phần luyện gõ cố định。
+         */
+        function setBodyPadding() {
+            const footerHeight = typingPracticeSection.offsetHeight;
+            document.body.style.paddingBottom = `${footerHeight + 20}px`; // Thêm 20px để có khoảng trống nhỏ
+        }
+
+        // Lắng nghe sự kiện click cho nút kiểm tra
+        checkButton.addEventListener('click', () => {
+            const userInputText = normalizeText(userInput.value); // Lấy và chuẩn hóa đầu vào của người dùng
+            let isCorrect = false;
+
+            // Duyệt qua dữ liệu động từ để kiểm tra xem có khớp với bất kỳ dạng biến đổi nào không
+            for (const verb of verbs) {
+                // Kiểm tra dạng gốc
+                if (normalizeText(verb.Hiragana) === userInputText || normalizeText(verb.Romanji) === userInputText) {
+                    isCorrect = true;
+                    break;
+                }
+                // Kiểm tra các dạng biến đổi
+                const forms = [verb.Masu, verb.Te, verb.Ta, verb.Nai, verb.Potential, verb.Volitional, verb.Ba, verb.Dictionary];
+                for (const form of forms) {
+                    if (normalizeText(form.Hiragana) === userInputText || normalizeText(form.Romanji) === userInputText) {
+                        isCorrect = true;
+                        break;
+                    }
+                }
+                if (isCorrect) break;
+            }
+
+            // Hiển thị phản hồi cho người dùng
+            if (isCorrect) {
+                feedbackDiv.textContent = 'Đúng rồi!';
+                feedbackDiv.style.color = 'green';
+                userInput.value = ''; // Xóa đầu vào sau khi đúng
+            } else {
+                feedbackDiv.textContent = 'Sai rồi. Hãy thử lại!';
+                feedbackDiv.style.color = 'red';
+            }
+        });
+
+        // Lắng nghe sự kiện click cho nút bật/tắt Romanji
+        toggleRomanjiButton.addEventListener('click', () => {
+            showRomanji = !showRomanji; // Đảo ngược trạng thái hiển thị
+            updateColumnVisibility(); // Cập nhật hiển thị cột
+            // Cập nhật văn bản nút
+            toggleRomanjiButton.textContent = showRomanji ? 'Tắt Romanji' : 'Bật Romanji';
+        });
+
+        // Lắng nghe sự kiện click cho nút bật/tắt Hiragana/Katakana
+        toggleFuriganaButton.addEventListener('click', () => {
+            showFurigana = !showFurigana; // Đảo ngược trạng thái hiển thị
+            updateColumnVisibility(); // Cập nhật hiển thị cột
+            // Cập nhật văn bản nút
+            toggleFuriganaButton.textContent = showFurigana ? 'Tắt Hiragana/Katakana' : 'Bật Hiragana/Katakana';
+        });
+
+        // Gọi hàm render bảng khi trang được tải
+        renderTable();
+
+        // Đặt văn bản ban đầu cho các nút bật/tắt
+        toggleRomanjiButton.textContent = showRomanji ? 'Tắt Romanji' : 'Bật Romanji';
+        toggleFuriganaButton.textContent = showFurigana ? 'Tắt Hiragana/Katakana' : 'Bật Hiragana/Katakana';
+
+        // Gọi hàm setBodyPadding khi DOM đã sẵn sàng và khi cửa sổ được thay đổi kích thước
+        document.addEventListener('DOMContentLoaded', setBodyPadding);
+        window.addEventListener('resize', setBodyPadding);
+    </script>
+</body>
+</html>
