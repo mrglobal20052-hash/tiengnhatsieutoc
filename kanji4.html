@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài học Kanji tương tác (Phần 4)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .kanji-card {
+            background-color: white;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease-in-out;
+            padding: 16px 24px;
+        }
+        .kanji-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .kanji-header-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-grow: 1;
+        }
+        .kanji-char-header {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1e293b;
+            min-width: 50px;
+            text-align: center;
+        }
+        .kanji-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out, margin-top 0.4s ease-in-out, padding-top 0.4s ease-in-out;
+        }
+        .kanji-card.active .kanji-details {
+            max-height: 1500px;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 20px;
+            padding-top: 20px;
+        }
+        .chevron {
+            transition: transform 0.3s ease;
+            font-size: 1.5rem;
+            color: #94a3b8;
+            padding-left: 1rem;
+        }
+        .kanji-card.active .chevron {
+            transform: rotate(180deg);
+        }
+        .speak-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            margin-left: 10px;
+            color: #475569;
+            transition: color 0.2s;
+        }
+        .speak-btn:hover {
+            color: #0ea5e9;
+        }
+        .example-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+         .example-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 md:p-8">
+    <div class="max-w-3xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-800">Bài học Kanji chi tiết (241-320)</h1>
+            <p class="text-slate-500 mt-2">Tổng hợp Kanji. Bấm vào mỗi chữ để xem chi tiết.</p>
+        </header>
+
+        <main id="kanji-app">
+            <!-- Kanji data will be injected here by JavaScript -->
+        </main>
+    </div>
+
+    <script>
+        const kanjiData = [
+            { char: "悪", nghiaHV: "Ác", nghiaTV: "Xấu", onyomi: "アク (aku), オ (o)", kunyomi: "わるい (warui)", soNet: 11, link: "https://jisho.org/search/%E6%82%AA%20%23kanji", meo: "Gồm chữ **Á (亜)** và **Tâm (心)**.", cauChuyen: "Trái tim (心) của người châu Á (亜) thì **xấu xa**.", viDu: [{ jp: "悪い", furigana: "わるい - warui", vn: "Xấu" }, { jp: "最悪", furigana: "さいあく - saiaku", vn: "Tệ nhất" }] },
+            { char: "安", nghiaHV: "An", nghiaTV: "Rẻ, An toàn", onyomi: "アン (an)", kunyomi: "やすい (yasui)", soNet: 6, link: "https://jisho.org/search/%E5%AE%89%20%23kanji", meo: "Bộ **Miên (宀)** và **Nữ (女)**.", cauChuyen: "Người phụ nữ (女) ở trong nhà (宀) thì **an toàn**.", viDu: [{ jp: "安い", furigana: "やすい - yasui", vn: "Rẻ" }, { jp: "安全", furigana: "あんぜん - anzen", vn: "An toàn" }] },
+            { char: "暗", nghiaHV: "Ám", nghiaTV: "Tối", onyomi: "アン (an)", kunyomi: "くらい (kurai)", soNet: 13, link: "https://jisho.org/search/%E6%9A%97%20%23kanji", meo: "Bộ **Nhật (日)** và **Âm (音)**.", cauChuyen: "Mặt trời (日) không còn âm thanh (音) là lúc trời **tối**.", viDu: [{ jp: "暗い", furigana: "くらい - kurai", vn: "Tối" }, { jp: "暗記", furigana: "あんき - anki", vn: "Học thuộc lòng" }] },
+            { char: "意", nghiaHV: "Ý", nghiaTV: "Ý nghĩa", onyomi: "イ (i)", kunyomi: "-", soNet: 13, link: "https://jisho.org/search/%E6%84%8F%20%23kanji", meo: "Gồm **Âm (音)** và **Tâm (心)**.", cauChuyen: "Âm thanh (音) của trái tim (心) là **ý nghĩ**.", viDu: [{ jp: "意味", furigana: "いみ - imi", vn: "Ý nghĩa" }, { jp: "意見", furigana: "いけん - iken", vn: "Ý kiến" }] },
+            { char: "億", nghiaHV: "Ức", nghiaTV: "Một trăm triệu", onyomi: "オク (oku)", kunyomi: "-", soNet: 15, link: "https://jisho.org/search/%E5%84%84%20%23kanji", meo: "Bộ **Nhân (亻)** và **Ý (意)**.", cauChuyen: "Một người (亻) có nhiều ý (意) tưởng có thể kiếm được **một trăm triệu**.", viDu: [{ jp: "一億", furigana: "いちおく - ichioku", vn: "100,000,000" }] },
+            { char: "案", nghiaHV: "Án", nghiaTV: "Đề án", onyomi: "アン (an)", kunyomi: "-", soNet: 10, link: "https://jisho.org/search/%E6%A1%88%20%23kanji", meo: "Bộ **An (安)** và **Mộc (木)**.", cauChuyen: "Đặt **đề án** an toàn (安) lên bàn gỗ (木).", viDu: [{ jp: "案内", furigana: "あんない - annai", vn: "Hướng dẫn" }, { jp: "提案", furigana: "ていあん - teian", vn: "Đề xuất" }] },
+            { char: "委", nghiaHV: "Ủy", nghiaTV: "Giao phó", onyomi: "イ (i)", kunyomi: "ゆだねる (yudaneru)", soNet: 8, link: "https://jisho.org/search/%E5%A7%94%20%23kanji", meo: "Bộ **Hòa (禾)** và **Nữ (女)**.", cauChuyen: "Người phụ nữ (女) được **giao phó** chăm sóc lúa (禾).", viDu: [{ jp: "委員会", furigana: "いいんかい - iinkai", vn: "Ủy ban" }] },
+            { char: "医", nghiaHV: "Y", nghiaTV: "Y học", onyomi: "イ (i)", kunyomi: "-", soNet: 7, link: "https://jisho.org/search/%E5%8C%BB%20%23kanji", meo: "Tượng hình.", cauChuyen: "Hộp đựng mũi tên (矢) của thầy thuốc.", viDu: [{ jp: "医者", furigana: "いしゃ - isha", vn: "Bác sĩ" }, { jp: "医学", furigana: "いがく - igaku", vn: "Y học" }] },
+            { char: "以", nghiaHV: "Dĩ", nghiaTV: "Lấy làm mốc", onyomi: "イ (i)", kunyomi: "-", soNet: 5, link: "https://jisho.org/search/%E4%BB%A5%20%23kanji", meo: "Tượng hình.", cauChuyen: "Lấy người này làm mốc.", viDu: [{ jp: "以上", furigana: "いじょう - ijou", vn: "Trở lên" }, { jp: "以内", furigana: "いない - inai", vn: "Trong vòng" }] },
+            { char: "位", nghiaHV: "Vị", nghiaTV: "Vị trí", onyomi: "イ (i)", kunyomi: "くらい (kurai)", soNet: 7, link: "https://jisho.org/search/%E4%BD%8D%20%23kanji", meo: "Bộ **Nhân (亻)** và **Lập (立)**.", cauChuyen: "Người (亻) đứng (立) ở một **vị trí**.", viDu: [{ jp: "位置", furigana: "いち - ichi", vn: "Vị trí" }] },
+            { char: "胃", nghiaHV: "Vị", nghiaTV: "Dạ dày", onyomi: "イ (i)", kunyomi: "-", soNet: 9, link: "https://jisho.org/search/%E8%83%83%20%23kanji", meo: "Bộ **Nhục (月)** và **Điền (田)**.", cauChuyen: "**Dạ dày** (月) như một thửa ruộng (田) chứa thức ăn.", viDu: [{ jp: "胃", furigana: "い - i", vn: "Dạ dày" }] },
+            { char: "囲", nghiaHV: "Vi", nghiaTV: "Bao vây", onyomi: "イ (i)", kunyomi: "かこむ (kakomu)", soNet: 7, link: "https://jisho.org/search/%E5%9B%B2%20%23kanji", meo: "Bộ **Vi (囗)** và **Tỉnh (井)**.", cauChuyen: "**Bao vây** (囗) cái giếng (井).", viDu: [{ jp: "囲む", furigana: "かこむ - kakomu", vn: "Bao quanh" }] },
+            { char: "衣", nghiaHV: "Y", nghiaTV: "Quần áo", onyomi: "イ (i)", kunyomi: "ころも (koromo)", soNet: 6, link: "https://jisho.org/search/%E8%A1%A3%20%23kanji", meo: "Tượng hình.", cauChuyen: "Hình ảnh một bộ **quần áo**.", viDu: [{ jp: "衣類", furigana: "いるい - irui", vn: "Quần áo" }] },
+            { char: "塩", nghiaHV: "Diêm", nghiaTV: "Muối", onyomi: "エン (en)", kunyomi: "しお (shio)", soNet: 13, link: "https://jisho.org/search/%E5%A1%A9%20%23kanji", meo: "Bộ **Thổ (土)** và **Diêm (塩)**.", cauChuyen: "**Muối** được lấy từ đất (土).", viDu: [{ jp: "塩", furigana: "しお - shio", vn: "Muối" }] },
+            { char: "院", nghiaHV: "Viện", nghiaTV: "Bệnh viện", onyomi: "イン (in)", kunyomi: "-", soNet: 10, link: "https://jisho.org/search/%E9%99%A2%20%23kanji", meo: "Bộ **Phụ (阝)** và **Hoàn (完)**.", cauChuyen: "Nơi hoàn (完) thiện sức khỏe là **bệnh viện**.", viDu: [{ jp: "病院", furigana: "びょういん - byouin", vn: "Bệnh viện" }, { jp: "大学院", furigana: "だいがくいん - daigakuin", vn: "Cao học" }] },
+            { char: "員", nghiaHV: "Viên", nghiaTV: "Nhân viên", onyomi: "イン (in)", kunyomi: "-", soNet: 10, link: "https://jisho.org/search/%E5%93%A1%20%23kanji", meo: "Bộ **Khẩu (口)** và **Bối (貝)**.", cauChuyen: "Người có miệng (口) và tiền (貝) là **nhân viên**.", viDu: [{ jp: "会社員", furigana: "かいしゃいん - kaishain", vn: "Nhân viên công ty" }] },
+            { char: "飲", nghiaHV: "Ẩm", nghiaTV: "Uống", onyomi: "イン (in)", kunyomi: "のむ (nomu)", soNet: 12, link: "https://jisho.org/search/%E9%A3%B2%20%23kanji", meo: "Bộ **Thực (食)** và **Khiếm (欠)**.", cauChuyen: "Thiếu (欠) đồ ăn (食) thì phải **uống** nước.", viDu: [{ jp: "飲む", furigana: "のむ - nomu", vn: "Uống" }, { jp: "飲み物", furigana: "のみもの - nomimono", vn: "Đồ uống" }] },
+            { char: "横", nghiaHV: "Hoành", nghiaTV: "Bên cạnh", onyomi: "オウ (ou)", kunyomi: "よこ (yoko)", soNet: 15, link: "https://jisho.org/search/%E6%A8%AA%20%23kanji", meo: "Bộ **Mộc (木)** và **Hoàng (黄)**.", cauChuyen: "Cây (木) màu vàng (黄) nằm **ngang**.", viDu: [{ jp: "横", furigana: "よこ - yoko", vn: "Bên cạnh" }] },
+            { char: "央", nghiaHV: "Ương", nghiaTV: "Trung ương", onyomi: "オウ (ou)", kunyomi: "-", soNet: 5, link: "https://jisho.org/search/%E5%A4%AE%20%23kanji", meo: "Bộ **Đại (大)**.", cauChuyen: "Người to lớn (大) ở **trung ương**.", viDu: [{ jp: "中央", furigana: "ちゅうおう - chuuou", vn: "Trung ương" }] },
+            { char: "愛", nghiaHV: "Ái", nghiaTV: "Yêu", onyomi: "アイ (ai)", kunyomi: "-", soNet: 13, link: "https://jisho.org/search/%E6%84%9B%20%23kanji", meo: "Bộ **Tâm (心)**.", cauChuyen: "**Yêu** bằng cả trái tim (心).", viDu: [{ jp: "愛する", furigana: "あいする - aisuru", vn: "Yêu" }] },
+            { char: "温", nghiaHV: "Ôn", nghiaTV: "Ấm", onyomi: "オン (on)", kunyomi: "あたたかい (atatakai)", soNet: 12, link: "https://jisho.org/search/%E6%B8%A9%20%23kanji", meo: "Bộ **Thủy (氵)** và **Mâm (皿)**.", cauChuyen: "Nước (氵) trong đĩa (皿) **ấm**.", viDu: [{ jp: "温かい", furigana: "あたたかい - atatakai", vn: "Ấm áp" }, { jp: "温度", furigana: "おんど - ondo", vn: "Nhiệt độ" }] },
+            { char: "運", nghiaHV: "Vận", nghiaTV: "Vận chuyển", onyomi: "ウン (un)", kunyomi: "はこぶ (hakobu)", soNet: 12, link: "https://jisho.org/search/%E9%81%8B%20%23kanji", meo: "Bộ **Sước (辶)** và **Quân (軍)**.", cauChuyen: "Quân đội (軍) đang **vận chuyển** (辶) hàng hóa.", viDu: [{ jp: "運ぶ", furigana: "はこぶ - hakobu", vn: "Vận chuyển" }, { jp: "運動", furigana: "うんどう - undou", vn: "Vận động" }] },
+            { char: "育", nghiaHV: "Dục", nghiaTV: "Nuôi dạy", onyomi: "イク (iku)", kunyomi: "そだつ (sodatsu)", soNet: 8, link: "https://jisho.org/search/%E8%82%B2%20%23kanji", meo: "Tượng hình.", cauChuyen: "**Nuôi dạy** đứa trẻ lớn lên.", viDu: [{ jp: "育つ", furigana: "そだつ - sodatsu", vn: "Lớn lên" }, { jp: "教育", furigana: "きょういく - kyouiku", vn: "Giáo dục" }] },
+            { char: "駅", nghiaHV: "Dịch", nghiaTV: "Ga", onyomi: "エキ (eki)", kunyomi: "-", soNet: 14, link: "https://jisho.org/search/%E9%A7%85%20%23kanji", meo: "Bộ **Mã (馬)** và **Thước (尺)**.", cauChuyen: "Ngựa (馬) dừng lại ở **ga**.", viDu: [{ jp: "駅", furigana: "えき - eki", vn: "Nhà ga" }] },
+            { char: "泳", nghiaHV: "Vịnh", nghiaTV: "Bơi", onyomi: "エイ (ei)", kunyomi: "およぐ (oyogu)", soNet: 8, link: "https://jisho.org/search/%E6%B3%B3%20%23kanji", meo: "Bộ **Thủy (氵)** và **Vĩnh (永)**.", cauChuyen: "**Bơi** (泳) trong dòng nước (氵) vĩnh cửu (永).", viDu: [{ jp: "泳ぐ", furigana: "およぐ - oyogu", vn: "Bơi" }, { jp: "水泳", furigana: "すいえい - suiei", vn: "Bơi lội" }] },
+            { char: "栄", nghiaHV: "Vinh", nghiaTV: "Vinh quang", onyomi: "エイ (ei)", kunyomi: "さかえる (sakaeru)", soNet: 9, link: "https://jisho.org/search/%E6%A0%84%20%23kanji", meo: "Bộ **Mộc (木)**.", cauChuyen: "Cây (木) cối tươi tốt, **vinh quang**.", viDu: [{ jp: "栄光", furigana: "えいこう - eikou", vn: "Vinh quang" }] },
+            { char: "英", nghiaHV: "Anh", nghiaTV: "Nước Anh", onyomi: "エイ (ei)", kunyomi: "-", soNet: 8, link: "https://jisho.org/search/%E8%8B%B1%20%23kanji", meo: "Bộ **Thảo (艹)** và **Ương (央)**.", cauChuyen: "Cỏ (艹) ở trung ương (央) là của nước **Anh**.", viDu: [{ jp: "英語", furigana: "えいご - eigo", vn: "Tiếng Anh" }, { jp: "英国", furigana: "えいこく - eikoku", vn: "Nước Anh" }] },
+            { char: "印", nghiaHV: "Ấn", nghiaTV: "Con dấu", onyomi: "イン (in)", kunyomi: "しるし (shirushi)", soNet: 6, link: "https://jisho.org/search/%E5%8D%B0%20%23kanji", meo: "Tượng hình.", cauChuyen: "Hình ảnh một **con dấu**.", viDu: [{ jp: "印鑑", furigana: "いんかん - inkan", vn: "Con dấu" }] },
+            { char: "荷", nghiaHV: "Hà", nghiaTV: "Hành lý", onyomi: "カ (ka)", kunyomi: "に (ni)", soNet: 10, link: "https://jisho.org/search/%E8%8D%B7%20%23kanji", meo: "Bộ **Thảo (艹)** và **Hà (何)**.", cauChuyen: "Cỏ (艹) là **hành lý** của cái gì (何)?", viDu: [{ jp: "荷物", furigana: "にもつ - nimotsu", vn: "Hành lý" }] },
+            { char: "貨", nghiaHV: "Hóa", nghiaTV: "Hàng hóa", onyomi: "カ (ka)", kunyomi: "-", soNet: 11, link: "https://jisho.org/search/%E8%B2%A8%20%23kanji", meo: "Bộ **Bối (貝)** và **Hóa (化)**.", cauChuyen: "Tiền (貝) biến hóa (化) thành **hàng hóa**.", viDu: [{ jp: "貨物", furigana: "かもつ - kamotsu", vn: "Hàng hóa" }] },
+            { char: "課", nghiaHV: "Khóa", nghiaTV: "Bài học", onyomi: "カ (ka)", kunyomi: "-", soNet: 15, link: "https://jisho.org/search/%E8%AA%B2%20%23kanji", meo: "Bộ **Ngôn (言)** và **Quả (果)**.", cauChuyen: "Nói (言) về kết quả (果) của **bài học**.", viDu: [{ jp: "課長", furigana: "かちょう - kachou", vn: "Trưởng phòng" }] },
+            { char: "加", nghiaHV: "Gia", nghiaTV: "Thêm vào", onyomi: "カ (ka)", kunyomi: "くわえる (kuwaeru)", soNet: 5, link: "https://jisho.org/search/%E5%8A%A0%20%23kanji", meo: "Bộ **Lực (力)** và **Khẩu (口)**.", cauChuyen: "Dùng sức (力) và miệng (口) để **thêm vào**.", viDu: [{ jp: "加える", furigana: "くわえる - kuwaeru", vn: "Thêm vào" }, { jp: "参加", furigana: "さんか - sanka", vn: "Tham gia" }] },
+            { char: "果", nghiaHV: "Quả", nghiaTV: "Trái cây", onyomi: "カ (ka)", kunyomi: "はたす (hatasu)", soNet: 8, link: "https://jisho.org/search/%E6%9E%9C%20%23kanji", meo: "Bộ **Điền (田)** và **Mộc (木)**.", cauChuyen: "Cây (木) trên đồng (田) ra **quả**.", viDu: [{ jp: "果物", furigana: "くだもの - kudamono", vn: "Trái cây" }] },
+            { char: "化", nghiaHV: "Hóa", nghiaTV: "Thay đổi", onyomi: "カ (ka), ケ (ke)", kunyomi: "ばける (bakeru)", soNet: 4, link: "https://jisho.org/search/%E5%8C%96%20%23kanji", meo: "Bộ **Nhân (亻)**.", cauChuyen: "Người (亻) đang **thay đổi**.", viDu: [{ jp: "化学", furigana: "かがく - kagaku", vn: "Hóa học" }, { jp: "文化", furigana: "ぶんか - bunka", vn: "Văn hóa" }] },
+            { char: "害", nghiaHV: "Hại", nghiaTV: "Có hại", onyomi: "ガイ (gai)", kunyomi: "-", soNet: 10, link: "https://jisho.org/search/%E5%AE%B3%20%23kanji", meo: "Bộ **Miên (宀)** và **Hại (害)**.", cauChuyen: "Ở trong nhà (宀) cũng có thể bị **hại**.", viDu: [{ jp: "公害", furigana: "こうがい - kougai", vn: "Ô nhiễm" }] },
+            { char: "街", nghiaHV: "Nhai", nghiaTV: "Phố", onyomi: "ガイ (gai), カイ (kai)", kunyomi: "まち (machi)", soNet: 12, link: "https://jisho.org/search/%E8%A1%97%20%23kanji", meo: "Bộ **Hành (行)**.", cauChuyen: "Đi (行) dạo trên **phố**.", viDu: [{ jp: "街", furigana: "まち - machi", vn: "Khu phố" }] },
+            { char: "覚", nghiaHV: "Giác", nghiaTV: "Nhớ", onyomi: "カク (kaku)", kunyomi: "おぼえる (oboeru)", soNet: 12, link: "https://jisho.org/search/%E8%A6%9A%20%23kanji", meo: "Bộ **Kiến (見)**.", cauChuyen: "Nhìn (見) để **nhớ**.", viDu: [{ jp: "覚える", furigana: "おぼえる - oboeru", vn: "Nhớ" }] },
+            { char: "各", nghiaHV: "Các", nghiaTV: "Mỗi", onyomi: "カク (kaku)", kunyomi: "おのおの (onoono)", soNet: 6, link: "https://jisho.org/search/%E5%90%84%20%23kanji", meo: "Bộ **Khẩu (口)**.", cauChuyen: "**Mỗi** (各) người một miệng (口).", viDu: [{ jp: "各自", furigana: "かくじ - kakuji", vn: "Mỗi người" }] },
+            { char: "開", nghiaHV: "Khai", nghiaTV: "Mở", onyomi: "カイ (kai)", kunyomi: "ひらく (hiraku)", soNet: 12, link: "https://jisho.org/search/%E9%96%8B%20%23kanji", meo: "Bộ **Môn (門)**.", cauChuyen: "**Mở** (開) cổng (門).", viDu: [{ jp: "開ける", furigana: "あける - akeru", vn: "Mở" }, { jp: "開始", furigana: "かいし - kaishi", vn: "Bắt đầu" }] },
+            { char: "界", nghiaHV: "Giới", nghiaTV: "Thế giới", onyomi: "カイ (kai)", kunyomi: "-", soNet: 9, link: "https://jisho.org/search/%E7%95%8C%20%23kanji", meo: "Bộ **Điền (田)**.", cauChuyen: "Thế **giới** (界) là một cánh đồng (田) lớn.", viDu: [{ jp: "世界", furigana: "せかい - sekai", vn: "Thế giới" }] },
+            { char: "階", nghiaHV: "Giai", nghiaTV: "Tầng", onyomi: "カイ (kai)", kunyomi: "-", soNet: 12, link: "https://jisho.org/search/%E9%9A%8E%20%23kanji", meo: "Bộ **Phụ (阝)** và **Giai (皆)**.", cauChuyen: "Mọi người (皆) cùng lên **tầng**.", viDu: [{ jp: "一階", furigana: "いっかい - ikkai", vn: "Tầng 1" }] },
+            { char: "械", nghiaHV: "Giới", nghiaTV: "Máy móc", onyomi: "カイ (kai)", kunyomi: "-", soNet: 11, link: "https://jisho.org/search/%E6%A2%B0%20%23kanji", meo: "Bộ **Mộc (木)**.", cauChuyen: "**Máy móc** (械) làm từ gỗ (木).", viDu: [{ jp: "機械", furigana: "きかい - kikai", vn: "Máy móc" }] },
+            { char: "改", nghiaHV: "Cải", nghiaTV: "Sửa đổi", onyomi: "カイ (kai)", kunyomi: "あらためる (aratameru)", soNet: 7, link: "https://jisho.org/search/%E6%94%B9%20%23kanji", meo: "Bộ **Phộc (攵)**.", cauChuyen: "Dùng tay (攵) để **sửa đổi**.", viDu: [{ jp: "改める", furigana: "あらためる - aratameru", vn: "Sửa đổi" }] },
+            { char: "館", nghiaHV: "Quán", nghiaTV: "Tòa nhà", onyomi: "カン (kan)", kunyomi: "やかた (yakata)", soNet: 16, link: "https://jisho.org/search/%E9%A4%A8%20%23kanji", meo: "Bộ **Thực (食)** và **Quan (官)**.", cauChuyen: "Quan (官) ăn (食) trong **tòa nhà** lớn.", viDu: [{ jp: "図書館", furigana: "としょかん - toshokan", vn: "Thư viện" }, { jp: "映画館", furigana: "えいがかん - eigakan", vn: "Rạp chiếu phim" }] },
+            { char: "感", nghiaHV: "Cảm", nghiaTV: "Cảm thấy", onyomi: "カン (kan)", kunyomi: "-", soNet: 13, link: "https://jisho.org/search/%E6%84%9F%20%23kanji", meo: "Bộ **Tâm (心)**.", cauChuyen: "**Cảm thấy** (感) bằng cả trái tim (心).", viDu: [{ jp: "感じる", furigana: "かんじる - kanjiru", vn: "Cảm thấy" }] },
+            { char: "寒", nghiaHV: "Hàn", nghiaTV: "Lạnh", onyomi: "カン (kan)", kunyomi: "さむい (samui)", soNet: 12, link: "https://jisho.org/search/%E5%AF%92%20%23kanji", meo: "Bộ **Miên (宀)** và **Băng (冫)**.", cauChuyen: "Trong nhà (宀) cũng có băng (冫), trời thật **lạnh**.", viDu: [{ jp: "寒い", furigana: "さむい - samui", vn: "Lạnh" }] },
+            { char: "漢", nghiaHV: "Hán", nghiaTV: "Trung Quốc", onyomi: "カン (kan)", kunyomi: "-", soNet: 13, link: "https://jisho.org/search/%E6%BC%A2%20%23kanji", meo: "Bộ **Thủy (氵)**.", cauChuyen: "Nước (氵) của nhà **Hán**.", viDu: [{ jp: "漢字", furigana: "かんじ - kanji", vn: "Chữ Hán" }] },
+            { char: "関", nghiaHV: "Quan", nghiaTV: "Liên quan", onyomi: "カン (kan)", kunyomi: "せき (seki)", soNet: 14, link: "https://jisho.org/search/%E9%96%A2%20%23kanji", meo: "Bộ **Môn (門)**.", cauChuyen: "Cánh cổng (門) **liên quan** đến mọi thứ.", viDu: [{ jp: "関係", furigana: "かんけい - kankei", vn: "Quan hệ" }] },
+            { char: "管", nghiaHV: "Quản", nghiaTV: "Ống", onyomi: "カン (kan)", kunyomi: "くだ (kuda)", soNet: 14, link: "https://jisho.org/search/%E7%AE%A1%20%23kanji", meo: "Bộ **Trúc (竹)** và **Quan (官)**.", cauChuyen: "Quan (官) dùng **ống** tre (竹) để viết.", viDu: [{ jp: "管理", furigana: "かんり - kanri", vn: "Quản lý" }] },
+            { char: "官", nghiaHV: "Quan", nghiaTV: "Quan chức", onyomi: "カン (kan)", kunyomi: "-", soNet: 8, link: "https://jisho.org/search/%E5%AE%98%20%23kanji", meo: "Bộ **Miên (宀)**.", cauChuyen: "**Quan chức** (官) làm việc trong nhà (宀).", viDu: [{ jp: "警官", furigana: "けいかん - keikan", vn: "Cảnh sát" }] },
+            { char: "観", nghiaHV: "Quan", nghiaTV: "Xem", onyomi: "カン (kan)", kunyomi: "みる (miru)", soNet: 18, link: "https://jisho.org/search/%E8%A6%B3%20%23kanji", meo: "Bộ **Kiến (見)**.", cauChuyen: "**Xem** (観) bằng mắt (見).", viDu: [{ jp: "観光", furigana: "かんこう - kankou", vn: "Tham quan" }] },
+            { char: "岸", nghiaHV: "Ngạn", nghiaTV: "Bờ biển", onyomi: "ガン (gan)", kunyomi: "きし (kishi)", soNet: 8, link: "https://jisho.org/search/%E5%B2%B8%20%23kanji", meo: "Bộ **Sơn (山)** và **Hán (干)**.", cauChuyen: "Núi (山) ở **bờ biển**.", viDu: [{ jp: "岸", furigana: "きし - kishi", vn: "Bờ" }] },
+            { char: "願", nghiaHV: "Nguyện", nghiaTV: "Ước", onyomi: "ガン (gan)", kunyomi: "ねがう (negau)", soNet: 19, link: "https://jisho.org/search/%E9%A1%98%20%23kanji", meo: "Bộ **Nguyên (原)** và **Hiệt (頁)**.", cauChuyen: "Cúi đầu (頁) **ước nguyện**.", viDu: [{ jp: "お願いします", furigana: "おねがいします - onegaishimasu", vn: "Làm ơn" }] },
+            { char: "起", nghiaHV: "Khởi", nghiaTV: "Thức dậy", onyomi: "キ (ki)", kunyomi: "おきる (okiru)", soNet: 10, link: "https://jisho.org/search/%E8%B5%B7%20%23kanji", meo: "Bộ **Tẩu (走)** và **Kỷ (己)**.", cauChuyen: "Tự mình (己) chạy (走) đi **thức dậy**.", viDu: [{ jp: "起きる", furigana: "おきる - okiru", vn: "Thức dậy" }] },
+            { char: "期", nghiaHV: "Kỳ", nghiaTV: "Thời kỳ", onyomi: "キ (ki), ゴ (go)", kunyomi: "-", soNet: 12, link: "https://jisho.org/search/%E6%9C%9F%20%23kanji", meo: "Bộ **Nguyệt (月)**.", cauChuyen: "Thời **kỳ** (期) của mặt trăng (月).", viDu: [{ jp: "期間", furigana: "きかん - kikan", vn: "Thời gian" }] },
+            { char: "喜", nghiaHV: "Hỷ", nghiaTV: "Vui", onyomi: "キ (ki)", kunyomi: "よろこぶ (yorokobu)", soNet: 12, link: "https://jisho.org/search/%E5%96%9C%20%23kanji", meo: "Bộ **Sĩ (士)** và **Khẩu (口)**.", cauChuyen: "Kẻ sĩ (士) mỉm cười (口) vui **vẻ**.", viDu: [{ jp: "喜ぶ", furigana: "よろこぶ - yorokobu", vn: "Vui mừng" }] },
+            { char: "季", nghiaHV: "Quý", nghiaTV: "Mùa", onyomi: "キ (ki)", kunyomi: "-", soNet: 8, link: "https://jisho.org/search/%E5%AD%A3%20%23kanji", meo: "Bộ **Hòa (禾)** và **Tử (子)**.", cauChuyen: "Trẻ em (子) trồng lúa (禾) theo **mùa**.", viDu: [{ jp: "季節", furigana: "きせつ - kisetsu", vn: "Mùa" }] },
+            { char: "旗", nghiaHV: "Kỳ", nghiaTV: "Cờ", onyomi: "キ (ki)", kunyomi: "はた (hata)", soNet: 14, link: "https://jisho.org/search/%E6%97%97%20%23kanji", meo: "Tượng hình.", cauChuyen: "Hình ảnh một lá **cờ**.", viDu: [{ jp: "旗", furigana: "はた - hata", vn: "Cờ" }] },
+            { char: "完", nghiaHV: "Hoàn", nghiaTV: "Hoàn thành", onyomi: "カン (kan)", kunyomi: "-", soNet: 7, link: "https://jisho.org/search/%E5%AE%8C%20%23kanji", meo: "Bộ **Miên (宀)** và **Nguyên (元)**.", cauChuyen: "**Hoàn thành** (完) ngôi nhà (宀) ban đầu (元).", viDu: [{ jp: "完全", furigana: "かんぜん - kanzen", vn: "Hoàn toàn" }] },
+            { char: "紀", nghiaHV: "Kỷ", nghiaTV: "Kỷ luật", onyomi: "キ (ki)", kunyomi: "-", soNet: 9, link: "https://jisho.org/search/%E7%B4%80%20%23kanji", meo: "Bộ **Mịch (糸)** và **Kỷ (己)**.", cauChuyen: "Tự mình (己) tuân theo sợi chỉ (糸) **kỷ luật**.", viDu: [{ jp: "世紀", furigana: "せいき - seiki", vn: "Thế kỷ" }] },
+            { char: "希", nghiaHV: "Hy", nghiaTV: "Hy vọng", onyomi: "キ (ki)", kunyomi: "-", soNet: 7, link: "https://jisho.org/search/%E5%B8%8C%20%23kanji", meo: "Tượng hình.", cauChuyen: "**Hy vọng** mong manh.", viDu: [{ jp: "希望", furigana: "きぼう - kibou", vn: "Hy vọng" }] },
+            { char: "機", nghiaHV: "Cơ", nghiaTV: "Máy", onyomi: "キ (ki)", kunyomi: "はた (hata)", soNet: 16, link: "https://jisho.org/search/%E6%A9%9F%20%23kanji", meo: "Bộ **Mộc (木)**.", cauChuyen: "**Máy** (機) móc làm từ gỗ (木).", viDu: [{ jp: "機械", furigana: "きかい - kikai", vn: "Máy móc" }, { jp: "飛行機", furigana: "ひこうき - hikouki", vn: "Máy bay" }] },
+            { char: "器", nghiaHV: "Khí", nghiaTV: "Dụng cụ", onyomi: "キ (ki)", kunyomi: "うつわ (utsuwa)", soNet: 16, link: "https://jisho.org/search/%E5%99%A8%20%23kanji", meo: "Bộ **Khuyển (犬)** và **Khẩu (口)**.", cauChuyen: "Con chó (犬) và bốn cái miệng (口) là **dụng cụ**.", viDu: [{ jp: "食器", furigana: "しょっき - shokki", vn: "Bát đĩa" }] },
+            { char: "議", nghiaHV: "Nghị", nghiaTV: "Thảo luận", onyomi: "ギ (gi)", kunyomi: "-", soNet: 20, link: "https://jisho.org/search/%E8%AD%B0%20%23kanji", meo: "Bộ **Ngôn (言)** và **Nghĩa (義)**.", cauChuyen: "Dùng lời nói (言) để **thảo luận** về lẽ phải (義).", viDu: [{ jp: "会議", furigana: "かいぎ - kaigi", vn: "Cuộc họp" }] },
+            { char: "客", nghiaHV: "Khách", nghiaTV: "Khách hàng", onyomi: "キャク (kyaku)", kunyomi: "-", soNet: 9, link: "https://jisho.org/search/%E5%AE%A2%20%23kanji", meo: "Bộ **Miên (宀)** và **Các (各)**.", cauChuyen: "Mỗi (各) người trong nhà (宀) đều là **khách**.", viDu: [{ jp: "お客さん", furigana: "おきゃくさん - okyakusan", vn: "Khách hàng" }] },
+            { char: "急", nghiaHV: "Cấp", nghiaTV: "Vội", onyomi: "キュウ (kyuu)", kunyomi: "いそぐ (isogu)", soNet: 9, link: "https://jisho.org/search/%E6%80%A5%20%23kanji", meo: "Bộ **Tâm (心)**.", cauChuyen: "Trái tim (心) đập nhanh vì **vội**.", viDu: [{ jp: "急ぐ", furigana: "いそぐ - isogu", vn: "Vội, khẩn trương" }] },
+            { char: "級", nghiaHV: "Cấp", nghiaTV: "Cấp độ", onyomi: "キュウ (kyuu)", kunyomi: "-", soNet: 9, link: "https://jisho.org/search/%E7%B4%9A%20%23kanji", meo: "Bộ **Mịch (糸)**.", cauChuyen: "Sợi chỉ (糸) phân chia **cấp độ**.", viDu: [{ jp: "上級", furigana: "じょうきゅう - joukyuu", vn: "Thượng cấp" }] },
+            { char: "球", nghiaHV: "Cầu", nghiaTV: "Quả bóng", onyomi: "キュウ (kyuu)", kunyomi: "たま (tama)", soNet: 11, link: "https://jisho.org/search/%E7%90%83%20%23kanji", meo: "Bộ **Vương (王)**.", cauChuyen: "Vua (王) chơi **bóng**.", viDu: [{ jp: "野球", furigana: "やきゅう - yakyuu", vn: "Bóng chày" }] },
+            { char: "究", nghiaHV: "Cứu", nghiaTV: "Nghiên cứu", onyomi: "キュウ (kyuu)", kunyomi: "きわめる (kiwameru)", soNet: 7, link: "https://jisho.org/search/%E7%A9%B6%20%23kanji", meo: "Bộ **Huyệt (穴)** và **Cửu (九)**.", cauChuyen: "Chín (九) cái hang (穴) cần được **nghiên cứu**.", viDu: [{ jp: "研究", furigana: "けんきゅう - kenkyuu", vn: "Nghiên cứu" }] },
+            { char: "救", nghiaHV: "Cứu", nghiaTV: "Cứu giúp", onyomi: "キュウ (kyuu)", kunyomi: "すくう (sukuu)", soNet: 11, link: "https://jisho.org/search/%E6%95%91%20%23kanji", meo: "Bộ **Phộc (攵)**.", cauChuyen: "Dùng tay (攵) **cứu giúp**.", viDu: [{ jp: "救急車", furigana: "きゅうきゅうしゃ - kyuukyuusha", vn: "Xe cứu thương" }] },
+            { char: "泣", nghiaHV: "Khấp", nghiaTV: "Khóc", onyomi: "キュウ (kyuu)", kunyomi: "なく (naku)", soNet: 8, link: "https://jisho.org/search/%E6%B3%A3%20%23kanji", meo: "Bộ **Thủy (氵)** và **Lập (立)**.", cauChuyen: "Đứng (立) khóc (泣) ra nước (氵) mắt.", viDu: [{ jp: "泣く", furigana: "なく - naku", vn: "Khóc" }] },
+            { char: "求", nghiaHV: "Cầu", nghiaTV: "Yêu cầu", onyomi: "キュウ (kyuu)", kunyomi: "もとめる (motomeru)", soNet: 7, link: "https://jisho.org/search/%E6%B1%82%20%23kanji", meo: "Tượng hình.", cauChuyen: "Cầu xin.", viDu: [{ jp: "求める", furigana: "もとめる - motomeru", vn: "Yêu cầu" }] },
+            { char: "給", nghiaHV: "Cấp", nghiaTV: "Cung cấp", onyomi: "キュウ (kyuu)", kunyomi: "-", soNet: 12, link: "https://jisho.org/search/%E7%B5%A6%20%23kanji", meo: "Bộ **Mịch (糸)** và **Hợp (合)**.", cauChuyen: "Dùng chỉ (糸) để **cung cấp** cho hợp (合) lệ.", viDu: [{ jp: "給料", furigana: "きゅうりょう - kyuuryou", vn: "Lương" }] },
+            { char: "宮", nghiaHV: "Cung", nghiaTV: "Cung điện", onyomi: "キュウ (kyuu), グウ (guu)", kunyomi: "みや (miya)", soNet: 10, link: "https://jisho.org/search/%E5%AE%AE%20%23kanji", meo: "Bộ **Miên (宀)**.", cauChuyen: "**Cung điện** (宮) có mái che (宀).", viDu: [{ jp: "宮", furigana: "みや - miya", vn: "Đền thờ" }] },
+            { char: "去", nghiaHV: "Khứ", nghiaTV: "Rời đi", onyomi: "キョ (kyo), コ (ko)", kunyomi: "さる (saru)", soNet: 5, link: "https://jisho.org/search/%E5%8E%BB%20%23kanji", meo: "Bộ **Thổ (土)** và **Tư (厶)**.", cauChuyen: "Rời khỏi (去) mảnh đất (土) riêng (厶) của mình.", viDu: [{ jp: "去年", furigana: "きょねん - kyonen", vn: "Năm ngoái" }] },
+            { char: "挙", nghiaHV: "Cử", nghiaTV: "Giơ lên", onyomi: "キョ (kyo)", kunyomi: "あげる (ageru)", soNet: 10, link: "https://jisho.org/search/%E6%8C%99%20%23kanji", meo: "Bộ **Thủ (手)**.", cauChuyen: "Dùng tay (手) **giơ lên**.", viDu: [{ jp: "挙げる", furigana: "あげる - ageru", vn: "Giơ lên" }] },
+            { char: "橋", nghiaHV: "Kiều", nghiaTV: "Cầu", onyomi: "キョウ (kyou)", kunyomi: "はし (hashi)", soNet: 16, link: "https://jisho.org/search/%E6%A9%8B%20%23kanji", meo: "Bộ **Mộc (木)**.", cauChuyen: "**Cầu** (橋) làm bằng gỗ (木).", viDu: [{ jp: "橋", furigana: "はし - hashi", vn: "Cầu" }] },
+            { char: "競", nghiaHV: "Cạnh", nghiaTV: "Cạnh tranh", onyomi: "キョウ (kyou), ケイ (kei)", kunyomi: "きそう (kisou)", soNet: 20, link: "https://jisho.org/search/%E7%AB%B6%20%23kanji", meo: "Hai bộ **Lập (立)**.", cauChuyen: "Hai người đứng (立) **cạnh tranh** nhau.", viDu: [{ jp: "競争", furigana: "きょうそう - kyousou", vn: "Cạnh tranh" }] },
+            { char: "共", nghiaHV: "Cộng", nghiaTV: "Cùng nhau", onyomi: "キョウ (kyou)", kunyomi: "とも (tomo)", soNet: 6, link: "https://jisho.org/search/%E5%85%B1%20%23kanji", meo: "Tượng hình.", cauChuyen: "Hai người **cùng nhau** chia sẻ.", viDu: [{ jp: "共通", furigana: "きょうつう - kyoutsuu", vn: "Chung" }] },
+        ];
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ja-JP';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('Rất tiếc, trình duyệt của bạn không hỗ trợ chức năng đọc văn bản.');
+            }
+        }
+
+        const appContainer = document.getElementById('kanji-app');
+
+        kanjiData.forEach((kanji, index) => {
+            const card = document.createElement('div');
+            card.className = 'kanji-card';
+
+            const examplesHtml = kanji.viDu.map(vd => `
+                <li class="example-item">
+                    <span class="text-slate-700">${vd.jp} (${vd.furigana}): ${vd.vn}</span>
+                    <button class="speak-btn" onclick="event.stopPropagation(); speak('${vd.jp}')" aria-label="Đọc ví dụ ${vd.jp}">🔊</button>
+                </li>
+            `).join('');
+
+            card.innerHTML = `
+                <div class="kanji-header">
+                    <div class="kanji-header-title">
+                        <span class="text-slate-400 font-semibold text-xl w-10 text-center">${index + 241}</span>
+                        <span class="kanji-char-header">${kanji.char}</span>
+                        <div>
+                             <div class="text-lg text-slate-800 font-semibold">${kanji.nghiaHV} <span class="text-slate-600 font-normal">| ${kanji.nghiaTV}</span></div>
+                             <div class="text-slate-500 text-sm mt-1">Kun: ${kanji.kunyomi}</div>
+                        </div>
+                    </div>
+                    <span class="chevron">▼</span>
+                </div>
+                <div class="kanji-details">
+                    <ul class="space-y-2 text-slate-600">
+                        <li><strong>On'yomi:</strong> ${kanji.onyomi}</li>
+                        <li><strong>Số nét:</strong> ${kanji.soNet}</li>
+                        <li><strong>Thứ tự nét viết:</strong> <a href="${kanji.link}" target="_blank" onclick="event.stopPropagation()" class="text-sky-600 hover:underline">Xem tại Jisho.org</a></li>
+                    </ul>
+                    <div class="mt-4 pt-4 border-t border-slate-200">
+                        <p class="text-slate-600"><strong>Mẹo ghi nhớ:</strong> ${kanji.meo.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-800">$1</strong>')}</p>
+                        <p class="text-slate-500 italic mt-1">"${kanji.cauChuyen.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}"</p>
+                    </div>
+                    <div class="mt-4">
+                        <h4 class="font-semibold text-slate-700 mb-2">Ví dụ:</h4>
+                        <ul class="list-none p-0">${examplesHtml}</ul>
+                    </div>
+                </div>
+            `;
+            appContainer.appendChild(card);
+        });
+        
+        document.querySelectorAll('.kanji-header').forEach(header => {
+            header.addEventListener('click', () => {
+                header.parentElement.classList.toggle('active');
+            });
+        });
+
+    </script>
+</body>
+</html>
