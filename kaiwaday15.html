@@ -25,19 +25,57 @@
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-
+        .card-transition { transition: all 0.3s ease-in-out; }
+        
         /* Highlight classes for Typing */
         .correct-char { color: #16a34a; font-weight: bold; }
         .incorrect-char { color: #dc2626; text-decoration: underline; font-weight: bold; }
         .correct-input { border-color: #22c55e !important; background-color: #f0fdf4 !important; }
         .wrong-input { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
         
+        /* Microphone Animation */
+        .mic-listening { animation: pulse-red 1.5s infinite; color: #dc2626 !important; border-color: #dc2626 !important; }
+        @keyframes pulse-red { 
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); } 
+            70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); } 
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } 
+        }
+
         /* Tab Transitions */
         .tab-btn { transition: all 0.3s ease; }
         .tab-active { background-color: #0284c7; color: white; shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .tab-inactive { background-color: #f3f4f6; color: #4b5563; }
         .tab-inactive:hover { background-color: #e5e7eb; }
+
+        /* Progress Bar */
+        .progress-container { background-color: #e5e7eb; border-radius: 999px; height: 8px; width: 100%; overflow: hidden; margin-top: 10px; }
+        .progress-fill { background-color: #10b981; height: 100%; width: 0%; transition: width 0.5s ease-in-out; }
+
+        /* Active playing line */
+        .playing-line { border-left: 4px solid #0ea5e9; background-color: #f0f9ff !important; }
+
+        /* STROKE ORDER STYLES */
+        .stroke-path {
+            fill: none;
+            stroke: #333;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .stroke-grid-box {
+            border: 1px solid #e5e7eb;
+            background-color: white;
+            position: relative;
+        }
+        /* Dotted lines for kanji grid */
+        .stroke-grid-box::after {
+            content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%;
+            background: repeating-linear-gradient(to bottom, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); z-index: 0;
+        }
+        .stroke-grid-box::before {
+            content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px;
+            background: repeating-linear-gradient(to right, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); z-index: 0;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -55,16 +93,28 @@
                 </div>
                 
                 <!-- Controls -->
-                <div class="flex bg-sky-800 rounded-lg p-1 text-sm overflow-x-auto">
-                    <button id="btn-toggle-furigana" class="px-3 py-1.5 rounded transition hover:bg-sky-600 text-white flex items-center whitespace-nowrap">
-                        <i class="fas fa-eye mr-2"></i> Furigana
-                    </button>
-                    <button id="btn-toggle-romaji" class="px-3 py-1.5 rounded transition hover:bg-sky-600 text-white flex items-center ml-1 whitespace-nowrap">
-                        <i class="fas fa-font mr-2"></i> Romaji
-                    </button>
-                    <button id="btn-toggle-vi" class="px-3 py-1.5 rounded transition bg-white text-sky-800 font-bold ml-1 flex items-center whitespace-nowrap">
-                        <i class="fas fa-language mr-2"></i> Tiếng Việt
-                    </button>
+                <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
+                    <div class="flex bg-sky-800 rounded-lg p-1 text-sm">
+                        <button id="btn-toggle-furigana" class="px-3 py-1.5 rounded transition hover:bg-sky-600 text-white flex items-center whitespace-nowrap" title="Bật/Tắt cách đọc Kanji">
+                            <i class="fas fa-eye mr-2"></i> Furi
+                        </button>
+                        <button id="btn-toggle-romaji" class="px-3 py-1.5 rounded transition hover:bg-sky-600 text-white flex items-center ml-1 whitespace-nowrap" title="Bật/Tắt phiên âm Romaji">
+                            <i class="fas fa-font mr-2"></i> Romaji
+                        </button>
+                        <button id="btn-toggle-vi" class="px-3 py-1.5 rounded transition bg-white text-sky-800 font-bold ml-1 flex items-center whitespace-nowrap" title="Bật/Tắt dịch tiếng Việt">
+                            <i class="fas fa-language mr-2"></i> Việt
+                        </button>
+                    </div>
+                    
+                    <!-- Audio Speed Control -->
+                    <div class="flex bg-sky-800 rounded-lg p-1 text-sm items-center px-2 text-white">
+                        <i class="fas fa-tachometer-alt mr-2 text-sky-300"></i>
+                        <select id="audio-speed" class="bg-transparent border-none focus:ring-0 text-white font-bold cursor-pointer text-xs">
+                            <option value="0.75" class="text-gray-800">0.75x</option>
+                            <option value="1.0" class="text-gray-800" selected>1.0x</option>
+                            <option value="1.25" class="text-gray-800">1.25x</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -73,20 +123,32 @@
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-8 flex-grow space-y-8" id="app">
         
+        <!-- Progress Section -->
+        <div class="w-full max-w-4xl mx-auto mb-4 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
+            <div class="flex justify-between text-xs text-gray-500 mb-1 font-bold">
+                <span>Tiến độ học tập</span>
+                <span id="progress-text">0%</span>
+            </div>
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-fill"></div>
+            </div>
+        </div>
+
         <!-- 1. Conversation Section -->
         <section class="bg-white rounded-2xl shadow-md overflow-hidden fade-in border border-gray-100">
             <div class="bg-sky-50 px-6 py-4 border-b border-sky-100">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <h2 class="text-xl font-bold text-sky-800"><i class="fas fa-comments mr-2"></i>Hội Thoại: Nỗ Lực Học Tập</h2>
+                    <h2 class="text-xl font-bold text-sky-800 flex items-center">
+                        <i class="fas fa-comments mr-2"></i>Hội Thoại: Nỗ Lực Học Tập
+                        <button onclick="playAllConversation()" class="ml-3 text-sm bg-sky-100 text-sky-700 hover:bg-sky-200 px-3 py-1 rounded-full transition flex items-center">
+                            <i class="fas fa-play mr-1"></i> Nghe tất cả
+                        </button>
+                    </h2>
                     
                     <!-- Mode Tabs -->
                     <div class="flex bg-white rounded-lg p-1 shadow-sm border border-gray-200">
-                        <button onclick="switchMode('polite')" id="tab-polite" class="tab-btn tab-active px-4 py-1.5 rounded-md text-sm font-bold">
-                            Lịch sự
-                        </button>
-                        <button onclick="switchMode('casual')" id="tab-casual" class="tab-btn tab-inactive px-4 py-1.5 rounded-md text-sm font-bold ml-1">
-                            Thông thường
-                        </button>
+                        <button onclick="switchMode('polite')" id="tab-polite" class="tab-btn tab-active px-4 py-1.5 rounded-md text-sm font-bold">Lịch sự</button>
+                        <button onclick="switchMode('casual')" id="tab-casual" class="tab-btn tab-inactive px-4 py-1.5 rounded-md text-sm font-bold ml-1">Thông thường</button>
                     </div>
                 </div>
             </div>
@@ -102,9 +164,7 @@
                 <h2 class="text-xl font-bold text-orange-800"><i class="fas fa-book-open mr-2"></i>Bài Đọc: Ước Mơ & Công Nghệ</h2>
             </div>
             <div class="p-6">
-                <div class="bg-orange-50/30 p-5 rounded-xl border border-orange-100 leading-loose text-lg kanji-font mb-2" id="reading-text">
-                    <!-- Reading content injected -->
-                </div>
+                <div class="bg-orange-50/30 p-5 rounded-xl border border-orange-100 leading-loose text-lg kanji-font mb-2" id="reading-text"></div>
                 <div class="text-gray-500 text-sm mb-4 italic hidden romaji-text" id="reading-romaji"></div>
                 <div class="text-gray-700 text-sm mb-4 hidden vi-trans border-t border-orange-100 pt-2" id="reading-vi"></div>
                 
@@ -120,37 +180,39 @@
         <!-- 3. Grammar Section -->
         <section class="bg-white rounded-2xl shadow-md overflow-hidden fade-in border border-gray-100">
             <div class="bg-purple-50 px-6 py-4 border-b border-purple-100">
-                <h2 class="text-xl font-bold text-purple-800"><i class="fas fa-star mr-2"></i>6 Điểm Ngữ Pháp Quan Trọng</h2>
+                <h2 class="text-xl font-bold text-purple-800"><i class="fas fa-star mr-2"></i>Điểm Ngữ Pháp Quan Trọng</h2>
             </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4" id="grammar-container">
-                <!-- Grammar points injected -->
-            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4" id="grammar-container"></div>
         </section>
 
-        <!-- 4. Vocabulary Cards -->
+        <!-- 4. Vocabulary Flashcards -->
         <section class="fade-in">
             <div class="flex items-center justify-between mb-4 px-2">
-                <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-tags mr-2 text-sky-600"></i>Từ Vựng & Mẹo Nhớ</h2>
-                <span class="text-sm text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm">Phương pháp AzaKanji</span>
+                <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-tags mr-2 text-sky-600"></i>Thẻ Kanji</h2>
+                <div class="flex items-center gap-2">
+                    <button onclick="shuffleVocab()" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1 rounded-full font-bold transition flex items-center">
+                        <i class="fas fa-random mr-1"></i> Shuffle
+                    </button>
+                    <span class="text-sm text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm" id="vocab-counter">1 / 13</span>
+                </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="vocab-container">
-                <!-- Vocab cards injected -->
+            
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden relative min-h-[500px]" id="vocab-card-container">
+                <button onclick="prevVocab()" class="absolute left-0 top-0 bottom-0 px-4 text-gray-400 hover:text-sky-600 hover:bg-sky-50 transition z-10 focus:outline-none"><i class="fas fa-chevron-left text-3xl"></i></button>
+                <button onclick="nextVocab()" class="absolute right-0 top-0 bottom-0 px-4 text-gray-400 hover:text-sky-600 hover:bg-sky-50 transition z-10 focus:outline-none"><i class="fas fa-chevron-right text-3xl"></i></button>
+                <div id="vocab-content" class="p-8 md:p-12 text-center card-transition"></div>
             </div>
         </section>
 
-        <!-- 5. Quiz Section (10 QUESTIONS) -->
+        <!-- 5. Quiz Section -->
         <section class="bg-white rounded-2xl shadow-md overflow-hidden fade-in border border-gray-100 mb-12">
             <div class="bg-emerald-50 px-6 py-4 border-b border-emerald-100 flex justify-between items-center">
-                <h2 class="text-xl font-bold text-emerald-800"><i class="fas fa-question-circle mr-2"></i>Bài Tập Thực Hành (10 Câu)</h2>
+                <h2 class="text-xl font-bold text-emerald-800"><i class="fas fa-question-circle mr-2"></i>Bài Tập Thực Hành</h2>
                 <span class="text-sm bg-emerald-200 text-emerald-800 px-3 py-1 rounded-full font-bold" id="quiz-score">0/10</span>
             </div>
-            <div class="p-6 space-y-6" id="quiz-container">
-                <!-- Quiz items injected -->
-            </div>
+            <div class="p-6 space-y-6" id="quiz-container"></div>
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 text-center">
-                <button onclick="checkQuiz()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-8 rounded-full shadow-lg transform transition active:scale-95">
-                    Nộp Bài
-                </button>
+                <button onclick="checkQuiz()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-8 rounded-full shadow-lg transform transition active:scale-95">Nộp Bài</button>
             </div>
         </section>
 
@@ -159,9 +221,37 @@
     <!-- Footer -->
     <footer class="bg-gray-800 text-gray-400 py-8 mt-12">
         <div class="container mx-auto px-4 text-center">
-            <p>&copy; 2025 AzaKanji Kaiwa. Học tiếng Nhật qua ngữ cảnh thực tế.</p>
+            <p>&copy; 2025 AzaKanji Kaiwa.</p>
         </div>
     </footer>
+
+    <!-- STROKE ORDER MODAL -->
+    <div id="stroke-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" onclick="closeStrokeModal()"></div>
+            <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full modal-enter relative">
+                <div class="bg-sky-600 px-4 py-3 flex justify-between items-center text-white">
+                    <h3 class="font-bold text-lg"><i class="fas fa-pen-nib mr-2"></i>Tập Viết Kanji: <span id="stroke-modal-char" class="text-2xl ml-2"></span></h3>
+                    <button onclick="closeStrokeModal()" class="hover:text-gray-200"><i class="fas fa-times text-xl"></i></button>
+                </div>
+                <div class="p-6 bg-gray-50 max-h-[80vh] overflow-y-auto">
+                    <div class="flex flex-col md:flex-row gap-8 items-start justify-center">
+                        <div class="bg-white p-4 rounded-lg shadow border border-gray-200 text-center">
+                            <p class="text-sm text-gray-500 mb-2 font-bold uppercase">Mô phỏng</p>
+                            <div id="stroke-animation-container" class="w-40 h-40 mx-auto bg-white border border-gray-300 relative stroke-grid-box flex items-center justify-center">
+                                <span class="text-gray-400 text-xs">Đang tải...</span>
+                            </div>
+                            <button onclick="replayStrokeAnimation()" class="mt-3 text-sm bg-sky-100 text-sky-700 px-3 py-1 rounded hover:bg-sky-200 transition"><i class="fas fa-redo mr-1"></i> Viết lại</button>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm text-gray-500 mb-3 font-bold uppercase">Thứ tự nét</p>
+                            <div id="stroke-grid-container" class="flex flex-wrap gap-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         // --- DATA ---
@@ -190,39 +280,134 @@
                 vi: "Tôi vẫn chưa biết liệu mình có thể trở thành một nhà khoa học hay không. Nhưng để thực hiện ước mơ, tôi đang cố gắng học hành chăm chỉ mỗi ngày. Công nghệ càng phát triển, thế giới càng trở nên tiện lợi. Tôi cũng muốn một ngày nào đó có thể trở nên có ích cho mọi người trên toàn thế giới. Tôi sẽ thử mặc bộ đồ này để xem nó có hợp với mình không."
             },
             grammar: [
-                { rule: "～ば～ほど (Càng... càng...)", mean: "Mức độ tăng tiến của vế sau phụ thuộc vế trước", ex: "勉強[べんきょう]すればするほど面白[おもしろ]い", vi: "Càng học càng thấy thú vị" },
-                { rule: "～ようになります (Trở nên có thể)", mean: "Sự thay đổi trạng thái năng lực", ex: "ピアノが弾[ひ]けるようになりました", vi: "Tôi đã chơi được piano" },
-                { rule: "～なくなります (Trở nên không thể)", mean: "Mất đi khả năng hoặc trạng thái nào đó", ex: "速[はや]く走[はし]れなくなりました", vi: "Tôi không còn chạy nhanh được nữa" },
-                { rule: "～ようにします (Cố gắng)", mean: "Nỗ lực làm/không làm gì đó đều đặn", ex: "野菜[やさい]を食[た]べるようにしています", vi: "Tôi cố gắng ăn rau" },
-                { rule: "～か / ～かどうか (...hay không)", mean: "Câu hỏi gián tiếp lồng trong câu", ex: "行[い]けるかどうか分[わ]かりません", vi: "Tôi không biết có đi được hay không" },
-                { rule: "Vてみます (Thử làm)", mean: "Làm thử xem kết quả thế nào", ex: "一度[いちど]食[た]べてみてください", vi: "Hãy ăn thử một lần xem" }
+                { rule: "～ば～ほど (Càng... càng...)", formula: "Vば Vる + ほど / Aければ Aい + ほど / Aなら Aな + ほど", mean: "Mức độ tăng tiến của vế sau phụ thuộc vế trước.", ex: "勉強[べんきょう]すればするほど面白[おもしろ]い", vi: "Càng học càng thấy thú vị." },
+                { rule: "～ようになります (Trở nên có thể)", formula: "Vる + ようになります", mean: "Sự thay đổi trạng thái năng lực (từ không thể thành có thể).", ex: "ピアノが弾[ひ]けるようになりました", vi: "Tôi đã chơi được piano (trước đây không chơi được)." },
+                { rule: "～なくなります (Trở nên không thể)", formula: "Vない (bỏ i) + くなります", mean: "Mất đi khả năng hoặc trạng thái nào đó.", ex: "速[はや]く走[はし]れなくなりました", vi: "Tôi không còn chạy nhanh được nữa." },
+                { rule: "～するようにしています (Cố gắng)", formula: "Vる / Vない + ようにしています", mean: "Nỗ lực làm/không làm gì đó đều đặn (thói quen).", ex: "野菜[やさい]を食[た]べるようにしています", vi: "Tôi đang cố gắng ăn rau." },
+                { rule: "～か / ～かどうか (...hay không)", formula: "Thể thông thường + か / かどうか", mean: "Câu hỏi gián tiếp lồng trong câu.", ex: "行[い]けるかどうか分[わ]かりません", vi: "Tôi không biết có đi được hay không." },
+                { rule: "Vてみます (Thử làm)", formula: "Vて + みます", mean: "Làm thử xem kết quả thế nào.", ex: "一度[いちど]食[た]べてみてください", vi: "Hãy ăn thử một lần xem." }
             ],
             vocab: [
-                { k: "勉強", h: "べんきょう", m: "Học tập", hv: "MIỄN CƯỜNG", ti: "Dùng sức Lực (**力**) để Miễn (**免**) cưỡng học.", ta: "**Bền** (Ben) bỉ học ở Tokyo (**kyou**)." },
-                { k: "練習", h: "れんしゅう", m: "Luyện tập", hv: "LUYỆN TẬP", ti: "Dùng sợi tơ (**糸**) để Luyện (**練**) tập cho đôi cánh (**羽**).", ta: "**Rèn** (Ren) luyện **su** (shuu) suốt ngày." },
-                { k: "漢字", h: "かんじ", m: "Hán tự", hv: "HÁN TỰ", ti: "Chữ (**字**) của nhà Hán (**漢**) ở dưới mái nhà.", ta: "**Can** (Kan) đảm viết **Gì** (ji)." },
-                { k: "服", h: "ふく", m: "Quần áo", hv: "PHỤC", ti: "Trăng (**月**) soi người quỳ Phục (**卩**) mặc quần áo.", ta: "**Hạnh phúc** (Fuku) khi có quần áo đẹp." },
-                { k: "似合う", h: "にあう", m: "Hợp", hv: "TỰ HỢP", ti: "Người (**亻**) Tự (**以**) thấy mình Hợp (**合**) nhau.", ta: "**Ní** (Ni) **âu** (au) yếm nhìn rất hợp." },
-                { k: "科学者", h: "かがくしゃ", m: "Nhà khoa học", hv: "KHOA HỌC GIẢ", ti: "Người (**者**) học (**学**) về lúa (**禾**) một cách khoa học.", ta: "**Ca** (Ka) **gạ** (ga) **cứ** (ku) **xa** (sha) lánh nhà khoa học." },
-                { k: "夢", h: "ゆめ", m: "Giấc mơ", hv: "MỘNG", ti: "Chiều tối (**夕**) nằm dưới cỏ (**艹**) mắt (**罒**) mơ mộng.", ta: "**You** (Yu) **mê** (me) ngủ nên mơ." },
-                { k: "叶える", h: "かなえる", m: "Thực hiện (ước mơ)", hv: "DIỆP", ti: "Mười (**十**) cái miệng (**口**) cùng cầu nguyện.", ta: "**Ca** (Ka) **nà** (na) **ế** (e) **rũ** (ru) muốn thực hiện ước mơ." },
-                { k: "技術", h: "ぎじゅつ", m: "Kỹ thuật", hv: "KỸ THUẬT", ti: "Tay (**扌**) cầm cành chi (**支**) làm thuật (**術**) toán.", ta: "**Ghi** (Gi) **chút** (jutsu) kỹ thuật." },
-                { k: "進む", h: "すすむ", m: "Tiến bộ/Đi lên", hv: "TIẾN", ti: "Con chim (**隹**) đi (**⻌**) về phía trước.", ta: "**Su su** (Susu) **mừ** (mu) tiến lên." },
-                { k: "世界", h: "せかい", m: "Thế giới", hv: "THẾ GIỚI", ti: "Thế (**世**) gian trong giới (**界**) hạn ruộng đất.", ta: "**Xe** (Se) **cai** (kai) thầu cả thế giới." },
-                { k: "役", h: "やく", m: "Có ích/Vai trò", hv: "DỊCH", ti: "Đi (**彳**) cầm binh khí (**殳**) làm chiến dịch.", ta: "**Dạ** (Ya) **cụ** (ku) rất có ích." },
-                { k: "確かめる", h: "たしかめる", m: "Xác nhận", hv: "XÁC", ti: "Đá (**石**) và nhà (**宀**) chim (**隹**) rất Chính xác.", ta: "**Ta** (Ta) **si** (shi) **ca** (ka) **mê** (me) **rũ** (ru) cần xác nhận." }
+                { 
+                    k: "勉", h: "べん", on: "ベン", kun: "つと.める", m: "Cố gắng", hv: "MIỄN", 
+                    ti: "Dùng sức Lực (**力**) để Miễn (**免**) cưỡng làm việc.", 
+                    ta: "**Bền** (Ben) bỉ **cố gắng** (Tsuto-meru) học tập.", 
+                    compounds: [{w: "勉強", r: "べんきょう", m: "Học tập"}] 
+                },
+                { 
+                    k: "強", h: "きょう", on: "キョウ", kun: "つよ.い", m: "Mạnh", hv: "CƯỜNG", 
+                    ti: "Cung (**弓**) tên bắn con trùng (**虫**) ở vùng đất rộng (**ム**).", 
+                    ta: "**Tuy ô** (Tsuyo-i) dù tốt nhưng gió thổi mạnh **Kinh** (Kyou) khủng quá cũng hỏng.", 
+                    compounds: [{w: "勉強", r: "べんきょう", m: "Học tập"}, {w: "強い", r: "つよい", m: "Mạnh"}] 
+                },
+                { 
+                    k: "練", h: "れん", on: "レン", kun: "ね.る", m: "Rèn luyện", hv: "LUYỆN", 
+                    ti: "Dùng sợi tơ (**糸**) để Luyện tập ở phương Đông (**東**).", 
+                    ta: "Rất **Nể** (Ne-ru) phục tinh thần **Rèn** (Ren) luyện của bạn.", 
+                    compounds: [{w: "練習", r: "れんしゅう", m: "Luyện tập"}] 
+                },
+                { 
+                    k: "習", h: "しゅう", on: "シュウ", kun: "なら.う", m: "Học", hv: "TẬP", 
+                    ti: "Đôi cánh (**羽**) màu trắng (**白**) tập bay.", 
+                    ta: "**Na ra** (Nara-u) sân bay xem **Su** (Shuu) tập lái máy bay.", 
+                    compounds: [{w: "練習", r: "れんしゅう", m: "Luyện tập"}, {w: "習う", r: "ならう", m: "Học"}] 
+                },
+                { 
+                    k: "漢", h: "かん", on: "カン", kun: "-", m: "Nước Hán", hv: "HÁN", 
+                    ti: "Nước (**氵**) chảy qua đất Hán, nơi cỏ (**艹**) mọc trên người (**夫**).", 
+                    ta: "**Can** (Kan) đảm nam nhi đại Hán.", 
+                    compounds: [{w: "漢字", r: "かんじ", m: "Chữ Hán"}] 
+                },
+                { 
+                    k: "字", h: "じ", on: "ジ", kun: "あざ", m: "Chữ", hv: "TỰ", 
+                    ti: "Đứa trẻ (**子**) ở trong nhà (**宀**) học Chữ.", 
+                    ta: "Chữ cái **Gì** (Ji) mà viết ngoằn ngoèo như ở **A-za** (Aza) làng quê thế?", 
+                    compounds: [{w: "漢字", r: "かんじ", m: "Chữ Hán"}] 
+                },
+                { 
+                    k: "服", h: "ふく", on: "フク", kun: "-", m: "Quần áo", hv: "PHỤC", 
+                    ti: "Trăng/Thịt (**月**) soi người quỳ Phục (**卩**) và tay (**又**) cầm quần áo.", 
+                    ta: "**Hạnh phúc** (Fuku) khi có quần áo đẹp.", 
+                    compounds: [{w: "服", r: "ふく", m: "Quần áo"}] 
+                },
+                { 
+                    k: "似", h: "に", on: "ジ", kun: "に.る", m: "Giống", hv: "TỰ", 
+                    ti: "Người (**亻**) dùng Dĩ (**以**) để so sánh xem có giống không.", 
+                    ta: "**Ní** (Ni-ru) nu na nà giống cái **Gì** (Ji) đó.", 
+                    compounds: [{w: "似合う", r: "にあう", m: "Hợp/Vừa"}] 
+                },
+                { 
+                    k: "合", h: "あ", on: "ゴウ", kun: "あ.う", m: "Phù hợp", hv: "HỢP", 
+                    ti: "Người (**人**) Một (**一**) lòng, Miệng (**口**) nói lời Hợp nhau.", 
+                    ta: "**A** (A-u) ha, con **Gấu** (Gou) bông này hợp với cậu quá.", 
+                    compounds: [{w: "似合う", r: "にあう", m: "Hợp"}, {w: "間に合う", r: "まにあう", m: "Kịp giờ"}] 
+                },
+                { 
+                    k: "試", h: "ため", on: "シ", kun: "ため.す", m: "Thử", hv: "THÍ", 
+                    ti: "Dùng Lời nói (**言**) và Thức (**式**) để thi Thí nghiệm.", 
+                    ta: "**Ta mê** (Tame-su) thử các bài **Thi** (Shi) nghiệm mới lạ.", 
+                    compounds: [{w: "試す", r: "ためす", m: "Thử"}] 
+                },
+                { 
+                    k: "科", h: "か", on: "カ", kun: "-", m: "Khoa học", hv: "KHOA", 
+                    ti: "Lúa (**禾**) được cân đong (**斗**) một cách Khoa học.", 
+                    ta: "**Ca** (Ka) ngợi khoa học.", 
+                    compounds: [{w: "科学者", r: "かがくしゃ", m: "Nhà khoa học"}] 
+                },
+                { 
+                    k: "学", h: "がく", on: "ガク", kun: "まな.ぶ", m: "Học tập", hv: "HỌC", 
+                    ti: "Đứa trẻ (**子**) đội mũ (**冖**) đi học.", 
+                    ta: "**Mả nả** (Mana-bu) nó cũng thích **Gạ cứ** (Gaku) đi học mãi.", 
+                    compounds: [{w: "科学者", r: "かがくしゃ", m: "Nhà khoa học"}, {w: "学生", r: "がくせい", m: "Học sinh"}] 
+                },
+                { 
+                    k: "夢", h: "ゆめ", on: "ム", kun: "ゆめ", m: "Giấc mơ", hv: "MỘNG", 
+                    ti: "Chiều tối (**夕**) nằm dưới cỏ (**艹**) nhắm mắt (**罒**) và trùm khăn (**冖**) mơ.", 
+                    ta: "**You mê** (Yume) ngủ nên **Mụ** (Mu) mị đầu óc, toàn thấy mơ.", 
+                    compounds: [{w: "夢", r: "ゆめ", m: "Giấc mơ"}] 
+                },
+                { 
+                    k: "叶", h: "かな", on: "キョウ", kun: "かな.う", m: "Đáp ứng", hv: "DIỆP", 
+                    ti: "Mười (**十**) cái miệng (**口**) cùng cầu nguyện để đạt được.", 
+                    ta: "**Ca nà** (Kana-u) ế rũ cầu nguyện thật **Kinh** (Kyou) dị.", 
+                    compounds: [{w: "叶える", r: "かなえる", m: "Thực hiện"}] 
+                },
+                { 
+                    k: "技", h: "ぎ", on: "ギ", kun: "わざ", m: "Kỹ thuật", hv: "KỸ", 
+                    ti: "Tay (**扌**) cầm cành chi (**支**) làm kỹ thuật.", 
+                    ta: "**Va dạ** (Waza) chạm lung tung vì thiếu **Kỹ** (Gi) năng.", 
+                    compounds: [{w: "技術", r: "ぎじゅつ", m: "Kỹ thuật"}] 
+                },
+                { 
+                    k: "術", h: "じゅつ", on: "ジュツ", kun: "すべ", m: "Nghệ thuật", hv: "THUẬT", 
+                    ti: "Đi trên đường (**行**) dùng Thuật (**术**) toán.", 
+                    ta: "**Su bê** (Sube) đồ đi đâu mà dùng thuật **Jutsu** (Jutsu) biến mất rồi?", 
+                    compounds: [{w: "技術", r: "ぎじゅつ", m: "Kỹ thuật"}] 
+                },
+                { 
+                    k: "界", h: "かい", on: "カイ", kun: "-", m: "Thế giới", hv: "GIỚI", 
+                    ti: "Ruộng (**田**) được Giới (**介**) hạn ranh giới.", 
+                    ta: "**Cai** (Kai) quản thế giới.", 
+                    compounds: [{w: "世界", r: "せかい", m: "Thế giới"}] 
+                },
+                { 
+                    k: "確", h: "たし", on: "カク", kun: "たし.か", m: "Chính xác", hv: "XÁC", 
+                    ti: "Đá (**石**) và nhà (**宀**) chim (**隹**) rất Chính xác/Kiên cố.", 
+                    ta: "**Ta si** (Tashi-kame) mê xác nhận các góc (**Kaku**) cạnh chính xác.", 
+                    compounds: [{w: "確かめる", r: "たしかめる", m: "Xác nhận"}] 
+                }
             ],
             quiz: [
-                { q: "Cuốn sách này càng đọc càng thấy thú vị (～ば～ほど)", a: ["読めば読むほど", "読んで読むほど", "読んだら読むほど"], correct: 0 },
-                { q: "Tôi đang cố gắng vận động mỗi ngày (～ようにします)", a: ["運動することにします", "運動するようにしています", "運動するようです"], correct: 1 },
-                { q: "Hãy cho tôi biết anh ấy có đến hay không (～かどうか)", a: ["来るか", "来るかどうか", "来ると"], correct: 1 },
-                { q: "Tôi muốn thử mặc bộ đồ này (Vてみます)", a: ["着てみたいです", "着てほしいです", "着てしまいます"], correct: 0 },
-                { q: "Vì già đi nên mắt tôi trở nên không nhìn rõ (～なくなります)", a: ["見えなくなりました", "見えないようになります", "見えていません"], correct: 0 },
-                { q: "Tôi đã có thể bơi được rồi (～ようになります - Khả năng)", a: ["泳ぐようになりました", "泳げるようになりました", "泳いでいます"], correct: 1 },
-                { q: "Công nghệ càng phát triển thì đời sống càng tiện lợi", a: ["進めば進むほど", "進んだら進むほど", "進んで進むほど"], correct: 0 },
-                { q: "Tôi vẫn chưa biết liệu ngày mai trời có mưa hay không", a: ["降るか降らないか", "降るかどうか", "降ると"], correct: 1 },
-                { q: "Hãy thử đi Nhật một lần xem sao", a: ["行ってみてください", "行ってください", "行くようにしてください"], correct: 0 },
-                { q: "Từ vựng: 'Nhà khoa học' đọc là gì?", a: ["かがくしゃ", "いしゃ", "がくしゃ"], correct: 0 }
+                { type: 'mcq', question: "Cuốn sách này càng đọc càng thấy thú vị (～ば～ほど)", options: ["読めば読むほど", "読んで読むほど", "読んだら読むほど"], correct: 0, explain: "Cấu trúc càng...càng: Vば + Vる + ほど." },
+                { type: 'mcq', question: "Tôi đang cố gắng vận động mỗi ngày (～ようにします)", options: ["運動することにします", "運動するようにしています", "運動するようです"], correct: 1, explain: "～ようにしています biểu thị thói quen hoặc nỗ lực làm gì đó đều đặn." },
+                { type: 'mcq', question: "Hãy cho tôi biết anh ấy có đến hay không (～かどうか)", options: ["来るか", "来るかどうか", "来ると"], correct: 1, explain: "Cấu trúc nghi vấn lồng: Thể thông thường + かどうか." },
+                { type: 'mcq', question: "Tôi muốn thử mặc bộ đồ này (Vてみます)", options: ["着てみたいです", "着てほしいです", "着てしまいます"], correct: 0, explain: "～てみたい: Muốn thử làm gì đó." },
+                { type: 'mcq', question: "Vì già đi nên mắt tôi trở nên không nhìn rõ (～なくなります)", options: ["見えなくなりました", "見えないようになります", "見えていません"], correct: 0, explain: "V khả năng phủ định (Mienai) -> Mienaku narimasu (Trở nên không thể)." },
+                { type: 'mcq', question: "Tôi đã có thể bơi được rồi (～ようになります - Khả năng)", options: ["泳ぐようになりました", "泳げるようになりました", "泳いでいます"], correct: 1, explain: "Chuyển từ không thể sang có thể: V khả năng + ようになります." },
+                { type: 'mcq', question: "Công nghệ càng phát triển thì đời sống càng tiện lợi", options: ["進めば進むほど", "進んだら進むほど", "進んで進むほど"], correct: 0, explain: "Công thức: Susumeba susumu hodo." },
+                { type: 'mcq', question: "Tôi vẫn chưa biết liệu ngày mai trời có mưa hay không", options: ["降るか降らないか", "降るかどうか", "降ると"], correct: 1, explain: "Câu hỏi có/không lồng trong câu: かどうか." },
+                { type: 'mcq', question: "Hãy thử đi Nhật một lần xem sao", options: ["行ってみてください", "行ってください", "行くようにしてください"], correct: 0, explain: "Vte mimasu: Thử làm V." },
+                { type: 'mcq', question: "Từ vựng: 'Nhà khoa học' đọc là gì?", options: ["かがくしゃ", "いしゃ", "がくしゃ"], correct: 0, explain: "Kagakusha (Khoa Học Giả)." }
             ]
         };
 
@@ -231,54 +416,299 @@
         let showFurigana = true;
         let showRomaji = false;
         let showVi = true;
+        let currentVocabIndex = 0; 
+        let vocabSeen = new Set();
+        let quizScoreCurrent = 0;
+        let currentSpeed = 1.0;
+        let currentStrokeSvg = null;
+        let recognition = null; // Speech Recognition
+        let isRecognizing = false; // Add this state variable
 
         // --- UTILS ---
-        const parseFurigana = (text) => text.replace(/([^\[\]]+)\[(.+?)\]/g, '<ruby>$1<rt>$2</rt></ruby>');
-        const cleanText = (text) => text.replace(/\[.*?\]/g, '');
+        const parseFurigana = (text) => text ? text.replace(/([^\[\]]+)\[(.+?)\]/g, '<ruby>$1<rt>$2</rt></ruby>') : '';
+        const cleanText = (text) => text ? text.replace(/\[.*?\]/g, '') : '';
+
+        // Audio with Voice Selection
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            if (type === 'correct') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(500, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2); osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            }
+        }
+
+        let jpVoice = null;
+        function loadVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            // Prioritize Google Japanese, then any Japanese, then default
+            jpVoice = voices.find(v => v.name === 'Google 日本語') || voices.find(v => v.lang === 'ja-JP') || null;
+        }
+        window.speechSynthesis.onvoiceschanged = loadVoices;
 
         function speak(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 const u = new SpeechSynthesisUtterance(cleanText(text));
-                u.lang = 'ja-JP'; u.rate = 0.9;
+                u.lang = 'ja-JP'; u.rate = currentSpeed;
+                if(jpVoice) u.voice = jpVoice;
                 window.speechSynthesis.speak(u);
             }
+        }
+
+        // --- SPEECH RECOGNITION (New Feature) ---
+        function initSpeech() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.lang = 'ja-JP';
+                recognition.continuous = false;
+                recognition.interimResults = false;
+            } else {
+                console.warn("Speech Recognition not supported in this browser.");
+            }
+        }
+
+        function startListening(targetInputId) {
+            if (!recognition) {
+                alert("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói. Hãy dùng Chrome hoặc Edge.");
+                return;
+            }
+            
+            // If already active, stop it (toggle behavior)
+            if (isRecognizing) {
+                recognition.stop();
+                return;
+            }
+            
+            const btn = document.getElementById(`mic-btn-${targetInputId}`);
+            const input = document.getElementById(targetInputId);
+            
+            // Clear any stray loading states
+            document.querySelectorAll('.mic-listening').forEach(el => el.classList.remove('mic-listening'));
+            
+            // Define handlers
+            recognition.onstart = () => {
+                isRecognizing = true;
+                btn.classList.add('mic-listening');
+            };
+
+            recognition.onend = () => {
+                isRecognizing = false;
+                btn.classList.remove('mic-listening');
+            };
+
+            recognition.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                input.value = text;
+                input.dispatchEvent(new Event('input'));
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Speech error", event.error);
+                // onend will be called automatically
+            };
+
+            try {
+                recognition.start();
+            } catch (e) {
+                console.error("Speech start failed", e);
+                isRecognizing = false;
+            }
+        }
+
+        // --- STROKE ORDER LOGIC ---
+        function getKanjiHex(kanji) {
+            return kanji.charCodeAt(0).toString(16).padStart(5, '0');
+        }
+
+        async function fetchKanjiSvg(hex) {
+            const url = `https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/${hex}.svg`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Not found');
+                return await response.text();
+            } catch (e) {
+                console.error("Error fetching SVG:", e);
+                return null;
+            }
+        }
+
+        async function showStrokeOrder(kanji) {
+            const hex = getKanjiHex(kanji);
+            document.getElementById('stroke-modal').classList.remove('hidden');
+            document.getElementById('stroke-modal-char').innerText = kanji;
+            
+            const animContainer = document.getElementById('stroke-animation-container');
+            const gridContainer = document.getElementById('stroke-grid-container');
+            animContainer.innerHTML = '<span class="text-gray-400 text-xs">Đang tải...</span>';
+            
+            const svgContent = await fetchKanjiSvg(hex);
+            
+            if (!svgContent) {
+                animContainer.innerHTML = "<p class='p-4 text-red-500 text-xs'>Lỗi tải dữ liệu.</p>";
+                gridContainer.innerHTML = "";
+                return;
+            }
+
+            // 1. Setup Animation
+            animContainer.innerHTML = svgContent;
+            const mainSvg = animContainer.querySelector('svg');
+            mainSvg.setAttribute('width', '100%');
+            mainSvg.setAttribute('height', '100%');
+            
+            const paths = mainSvg.querySelectorAll('path');
+            paths.forEach((path) => {
+                const length = path.getTotalLength();
+                path.style.strokeDasharray = length;
+                path.style.strokeDashoffset = length;
+                path.style.stroke = "#333";
+                path.style.strokeWidth = "4";
+                path.style.fill = "none";
+                path.style.strokeLinecap = "round";
+                path.style.strokeLinejoin = "round";
+            });
+            
+            currentStrokeSvg = mainSvg;
+            replayStrokeAnimation();
+
+            // 2. Setup Static Grid
+            gridContainer.innerHTML = '';
+            const numStrokes = paths.length;
+            
+            for (let i = 0; i < numStrokes; i++) {
+                const stepBox = document.createElement('div');
+                stepBox.className = "w-20 h-20 bg-white border border-gray-200 relative stroke-grid-box flex items-center justify-center";
+                
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(svgContent, "image/svg+xml");
+                const svgClone = doc.querySelector('svg');
+                svgClone.setAttribute('width', '100%');
+                svgClone.setAttribute('height', '100%');
+                
+                const clonePaths = svgClone.querySelectorAll('path');
+                clonePaths.forEach((p, pIdx) => {
+                    p.style.fill = "none";
+                    p.style.strokeLinecap = "round";
+                    p.style.strokeLinejoin = "round";
+                    if (pIdx < i) { p.style.stroke = "#9ca3af"; p.style.strokeWidth = "3"; }
+                    else if (pIdx === i) { p.style.stroke = "#000"; p.style.strokeWidth = "4"; }
+                    else { p.style.display = "none"; }
+                });
+                
+                stepBox.appendChild(svgClone);
+                gridContainer.appendChild(stepBox);
+            }
+        }
+
+        function replayStrokeAnimation() {
+            if(!currentStrokeSvg) return;
+            const paths = currentStrokeSvg.querySelectorAll('path');
+            paths.forEach(p => { p.style.transition = 'none'; p.style.strokeDashoffset = p.getTotalLength(); });
+            void currentStrokeSvg.offsetWidth;
+            let delay = 0; const duration = 0.6;
+            paths.forEach((p) => {
+                p.style.transition = `stroke-dashoffset ${duration}s ease-in-out ${delay}s`;
+                p.style.strokeDashoffset = '0';
+                delay += duration;
+            });
+        }
+
+        function closeStrokeModal() { document.getElementById('stroke-modal').classList.add('hidden'); }
+
+        // --- STORAGE & SETTINGS ---
+        function saveSettings() {
+            const settings = { showFurigana, showRomaji, showVi, currentSpeed };
+            localStorage.setItem('azaSettings', JSON.stringify(settings));
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('azaSettings');
+            if (saved) {
+                const s = JSON.parse(saved);
+                showFurigana = s.showFurigana; showRomaji = s.showRomaji; showVi = s.showVi; currentSpeed = s.currentSpeed || 1.0;
+            }
+        }
+
+        // --- PROGRESS ---
+        function updateProgress() {
+            const totalPoints = 40 + 10 + 20 + 30;
+            let currentPoints = 0;
+            const convoInputs = document.querySelectorAll('#conversation-container .correct-input');
+            const totalConvoLines = lessonData.conversation.polite.length;
+            if (totalConvoLines > 0) currentPoints += (convoInputs.length / totalConvoLines) * 40;
+            const readingInput = document.getElementById('reading-input');
+            if(readingInput && readingInput.value.length > lessonData.reading.jp.length * 0.3) currentPoints += 10;
+            if (lessonData.vocab.length > 0) currentPoints += (vocabSeen.size / lessonData.vocab.length) * 20;
+            if (lessonData.quiz.length > 0) currentPoints += (quizScoreCurrent / lessonData.quiz.length) * 30;
+            const percent = Math.min(100, Math.round(currentPoints));
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+            document.getElementById('progress-text').innerText = `${percent}%`;
         }
 
         function checkTyping(input, correctText, feedbackDiv) {
             const userText = input.value;
             const targetText = cleanText(correctText);
-            let html = '';
             
+            // Normalize for loose checking (optional: ignore spaces or punctuation)
+            // For now, keep strict but visual feedback helps
+            
+            let html = '';
             for (let i = 0; i < userText.length; i++) {
-                if (i >= targetText.length) {
-                    html += `<span class="incorrect-char">${userText[i]}</span>`;
-                } else if (userText[i] === targetText[i]) {
-                    html += `<span class="correct-char">${userText[i]}</span>`;
-                } else {
-                    html += `<span class="incorrect-char">${userText[i]}</span>`;
-                }
+                if (i >= targetText.length) { html += `<span class="incorrect-char">${userText[i]}</span>`; }
+                else if (userText[i] === targetText[i]) { html += `<span class="correct-char">${userText[i]}</span>`; }
+                else { html += `<span class="incorrect-char">${userText[i]}</span>`; }
             }
             feedbackDiv.innerHTML = html;
             
             if (userText === targetText) {
-                input.classList.add('correct-input');
-                input.classList.remove('wrong-input');
+                input.classList.add('correct-input'); input.classList.remove('wrong-input');
                 feedbackDiv.innerHTML += ' <span class="text-green-600 ml-2 font-bold text-xs"><i class="fas fa-check-circle"></i> Chính xác!</span>';
+                playSound('correct'); updateProgress();
             } else if (userText.length > 0) {
-                input.classList.add('wrong-input');
-                input.classList.remove('correct-input');
+                input.classList.add('wrong-input'); input.classList.remove('correct-input');
             } else {
                 input.classList.remove('correct-input', 'wrong-input');
             }
         }
 
-        // --- RENDER FUNCTIONS ---
+        function playAllConversation() {
+            const lines = lessonData.conversation[currentMode];
+            let i = 0;
+            function playNext() {
+                if (i >= lines.length) return;
+                const allLines = document.querySelectorAll('#conversation-container > div');
+                allLines.forEach(el => el.classList.remove('playing-line'));
+                if (allLines[i]) {
+                    allLines[i].classList.add('playing-line');
+                    allLines[i].scrollIntoView({behavior: "smooth", block: "center"});
+                }
+                speak(lines[i].jp);
+                // Approx duration calculation or use onend (more reliable)
+                // Using global speech function doesn't expose onend easily without refactoring, 
+                // so we use a direct utterance here for the chain.
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(cleanText(lines[i].jp));
+                u.lang = 'ja-JP'; u.rate = currentSpeed;
+                if(jpVoice) u.voice = jpVoice;
+                u.onend = () => { i++; setTimeout(playNext, 500); };
+                window.speechSynthesis.speak(u);
+            }
+            window.speechSynthesis.cancel();
+            playNext();
+        }
+
+        // --- RENDER ---
         function renderConversation() {
             const container = document.getElementById('conversation-container');
             const lines = lessonData.conversation[currentMode];
-            container.innerHTML = lines.map((line) => `
-                <div class="flex gap-4 fade-in ${line.role === 'Tanaka' ? '' : 'flex-row-reverse'}">
+            container.innerHTML = lines.map((line, idx) => `
+                <div class="flex gap-4 fade-in ${line.role === 'Tanaka' ? '' : 'flex-row-reverse'} p-2 rounded-lg transition-colors duration-300">
                     <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-md ${line.role === 'Tanaka' ? 'bg-blue-500' : 'bg-green-500'}">
                         ${line.role[0]}
                     </div>
@@ -289,8 +719,12 @@
                             <p class="text-sm text-gray-500 romaji-text hidden italic mb-1">${line.romaji}</p>
                             <p class="text-sm text-gray-500 vi-trans border-t border-gray-100 pt-2 mt-2">${line.vi}</p>
                             <button onclick="speak('${line.jp}')" class="absolute top-2 right-2 text-gray-300 hover:text-sky-600 transition"><i class="fas fa-volume-up"></i></button>
+                            
                             <div class="mt-3 pt-2 border-t border-gray-100">
-                                <input type="text" class="w-full text-sm p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 transition bg-gray-50 placeholder-gray-300" placeholder="Nghe và gõ lại câu trên..." oninput="checkTyping(this, '${line.jp}', this.nextElementSibling)">
+                                <div class="flex gap-2">
+                                    <input type="text" id="convo-input-${idx}" class="flex-1 text-sm p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-200 transition bg-gray-50 placeholder-gray-300" placeholder="Nghe và gõ lại..." oninput="checkTyping(this, '${line.jp}', this.parentElement.nextElementSibling)">
+                                    <button id="mic-btn-convo-input-${idx}" onclick="startListening('convo-input-${idx}')" class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 rounded-lg transition" title="Nói để nhập (Chrome/Edge)"><i class="fas fa-microphone"></i></button>
+                                </div>
                                 <div class="h-5 mt-1 text-sm pl-1 kanji-font"></div>
                             </div>
                         </div>
@@ -313,8 +747,10 @@
             document.getElementById('reading-vi').innerText = lessonData.reading.vi;
             const input = document.getElementById('reading-input');
             const feedback = document.getElementById('reading-feedback');
-            input.oninput = () => checkTyping(input, lessonData.reading.jp, feedback);
-            
+            input.oninput = () => {
+                if(input.value.length > 50) updateProgress();
+                checkTyping(input, lessonData.reading.jp, feedback); 
+            };
             if(!document.getElementById('reading-play-btn')) {
                 const btn = document.createElement('button');
                 btn.id = 'reading-play-btn';
@@ -330,6 +766,7 @@
             container.innerHTML = lessonData.grammar.map(g => `
                 <div class="bg-white p-5 rounded-xl border border-purple-100 shadow-sm hover:border-purple-300 transition group">
                     <h3 class="font-bold text-purple-700 mb-1 text-lg flex items-center"><span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>${g.rule}</h3>
+                    <div class="mb-2 pl-4"><span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded font-bold">Công thức:</span> <span class="text-gray-700 text-sm kanji-font">${g.formula}</span></div>
                     <p class="text-gray-600 text-sm mb-3 pl-4">${g.mean}</p>
                     <div class="bg-purple-50 p-3 rounded-lg text-sm text-gray-700 kanji-font relative pl-4">
                         <i class="fas fa-quote-left text-purple-200 absolute top-1 left-1 text-xs"></i>${parseFurigana(g.ex)}
@@ -340,39 +777,91 @@
             `).join('');
         }
 
-        function renderVocab() {
-            const container = document.getElementById('vocab-container');
-            container.innerHTML = lessonData.vocab.map(v => `
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 card-hover flex flex-col relative group transition-all duration-300 hover:border-sky-300">
-                    <div class="flex justify-between items-start mb-3">
-                        <div><div class="text-3xl font-bold text-gray-800 kanji-font mb-1">${v.k}</div><div class="text-sm text-gray-500">${v.h}</div></div>
-                        <div class="text-xs font-bold text-white bg-gray-400 px-2 py-1 rounded shadow-sm">${v.hv}</div>
-                    </div>
-                    <div class="text-sky-700 font-bold text-lg mb-3 border-b border-gray-100 pb-2">${v.m}</div>
-                    <div class="space-y-2 text-sm text-gray-600 flex-grow">
-                        <div class="bg-orange-50 p-2 rounded border border-orange-100"><span class="font-bold text-orange-600">🖼️ Hình:</span> ${v.ti.replace(/\*\*(.*?)\*\*/g, '<span class="text-red-600 font-bold">$1</span>')}</div>
-                        <div class="bg-blue-50 p-2 rounded border border-blue-100"><span class="font-bold text-blue-600">🔊 Âm:</span> ${v.ta.replace(/\*\*(.*?)\*\*/g, '<span class="text-indigo-600 font-bold">$1</span>')}</div>
-                    </div>
-                    <button onclick="speak('${v.k}')" class="absolute top-3 right-3 text-gray-300 hover:text-sky-500 opacity-0 group-hover:opacity-100 transition bg-white rounded-full w-8 h-8 shadow flex items-center justify-center"><i class="fas fa-volume-up"></i></button>
-                </div>
-            `).join('');
+        function shuffleVocab() {
+            for (let i = lessonData.vocab.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [lessonData.vocab[i], lessonData.vocab[j]] = [lessonData.vocab[j], lessonData.vocab[i]];
+            }
+            currentVocabIndex = 0;
+            renderVocab();
         }
 
+        function renderVocab() {
+            vocabSeen.add(currentVocabIndex);
+            updateProgress();
+            const container = document.getElementById('vocab-content');
+            const v = lessonData.vocab[currentVocabIndex];
+            const compoundsHtml = v.compounds ? v.compounds.map(c => 
+                `<div class="flex justify-between items-center bg-gray-50 px-3 py-2 rounded mb-1 cursor-pointer hover:bg-gray-100" onclick="speak('${c.r}')">
+                    <span class="text-gray-800 font-bold">${c.w}</span>
+                    <span class="text-gray-500 text-xs">${c.r}</span>
+                    <span class="text-sky-600 text-xs">${c.m}</span>
+                    <i class="fas fa-volume-up text-xs text-gray-300 ml-2"></i>
+                </div>`
+            ).join('') : '';
+
+            container.innerHTML = `
+                <div class="animate-fade-in relative">
+                    <div class="text-6xl font-bold text-gray-800 kanji-font mb-2 cursor-pointer hover:text-sky-600 transition" onclick="showStrokeOrder('${v.k}')" title="Bấm để xem cách viết">${v.k}</div>
+                    <button onclick="showStrokeOrder('${v.k}')" class="text-xs bg-sky-100 text-sky-700 px-3 py-1 rounded-full mb-2 hover:bg-sky-200 transition"><i class="fas fa-pen-nib mr-1"></i> Tập viết</button>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-center mb-4 text-sm bg-gray-50 p-2 rounded-lg">
+                        <div class="flex flex-col items-center">
+                            <span class="text-xs text-gray-400 block uppercase font-bold mb-1">On'yomi</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-800 font-bold">${v.on}</span>
+                                <button onclick="speak('${v.on}')" class="w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center text-sky-500 hover:bg-sky-50 hover:text-sky-700 transition" title="Nghe âm On">
+                                    <i class="fas fa-volume-up text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-xs text-gray-400 block uppercase font-bold mb-1">Kun'yomi</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-800 font-bold">${v.kun}</span>
+                                <button onclick="speak('${v.kun.replace(/\./g, '')}')" class="w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center text-sky-500 hover:bg-sky-50 hover:text-sky-700 transition" title="Nghe âm Kun">
+                                    <i class="fas fa-volume-up text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="inline-block text-xs font-bold text-white bg-gray-400 px-3 py-1 rounded-full mb-4 tracking-wide">${v.hv}</div>
+                    <div class="text-sky-700 font-bold text-2xl mb-6 border-b border-gray-100 pb-4">${v.m}</div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left max-w-2xl mx-auto">
+                        <div class="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                            <div class="font-bold text-orange-600 mb-2 flex items-center"><i class="fas fa-image mr-2"></i> Mẹo Hình Ảnh</div>
+                            <div class="text-gray-700 text-sm leading-relaxed">${v.ti.replace(/\*\*(.*?)\*\*/g, '<span class="text-red-600 font-bold">$1</span>')}</div>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                            <div class="font-bold text-blue-600 mb-2 flex items-center"><i class="fas fa-volume-up mr-2"></i> Mẹo Âm Thanh</div>
+                            <div class="text-gray-700 text-sm leading-relaxed">${v.ta.replace(/\*\*(.*?)\*\*/g, '<span class="text-indigo-600 font-bold">$1</span>')}</div>
+                        </div>
+                    </div>
+
+                    ${compoundsHtml ? `<div class="mt-8 pt-6 border-t border-gray-100"><div class="text-sm text-gray-400 mb-2 font-bold uppercase tracking-wide text-center">Từ ghép (Bấm để nghe)</div><div class="kanji-font text-gray-600 max-w-sm mx-auto text-left">${compoundsHtml}</div></div>` : ''}
+                </div>
+            `;
+            document.getElementById('vocab-counter').innerText = `${currentVocabIndex + 1} / ${lessonData.vocab.length}`;
+        }
+        function prevVocab() { if (currentVocabIndex > 0) { currentVocabIndex--; renderVocab(); } }
+        function nextVocab() { if (currentVocabIndex < lessonData.vocab.length - 1) { currentVocabIndex++; renderVocab(); } }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') prevVocab();
+            if (e.key === 'ArrowRight') nextVocab();
+        });
+
+        // --- QUIZ ---
         function renderQuiz() {
             const container = document.getElementById('quiz-container');
             container.innerHTML = lessonData.quiz.map((q, idx) => `
                 <div class="quiz-item border-b border-gray-100 pb-4 last:border-0">
-                    <p class="font-bold text-gray-800 mb-3"><span class="text-emerald-600 mr-2">Câu ${idx + 1}:</span> ${parseFurigana(q.q)}</p>
+                    <p class="font-bold text-gray-800 mb-3"><span class="text-emerald-600 mr-2">Câu ${idx + 1}:</span> ${q.type === 'audio' ? q.question : parseFurigana(q.question)}</p>
                     <div class="space-y-2">
-                        ${q.type === 'audio' 
-                            ? `<button class="speak-btn mb-2 flex items-center text-sky-600 font-bold" onclick="speak('${q.jp}')"><i class="fas fa-volume-up mr-2"></i> Nghe câu hỏi</button>
-                               <input type="text" class="w-full p-2 border rounded" placeholder="Nhập câu bạn nghe được..." data-idx="${idx}">`
-                            : q.a.map((opt, optIdx) => `
-                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition quiz-option" data-q="${idx}">
-                                    <input type="radio" name="q${idx}" value="${optIdx}" class="mr-3 text-emerald-600 focus:ring-emerald-500">
-                                    <span class="kanji-font">${parseFurigana(opt)}</span>
-                                </label>`).join('')
-                        }
+                        ${q.type === 'audio' ? `<button class="speak-btn mb-2 flex items-center text-sky-600 font-bold" onclick="speak('${q.jp}')"><i class="fas fa-volume-up mr-2"></i> Nghe câu hỏi</button><input type="text" class="w-full p-2 border rounded" placeholder="Nhập câu bạn nghe được..." data-idx="${idx}">` 
+                        : q.type === 'fill' ? `<input type="text" class="w-full p-2 border rounded fill-input" placeholder="Điền từ còn thiếu..." data-idx="${idx}">` 
+                        : q.options.map((opt, optIdx) => `<label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition quiz-option" data-q="${idx}" data-opt="${optIdx}"><input type="radio" name="q${idx}" value="${optIdx}" class="mr-3 text-emerald-600 focus:ring-emerald-500"><span class="kanji-font">${parseFurigana(opt)}</span></label>`).join('')}
                     </div>
                     <div class="quiz-feedback hidden mt-3 p-3 rounded-lg text-sm" id="feedback-${idx}"></div>
                 </div>
@@ -384,63 +873,63 @@
             let score = 0;
             lessonData.quiz.forEach((q, idx) => {
                 const feedbackEl = document.getElementById(`feedback-${idx}`);
-                feedbackEl.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-yellow-100', 'text-yellow-800');
-                
+                feedbackEl.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+                let isCorrect = false;
                 if (q.type === 'audio') {
                     const input = document.querySelector(`input[data-idx="${idx}"]`);
-                    if (input.value.trim() === cleanText(q.jp)) {
-                        score++;
-                        feedbackEl.innerHTML = `<i class="fas fa-check-circle mr-2"></i> Chính xác!`;
-                        feedbackEl.classList.add('bg-green-100', 'text-green-800');
-                    } else {
-                        feedbackEl.innerHTML = `<i class="fas fa-times-circle mr-2"></i> Sai rồi. Đáp án: <strong>${q.jp}</strong>`;
-                        feedbackEl.classList.add('bg-red-100', 'text-red-800');
-                    }
+                    isCorrect = input.value.trim() === cleanText(q.jp);
+                } else if (q.type === 'fill') {
+                    const input = document.querySelector(`input[data-idx="${idx}"]`);
+                    isCorrect = input.value.trim() === q.answer;
                 } else {
                     const selected = document.querySelector(`input[name="q${idx}"]:checked`);
-                    if (selected) {
-                        const val = parseInt(selected.value);
-                        if (val === q.correct) {
-                            score++;
-                            feedbackEl.innerHTML = `<i class="fas fa-check-circle mr-2"></i> Chính xác!`;
-                            feedbackEl.classList.add('bg-green-100', 'text-green-800');
-                        } else {
-                            feedbackEl.innerHTML = `<i class="fas fa-times-circle mr-2"></i> Sai rồi. Đáp án đúng: <strong>${q.a[q.correct]}</strong>`;
-                            feedbackEl.classList.add('bg-red-100', 'text-red-800');
-                        }
-                    } else {
-                        feedbackEl.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i> Bạn chưa chọn đáp án.`;
-                        feedbackEl.classList.add('bg-yellow-100', 'text-yellow-800');
-                    }
+                    if (selected && parseInt(selected.value) === q.correct) isCorrect = true;
+                }
+                
+                if (isCorrect) {
+                    score++;
+                    feedbackEl.innerHTML = `<i class="fas fa-check-circle mr-2"></i> Chính xác! <br><span class="text-xs mt-1 block opacity-80">${q.explain || ''}</span>`;
+                    feedbackEl.classList.add('bg-green-100', 'text-green-800');
+                } else {
+                    const ans = q.type === 'mcq' ? q.options[q.correct] : (q.type === 'audio' ? q.jp : q.answer);
+                    feedbackEl.innerHTML = `<i class="fas fa-times-circle mr-2"></i> Sai rồi. Đáp án: <strong>${ans}</strong><br><span class="text-xs mt-1 block opacity-80">${q.explain || ''}</span>`;
+                    feedbackEl.classList.add('bg-red-100', 'text-red-800');
                 }
             });
+            if(score === lessonData.quiz.length) playSound('correct');
+            else playSound('wrong');
+            quizScoreCurrent = score;
             document.getElementById('quiz-score').innerText = `${score}/${lessonData.quiz.length}`;
+            updateProgress();
         }
 
-        // --- CONTROLS ---
         function updateUI() {
             document.querySelectorAll('rt').forEach(rt => rt.style.visibility = showFurigana ? 'visible' : 'hidden');
             document.getElementById('btn-toggle-furigana').className = showFurigana ? "px-3 py-1.5 rounded transition bg-sky-600 text-white flex items-center shadow" : "px-3 py-1.5 rounded transition bg-gray-200 text-gray-600 flex items-center";
-            
             document.querySelectorAll('.romaji-text').forEach(el => el.classList.toggle('hidden', !showRomaji));
             document.getElementById('btn-toggle-romaji').className = showRomaji ? "px-3 py-1.5 rounded transition bg-sky-600 text-white flex items-center shadow ml-1" : "px-3 py-1.5 rounded transition bg-gray-200 text-gray-600 flex items-center ml-1";
-            
             document.querySelectorAll('.vi-trans').forEach(p => p.style.display = showVi ? 'block' : 'none');
             document.getElementById('btn-toggle-vi').className = showVi ? "px-3 py-1.5 rounded transition bg-white text-sky-800 font-bold ml-1 flex items-center border border-sky-200 shadow-sm" : "px-3 py-1.5 rounded transition bg-gray-200 text-gray-500 font-bold ml-1 flex items-center";
+            const speedSelect = document.getElementById('audio-speed');
+            speedSelect.value = currentSpeed;
+            speedSelect.onchange = (e) => { currentSpeed = parseFloat(e.target.value); };
         }
 
-        document.getElementById('btn-toggle-furigana').onclick = () => { showFurigana = !showFurigana; updateUI(); };
-        document.getElementById('btn-toggle-romaji').onclick = () => { showRomaji = !showRomaji; updateUI(); };
-        document.getElementById('btn-toggle-vi').onclick = () => { showVi = !showVi; updateUI(); };
+        document.getElementById('btn-toggle-furigana').onclick = () => { showFurigana = !showFurigana; updateUI(); saveSettings(); };
+        document.getElementById('btn-toggle-romaji').onclick = () => { showRomaji = !showRomaji; updateUI(); saveSettings(); };
+        document.getElementById('btn-toggle-vi').onclick = () => { showVi = !showVi; updateUI(); saveSettings(); };
 
-        // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
+            initSpeech(); // Init Microphone
+            loadSettings();
             renderConversation();
             renderReading();
             renderGrammar();
             renderVocab();
             renderQuiz();
             updateUI();
+            updateProgress();
+            setTimeout(loadVoices, 100); // Load voices explicitly
         });
     </script>
 </body>
