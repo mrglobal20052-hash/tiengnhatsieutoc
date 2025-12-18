@@ -10,163 +10,152 @@
     <style>
         body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; overflow-x: hidden; }
         .kanji-font { font-family: 'Noto Sans JP', sans-serif; }
+        
+        /* Tùy chỉnh thanh cuộn */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Hiệu ứng mượt */
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .menu-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #e0f2fe; }
-        .menu-card:hover { transform: translateY(-5px); border-color: #0ea5e9; box-shadow: 0 12px 20px -5px rgba(14, 165, 233, 0.2); }
+        
+        .tab-active { background-color: #0369a1; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .tab-inactive { background-color: #e0f2fe; color: #0c4a6e; }
+
+        /* Thẻ ngày học */
+        .day-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #e0f2fe; }
+        .day-card:hover { transform: translateY(-5px); border-color: #0ea5e9; box-shadow: 0 12px 20px -5px rgba(14, 165, 233, 0.15); }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
     <!-- Header -->
     <header class="bg-sky-700 text-white shadow-lg sticky top-0 z-40">
-        <div class="container mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="location.reload()">
-                <i class="fas fa-torii-gate text-3xl text-yellow-400"></i>
-                <div>
-                    <h1 class="text-xl font-bold uppercase tracking-wider leading-none">AZAKANJI</h1>
-                    <p class="text-xs text-sky-200 mt-1 font-bold">Kanji siêu tốc, học rộng hiểu sâu</p>
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <!-- Logo & Slogan chuẩn hóa -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="window.location.href='kanji.html'">
+                    <i class="fas fa-torii-gate text-3xl text-yellow-400"></i>
+                    <div>
+                        <h1 class="text-xl font-bold uppercase tracking-wider leading-none">AZAKANJI</h1>
+                        <p class="text-xs text-sky-200 mt-1 font-bold">Kanji siêu tốc, học rộng hiểu sâu</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2 overflow-x-auto max-w-full pb-1 md:pb-0">
+                    <!-- Nút về trang chủ chính -->
+                    <a href="https://tiengnhatsieutoc.com/" class="px-3 md:px-4 py-2 bg-sky-600 hover:bg-sky-500 rounded-md text-sm font-bold transition whitespace-nowrap border border-sky-500 shadow-sm mr-1 md:mr-3">
+                        <i class="fas fa-home mr-1"></i> Trang Chủ
+                    </a>
+
+                    <div class="flex bg-sky-800 rounded-lg p-1">
+                        <button onclick="window.location.href='kanji.html'" class="px-3 md:px-4 py-2 rounded-md text-sm font-bold transition whitespace-nowrap tab-active">
+                            <i class="fas fa-th-large mr-2"></i>Lộ Trình
+                        </button>
+                        <!-- Redirect to bothu.html as requested -->
+                        <button onclick="window.location.href='bothu.html'" class="px-3 md:px-4 py-2 rounded-md text-sm font-bold transition whitespace-nowrap tab-inactive ml-1">
+                            <i class="fas fa-shapes mr-2"></i>214 Bộ Thủ
+                        </button>
+                    </div>
                 </div>
             </div>
-            <a href="https://tiengnhatsieutoc.com/" class="px-5 py-2 bg-sky-600 hover:bg-sky-500 rounded-full text-sm font-bold transition border border-sky-500 shadow-sm">
-                <i class="fas fa-home mr-2"></i>Về Trang Chủ
-            </a>
         </div>
     </header>
 
     <!-- Global Search Hub -->
     <div class="bg-white/90 backdrop-blur-md shadow-sm sticky top-[64px] z-30 border-b border-sky-100">
-        <div class="container mx-auto px-4 py-6">
+        <div class="container mx-auto px-4 py-4">
             <div class="relative max-w-2xl mx-auto">
-                <input type="text" id="global-search" placeholder="Tìm kiếm nhanh Kanji hoặc Bộ thủ..." class="w-full pl-12 pr-4 py-4 rounded-3xl border-2 border-sky-100 focus:outline-none focus:ring-4 focus:ring-sky-200 focus:border-sky-400 bg-sky-50/30 text-lg transition-all shadow-inner">
-                <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-sky-400 text-xl"></i>
+                <input type="text" id="global-search" placeholder="Gõ Kanji, Bộ thủ, Nghĩa hoặc Âm đọc bất kỳ..." class="w-full pl-12 pr-4 py-3 rounded-2xl border-2 border-sky-100 focus:outline-none focus:ring-4 focus:ring-sky-200 focus:border-sky-400 bg-sky-50/30 text-lg transition-all shadow-inner">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-sky-400 text-xl"></i>
                 
-                <!-- Kết quả tìm kiếm Popup -->
-                <div id="search-results-overlay" class="hidden absolute top-full left-0 right-0 mt-3 bg-white rounded-2xl shadow-2xl border border-sky-100 p-5 max-h-[60vh] overflow-y-auto z-50 fade-in">
+                <!-- Kết quả tìm kiếm Kanji & Bộ thủ -->
+                <div id="search-results-overlay" class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-sky-100 p-4 max-h-[60vh] overflow-y-auto z-50 fade-in">
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8 flex-grow">
+    <main class="container mx-auto px-4 py-6 flex-grow" id="app-container">
         
-        <!-- DASHBOARD SECTION -->
+        <!-- DASHBOARD (Ngày 1 - Ngày 24) -->
         <div id="dashboard-section" class="fade-in">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-                <!-- Special Card: Theory/Intro (Optional) -->
-                <div class="menu-card bg-white p-6 rounded-3xl border-2 border-dashed border-sky-200 flex items-center gap-5 cursor-default">
-                    <div class="w-16 h-16 bg-sky-100 rounded-2xl flex items-center justify-center text-3xl text-sky-600">
-                        <i class="fas fa-lightbulb"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-sky-900">Phương Pháp AzaKanji</h3>
-                        <p class="text-gray-500 text-sm">Ghi nhớ qua Mẹo Hình & Âm, Xem trực tiếp cách viết Kanji</p>
-                    </div>
+            <div class="mb-8 bg-white p-5 rounded-2xl shadow-sm border-l-4 border-sky-500 flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800">Lộ trình 24 ngày AzaKanji</h3>
+                    <p class="text-sm text-gray-600 mt-1">Lựa chọn ngày học để bắt đầu hành trình chinh phục 1.920 Kanji.</p>
                 </div>
-                    <!-- Special Card: Radicals -->
-                <a href="bothu.html" class="menu-card bg-gradient-to-br from-orange-500 to-red-600 p-6 rounded-3xl text-white flex items-center justify-between group shadow-lg">
-                    <div class="flex items-center gap-5">
-                        <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl">
-                            <i class="fas fa-shapes"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold">214 Bộ Thủ</h3>
-                            <p class="text-orange-100 text-sm">Nền tảng chiết tự Kanji</p>
-                        </div>
-                    </div>
-                    <i class="fas fa-arrow-right text-2xl opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all"></i>
-                </a>
-
-                
             </div>
-
-            <div class="mb-4 flex items-center justify-between">
-                <h4 class="font-black text-sky-800 uppercase tracking-widest text-sm">Lộ trình học tập 24 ngày</h4>
-                <div class="h-px bg-sky-200 flex-grow ml-4"></div>
-            </div>
-
+            
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4" id="days-menu">
-                <!-- Day cards -->
+                <!-- Day cards generated by JS -->
             </div>
         </div>
 
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-sky-100 py-8 mt-10">
-        <div class="container mx-auto px-4 text-center">
-            <p class="text-sky-900 font-bold">AZAKANJI © 2025</p>
-            <p class="text-gray-400 text-xs mt-1 italic">Kanji siêu tốc, học rộng hiểu sâu</p>
-        </div>
-    </footer>
-
     <script>
-        // --- MASTER INDEX (Chứa toàn bộ "Key" để tìm kiếm) ---
-        // Bạn hãy nạp danh sách chữ vào đây.
-        const masterIndex = [
-            // Radicals
-            { char: "人", type: "bothu", hv: "NHÂN", mean: "Người", file: "bothu.html" },
-            { char: "心", type: "bothu", hv: "TÂM", mean: "Tim", file: "bothu.html" },
-            { char: "水", type: "bothu", hv: "THỦY", mean: "Nước", file: "bothu.html" },
-            // Days
-            { char: "積極的", type: "kanji", hv: "Tích Cực", mean: "Tích cực", day: 23, file: "kanji23.html" },
-            { char: "健康", type: "kanji", hv: "Kiện Khang", mean: "Sức khỏe", day: 23, file: "kanji23.html" },
-            { char: "一", type: "kanji", hv: "Nhất", mean: "Một", day: 1, file: "kanji1.html" },
-            { char: "二", type: "kanji", hv: "Nhị", mean: "Hai", day: 1, file: "kanji1.html" },
-            { char: "先生", type: "kanji", hv: "Tiên Sinh", mean: "Thầy giáo", day: 1, file: "kanji1.html" }
+        // --- MẢNG INDEX TOÀN CỤC (Chứa "Key" cho cả 214 Bộ thủ và 1.920 Kanji) ---
+        const globalIndex = [
+            // Radicals (Dẫn về bothu.html)
+            { char: "人", hv: "NHÂN", mean: "Người", file: "bothu.html", type: "bộ thủ" },
+            { char: "心", hv: "TÂM", mean: "Tim", file: "bothu.html", type: "bộ thủ" },
+            { char: "水", hv: "THỦY", mean: "Nước", file: "bothu.html", type: "bộ thủ" },
+            { char: "雨", hv: "VŨ", mean: "Mưa", file: "bothu.html", type: "bộ thủ" },
+            // Kanji Days (Dẫn về kanjiX.html)
+            { char: "一", day: 1, hv: "Nhất", mean: "Một", file: "kanji1.html", type: "bài học" },
+            { char: "二", day: 1, hv: "Nhị", mean: "Hai", file: "kanji1.html", type: "bài học" },
+            { char: "積極的", day: 23, hv: "Tích Cực", mean: "Tích cực", file: "kanji23.html", type: "bài học" },
+            { char: "健康", day: 23, hv: "Kiện Khang", mean: "Sức khỏe", file: "kanji23.html", type: "bài học" },
+            { char: "結婚", day: 20, hv: "Kết Hôn", mean: "Lễ cưới", file: "kanji20.html", type: "bài học" },
+            { char: "先生", day: 1, hv: "Tiên Sinh", mean: "Thầy giáo", file: "kanji1.html", type: "bài học" }
+            // Lưu ý: Cần nạp toàn bộ danh sách Kanji của bạn vào đây
         ];
 
-        // --- DASHBOARD RENDER ---
         function renderDashboard() {
             const menu = document.getElementById('days-menu');
             let html = '';
             for (let i = 1; i <= 24; i++) {
                 html += `
-                    <a href="kanji${i}.html" class="menu-card bg-white p-5 rounded-2xl text-center shadow-sm flex flex-col items-center justify-center gap-2 group">
-                        <div class="w-12 h-12 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center font-black group-hover:bg-sky-600 group-hover:text-white transition-all shadow-inner">
-                            ${i}
-                        </div>
-                        <div class="text-sm font-bold text-sky-900 uppercase">Ngày ${i}</div>
+                    <a href="kanji${i}.html" class="day-card bg-white p-6 rounded-2xl text-center shadow-sm flex flex-col items-center justify-center gap-3 group transition-all">
+                        <div class="w-14 h-14 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center font-black group-hover:bg-sky-600 group-hover:text-white transition-all text-lg shadow-inner">${i}</div>
+                        <div class="text-sm font-black text-sky-900 group-hover:text-sky-600 transition-colors uppercase tracking-wide">Ngày ${i}</div>
                     </a>
                 `;
             }
             menu.innerHTML = html;
         }
 
-        // --- GLOBAL SEARCH LOGIC ---
-        document.getElementById('global-search').addEventListener('input', (e) => {
-            const val = e.target.value.trim().toLowerCase();
+        function handleGlobalSearch(inputVal) {
+            const val = inputVal.trim().toLowerCase();
             const resultsBox = document.getElementById('search-results-overlay');
-            
-            if (!val) {
-                resultsBox.classList.add('hidden');
-                return;
+            if (!val) { 
+                resultsBox.classList.add('hidden'); 
+                return; 
             }
 
-            const results = masterIndex.filter(item => 
-                item.char.includes(val) || 
-                item.hv.toLowerCase().includes(val) || 
-                item.mean.toLowerCase().includes(val)
+            // Tìm kiếm trong Index toàn cục (Chuyển hướng đến đúng file)
+            const matches = globalIndex.filter(k => 
+                k.char.includes(val) || 
+                k.hv.toLowerCase().includes(val) || 
+                k.mean.toLowerCase().includes(val)
             );
 
-            if (results.length > 0) {
+            if (matches.length > 0) {
                 resultsBox.classList.remove('hidden');
                 resultsBox.innerHTML = `
-                    <div class="mb-3 text-[10px] font-black text-sky-500 uppercase tracking-widest border-b border-sky-100 pb-2">Kết quả tìm kiếm:</div>
+                    <div class="mb-3 text-[10px] font-black text-sky-500 uppercase tracking-widest border-b border-sky-100 pb-2">KẾT QUẢ TÌM KIẾM HỆ THỐNG:</div>
                     <div class="grid gap-2">
-                        ${results.map(item => `
-                            <a href="${item.file}?search=${encodeURIComponent(item.char)}" class="flex items-center justify-between p-3 bg-sky-50 rounded-xl hover:bg-sky-100 transition border border-sky-100">
+                        ${matches.map(k => `
+                            <a href="${k.file}?search=${encodeURIComponent(k.char)}" class="flex items-center justify-between p-3 bg-sky-50 rounded-xl hover:bg-sky-100 transition border border-sky-100 shadow-sm">
                                 <div class="flex items-center gap-4">
-                                    <span class="text-3xl kanji-font font-bold text-gray-800">${item.char}</span>
+                                    <span class="text-3xl kanji-font font-bold text-gray-800">${k.char}</span>
                                     <div>
-                                        <div class="text-sm font-bold text-gray-700">${item.hv} - ${item.mean}</div>
-                                        <div class="text-[10px] text-sky-600 font-bold uppercase">
-                                            ${item.type === 'bothu' ? 'Bảng Bộ Thủ' : 'Bài học Ngày ' + item.day}
-                                        </div>
+                                        <div class="text-sm font-bold text-gray-700">${k.hv} - ${k.mean}</div>
+                                        <div class="text-[10px] text-sky-600 font-bold uppercase tracking-wider">Vị trí: ${k.type === 'bộ thủ' ? 'Bảng Bộ Thủ' : 'Ngày học ' + k.day}</div>
                                     </div>
                                 </div>
                                 <i class="fas fa-chevron-right text-sky-300 text-xs"></i>
@@ -175,19 +164,31 @@
                     </div>
                 `;
             } else {
-                resultsBox.innerHTML = `<p class="text-center text-gray-400 text-sm py-4">Không tìm thấy kết quả phù hợp.</p>`;
+                resultsBox.innerHTML = `<p class="text-center text-gray-400 text-sm py-4">Không tìm thấy kết quả.</p>`;
                 resultsBox.classList.remove('hidden');
             }
-        });
+        }
 
-        // Đóng search box khi bấm ra ngoài
+        document.getElementById('global-search').addEventListener('input', (e) => handleGlobalSearch(e.target.value));
+
+        // Đóng overlay khi bấm ra ngoài
         document.addEventListener('click', (e) => {
             if (!e.target.closest('#global-search')) {
                 document.getElementById('search-results-overlay').classList.add('hidden');
             }
         });
 
-        window.onload = renderDashboard;
+        window.onload = () => {
+            renderDashboard();
+            
+            // Xử lý tự động tìm kiếm nếu trang bài học quay ngược về Hub (nếu cần)
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            if (searchQuery) {
+                document.getElementById('global-search').value = searchQuery;
+                handleGlobalSearch(searchQuery);
+            }
+        };
     </script>
 </body>
 </html>
