@@ -2,814 +2,432 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ứng dụng học 214 bộ thủ Kanji</title>
-    <!-- Meta description theo yêu cầu của người dùng -->
-    <meta name="description" content="Ứng dụng học 214 bộ thủ Kanji tiếng Nhật được nhóm theo chủ đề, dễ học và ghi nhớ, với đầy đủ thông tin về bộ thủ, ý nghĩa, ví dụ minh họa, mẹo ghi nhớ, cách đọc Hán Việt và luyện gõ, với khả năng ẩn/hiện bộ thủ, On'yomi, Kun'yomi và Romanji, kèm theo các câu chuyện chủ đề giúp ghi nhớ dễ dàng.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AzaKanji - 214 Bộ Thủ Cao Cấp (V2.0)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-            color: #374151;
-            padding-bottom: 0;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-        th, td {
-            padding: 0.75rem;
-            text-align: left;
-            border: 1px solid #e5e7eb;
-            vertical-align: top;
-        }
-        th {
-            background-color: #f9fafb;
-            font-weight: 600;
-            color: #4b5563;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-        }
-        tbody tr:nth-child(odd) {
-            background-color: #f9fafb;
-        }
-        tbody tr:hover {
-            background-color: #eef2ff;
-        }
-        .toggle-button {
-            background-color: #4f46e5;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .toggle-button:hover {
-            background-color: #4338ca;
-        }
-        .play-button {
-            background-color: #10b981;
-            color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            font-size: 0.75rem;
-            margin-left: 0.5rem;
-        }
-        .play-button:hover {
-            background-color: #059669;
-        }
-        .hidden-col {
-            display: none;
-        }
-        .example-item {
-            margin-bottom: 0.5rem;
-        }
-        .example-item:last-child {
-            margin-bottom: 0;
-        }
-        /* Phong cách mới cho phần luyện gõ cố định */
-        .fixed-typing-practice {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: #ffffff;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-            padding: 1rem;
-            z-index: 1000;
-            border-top-left-radius: 0.5rem;
-            border-top-right-radius: 0.5rem;
-        }
-        .theme-button {
-            background-color: #f97316; /* Orange-500 */
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            margin-bottom: 0.5rem;
-        }
-        .theme-button:hover {
-            background-color: #ea580c; /* Orange-600 */
-        }
-        .theme-button.active {
-            background-color: #c2410c; /* Orange-700 */
-        }
+        body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; overflow-x: hidden; }
+        .kanji-font { font-family: 'Noto Sans JP', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .modal-enter { animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        .correct-anim { animation: pulse-green 0.5s; }
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+        
+        .wrong-anim { animation: shake 0.4s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        .tab-active { background-color: #0369a1; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .tab-inactive { background-color: #e0f2fe; color: #0c4a6e; }
+
+        .stroke-path { fill: none; stroke: #333; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+        .stroke-grid-box { border: 1px solid #e5e7eb; background-color: white; position: relative; }
+        .stroke-grid-box::after { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: repeating-linear-gradient(to bottom, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); z-index: 0; }
+        .stroke-grid-box::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: repeating-linear-gradient(to right, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); z-index: 0; }
     </style>
 </head>
-<body class="p-4">
-    <div class="container bg-white shadow-lg rounded-lg p-6">
-        <h1 class="text-3xl font-bold text-gray-800 mb-4 text-center">Ứng dụng học 214 bộ thủ Kanji</h1>
+<body class="flex flex-col min-h-screen">
 
-        <div class="flex flex-wrap gap-4 mb-6">
-            <button id="toggleKanji" class="toggle-button">Ẩn Bộ thủ Kanji</button>
-            <button id="toggleOnyomi" class="toggle-button">Ẩn On'yomi</button>
-            <button id="toggleFurigana" class="toggle-button">Ẩn Kun'yomi</button>
-            <button id="toggleMeaningAndExamples" class="toggle-button">Ẩn Ý nghĩa & Ví dụ</button>
+    <!-- Header -->
+    <header class="bg-sky-700 text-white shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="location.reload()">
+                    <i class="fas fa-shapes text-3xl text-yellow-400"></i>
+                    <div>
+                        <h1 class="text-xl font-bold uppercase tracking-wider leading-none">AZAKANJI BUSHU</h1>
+                        <p class="text-[10px] text-sky-200 mt-1 uppercase tracking-widest font-bold">Hệ thống 214 bộ thủ Cao Cấp</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2 overflow-x-auto max-w-full pb-1 md:pb-0">
+                    <div class="flex bg-sky-800 rounded-lg p-1">
+                        <button onclick="switchTab('learn')" id="tab-learn" class="px-4 py-2 rounded-md text-sm font-bold transition whitespace-nowrap tab-active">
+                            <i class="fas fa-book-open mr-2"></i>Học Tập
+                        </button>
+                        <button onclick="switchTab('quiz')" id="tab-quiz" class="px-4 py-2 rounded-md text-sm font-bold transition whitespace-nowrap tab-inactive ml-1">
+                            <i class="fas fa-gamepad mr-2"></i>Kiểm Tra
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
+    </header>
 
-        <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">Chọn chủ đề bộ thủ:</h3>
-            <div id="themeButtons" class="flex flex-wrap gap-2">
-                <!-- Các nút chủ đề sẽ được tạo bởi JavaScript -->
+    <!-- Search Bar -->
+    <div class="bg-white/80 backdrop-blur-md shadow-sm sticky top-[64px] z-30 border-b border-sky-100">
+        <div class="container mx-auto px-4 py-3">
+            <div class="relative max-w-xl mx-auto">
+                <input type="text" id="search-input" placeholder="Tìm bộ thủ, nghĩa, âm On/Kun..." class="w-full pl-10 pr-4 py-2 rounded-full border border-sky-200 focus:outline-none focus:ring-2 focus:ring-sky-400 bg-sky-50/50">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-sky-400"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6 flex-grow" id="app-container">
+        
+        <!-- LEARN SECTION -->
+        <div id="learn-section" class="fade-in">
+            <div id="kanji-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- Cards will be injected here -->
             </div>
         </div>
 
-        <div id="themeStorySection" class="mb-6 p-4 bg-yellow-50 rounded-lg shadow-sm">
-            <h3 class="text-lg font-semibold text-yellow-800 mb-2">Câu chuyện chủ đề:</h3>
-            <p id="themeStoryContent" class="text-gray-700 italic"></p>
+        <!-- QUIZ SECTION -->
+        <div id="quiz-section" class="hidden fade-in max-w-2xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                <div class="bg-gradient-to-r from-sky-600 to-indigo-600 p-6 text-white flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold"><i class="fas fa-puzzle-piece mr-2"></i>Thử Thách Bộ Thủ</h2>
+                        <p class="text-sky-100 text-xs mt-1">Luyện phản xạ 214 bộ thủ</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-sky-200 uppercase font-bold">Điểm số</div>
+                        <div class="text-3xl font-bold" id="score-display">0</div>
+                    </div>
+                </div>
+                
+                <div class="p-6 md:p-8">
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
+                        <div id="quiz-progress" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+
+                    <div id="question-area" class="text-center mb-8">
+                        <div class="text-gray-500 text-sm font-bold mb-4 uppercase tracking-wide">Câu hỏi <span id="q-current">1</span> / <span id="q-total">10</span></div>
+                        <div class="mb-4">
+                            <span class="text-7xl kanji-font font-bold text-gray-800" id="quiz-kanji-display"></span>
+                        </div>
+                        <div class="text-lg text-gray-600 font-medium" id="quiz-question-text">Bộ thủ này có ý nghĩa là gì?</div>
+                    </div>
+
+                    <div id="options-area" class="grid grid-cols-2 gap-4 mb-6"></div>
+
+                    <div id="feedback-area" class="hidden bg-gray-50 rounded-xl p-4 border border-gray-200 text-left animate-fade-in">
+                        <div id="feedback-title" class="font-bold text-lg mb-2 flex items-center"></div>
+                        <p id="feedback-detail" class="text-gray-600 text-sm mb-3"></p>
+                        <button onclick="nextQuestion()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-lg shadow transition">Tiếp tục <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table id="kanjiRadicalTable" class="min-w-full">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">STT</th>
-                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600 kanji-col">Bộ thủ</th>
-                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600 onyomi-col">Đọc (On'yomi)</th>
-                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600 furigana-col">Đọc (Kun'yomi)</th>
-                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Hán Việt</th>
-                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600 meaning-col">Ý nghĩa</th>
-                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Mẹo ghi nhớ</th>
-                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Ví dụ Kanji</th>
-                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600 example-reading-col">Đọc ví dụ</th>
-                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Nghĩa ví dụ</th>
-                        <th class="py-3 px-4 text-left text-sm font-semibold text-gray-600">Đọc</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    <!-- Các hàng bộ thủ sẽ được chèn vào đây bởi JavaScript -->
-                </tbody>
-            </table>
-        </div>
+    </main>
 
-        <div id="typingPracticeSection" class="mt-8 p-4 bg-blue-50 rounded-lg shadow-md fixed-typing-practice">
-            <h3 class="text-xl font-bold text-blue-800 mb-4">Luyện gõ bộ thủ</h3>
-            <p class="text-gray-700 mb-2">Gõ cách đọc On'yomi, Kun'yomi hoặc Kanji ví dụ từ bảng trên vào ô dưới đây và nhấn "Kiểm tra".</p>
-            <input type="text" id="userInput" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 mb-3 text-gray-800" placeholder="Gõ tiếng Nhật vào đây...">
-            <button id="checkButton" class="toggle-button bg-green-600 hover:bg-green-700">Kiểm tra</button>
-            <div id="feedback" class="mt-3 text-lg font-semibold"></div>
+    <!-- STROKE ORDER MODAL -->
+    <div id="stroke-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" onclick="closeStrokeModal()"></div>
+            <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl w-full modal-enter relative">
+                <div class="bg-sky-600 px-4 py-3 flex justify-between items-center text-white">
+                    <h3 class="font-bold text-lg"><i class="fas fa-pen-nib mr-2"></i>Tập Viết Bộ: <span id="stroke-modal-char" class="text-2xl ml-2 font-bold"></span></h3>
+                    <button onclick="closeStrokeModal()" class="hover:text-gray-200 p-2"><i class="fas fa-times text-xl"></i></button>
+                </div>
+                <div class="p-4 md:p-6 bg-gray-50 max-h-[80vh] overflow-y-auto">
+                    <div class="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start justify-center">
+                        <div class="bg-white p-4 rounded-lg shadow border border-gray-200 text-center w-full md:w-auto">
+                            <div id="stroke-animation-container" class="w-40 h-40 mx-auto bg-white border border-gray-300 relative stroke-grid-box flex items-center justify-center">
+                                <span class="text-gray-400 text-xs">Agkarga...</span>
+                            </div>
+                            <button onclick="replayStrokeAnimation()" class="mt-3 text-sm bg-sky-100 text-sky-700 px-4 py-2 rounded hover:bg-sky-200 transition w-full font-bold"><i class="fas fa-redo mr-1"></i> Viết lại</button>
+                        </div>
+                        <div class="flex-1 w-full">
+                            <p class="text-sm text-gray-500 mb-3 font-bold uppercase text-center md:text-left">Thứ tự nét</p>
+                            <div id="stroke-grid-container" class="flex flex-wrap gap-2 justify-center md:justify-start"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        const kanjiRadicalsData = [
-            {
-                "theme": "Bộ thủ cơ bản (1-3 nét)",
-                "story": "Câu Chuyện Của Người Thợ Gốm (Để nhớ ý nghĩa)\n\nCâu chuyện của người thợ gốm bắt đầu từ Một (一) khối đất sét. Ông lấy ra một điểm (丶) nhỏ, đặt lên bàn xoay. Ông kéo nó lên thành một nét sổ (丨) thẳng đứng, rồi dùng tay vuốt nhẹ một nét phẩy (丿) và uốn một nét móc (亅) đầy quyết đoán để tạo hình.\n\nTừ khối đất, ông nặn ra Hai (二) sinh mệnh. Một hình người (人) với dáng đang đi (儿) tới, và một người khác đang vào (入) một ngôi nhà tí hon ông vừa làm xong.\n\nÔng tạo ra thế giới cho họ. Một thế giới trải dài Tám (八) phương, được ông dùng đôi tay bao bọc (勹) lấy. Ông dựng lên vùng biên giới (冂) để che chắn, và đặt lên trên một cái khăn chùm (冖) mỏng manh như bầu trời. Bên dưới, ông tráng một lớp men trong như nước đá (冫).\n\nÔng thêm vào các chi tiết: một cái ghế (几) nhỏ đặt bên cạnh cái lò nung có miệng há (凵) to. Ông cầm con dao (刀) khắc, dùng tất cả sức mạnh (力) để tạo hoa văn. Một cái thìa (匕) và một tủ đựng (匚) nhỏ xíu được đặt vào trong nhà, rồi ông lấy nắp che đậy (匸) chúng lại.\n\nÔng lấy Số mười (十) que tre để bói (卜) một quẻ trên một đốt tre (卩) cũ, lưng tựa vào sườn núi (厂) sau xưởng. Ông chiêm nghiệm rằng, mọi điều riêng tư (厶) rồi cũng sẽ trở lại (又) với ta theo một cách nào đó.\n\nCuối cùng, ông đặt tên cho hai hình nhân của mình: người thứ nhất là Giáp, người thứ hai là Ất (乙). Ông đặt viên đất sét cuối cùng lên trên đầu (亠) của một mái đình, hoàn thành tác phẩm của mình.\n\n---\n\nBản Giao Hưởng Của Sự Sáng Tạo (Để nhớ cách đọc Kun'yomi)\n\nCâu chuyện sáng tạo bắt đầu với MỘT - HITOTSU (ひとつ). Chấm một ĐIỂM - TEN (てん). Kéo một NÉT SỔ - BOU (ぼう), phẩy một NÉT PHẨY - NO (の), và móc một NÉT MÓC - HANEBOU (はねぼう)... (Mấy nét cơ bản này toàn tên gọi, khó nhớ thật!).\n\nTôi nặn HAI - FUTATSU (ふたつ) (Mẹo nhớ: PHÙ! TA SỬ dụng hết sức) hình NGƯỜI - HITO (ひと). Một người đang ĐI (儿 - HITOASHI, 'chân người'), người kia đang VÀO - HAIRU (はいる).\n\nThế giới có TÁM - YATSU (やっ) hướng (Mẹo nhớ: DA SỨ làm nên tám hướng). Tôi BAO BỌC nó (勹 - TSUTSUMIGAMAE), dựng BIÊN GIỚI (冂 - KEIGAMAE), đội cho nó cái KHĂN CHÙM (冖 - WAKANMURI), và tạo ra NƯỚC ĐÁ (冫 - NISUI)... (Gia đình nhà \"bao vây\" này toàn tên \"gia phả\" khó đọc!).\n\nTôi đặt CÁI GHẾ (cái bàn) - TSUKUE (つくえ - 几) (Mẹo nhớ: SỨ CỨ Ê a làm việc) bên cạnh cái lò như MIỆNG HÁ (凵 - UKEBAKO). Cầm CON DAO - KATANA (かたな - 刀), dùng SỨC MẠNH - CHIKARA (ちから - 力) (Mẹo nhớ: CHỊ CÀ RA vẻ mạnh mẽ). Đặt CÁI THÌA - SAJI (さじ - 匕) (Mẹo nhớ: SA DÌ vào bếp) và TỦ ĐỰNG (匚 - HAKOGAMAE) vào trong, rồi CHE ĐẬY lại (匸 - KAKUSHIGAMAE).\n\nTôi lấy MƯỜI - TOO (とお) que tre để BÓI - URANAU (うらなう) (Mẹo nhớ: Ư RA NÀO, xem bói). Tôi ngồi ở SƯỜN NÚI (厂 - GANDARE), bên cạnh ĐỐT TRE (卩 - FUSHIZUKURI). Chuyện RIÊNG TƯ - WATASHI (わたし - 厶)¹ của tôi (Mẹo nhớ: QUA TA, SỢ GÌ), rồi cũng TRỞ LẠI - MATA (また).\n\nNgười thứ hai tên là ẤT - OTSU (おつ) (Mẹo nhớ: Ồ! SƯ cũng biết xếp hạng). Tôi đặt viên đất sét cuối cùng lên ĐẦU (亠 - NABEBUTA, 'nắp nồi'!). Xong việc, tôi tự nói với mình: \"OTSU-karesama deshita!\" (Vất vả rồi!).\n\nLưu ý:\n¹Lưu ý về Riêng tư: Bộ 厶 (Tư) này là một phần của chữ 私 (わたし - watashi), có nghĩa là \"tôi\" hoặc \"riêng tư\". Dù đứng một mình nó ít được dùng, nhưng liên tưởng đến \"watashi\" là cách nhớ tốt nhất.",
-                "radicals": [
-                    { "STT": 1, "Bộ thủ": "一", "On'yomi": "イチ, イツ", "Kun'yomi": "ひと-, ひと.つ", "Hán Việt": "Nhất", "Ý nghĩa": "Một", "Mẹo ghi nhớ": "Một nét ngang đơn giản.", "examples": [{ "kanji": "一つ", "reading": "ひとつ", "meaning": "Một cái", "type": "Kun'yomi" }, { "kanji": "一番", "reading": "いちばん", "meaning": "Số một", "type": "On'yomi" }, { "kanji": "統一", "reading": "とういつ", "meaning": "Thống nhất", "type": "On'yomi" }] },
-                    { "STT": 2, "Bộ thủ": "丨", "On'yomi": "コン", "Kun'yomi": "-", "Hán Việt": "Cổn", "Ý nghĩa": "Nét sổ", "Mẹo ghi nhớ": "Một nét thẳng đứng.", "examples": [{ "kanji": "中", "reading": "なか", "meaning": "Trong", "type": "Kun'yomi" }] },
-                    { "STT": 3, "Bộ thủ": "丶", "On'yomi": "シュ", "Kun'yomi": "-", "Hán Việt": "Chủ", "Ý nghĩa": "Điểm, chấm", "Mẹo ghi nhớ": "Một dấu chấm nhỏ.", "examples": [{ "kanji": "主", "reading": "しゅ", "meaning": "Chủ yếu", "type": "On'yomi" }] },
-                    { "STT": 4, "Bộ thủ": "丿", "On'yomi": "ヘツ", "Kun'yomi": "-", "Hán Việt": "Phiệt", "Ý nghĩa": "Nét phẩy", "Mẹo ghi nhớ": "Nét sổ xiên qua trái.", "examples": [{ "kanji": "久", "reading": "ひさし", "meaning": "Lâu", "type": "Kun'yomi" }] },
-                    { "STT": 5, "Bộ thủ": "乙", "On'yomi": "オツ", "Kun'yomi": "おつ", "Hán Việt": "Ất", "Ý nghĩa": "Can thứ hai", "Mẹo ghi nhớ": "Vị trí thứ 2 trong thiên can.", "examples": [{ "kanji": "乙", "reading": "おつ", "meaning": "Ất", "type": "Kun'yomi" }] },
-                    { "STT": 6, "Bộ thủ": "亅", "On'yomi": "ケツ", "Kun'yomi": "-", "Hán Việt": "Quyết", "Ý nghĩa": "Nét sổ có móc, cái móc", "Mẹo ghi nhớ": "Nét sổ có móc.", "examples": [{ "kanji": "事", "reading": "こと", "meaning": "Việc", "type": "Kun'yomi" }] },
-                    { "STT": 7, "Bộ thủ": "二", "On'yomi": "ニ, ジ", "Kun'yomi": "ふた", "Hán Việt": "Nhị", "Ý nghĩa": "Số hai", "Mẹo ghi nhớ": "Hai nét ngang.", "examples": [{ "kanji": "二つ", "reading": "ふたつ", "meaning": "Hai cái", "type": "Kun'yomi" }, { "kanji": "二月", "reading": "にがつ", "meaning": "Tháng hai", "type": "On'yomi" }, { "kanji": "二度", "reading": "にど", "meaning": "Hai lần", "type": "On'yomi" }] },
-                    { "STT": 8, "Bộ thủ": "亠", "On'yomi": "トウ", "Kun'yomi": "-", "Hán Việt": "Đầu", "Ý nghĩa": "Không có nghĩa", "Mẹo ghi nhớ": "Phần trên của một số chữ.", "examples": [{ "kanji": "亡", "reading": "ぼう", "meaning": "Chết", "type": "On'yomi" }] },
-                    { "STT": 9, "Bộ thủ": "人", "On'yomi": "ジン, ニン", "Kun'yomi": "ひと", "Hán Việt": "Nhân", "Ý nghĩa": "Người", "Mẹo ghi nhớ": "Hình người có hai chân.", "examples": [{ "kanji": "人間", "reading": "にんげん", "meaning": "Con người", "type": "On'yomi" }, { "kanji": "日本人", "reading": "にほんじん", "meaning": "Người Nhật", "type": "On'yomi" }, { "kanji": "一人", "reading": "ひとり", "meaning": "Một người", "type": "Kun'yomi" }] },
-                    { "STT": 10, "Bộ thủ": "儿", "On'yomi": "ニ", "Kun'yomi": "-", "Hán Việt": "Nhi", "Ý nghĩa": "Trẻ con, người đi", "Mẹo ghi nhớ": "Hình người đang đi.", "examples": [{ "kanji": "元", "reading": "もと", "meaning": "Gốc", "type": "Kun'yomi" }] },
-                    { "STT": 11, "Bộ thủ": "入", "On'yomi": "ニュウ", "Kun'yomi": "いる", "Hán Việt": "Nhập", "Ý nghĩa": "Vào", "Mẹo ghi nhớ": "Hình rễ cây đâm sâu vào đất.", "examples": [{ "kanji": "入学", "reading": "にゅうがく", "meaning": "Nhập học", "type": "On'yomi" }, { "kanji": "入れる", "reading": "いれる", "meaning": "Cho vào", "type": "Kun'yomi" }] },
-                    { "STT": 12, "Bộ thủ": "八", "On'yomi": "ハチ", "Kun'yomi": "や", "Hán Việt": "Bát", "Ý nghĩa": "Số tám, phân chia", "Mẹo ghi nhớ": "Hình số tám.", "examples": [{ "kanji": "八つ", "reading": "やっつ", "meaning": "Tám cái", "type": "Kun'yomi" }, { "kanji": "八月", "reading": "はちがつ", "meaning": "Tháng tám", "type": "On'yomi" }] },
-                    { "STT": 13, "Bộ thủ": "冂", "On'yomi": "ケイ", "Kun'yomi": "-", "Hán Việt": "Quynh", "Ý nghĩa": "Vùng biên giới xa", "Mẹo ghi nhớ": "Vòng tường bao quanh.", "examples": [{ "kanji": "内", "reading": "うち", "meaning": "Bên trong", "type": "Kun'yomi" }] },
-                    { "STT": 14, "Bộ thủ": "冖", "On'yomi": "ベキ", "Kun'yomi": "-", "Hán Việt": "Mịch", "Ý nghĩa": "Khăn chùm lên, che đậy", "Mẹo ghi nhớ": "Khăn chùm lên đồ vật.", "examples": [{ "kanji": "冠", "reading": "かんむり", "meaning": "Vương miện", "type": "Kun'yomi" }] },
-                    { "STT": 15, "Bộ thủ": "冫", "On'yomi": "ヒョウ", "Kun'yomi": "-", "Hán Việt": "Băng", "Ý nghĩa": "Nước đóng băng, nước đá", "Mẹo ghi nhớ": "Hai chấm nước lạnh.", "examples": [{ "kanji": "冷たい", "reading": "つめたい", "meaning": "Lạnh", "type": "Kun'yomi" }] },
-                    { "STT": 16, "Bộ thủ": "几", "On'yomi": "キ", "Kun'yomi": "つくえ", "Hán Việt": "Kỷ", "Ý nghĩa": "Cái ghế", "Mẹo ghi nhớ": "Hình cái ghế dựa.", "examples": [{ "kanji": "机", "reading": "つくえ", "meaning": "Bàn", "type": "Kun'yomi" }] },
-                    { "STT": 17, "Bộ thủ": "凵", "On'yomi": "カン", "Kun'yomi": "-", "Hán Việt": "Khảm", "Ý nghĩa": "Há miệng, vật để đựng", "Mẹo ghi nhớ": "Hình máng chậu.", "examples": [{ "kanji": "凹", "reading": "くぼむ", "meaning": "Lõm", "type": "Kun'yomi" }] },
-                    { "STT": 18, "Bộ thủ": "刀 (刂)", "On'yomi": "トウ", "Kun'yomi": "かたな", "Hán Việt": "Đao", "Ý nghĩa": "Con dao", "Mẹo ghi nhớ": "Hình con dao.", "examples": [{ "kanji": "刀", "reading": "かたな", "meaning": "Dao", "type": "Kun'yomi" }, { "kanji": "切る", "reading": "きる", "meaning": "Cắt", "type": "Kun'yomi" }] },
-                    { "STT": 19, "Bộ thủ": "力", "On'yomi": "リョク, リキ", "Kun'yomi": "ちカラ", "Hán Việt": "Lực", "Ý nghĩa": "Sức mạnh", "Mẹo ghi nhớ": "Hình bàn tay đánh xuống.", "examples": [{ "kanji": "力", "reading": "ちから", "meaning": "Sức mạnh", "type": "Kun'yomi" }, { "kanji": "協力", "reading": "きょうりょく", "meaning": "Hợp tác", "type": "On'yomi" }] },
-                    { "STT": 20, "Bộ thủ": "勹", "On'yomi": "ホウ", "Kun'yomi": "-", "Hán Việt": "Bao", "Ý nghĩa": "Bọc, gói", "Mẹo ghi nhớ": "Khom lưng ôm một vật.", "examples": [{ "kanji": "包む", "reading": "つつむ", "meaning": "Gói", "type": "Kun'yomi" }] },
-                    { "STT": 21, "Bộ thủ": "匕", "On'yomi": "ヒ", "Kun'yomi": "さじ", "Hán Việt": "Tỷ (bỉ)", "Ý nghĩa": "Cái thìa", "Mẹo ghi nhớ": "Hình cái thìa.", "examples": [{ "kanji": "匙", "reading": "さじ", "meaning": "Thìa", "type": "Kun'yomi" }] },
-                    { "STT": 22, "Bộ thủ": "匚", "On'yomi": "ホウ", "Kun'yomi": "-", "Hán Việt": "Phương", "Ý nghĩa": "Đồ đựng, cái hộp", "Mẹo ghi nhớ": "Hình khoanh gỗ khoét giữa.", "examples": [{ "kanji": "区", "reading": "く", "meaning": "Quận", "type": "On'yomi" }] },
-                    { "STT": 23, "Bộ thủ": "匸", "On'yomi": "ケイ", "Kun'yomi": "-", "Hán Việt": "Hễ (hệ)", "Ý nghĩa": "Che đậy", "Mẹo ghi nhớ": "Nét ngang trên phủ quá nét sổ vuông.", "examples": [{ "kanji": "匿", "reading": "とく", "meaning": "Giấu", "type": "On'yomi" }] },
-                    { "STT": 24, "Bộ thủ": "十", "On'yomi": "ジュウ, ジッ, ジュッ", "Kun'yomi": "too, to", "Hán Việt": "Thập", "Ý nghĩa": "Số mười, đầy đủ", "Mẹo ghi nhớ": "Hình chữ thập.", "examples": [{ "kanji": "十", "reading": "too", "meaning": "Mười", "type": "Kun'yomi" }, { "kanji": "十字路", "reading": "juujiro", "meaning": "Ngã tư", "type": "On'yomi" }] },
-                    { "STT": 25, "Bộ thủ": "卜", "On'yomi": "ボク", "Kun'yomi": "urana.u", "Hán Việt": "Bốc", "Ý nghĩa": "Bói", "Mẹo ghi nhớ": "Vết nứt trên yếm rùa để xem hung cát.", "examples": [{ "kanji": "占う", "reading": "uranau", "meaning": "Bói", "type": "Kun'yomi" }] },
-                    { "STT": 26, "Bộ thủ": "卩", "On'yomi": "セツ", "Kun'yomi": "-", "Hán Việt": "Tiết", "Ý nghĩa": "Đốt tre, chi tiết nhỏ", "Mẹo ghi nhớ": "Hình đốt tre.", "examples": [{ "kanji": "印", "reading": "shirushi", "meaning": "Dấu", "type": "Kun'yomi" }] },
-                    { "STT": 27, "Bộ thủ": "厂", "On'yomi": "ガン", "Kun'yomi": "-", "Hán Việt": "Hán", "Ý nghĩa": "Sườn núi có mái che", "Mẹo ghi nhớ": "Chỗ sườn núi làm nhà.", "examples": [{ "kanji": "原", "reading": "hara", "meaning": "Đồng bằng", "type": "Kun'yomi" }] },
-                    { "STT": 28, "Bộ thủ": "厶", "On'yomi": "シ", "Kun'yomi": "mu", "Hán Việt": "Tư", "Ý nghĩa": "Riêng tư", "Mẹo ghi nhớ": "Hình chữ tư.", "examples": [{ "kanji": "私", "reading": "watashi", "meaning": "Tôi", "type": "Kun'yomi" }] },
-                    { "STT": 29, "Bộ thủ": "又", "On'yomi": "ユウ", "Kun'yomi": "mata", "Hán Việt": "Hựu", "Ý nghĩa": "Cái tay bắt chéo, lại nữa", "Mẹo ghi nhớ": "Hình cái tay bắt chéo.", "examples": [{ "kanji": "又", "reading": "mata", "meaning": "Lại nữa", "type": "Kun'yomi" }] },
-                    { "STT": 30, "Bộ thủ": "口", "On'yomi": "コウ, ク", "Kun'yomi": "kuchi", "Hán Việt": "Khẩu", "Ý nghĩa": "Cái miệng", "Mẹo ghi nhớ": "Hình cái miệng.", "examples": [{ "kanji": "口", "reading": "kuchi", "meaning": "Miệng", "type": "Kun'yomi" }] },
-                    { "STT": 31, "Bộ thủ": "囗", "On'yomi": "イ", "Kun'yomi": "-", "Hán Việt": "Vi", "Ý nghĩa": "Vi, ranh giới bao quanh", "Mẹo ghi nhớ": "Hình ranh giới bao quanh.", "examples": [{ "kanji": "国", "reading": "kuni", "meaning": "Quốc gia", "type": "Kun'yomi" }] }
-                ]
-            },
-            {
-                "theme": "Bộ thủ về Con người và Môi trường xung quanh (30-58)",
-                "story": "Chuyến Phiêu Lưu Tìm Nhà Của Gia Đình Kì Lạ\n\nCâu chuyện bắt đầu vào một buổi Tối (夕) mịt mùng, trên một vùng Đất (土) hoang vu. Dẫn đầu đoàn người là một ông Kẻ Sĩ (士) uyên bác nhưng nổi tiếng lề mề, ông đi với cái dáng đi chậm chạp (夊) đặc trưng. Cả gia đình cứ thế lóc cóc theo sau (夂) ông trong im lặng.\n\nĐoàn người gồm một Người Lớn (大) là bà vợ, một cô Con Gái (女) tuổi teen và một Đứa Trẻ (子) hiếu động. Cả nhà đang đi tìm một Mái nhà (宀) để trú ngụ. Họ tìm thấy một mảnh đất, bà vợ liền lấy thước ra đo từng Tấc (寸), rồi thở dài vì nó quá Nhỏ bé (小).\n\nĐang lúc thất vọng, họ bỗng giật mình khi thấy một cái bóng trông như người què (尢) đang đứng cạnh một thi thể (尸). Cả nhà sợ hết hồn! Nhưng khi nhìn kỹ lại, đó chỉ là một con bù nhìn cũ nát và một hình nộm bỏ đi, trên đó còn có cả cây cỏ mới mọc (屮) trông đến là hài hước.\n\nHọ tạm quên nỗi sợ, ngước mắt nhìn ra xa, nơi có ngọn Núi (山) hùng vĩ và dòng Sông (巛) uốn lượn. Khung cảnh thật yên bình, cho đến khi họ gặp một Người thợ (工) kỳ quặc. Ông ta đang chăm chú dùng một sợi chỉ (己) duy nhất để dệt thành một cái khăn (巾) rồi đem đi phơi (干) với vẻ mặt vô cùng hệ trọng.\n\nBỏ lại người thợ kỳ lạ, gia đình cuối cùng cũng tìm được một Mái hiên (广) bỏ hoang. Dưới mái hiên có một vật gì đó nhỏ (幺) xíu nhưng lại kéo dài (廴) ra tít tận xa, trông như một sợi mì bất tận. Mừng rỡ vì có chỗ trú chân, cả nhà liền chấp hai tay (廾) tạ trời đất. Cậu con trai nghịch ngợm vớ lấy một cái cọc (弋) và một cái cung (弓) cũ ai đó bỏ lại, bắt đầu chơi trò săn bắn.\n\nBất thình lình, cái Đầu con heo (彐) rừng cùng với mấy sợi lông dài (彡) của nó từ đâu bay vèo qua trước mặt. Thì ra cậu bé đã bắn trúng một con heo thật! Ông Kẻ Sĩ hoảng quá, chỉ kịp loạng choạng lùi lại bằng một bước chân trái (彳) duy nhất, kết thúc chuyến đi tìm nhà đầy \"bão tố\" của gia đình.\n\n---\n\nChuyến Phiêu Lưu Tìm Nhà (Phiên Bản Âm Thanh)\n\nTiếp nối câu chuyện phiêu lưu ở trên, chúng ta sẽ lồng ghép cách đọc Kun'yomi (cách đọc thuần Nhật) vào để bạn có thể nhớ cả âm và nghĩa nhé.\n\nĐể câu chuyện thú vị hơn, hãy tưởng tượng gia đình Kẻ Sĩ này là những người rất \"sính chữ\", họ gọi tên mọi thứ bằng đúng âm đọc của nó trong tiếng Nhật.\n\nCâu chuyện của chúng ta lại bắt đầu trên vùng Đất (土) nọ. Lần này, đứa con KO (子) bỗng chỉ xuống đất và hét lên: \"Ở đây toàn TSUCHI (つち) là bùn đất thôi!\" (Mẹo nhớ: Vùng đất này SƯ CHỈ dạy trồng trọt).\n\nÔng bố Kẻ Sĩ (士), một SAMURAI (さむらい) về hưu, vẫn lề mề như cũ. Bà vợ Người Lớn (大), to con nhất nhà, bực mình hét lớn: \"OOKII (おおきい)!... Ô KÌA! Anh đi nhanh lên được không?\".\n\nCô Con Gái (女) tên là ONNA (おんな) (Mẹo nhớ: ÔI NA! Bố mẹ lại cãi nhau rồi), phàn nàn: \"Trời thì sắp Tối (夕), tối YUU (ゆう) mịt rồi!\" (Mẹo nhớ: Buổi tối thật DIU dàng). Cả nhà cứ thế lóc cóc đi theo sau (夂), hay nói theo kiểu Nhật là đi ATO (あと) ông bố.\n\nCuối cùng, họ tìm thấy một mảnh đất. Bà vợ đo xong liền chê: \"Quá NHỎ BÉ (小), thật là CHIISAI (ちいさい)!\" (Mẹo nhớ: Đo đạc CHỈ SAI một li là mất đất). Cả nhà buồn rầu nhìn lên trời, ước có một Mái nhà (宀). Đứa con bỗng hỏi: \"Bố ơi, Mái nhà đọc là gì ạ?\". Ông bố gãi đầu: \"Tên học thuật của nó là UKANMURI (うかんむり)... Ừ, KHÁ MÙ MỊT, bố cũng không chắc!\".\n\nHọ lại đi tiếp và bắt gặp cảnh tượng hôm trước: cái Thi thể (尸) giả. Lần này, họ không sợ nữa mà còn bình phẩm: \"Ồ, một cái SHIKABANE (しかばね)!\" (Mẹo nhớ: SỢ KHI BA NÉ ra chỗ khác). Trên đó, cây cỏ (屮) dại mọc đầy, trông như một đám KUSA (くさ) xanh um (Mẹo nhớ: Cỏ này CỨ XA xa là thấy).\n\nĐể giải khuây, cả nhà ngắm Núi (山) và Sông (巛). Cậu bé KO (子) reo lên: \"Kia là núi YAMA (やま) và sông KAWA (かわ)!\". (Mẹo nhớ: Xe YAMAHA leo núi, con sông hay CÀ khịa).\n\nHọ lại gặp Người thợ (工) kỳ quặc tên TAKUMI (たくみ) (Mẹo nhớ: Anh thợ này TA CỨ MÌNH làm việc). Bà vợ OOKII tò mò hỏi ông ta đang làm gì. Ông đáp: \"Tôi đang dùng chính bản thân (己) mình, bằng tinh thần ONORE (おのれ), để dệt một cái khăn (巾) gọi là FUKIN (ふきん), rồi đem đi phơi (干) cho nó HOSU (ほす) thật khô!\" (Mẹo nhớ: Ồ NO RỒI, lỡ làm sai / Phơi cho HÔ XƯơng luôn).\n\nCuối cùng, gia đình cũng tìm được cái Mái hiên (广), mà tên trong \"gia phả\" của nó là MADARE (まだれ) (Mẹo nhớ: Cả nhà đi mệt quá nên MÁ ĐÃ RÊN). Cậu con trai lại nghịch ngợm vớ lấy cái cung (弓). \"Oa, một cây YUMI (ゆみ)!\" (Mẹo nhớ: DU MÌNH ra bắn cung).\n\nVà \"BÙM!\", một tiếng động lớn vang lên. Cậu bé đã dùng cây YUMI bắn trúng thứ gì đó. Ông bố SAMURAI sợ quá lùi lại một bước, kết thúc chuyến đi bằng một âm thanh rất kêu: \"GYOUNINBEN! (ぎょうにんべん)\" – đó chính là tên của bộ thủ bước chân trái (彳), như một lời than thở cho chuyến đi bộ mệt mỏi này!\n\nLưu ý nhỏ:\nMột vài bộ thủ trong danh sách là những bộ phận cấu thành chữ, bản thân chúng không có cách đọc Kun'yomi thông dụng mà thường được gọi bằng \"tên học thuật\" (như Ukanmuri, Madare, Gyouninben...). Việc lồng ghép chúng vào câu chuyện như những cái tên riêng \"kêu kêu\" sẽ giúp bạn nhớ chúng dễ hơn.",
-                "radicals": [
-                    { "STT": 32, "Bộ thủ": "夊", "On'yomi": "スイ", "Kun'yomi": "-", "Hán Việt": "Truy (Trĩ)", "Ý nghĩa": "Dáng đi chậm chạp", "Mẹo ghi nhớ": "Theo sau mà đến kịp.", "examples": [{ "kanji": "夏", "reading": "なつ", "meaning": "Mùa hè", "type": "Kun'yomi" }] },
-                    { "STT": 33, "Bộ thủ": "夂", "On'yomi": "チ", "Kun'yomi": "-", "Hán Việt": "Tuy", "Ý nghĩa": "Dáng đi chậm", "Mẹo ghi nhớ": "Dáng đi chậm.", "examples": [{ "kanji": "冬", "reading": "ふゆ", "meaning": "Mùa đông", "type": "Kun'yomi" }] },
-                    { "STT": 34, "Bộ thủ": "夕", "On'yomi": "セキ", "Kun'yomi": "ゆう", "Hán Việt": "Tịch", "Ý nghĩa": "Buổi tối", "Mẹo ghi nhớ": "Nửa chữ nguyệt - mặt trăng vừa mọc.", "examples": [{ "kanji": "夕方", "reading": "ゆうがた", "meaning": "Chiều tối", "type": "Kun'yomi" }] },
-                    { "STT": 35, "Bộ thủ": "大", "On'yomi": "ダイ, タイ", "Kun'yomi": "おお.きい", "Hán Việt": "Đại", "Ý nghĩa": "Lớn", "Mẹo ghi nhớ": "Hình người dang rộng hai tay và chân.", "examples": [{ "kanji": "大きい", "reading": "おおきい", "meaning": "To lớn", "type": "Kun'yomi" }, { "kanji": "大学", "reading": "だいがく", "meaning": "Đại học", "type": "On'yomi" }] },
-                    { "STT": 36, "Bộ thủ": "女", "On'yomi": "ジョ, ニョ, ニョウ", "Kun'yomi": "おんな, め", "Hán Việt": "Nữ", "Ý nghĩa": "Con gái", "Mẹo ghi nhớ": "Người con gái chắp tay trước bụng.", "examples": [{ "kanji": "女", "reading": "おんな", "meaning": "Phụ nữ", "type": "Kun'yomi" }] },
-                    { "STT": 37, "Bộ thủ": "子", "On'yomi": "シ, ス", "Kun'yomi": "こ", "Hán Việt": "Tử", "Ý nghĩa": "Con", "Mẹo ghi nhớ": "Hình đứa trẻ mới sinh cuốn tã.", "examples": [{ "kanji": "子供", "reading": "こども", "meaning": "Trẻ con", "type": "Kun'yomi" }] },
-                    { "STT": 38, "Bộ thủ": "宀", "On'yomi": "ベン", "Kun'yomi": "うかんむり", "Hán Việt": "Miên", "Ý nghĩa": "Mái nhà", "Mẹo ghi nhớ": "Hình mái nhà.", "examples": [{ "kanji": "家", "reading": "いえ", "meaning": "Nhà", "type": "Kun'yomi" }] },
-                    { "STT": 39, "Bộ thủ": "寸", "On'yomi": "スン", "Kun'yomi": "-", "Hán Việt": "Thốn", "Ý nghĩa": "Tấc", "Mẹo ghi nhớ": "Một phần mười của thước.", "examples": [{ "kanji": "寸法", "reading": "すんぽう", "meaning": "Kích thước", "type": "On'yomi" }] },
-                    { "STT": 40, "Bộ thủ": "小", "On'yomi": "ショウ", "Kun'yomi": "ちい.さい", "Hán Việt": "Tiểu", "Ý nghĩa": "Nhỏ bé, ít", "Mẹo ghi nhớ": "Hình hạt gạo nhỏ.", "examples": [{ "kanji": "小さい", "reading": "ちいさい", "meaning": "Nhỏ", "type": "Kun'yomi" }, { "kanji": "小学校", "reading": "しょうがっこう", "meaning": "Trường tiểu học", "type": "On'yomi" }] },
-                    { "STT": 41, "Bộ thủ": "尢", "On'yomi": "オウ", "Kun'yomi": "おう", "Hán Việt": "Uông", "Ý nghĩa": "Què", "Mẹo ghi nhớ": "Hình người chân không thẳng.", "examples": [{ "kanji": "尤", "reading": "もっとも", "meaning": "Đặc biệt", "type": "Kun'yomi" }] },
-                    { "STT": 42, "Bộ thủ": "尸", "On'yomi": "シ", "Kun'yomi": "しかばね", "Hán Việt": "Thi", "Ý nghĩa": "Thây người chết", "Mẹo ghi nhớ": "Thi thể nằm im.", "examples": [{ "kanji": "尻", "reading": "しり", "meaning": "Mông", "type": "Kun'yomi" }] },
-                    { "STT": 43, "Bộ thủ": "屮", "On'yomi": "テツ", "Kun'yomi": "くさのめ", "Hán Việt": "Triệt", "Ý nghĩa": "Cây cỏ mới mọc", "Mẹo ghi nhớ": "Cây cỏ đâm chồi.", "examples": [{ "kanji": "屯", "reading": "とん", "meaning": "Đồn trú", "type": "On'yomi" }] },
-                    { "STT": 44, "Bộ thủ": "山", "On'yomi": "サン", "Kun'yomi": "やま", "Hán Việt": "Sơn", "Ý nghĩa": "Núi", "Mẹo ghi nhớ": "Hình ảnh ba ngọn núi nhấp nhô.", "examples": [{ "kanji": "山", "reading": "やま", "meaning": "Núi", "type": "Kun'yomi" }] },
-                    { "STT": 45, "Bộ thủ": "巛", "On'yomi": "セン", "Kun'yomi": "かわ", "Hán Việt": "Xuyên", "Ý nghĩa": "Sông", "Mẹo ghi nhớ": "Dòng sông có nhiều nhánh.", "examples": [{ "kanji": "川", "reading": "かわ", "meaning": "Sông", "type": "Kun'yomi" }] },
-                    { "STT": 46, "Bộ thủ": "工", "On'yomi": "コウ, ク", "Kun'yomi": "たくみ", "Hán Việt": "Công", "Ý nghĩa": "Việc, người thợ", "Mẹo ghi nhớ": "Hình dụng cụ đo góc vuông.", "examples": [{ "kanji": "工場", "reading": "こうじょう", "meaning": "Nhà máy", "type": "On'yomi" }] },
-                    { "STT": 47, "Bộ thủ": "己", "On'yomi": "コ, キ", "Kun'yomi": "おのれ", "Hán Việt": "Kỷ", "Ý nghĩa": "Can thứ sáu", "Mẹo ghi nhớ": "Hình chữ kỷ.", "examples": [{ "kanji": "自己", "reading": "じこ", "meaning": "Bản thân", "type": "On'yomi" }] },
-                    { "STT": 48, "Bộ thủ": "巾", "On'yomi": "キン", "Kun'yomi": "はば", "Hán Việt": "Cân", "Ý nghĩa": "Khăn", "Mẹo ghi nhớ": "Hình cái khăn cột ở thắt lưng.", "examples": [{ "kanji": "布巾", "reading": "ふきん", "meaning": "Khăn lau", "type": "Kun'yomi" }] },
-                    { "STT": 49, "Bộ thủ": "干", "On'yomi": "カン", "Kun'yomi": "ほす", "Hán Việt": "Can", "Ý nghĩa": "Phạm đến", "Mẹo ghi nhớ": "Hình cái khiên.", "examples": [{ "kanji": "干す", "reading": "ほす", "meaning": "Phơi", "type": "Kun'yomi" }] },
-                    { "STT": 50, "Bộ thủ": "幺", "On'yomi": "ヨウ", "Kun'yomi": "いとがしら", "Hán Việt": "Yêu", "Ý nghĩa": "Nhỏ", "Mẹo ghi nhớ": "Hình đứa bé mới sinh.", "examples": [{ "kanji": "幻", "reading": "まぼろし", "meaning": "Ảo ảnh", "type": "Kun'yomi" }] },
-                    { "STT": 51, "Bộ thủ": "广", "On'yomi": "コウ", "Kun'yomi": "まだれ", "Hán Việt": "Nghiễm", "Ý nghĩa": "Nhân chỗ sườn núi làm nhà", "Mẹo ghi nhớ": "Chấm trên là nóc nhà.", "examples": [{ "kanji": "広", "reading": "ひろい", "meaning": "Rộng", "type": "Kun'yomi" }] },
-                    { "STT": 52, "Bộ thủ": "廴", "On'yomi": "イン", "Kun'yomi": "えんにょう", "Hán Việt": "Dẫn", "Ý nghĩa": "Đi xa", "Mẹo ghi nhớ": "Chữ xích thêm nét dài.", "examples": [{ "kanji": "建", "reading": "たてる", "meaning": "Xây dựng", "type": "Kun'yomi" }] },
-                    { "STT": 53, "Bộ thủ": "廾", "On'yomi": "キョウ", "Kun'yomi": "こまぬき", "Hán Việt": "Củng", "Ý nghĩa": "Chấp hai tay cung kính", "Mẹo ghi nhớ": "Hai chữ hựu gộp lại.", "examples": [{ "kanji": "弁", "reading": "べん", "meaning": "Biện hộ", "type": "On'yomi" }] },
-                    { "STT": 54, "Bộ thủ": "弋", "On'yomi": "ヨク", "Kun'yomi": "しき", "Hán Việt": "Dực (dặc)", "Ý nghĩa": "Cái cọc, cọc buộc súc vật", "Mẹo ghi nhớ": "Cọc buộc súc vật.", "examples": [{ "kanji": "式", "reading": "しき", "meaning": "Kiểu", "type": "On'yomi" }] },
-                    { "STT": 55, "Bộ thủ": "弓", "On'yomi": "キュウ", "Kun'yomi": "ゆみ", "Hán Việt": "Cung", "Ý nghĩa": "Cái cung để bắn tên", "Mẹo ghi nhớ": "Hình cái cung.", "examples": [{ "kanji": "弓", "reading": "ゆみ", "meaning": "Cung", "type": "Kun'yomi" }] },
-                    { "STT": 56, "Bộ thủ": "彐", "On'yomi": "ケイ", "Kun'yomi": "けいがしら", "Hán Việt": "Kệ (kí)", "Ý nghĩa": "Đầu con heo", "Mẹo ghi nhớ": "Hình đầu con heo.", "examples": [{ "kanji": "雪", "reading": "ゆき", "meaning": "Tuyết", "type": "Kun'yomi" }] },
-                    { "STT": 57, "Bộ thủ": "彡", "On'yomi": "サン", "Kun'yomi": "さんづくり", "Hán Việt": "Sam", "Ý nghĩa": "Lông dài (đuôi sam)", "Mẹo ghi nhớ": "Hình đuôi sam.", "examples": [{ "kanji": "形", "reading": "かたち", "meaning": "Hình dạng", "type": "Kun'yomi" }] },
-                    { "STT": 58, "Bộ thủ": "彳", "On'yomi": "テキ", "Kun'yomi": "ぎょうにんべん", "Hán Việt": "Xích", "Ý nghĩa": "Bước ngắn, bước chân trái", "Mẹo ghi nhớ": "Hình bước chân trái.", "examples": [{ "kanji": "行", "reading": "いく", "meaning": "Đi", "type": "Kun'yomi" }] }
-                ]
-            },
-            {
-                "theme": "Bộ thủ về Tâm trí, Hành động và Thời gian (61-80)",
-                "story": "Cuộc Chiến Với Con Quái Vật Trì Hoãn (Để nhớ ý nghĩa)\n\nBên trong tâm trí (心) tôi đang diễn ra một trận chiến. Kẻ thù của tôi, con quái vật của sự Trì Hoãn, đang đứng chắn trước cửa một cánh (戶) dẫn đến tương lai. Vũ khí của nó là một cái kích (戈) sáng loáng, tượng trưng cho những lý do sắc nhọn nó dùng để ngăn cản tôi.\n\nTôi run rẩy giơ tay (手) lên, cố gắng chống đỡ (支) lại những lời dụ dỗ của nó. Nhưng sức phản kháng của tôi quá yếu ớt, chỉ như một cú đánh nhẹ (攴) vào không khí.\n\nTôi thử dùng lý trí, dùng những lời nói (文) như văn chương để thuyết phục bản thân, rồi lại chuyển sang đấu (斗) khẩu với chính mình. Tôi vớ lấy cái rìu (斤) của sự quyết tâm, tìm mọi phương hướng (方) để phòng thủ.\n\nThế nhưng, con quái vật dường như không (旡) hề hấn gì. Nó chỉ đứng đó, trơ trơ như thách thức.\n\nMặt trời (日) lên rồi lại lặn, mặt trăng (月) lại ló dạng. Cái miệng tôi vẫn nói (曰) những lời tự động viên sáo rỗng. Thời gian trôi đi, tôi kiệt sức và quyết định dừng lại (止). Tôi nhìn xuống đất, thấy những xương tàn (歹) của các kế hoạch cũ đã thất bại. Tuyệt vọng, tôi chỉ biết nắm chặt lấy cái gậy (殳) của sự bền bỉ cuối cùng.\n\nNgay lúc đó, tôi tự nhủ rằng mình không (毋) được phép bỏ cuộc. Ánh mắt tôi tình cờ nhìn ra ngoài cửa sổ, thấy một cây (木) cổ thụ sừng sững. Dù nó đã bị thiếu (欠) mất một nhánh lớn sau cơn bão, nó vẫn vươn mình lên mạnh mẽ. Hình ảnh đó đã thắp lại ngọn lửa trong tôi. Trận chiến vẫn chưa kết thúc.\n\n---\n\nTrận Đấu Cùng Âm Thanh (Để nhớ cách đọc Kun'yomi)\n\nTrong KOKORO (こころ - 心) của tôi (Mẹo nhớ: 'cô có रो' [khóc] không?), một trận chiến nổ ra. Con quái vật cầm cái kích tên HOKO (ほこ - 戈) (Mẹo nhớ: Nó HÔ CÓ tha cho ai đâu!) đứng chặn ở cánh cửa TO (と - 戶) (Mẹo nhớ: Cửa này to thế!).\n\nTôi giơ bàn tay TE (て - 手) lên (Mẹo nhớ: Đỡ đến nỗi tê cả tay), cố gắng chống đỡ - SASAERU (ささえる - 支) (Mẹo nhớ: SA SẢ vào mặt nó!). Tôi đánh nhẹ một cái - UTSU (うつ - 攴)! (Mẹo nhớ: Đánh cho nó ÚT SƯỞNG!).\n\nHết cách, tôi đọc một bức thư (FUMI - ふみ - 文) để lấy tinh thần. Thấy không hiệu quả, tôi vớ luôn cái đấu gạo MASU (ます - 斗) gần đó để chiến đấu (Mẹo nhớ: Thấy cảnh này Má suýt ngất!). Tôi còn tìm được cái rìu ONO (おの - 斤/斧)¹ và tìm phương hướng (KATA - かた - 方) để tấn công (Mẹo nhớ: Ồ nó có cả rìu / Đánh vào cả tay lẫn chân!).\n\nNhưng hỡi ôi, KHÔNG (NAI - ない - 旡) có tác dụng! (Mẹo nhớ: NÀY, sao mày lì thế?).\n\nMặt trời (HI - ひ - 日) lên, rồi mặt trăng (TSUKI - つき - 月) lại tới. Miệng tôi vẫn NÓI (IWAKU - いわく - 曰) những lời vô nghĩa (Mẹo nhớ: Mệt đến yếu quá không nói nổi).\n\nTôi quyết định DỪNG LẠI - TOMARU (とまる - 止) (Mẹo nhớ: TÔ MÀ RỦ nó đi chơi là nó không cho). Tôi thấy đống xương tàn (歹) và cái gậy (殳). Tôi tự nhủ KHÔNG được bỏ cuộc - NAKARE (なかれ - 毋)! (Mẹo nhớ: Đừng có na cà rê trên sàn nữa!).\n\nTôi nhìn ra cái cây (KI - き - 木). Nó bị THIẾU (KAKERU - かける - 欠) một cành, nhưng nó không hề ngáp (AKUBI - あくび - 欠)² chán nản. Chính hình ảnh đó đã cho tôi sức mạnh. Tôi phải đứng vững như cái cây KI vậy!\n\n---\n¹Lưu ý nhỏ về cái rìu: Trong tiếng Nhật, chữ \"cái rìu\" là 斧 (おの - ono). Chữ 斤 (きん - kin) thường dùng để chỉ một đơn vị cân nặng. Tuy nhiên, vì bộ thủ 斤 có hình cái rìu, chúng ta hãy cứ liên tưởng nó với âm đọc ONO để dễ nhớ nhé.\n\n²Lưu ý về chữ Thiếu: Chữ 欠 có hai cách đọc Kun'yomi rất hay. KAKERU (欠ける) nghĩa là \"thiếu\", còn AKUBI (あくび) nghĩa là \"cái ngáp\". Liên tưởng cái cây bị thiếu một cành nhưng không hề ngáp chán nản sẽ rất dễ nhớ.",
-                "radicals": [
-                    { "STT": 61, "Bộ thủ": "心 (忄)", "On'yomi": "シン", "Kun'yomi": "こころ", "Hán Việt": "Tâm", "Ý nghĩa": "Tim, tấm lòng", "Mẹo ghi nhớ": "Hình ảnh trái tim hoặc tâm hồn.", "examples": [{ "kanji": "心", "reading": "こころ", "meaning": "Trái tim", "type": "Kun'yomi" }] },
-                    { "STT": 62, "Bộ thủ": "戈", "On'yomi": "カ", "Kun'yomi": "ほこ", "Hán Việt": "Qua", "Ý nghĩa": "Cái kích bằng đầu", "Mẹo ghi nhớ": "Hình cái kích.", "examples": [{ "kanji": "我", "reading": "われ", "meaning": "Tôi", "type": "Kun'yomi" }] },
-                    { "STT": 63, "Bộ thủ": "戶", "On'yomi": "コ", "Kun'yomi": "と", "Hán Việt": "Hộ", "Ý nghĩa": "Cửa một cánh", "Mẹo ghi nhớ": "Một nửa chữ môn.", "examples": [{ "kanji": "戸", "reading": "と", "meaning": "Cửa", "type": "Kun'yomi" }] },
-                    { "STT": 64, "Bộ thủ": "手 (扌)", "On'yomi": "シュ", "Kun'yomi": "て", "Hán Việt": "Thủ", "Ý nghĩa": "Tay", "Mẹo ghi nhớ": "Hình bàn tay.", "examples": [{ "kanji": "手", "reading": "て", "meaning": "Tay", "type": "Kun'yomi" }] },
-                    { "STT": 65, "Bộ thủ": "支", "On_yomi": "シ", "Kun'yomi": "ささえる", "Hán Việt": "Chi", "Ý nghĩa": "Cành cây, chống đỡ", "Mẹo ghi nhớ": "Tay chống đỡ cành cây.", "examples": [{ "kanji": "支える", "reading": "ささえる", "meaning": "Chống đỡ", "type": "Kun'yomi" }] },
-                    { "STT": 66, "Bộ thủ": "攴", "On_yomi": "ボク", "Kun'yomi": "-", "Hán Việt": "Phốc", "Ý nghĩa": "Đánh nhẹ", "Mẹo ghi nhớ": "Tay cầm gậy đánh nhẹ.", "examples": [{ "kanji": "教える", "reading": "おしえる", "meaning": "Dạy", "type": "Kun'yomi" }] },
-                    { "STT": 67, "Bộ thủ": "文", "On_yomi": "ブン, モン", "Kun'yomi": "ふみ", "Hán Việt": "Văn", "Ý nghĩa": "Nét vẽ. Đường giao nhau.", "Mẹo ghi nhớ": "Hình các nét vẽ.", "examples": [{ "kanji": "文", "reading": "ぶん", "meaning": "Văn", "type": "On'yomi" }] },
-                    { "STT": 68, "Bộ thủ": "斗", "On'yomi": "ト, トウ", "Kun'yomi": "masu", "Hán Việt": "Đấu", "Ý nghĩa": "Cái đấu, đơn vị đo lường lương thực.", "Mẹo ghi nhớ": "Hình cái đấu.", "examples": [{ "kanji": "北斗", "reading": "ほくと", "meaning": "Bắc Đẩu", "type": "On'yomi" }] },
-                    { "STT": 69, "Bộ thủ": "斤", "On'yomi": "キン", "Kun'yomi": "ono", "Hán Việt": "Căn", "Ý nghĩa": "Cái rìu", "Mẹo ghi nhớ": "Hình cái rìu.", "examples": [{ "kanji": "斧", "reading": "おの", "meaning": "Rìu", "type": "Kun'yomi" }] },
-                    { "STT": 70, "Bộ thủ": "方", "On'yomi": "ホウ", "Kun'yomi": "kata", "Hán Việt": "Phương", "Ý nghĩa": "Vuông, Phương hướng, phía", "Mẹo ghi nhớ": "Hai thuyền đậu chung.", "examples": [{ "kanji": "方向", "reading": "ほうこう", "meaning": "Phương hướng", "type": "On'yomi" }] },
-                    { "STT": 71, "Bộ thủ": "旡", "On'yomi": "キ", "Kun'yomi": "-", "Hán Việt": "Vô", "Ý nghĩa": "Không", "Mẹo ghi nhớ": "Giống chữ 無 (không).", "examples": [{ "kanji": "既", "reading": "sude", "meaning": "Đã", "type": "Kun'yomi" }] },
-                    { "STT": 72, "Bộ thủ": "日", "On'yomi": "ニチ, ジツ", "Kun'yomi": "hi", "Hán Việt": "Nhật", "Ý nghĩa": "Mặt trời, ban ngày.", "Mẹo ghi nhớ": "Hình mặt trời.", "examples": [{ "kanji": "日", "reading": "hi", "meaning": "Ngày", "type": "Kun'yomi" }] },
-                    { "STT": 73, "Bộ thủ": "曰", "On_yomi": "エツ", "Kun'yomi": "iwaku", "Hán Việt": "Viết", "Ý nghĩa": "Nói rằng", "Mẹo ghi nhớ": "Miệng khi nói hở răng và phát ra hơi.", "examples": [{ "kanji": "曰く", "reading": "iwaku", "meaning": "Nói rằng", "type": "Kun'yomi" }] },
-                    { "STT": 74, "Bộ thủ": "月", "On_yomi": "ゲツ, ガツ", "Kun'yomi": "tsuki", "Hán Việt": "Nguyệt", "Ý nghĩa": "Mặt trăng, ban đêm có trăng.", "Mẹo ghi nhớ": "Hình trăng khuyết.", "examples": [{ "kanji": "月", "reading": "tsuki", "meaning": "Mặt trăng", "type": "Kun'yomi" }] },
-                    { "STT": 75, "Bộ thủ": "木", "On_yomi": "ボク, モク", "Kun'yomi": "ki", "Hán Việt": "Mộc", "Ý nghĩa": "Cây, gỗ", "Mẹo ghi nhớ": "Hình cây có cành và rễ.", "examples": [{ "kanji": "木", "reading": "ki", "meaning": "Cây", "type": "Kun'yomi" }, { "kanji": "木曜日", "reading": "mokuyoubi", "meaning": "Thứ năm", "type": "On'yomi" }] },
-                    { "STT": 76, "Bộ thủ": "欠", "On_yomi": "ケツ", "Kun'yomi": "kakeru", "Hán Việt": "Khiếm", "Ý nghĩa": "Há miệng hả hơi ra ngáp. Thiếu", "Mẹo ghi nhớ": "Há miệng ngáp.", "examples": [{ "kanji": "欠ける", "reading": "kakeru", "meaning": "Thiếu", "type": "Kun'yomi" }] },
-                    { "STT": 77, "Bộ thủ": "止", "On_yomi": "シ", "Kun'yomi": "tomaru", "Hán Việt": "Chỉ", "Ý nghĩa": "Cái chân. Cái nền, thế đứng dừng lại.", "Mẹo ghi nhớ": "Hình cái chân, thế đứng dừng lại.", "examples": [{ "kanji": "止まる", "reading": "tomaru", "meaning": "Dừng lại", "type": "Kun'yomi" }] },
-                    { "STT": 78, "Bộ thủ": "歹", "On_yomi": "ガイ", "Kun'yomi": "-", "Hán Việt": "Ngạt", "Ý nghĩa": "Xương tàn, rã rượi, tan nát.", "Mẹo ghi nhớ": "Xương rã rượi.", "examples": [{ "kanji": "死", "reading": "shi", "meaning": "Chết", "type": "On'yomi" }] },
-                    { "STT": 79, "Bộ thủ": "殳", "On'yomi": "シュ", "Kun'yomi": "-", "Hán Việt": "Thù", "Ý nghĩa": "Cái gậy", "Mẹo ghi nhớ": "Tay cầm gậy.", "examples": [{ "kanji": "殺す", "reading": "korosu", "meaning": "Giết", "type": "Kun'yomi" }] },
-                    { "STT": 80, "Bộ thủ": "毋", "On'yomi": "ボ", "Kun'yomi": "nakare", "Hán Việt": "Vô", "Ý nghĩa": "Chớ, đừng", "Mẹo ghi nhớ": "Người con gái bị cấm chỉ.", "examples": [{ "kanji": "母", "reading": "haha", "meaning": "Mẹ", "type": "Kun'yomi" }] }
-                ]
-            },
-            {
-                "theme": "Bộ thủ về Động vật và Chất liệu (81-100)",
-                "story": "Trận Chiến Giữa Các Thị Tộc (Để nhớ ý nghĩa)\n\nTruyền thuyết kể lại về một trận chiến kỳ lạ nhất lịch sử. Mọi chuyện bắt đầu khi hai thị tộc hùng mạnh quyết định so sánh (比) với nhau để xem ai vĩ đại hơn. Nhưng họ không so vàng bạc hay đất đai, mà họ so... lông (毛). Cụ thể hơn, đó là cuộc thi xem tộc trưởng của họ (氏) nào có bộ râu oai vệ nhất.\n\nTrận chiến nổ ra dưới bầu khí (气) trời trong lành. Sức mạnh của nước (水) và lửa (火) được triệu hồi, tạo nên một khung cảnh hỗn loạn nhưng hùng tráng.\n\nTôi, một chiến binh trẻ, nhớ về lời dặn của cha (父) tôi. Ông là một huyền thoại, người ta nói móng vuốt (爪) của ông cứng như sắt đá. Ông dạy rằng trong trận chiến, mỗi nước đi, mỗi hào (爻) trong quẻ bói vận mệnh, đều mang ý nghĩa sống còn.\n\nChiến trường ngổn ngang những tấm ván (爿) vỡ từ khiên chắn, mỗi mảnh (片) là một minh chứng cho sự khốc liệt. Cuộc chiến trở nên thật nguyên thủy, đến mức chúng tôi phải dùng cả răng (牙) để tự vệ.\n\nNhưng chúng tôi không đơn độc. Con bò (牛) của gia đình tôi húc tung kẻ địch, và con chó (犬) trung thành chiến đấu bên cạnh. Giữa trận chiến, một cảm giác sâu kín (玄) và huyền bí bao trùm lấy tôi. Tôi chợt hiểu ra mục tiêu thật sự: viên ngọc (玉) hộ mệnh trên cổ kẻ địch.\n\nSau khi giành chiến thắng, phần thưởng không phải là châu báu, mà là những quả dưa (瓜) ngọt lịm do dân làng mang tới. Tôi nhớ lại khoảnh khắc mình dùng một viên ngói (瓦) làm vũ khí ném đi. Cảm giác chiến thắng thật ngọt (甘) ngào. Và trên hết, tôi đã sống (生) sót để kể lại câu chuyện này.\n\n---\n\nBản Giao Hưởng Của Các Thị Tộc (Để nhớ cách đọc Kun'yomi)\n\nNgày xửa ngày xưa, hai gia tộc quyết định SO SÁNH - KURABERU (くらべる - 比) (Mẹo nhớ: CỨ RA BỀU môi chê bai nhau). Họ so kè từng sợi LÔNG - KE (け - 毛) (Mẹo nhớ: KỆ, ai hơn thì hơn!). Đó là trận chiến của các HỌ - UJI (うじ - 氏) (Mẹo nhớ: ÚI GIỜI, lại đánh nhau).\n\nHít một hơi KHÍ trời - IKI (いき - 气) thật sâu (Mẹo nhớ: Hít vào thấy ÍCH KỶ ghê, muốn giữ cho riêng mình). NƯỚC - MIZU (みず - 水) (Mẹo nhớ: MI DỪ như trái dừa) và LỬA - HI (ひ - 火) (Mẹo nhớ: HI hi, lửa cháy) ở khắp mọi nơi.\n\nTôi nhớ về CHA - CHICHI (ちち - 父) của tôi (Mẹo nhớ: Ông hay la CHÍ CHÓE). Bộ MÓNG VUỐT - TSUME (つめ - 爪) của ông (Mẹo nhớ: SƯ MÊ mẩn bộ móng này) thật đáng sợ. Ông dạy tôi về các HÀO (爻)... ôi cái này khó đọc quá, bỏ qua đi!\n\nKhiên chắn vỡ thành từng MẢNH - KATA (かた - 片) (Mẹo nhớ: Rơi trúng CẢ TAY). Tôi dùng cả RĂNG - KIBA (きば - 牙) để chiến đấu (Mẹo nhớ: KHI BA nổi giận).\n\nCON BÒ - USHI (うし - 牛) của tôi (Mẹo nhớ: ÚI SỢ quá) và CON CHÓ - INU (いぬ - 犬) (Mẹo nhớ: Y NỦn nỉn dễ thương) xông lên.\n\nMọi thứ trở nên SÂU KÍN, một màu đen KURO (くろ - 玄) huyền ảo (Mẹo nhớ: CỨ RỒ lên là thấy màu đen). Tôi nhắm vào VIÊN NGỌC - TAMA (たま - 玉) của địch (Mẹo nhớ: Viên ngọc TA MÀ lấy được thì hay). Phần thưởng là những quả DƯA - URI (うり - 瓜) (Mẹo nhớ: ÚI RỒI ôi, dưa ngon quá).\n\nTôi ném những viên NGÓI - KAWARA (かわら - 瓦) (Mẹo nhớ: CÀ RA vẻ ta đây). Chiến thắng NGỌT ngào - AMAI (あまい - 甘) (Mẹo nhớ: Á, MÁI nhà có kẹo ngọt). Và tôi đã được SỐNG - IKIRU (いきる - 生)! (Mẹo nhớ: Y KÌ RỨ lắm mới sống được!).",
-                "radicals": [
-                    { "STT": 81, "Bộ thủ": "比", "On'yomi": "ヒ", "Kun'yomi": "kuraberu", "Hán Việt": "Tỉ (bỉ)", "Ý nghĩa": "So sánh", "Mẹo ghi nhớ": "Hai người đứng ngang nhau.", "examples": [{ "kanji": "比較", "reading": "hikaku", "meaning": "So sánh", "type": "On'yomi" }] },
-                    { "STT": 82, "Bộ thủ": "毛", "On'yomi": "モウ", "Kun'yomi": "ke", "Hán Việt": "Mao", "Ý nghĩa": "Lông", "Mẹo ghi nhớ": "Hình cộng lông có nhiều sợi.", "examples": [{ "kanji": "毛", "reading": "ke", "meaning": "Lông", "type": "Kun'yomi" }] },
-                    { "STT": 83, "Bộ thủ": "氏", "On'yomi": "シ", "Kun'yomi": "uji", "Hán Việt": "Thị", "Ý nghĩa": "Họ", "Mẹo ghi nhớ": "Phần đệm trong họ tên phái nữ.", "examples": [{ "kanji": "氏名", "reading": "shimei", "meaning": "Họ tên", "type": "On'yomi" }] },
-                    { "STT": 84, "Bộ thủ": "气", "On'yomi": "キ", "Kun'yomi": "-", "Hán Việt": "Khí", "Ý nghĩa": "Hơi, khí mây", "Mẹo ghi nhớ": "Khí mây làm thành mưa.", "examples": [{ "kanji": "空気", "reading": "kuuki", "meaning": "Không khí", "type": "On'yomi" }] },
-                    { "STT": 85, "Bộ thủ": "水 (氵)", "On'yomi": "スイ", "Kun'yomi": "mizu", "Hán Việt": "Thủy", "Ý nghĩa": "Nước", "Mẹo ghi nhớ": "Ba chấm nước (氵) tượng trưng cho dòng nước chảy.", "examples": [{ "kanji": "水", "reading": "mizu", "meaning": "Nước", "type": "Kun'yomi" }, { "kanji": "水泳", "reading": "suiei", "meaning": "Bơi lội", "type": "On'yomi" }] },
-                    { "STT": 86, "Bộ thủ": "火 (灬)", "On_yomi": "カ", "Kun'yomi": "hi", "Hán Việt": "Hỏa", "Ý nghĩa": "Lửa", "Mẹo ghi nhớ": "Bốn chấm lửa (灬) hoặc hình ngọn lửa bùng cháy.", "examples": [{ "kanji": "火", "reading": "hi", "meaning": "Lửa", "type": "Kun'yomi" }, { "kanji": "火山", "reading": "kazan", "meaning": "Núi lửa", "type": "On'yomi" }] },
-                    { "STT": 87, "Bộ thủ": "爪 (爫)", "On_yomi": "ソウ", "Kun'yomi": "tsume", "Hán Việt": "Trảo", "Ý nghĩa": "Móng vuốt", "Mẹo ghi nhớ": "Hình móng vuốt.", "examples": [{ "kanji": "爪", "reading": "tsume", "meaning": "Móng", "type": "Kun'yomi" }] },
-                    { "STT": 88, "Bộ thủ": "父", "On_yomi": "フ", "Kun'yomi": "chichi", "Hán Việt": "Phụ", "Ý nghĩa": "Cha", "Mẹo ghi nhớ": "Tay cầm roi đánh dậy con cái.", "examples": [{ "kanji": "父", "reading": "chichi", "meaning": "Cha", "type": "Kun'yomi" }] },
-                    { "STT": 89, "Bộ thủ": "爻", "On_yomi": "コウ", "Kun'yomi": "-", "Hán Việt": "Hào", "Ý nghĩa": "Giao nhau", "Mẹo ghi nhớ": "Mỗi quẻ trong kinh dịch có sáu hào.", "examples": [{ "kanji": "交わる", "reading": "majiwaru", "meaning": "Giao nhau", "type": "Kun'yomi" }] },
-                    { "STT": 90, "Bộ thủ": "爿", "On_yomi": "ショウ", "Kun'yomi": "-", "Hán Việt": "Tường", "Ý nghĩa": "Tấm ván", "Mẹo ghi nhớ": "Nửa bên trái chữ mộc.", "examples": [{ "kanji": "床", "reading": "yuka", "meaning": "Sàn", "type": "Kun'yomi" }] },
-                    { "STT": 91, "Bộ thủ": "片", "On'yomi": "ヘン", "Kun'yomi": "kata", "Hán Việt": "Phiến", "Ý nghĩa": "Mảnh vật mỏng và phẳng", "Mẹo ghi nhớ": "Nửa bên phải chữ mộc.", "examples": [{ "kanji": "片", "reading": "kata", "meaning": "Một phía", "type": "Kun'yomi" }] },
-                    { "STT": 92, "Bộ thủ": "牙", "On'yomi": "ガ", "Kun'yomi": "kiba", "Hán Việt": "Nha", "Ý nghĩa": "Răng", "Mẹo ghi nhớ": "Hình răng hai hàm cắn nhau.", "examples": [{ "kanji": "牙", "reading": "kiba", "meaning": "Răng nanh", "type": "Kun'yomi" }] },
-                    { "STT": 93, "Bộ thủ": "牛", "On'yomi": "ギュウ", "Kun'yomi": "ushi", "Hán Việt": "Ngưu", "Ý nghĩa": "Con bò", "Mẹo ghi nhớ": "Hình con bò.", "examples": [{ "kanji": "牛", "reading": "ushi", "meaning": "Bò", "type": "Kun'yomi" }] },
-                    { "STT": 94, "Bộ thủ": "犬 (犭)", "On'yomi": "ケン", "Kun'yomi": "inu", "Hán Việt": "Khuyển", "Ý nghĩa": "Con chó", "Mẹo ghi nhớ": "Hình con chó.", "examples": [{ "kanji": "犬", "reading": "inu", "meaning": "Chó", "type": "Kun'yomi" }] },
-                    { "STT": 95, "Bộ thủ": "玄", "On'yomi": "ゲン", "Kun'yomi": "kuro", "Hán Việt": "Huyền", "Ý nghĩa": "Sâu kín xa xôi, màu đen", "Mẹo ghi nhớ": "Màu đen huyền bí.", "examples": [{ "kanji": "玄米", "reading": "genmai", "meaning": "Gạo lứt", "type": "Kun'yomi" }] },
-                    { "STT": 96, "Bộ thủ": "玉", "On'yomi": "ギョク", "Kun'yomi": "tama", "Hán Việt": "Ngọc", "Ý nghĩa": "Đá quý", "Mẹo ghi nhớ": "Viên ngọc sâu chuỗi.", "examples": [{ "kanji": "玉", "reading": "tama", "meaning": "Ngọc", "type": "Kun'yomi" }] },
-                    { "STT": 97, "Bộ thủ": "瓜", "On'yomi": "カ", "Kun'yomi": "uri", "Hán Việt": "Qua", "Ý nghĩa": "Dưa", "Mẹo ghi nhớ": "Hình dây dưa bò lan trên đất.", "examples": [{ "kanji": "瓜", "reading": "uri", "meaning": "Dưa", "type": "Kun'yomi" }] },
-                    { "STT": 98, "Bộ thủ": "瓦", "On'yomi": "ガ", "Kun'yomi": "kawara", "Hán Việt": "Ngõa", "Ý nghĩa": "Ngói, Gạch nung", "Mẹo ghi nhớ": "Đồ vật liệu bằng đất nung.", "examples": [{ "kanji": "瓦", "reading": "kawara", "meaning": "Ngói", "type": "Kun'yomi" }] },
-                    { "STT": 99, "Bộ thủ": "甘", "On'yomi": "カン", "Kun'yomi": "amai", "Hán Việt": "Cam", "Ý nghĩa": "Ngọt", "Mẹo ghi nhớ": "Vật ngon ngọt ngậm trong miệng.", "examples": [{ "kanji": "甘い", "reading": "amai", "meaning": "Ngọt", "type": "Kun'yomi" }] },
-                    { "STT": 100, "Bộ thủ": "生", "On'yomi": "セイ, ショウ", "Kun'yomi": "ikiru", "Hán Việt": "Sinh", "Ý nghĩa": "Sống, mọc, sinh ra", "Mẹo ghi nhớ": "Hình cỏ cây mọc trên đất.", "examples": [{ "kanji": "生きる", "reading": "ikiru", "meaning": "Sống", "type": "Kun'yomi" }] }
-                ]
-            },
-            {
-                "theme": "Bộ thủ về Vật dụng và Trạng thái (101-120)",
-                "story": "Nhật Ký Người Sống Sót (Để nhớ ý nghĩa)\n\nCuốn nhật ký của tôi bắt đầu vào mùa gieo hạt. Để dùng (用) được mảnh ruộng (田) cha ông để lại, cái chân (疋) này đã phải đi bộ (癶) không biết mệt mỏi trên đất. Cuộc sống cứ thế trôi đi.\n\nNhưng rồi một mùa đông khắc nghiệt, tôi ngã bệnh (疒). Thế giới của tôi thu nhỏ lại trên chiếc giường tre. Nằm đó, tôi chỉ thấy ánh nắng màu trắng (白) nhợt nhạt chiếu lên tấm da (皮) thú cũ treo trên tường và chiếc đĩa (皿) sành duy nhất trong nhà.\n\nTừ trong nhà, mắt (目) tôi vẫn thấy được sự hỗn loạn bên ngoài. Có một cuộc xung đột. Tôi thấy những cái mâu (矛) và mũi tên (矢) bay vun vút, găm cả vào những tảng đá (石) bên bờ suối.\n\nKhi bệnh thuyên giảm, tôi ra ngoài và cầu nguyện. Dường như thần đất (示) đã báo cho biết điềm lành. Ngài chỉ cho tôi những vết chân (禸) của muông thú đã di chuyển đi nơi khác, báo hiệu cuộc chiến đã tàn. Nhìn cánh đồng, những cây lúa (禾) đã trĩu hạt vàng óng, hứa hẹn một mùa ấm no.\n\nSau cuộc chiến, làng mạc tan hoang. Tôi phải tìm một cái hang (穴) nhỏ để trú ẩn. Dần dần, tôi đứng (立) vững trở lại. Tôi học cách sinh tồn từ những thứ cơ bản nhất: chặt tre (竹) làm nhà, ăn những hạt gạo (米) ít ỏi còn sót lại, và dùng những sợi tơ (糸) cuối cùng để khâu vá lại cuộc đời mình.\n\n---\n\nGiai Điệu Của Ruộng Đồng (Để nhớ cách đọc Kun'yomi)\n\nĐể DÙNG - MOCHIIRU (もちいる) (Mẹo nhớ: MỒ CHÔN Y ở ruộng này rồi!) cái RUỘNG - TA (た), CÁI CHÂN - ASHI (あし - 疋) (Mẹo nhớ: A, SỢ đi nhiều quá!) phải ĐI BỘ (癶). (Bộ này tên là HATUSGASHIRA, nghe như tên một món ăn, thôi bỏ qua!).\n\nRồi tôi bị BỆNH - YAMAI (やまい) (Mẹo nhớ: DÀ MÁI tóc xanh vì bệnh tật). Nằm một chỗ, tôi chỉ thấy ánh sáng MÀU TRẮNG - SHIROI (しろい) (Mẹo nhớ: SỢ RỒI, không dám ốm nữa!) chiếu lên tấm DA - KAWA (かわ) (Mẹo nhớ: CÀ vào nó thấy ráp) và cái ĐĨA - SARA (さら) (Mẹo nhớ: SA RA mà xem này!).\n\nMẮT - ME (め) của tôi (Mẹo nhớ: MÊ man nhìn ra ngoài) thấy CÁI MÂU - HOKO (ほこ) và MŨI TÊN - YA (や) (La lên \"DÁ!\" khi thấy tên) bay loạn xạ, cắm vào cả ĐÁ - ISHI (いし) (Mẹo nhớ: Y SĨ phải nhặt tên ra khỏi đá).\n\nMay thay, THẦN ĐẤT BÁO CHO BIẾT - SHIMESU (しめす - 示) (Mẹo nhớ: SỢ MẸ SỬ phạt) điềm lành. Ngài chỉ cho tôi thấy những VẾT CHÂN (禸)... (Lại một bộ khó đọc, cho qua luôn!). Tôi chỉ biết rằng CÂY LÚA - INE (いね) (Mẹo nhớ: Y NÊN ra đồng gặt lúa) đã trĩu hạt.\n\nTôi tìm được cái HANG - ANA (あな) (Mẹo nhớ: A NA! Có cái hang!) và ĐỨNG - TATSU (たつ - 立) dậy (Mẹo nhớ: TA SỬng sững đứng lên). Tôi sống sót nhờ TRE - TAKE (たけ) (Mẹo nhớ: TA KÊ tre làm nhà), GẠO - KOME (こめ) (Mẹo nhớ: CÓ MẸ nấu cơm cho ăn), và SỢI TƠ - ITO (いと) (Mẹo nhớ: Y TÓc bạc ngồi may vá). Cuộc sống lại tiếp diễn.",
-                "radicals": [
-                    { "STT": 101, "Bộ thủ": "用", "On'yomi": "ヨウ", "Kun'yomi": "mochiiru", "Hán Việt": "Dụng", "Ý nghĩa": "Dùng, có thể thi hành", "Mẹo ghi nhớ": "Việc gì bói đúng thì dùng.", "examples": [{ "kanji": "使う", "reading": "tsukau", "meaning": "Sử dụng", "type": "Kun'yomi" }] },
-                    { "STT": 102, "Bộ thủ": "田", "On'yomi": "デン", "Kun'yomi": "ta", "Hán Việt": "Điền", "Ý nghĩa": "Ruộng", "Mẹo ghi nhớ": "Hình ô ruộng chia bờ.", "examples": [{ "kanji": "田", "reading": "ta", "meaning": "Ruộng", "type": "Kun'yomi" }] },
-                    { "STT": 103, "Bộ thủ": "疋", "On'yomi": "ヒツ", "Kun'yomi": "hiki", "Hán Việt": "Sơ", "Ý nghĩa": "Cái chân", "Mẹo ghi nhớ": "Hình bắp chân.", "examples": [{ "kanji": "匹", "reading": "hiki", "meaning": "Con (đếm động vật)", "type": "Kun'yomi" }] },
-                    { "STT": 104, "Bộ thủ": "疒", "On'yomi": "ダク", "Kun'yomi": "-", "Hán Việt": "Nạch", "Ý nghĩa": "Tật bệnh", "Mẹo ghi nhớ": "Người bệnh nằm trên giường.", "examples": [{ "kanji": "病気", "reading": "byouki", "meaning": "Bệnh tật", "type": "On'yomi" }] },
-                    { "STT": 105, "Bộ thủ": "癶", "On'yomi": "ハツ", "Kun'yomi": "-", "Hán Việt": "Bát (Bát đạp)", "Ý nghĩa": "Đạp ra", "Mẹo ghi nhớ": "Nhiều nét hơn Bát Tám.", "examples": [{ "kanji": "発", "reading": "hatsu", "meaning": "Phát", "type": "On'yomi" }] },
-                    { "STT": 106, "Bộ thủ": "白", "On'yomi": "ハク, ビャク", "Kun'yomi": "shiro", "Hán Việt": "Bạch", "Ý nghĩa": "Trắng", "Mẹo ghi nhớ": "Màu trắng của phương Tây.", "examples": [{ "kanji": "白い", "reading": "shiroi", "meaning": "Trắng", "type": "Kun'yomi" }] },
-                    { "STT": 107, "Bộ thủ": "皮", "On'yomi": "ヒ", "Kun'yomi": "kawa", "Hán Việt": "Bì", "Ý nghĩa": "Da", "Mẹo ghi nhớ": "Tay cầm dao lột da.", "examples": [{ "kanji": "皮", "reading": "kawa", "meaning": "Da", "type": "Kun'yomi" }] },
-                    { "STT": 108, "Bộ thủ": "皿", "On'yomi": "ベイ", "Kun'yomi": "sara", "Hán Việt": "Mãnh", "Ý nghĩa": "Đồ bát đĩa", "Mẹo ghi nhớ": "Hình bát đĩa.", "examples": [{ "kanji": "皿", "reading": "sara", "meaning": "Đĩa", "type": "Kun'yomi" }] },
-                    { "STT": 109, "Bộ thủ": "目", "On'yomi": "モク, ボク", "Kun'yomi": "me", "Hán Việt": "Mục", "Ý nghĩa": "Mắt", "Mẹo ghi nhớ": "Hình con mắt.", "examples": [{ "kanji": "目", "reading": "me", "meaning": "Mắt", "type": "Kun'yomi" }] },
-                    { "STT": 110, "Bộ thủ": "矛", "On'yomi": "ム", "Kun'yomi": "hoko", "Hán Việt": "Mâu", "Ý nghĩa": "Cái mâu (binh khí)", "Mẹo ghi nhớ": "Hình cái mâu.", "examples": [{ "kanji": "矛盾", "reading": "mujun", "meaning": "Mâu thuẫn", "type": "On'yomi" }] },
-                    { "STT": 111, "Bộ thủ": "矢", "On'yomi": "シ", "Kun'yomi": "ya", "Hán Việt": "Thỉ", "Ý nghĩa": "Mũi tên", "Mẹo ghi nhớ": "Hình mũi tên có lông định hướng.", "examples": [{ "kanji": "矢", "reading": "ya", "meaning": "Mũi tên", "type": "Kun'yomi" }] },
-                    { "STT": 112, "Bộ thủ": "石", "On'yomi": "セキ, シャク, コク", "Kun'yomi": "ishi", "Hán Việt": "Thạch", "Ý nghĩa": "Đá", "Mẹo ghi nhớ": "Sườn núi và hòn đá.", "examples": [{ "kanji": "石", "reading": "ishi", "meaning": "Đá", "type": "Kun'yomi" }] },
-                    { "STT": 113, "Bộ thủ": "示 (礻)", "On'yomi": "シ, ジ", "Kun'yomi": "shimesu", "Hán Việt": "Kỳ (Kì, Thị)", "Ý nghĩa": "Thần đất, báo cho biết trước", "Mẹo ghi nhớ": "Bàn thờ để báo trước.", "examples": [{ "kanji": "示す", "reading": "shimesu", "meaning": "Chỉ ra", "type": "Kun'yomi" }] },
-                    { "STT": 114, "Bộ thủ": "禸", "On_yomi": "ジュウ", "Kun'yomi": "-", "Hán Việt": "Nhữu (Nhựu)", "Ý nghĩa": "Vết chân thú dẫm xuống đất", "Mẹo ghi nhớ": "Vết chân thú.", "examples": [{ "kanji": "禽", "reading": "tori", "meaning": "Chim (cũ)", "type": "Kun'yomi" }] },
-                    { "STT": 115, "Bộ thủ": "禾", "On'yomi": "カ", "Kun'yomi": "-", "Hán Việt": "Hòa", "Ý nghĩa": "Cây lúa", "Mẹo ghi nhớ": "Hình cây lúa.", "examples": [{ "kanji": "秋", "reading": "aki", "meaning": "Mùa thu", "type": "Kun'yomi" }] },
-                    { "STT": 116, "Bộ thủ": "穴", "On'yomi": "ケツ", "Kun'yomi": "ana", "Hán Việt": "Huyệt", "Ý nghĩa": "Cái hang", "Mẹo ghi nhớ": "Hình cái hang.", "examples": [{ "kanji": "穴", "reading": "ana", "meaning": "Hang", "type": "Kun'yomi" }] },
-                    { "STT": 117, "Bộ thủ": "立", "On'yomi": "リツ, リュウ", "Kun'yomi": "tatsu", "Hán Việt": "Lập", "Ý nghĩa": "Đứng", "Mẹo ghi nhớ": "Hình người đứng trên mặt đất.", "examples": [{ "kanji": "立つ", "reading": "tatsu", "meaning": "Đứng", "type": "Kun'yomi" }] },
-                    { "STT": 118, "Bộ thủ": "竹 (竺)", "On'yomi": "チク", "Kun'yomi": "take", "Hán Việt": "Trúc", "Ý nghĩa": "Cây Tre", "Mẹo ghi nhớ": "Hình cây tre.", "examples": [{ "kanji": "竹", "reading": "take", "meaning": "Tre", "type": "Kun'yomi" }] },
-                    { "STT": 119, "Bộ thủ": "米", "On'yomi": "ベイ, マイ", "Kun'yomi": "kome", "Hán Việt": "Mễ", "Ý nghĩa": "Gạo", "Mẹo ghi nhớ": "Hình hạt lúa đã chế biến.", "examples": [{ "kanji": "米", "reading": "kome", "meaning": "Gạo", "type": "Kun'yomi" }] },
-                    { "STT": 120, "Bộ thủ": "糸", "On'yomi": "シ", "Kun'yomi": "ito", "Hán Việt": "Mịch", "Ý nghĩa": "Sợi tơ", "Mẹo ghi nhớ": "Hình lọn tơ thắt lại.", "examples": [{ "kanji": "糸", "reading": "いと", "meaning": "Sợi chỉ", "type": "Kun'yomi" }] }
-                ]
-            },
-            {
-                "theme": "Bộ thủ về Giao tiếp và Cảm xúc (121-140)",
-                "story": "Bức Tranh Làng Cổ (Để nhớ ý nghĩa)\n\nKhi bước vào một ngôi làng cổ, vật đầu tiên tôi thấy là một cái vò (缶) sành cũ và một tấm lưới (网) rách đang phơi trên hàng rào. Khung cảnh thật yên bình. Một con dê (羊) trắng đang gặm cỏ, nhưng điều kỳ lạ là bộ lông của nó lại có vài chiếc lông chim (羽) mềm mại điểm xuyết, trông như một sinh vật thần thoại.\n\nXa xa, những người già (老) với bộ râu (而) dài chấm ngực, tay cầm cái cày (耒), đang đứng nói chuyện bên tai (耳) ruộng. Họ là những pho sử sống của ngôi làng này.\n\nTrong đình làng, các học giả đang dùng bút (聿) để ghi chép lại lịch sử. Họ viết về những miếng thịt (肉) được dâng lên trong lễ tế, và ghi danh những người bề tôi (臣) trung thành đã phục vụ làng.\n\nKhi tôi đến (至) gần khu dân cư, cái mũi (自) của tôi lập tức ngửi thấy mùi thơm của lúa mới. Tiếng cối giã gạo (臼) vang lên đều đặn, và tôi có thể hình dung ra cảnh những người phụ nữ dùng lưỡi (舌) để nếm thử vị cơm dẻo ngọt. Mọi thứ trong làng, dù cũ và mới, lao động và nghỉ ngơi, dường như trái nhau (舛) nhưng lại hòa quyện một cách hoàn hảo.\n\nTôi đi ra bờ sông, thấy một con thuyền (舟) đang trôi, nó hơi bị cấn (艮) lại bởi một tảng đá ngầm. Ngắm nhìn khung cảnh này, sắc mặt (色) của tôi trở nên thư thái và rạng rỡ. Xung quanh, cây cỏ (艸) mọc um tùm, tràn đầy sức sống, hệt như linh hồn của ngôi làng này.\n\n---\n\nÂm Vang Của Làng Cổ (Để nhớ cách đọc Kun'yomi)\n\nTôi tìm thấy một cái vò (缶)... chữ này hiếm, khó đọc, chắc người xưa mới biết đọc! Nhưng tôi thấy tấm LƯỚI - AMI (あみ - 网) (Mẹo nhớ: A, MÌ tôm mắc vào lưới!). Gần đó là con DÊ - HITSUJI (ひつじ - 羊) (Mẹo nhớ: HIẾT SỬ sách về loài dê) có bộ LÔNG VŨ - HANE (はね - 羽) rất đẹp (Mẹo nhớ: HÁ NỂ bộ lông này).\n\nNhững NGƯỜI GIÀ đang GIÀ ĐI - OIRU (おいる - 老) (Mẹo nhớ: ÔI, RỦ nhau về hưu hết rồi). Họ có bộ RÂU (而) (Bộ này không có âm đọc thông dụng, chắc chỉ để cho đẹp!). Họ cầm CÁI CÀY - SUKI (すき - 耒) (Mẹo nhớ: Tôi rất THÍCH (suki) cái cày này), đứng ở TAI - MIMI (みみ - 耳) ruộng.\n\nCác học giả dùng BÚT - FUDE (ふで - 聿) (Mẹo nhớ: Viết PHÚ ĐỂ lại cho đời) để ghi về THỊT - SHISHI (しし - 肉)¹ và các vị BỀ TÔI - OMI (おみ - 臣).\n\nBẢN THÂN (MIZUKARA - みずから - 自)² tôi ngửi thấy mùi thơm khi ĐẾN - ITARU (いたる - 至) (Mẹo nhớ: Y TA RỦ tôi đến đây). CỐI GIÃ GẠO - USU (うす - 臼) (Mẹo nhớ: Ú SÙ cả người vì giã gạo) và LƯỠI - SHITA (した - 舌) (Mẹo nhớ: Nếm thử bằng lưỡi ở PHÍA DƯỚI - shita) đang hoạt động.\n\nMọi thứ dường như TRÁI NHAU (舛) (lại một chữ khó đọc!), nhưng vẫn hài hòa. Một con THUYỀN - FUNE (ふね - 舟) (Mẹo nhớ: Đi thuyền PHUN Nước) bị CẤN lại ở hướng đông bắc - hướng USHITORA (うしとら - 艮)³. Nhìn cảnh đó, SẮC MẶT hay MÀU SẮC - IRO (いろ - 色) (Mẹo nhớ: Y RỒi, mặt có màu rồi!) của tôi trở nên vui vẻ. Xung quanh là CÂY CỎ - KUSA (くさ - 艸).\n\n---\n¹Lưu ý về Thịt: Cách đọc thông thường của 肉 là niku. SHISHI là một cách đọc cổ hơn, thường chỉ thịt của động vật hoang dã, rất hợp với không khí của câu chuyện này.\n\n²Lưu ý về Mũi: Bộ 自 có nghĩa gốc là \"cái mũi\" nhưng trong tiếng Nhật hiện đại nó thường mang nghĩa \"bản thân\" với âm đọc MIZUKARA. Chữ \"cái mũi\" ngày nay dùng là 鼻 (はな - hana).\n\n³Lưu ý về Cấn: Bộ 艮 trong Hán Việt có nghĩa là \"quẻ Cấn\" hoặc \"dừng lại\", nhưng trong tiếng Nhật, âm đọc USHITORA của nó dùng để chỉ phương hướng \"Đông Bắc\" (hướng Sửu-Dần), một hướng thường được cho là không may mắn hoặc có nhiều trở ngại.",
-                "radicals": [
-                    { "STT": 121, "Bộ thủ": "缶", "On'yomi": "カン", "Kun'yomi": "hotogi", "Hán Việt": "Phữu (Phẫu)", "Ý nghĩa": "Đồ sành có nắp đậy", "Mẹo ghi nhớ": "Hình vò, chum, vại.", "examples": [{ "kanji": "缶", "reading": "kan", "meaning": "Lon", "type": "On'yomi" }] },
-                    { "STT": 122, "Bộ thủ": "網 (罒, 罓)", "On'yomi": "モウ", "Kun'yomi": "ami", "Hán Việt": "Võng", "Ý nghĩa": "Lưới để bắt thú hay đánh cá", "Mẹo ghi nhớ": "Hình cái lưới.", "examples": [{ "kanji": "網", "reading": "ami", "meaning": "Lưới", "type": "Kun'yomi" }] },
-                    { "STT": 123, "Bộ thủ": "羊", "On'yomi": "ヨウ", "Kun'yomi": "hitsuji", "Hán Việt": "Dương", "Ý nghĩa": "Con dê", "Mẹo ghi nhớ": "Hình con dê.", "examples": [{ "kanji": "羊", "reading": "ひつじ", "meaning": "Dê", "type": "Kun'yomi" }] },
-                    { "STT": 124, "Bộ thủ": "羽", "On'yomi": "ウ", "Kun'yomi": "ha.ne", "Hán Việt": "Vũ", "Ý nghĩa": "Lông chim", "Mẹo ghi nhớ": "Hình hai cánh chim có lông vũ.", "examples": [{ "kanji": "羽", "reading": "hane", "meaning": "Lông vũ", "type": "Kun'yomi" }] },
-                    { "STT": 125, "Bộ thủ": "老", "On'yomi": "ロウ", "Kun'yomi": "o.iru", "Hán Việt": "Lão", "Ý nghĩa": "Già", "Mẹo ghi nhớ": "Người cao tuổi râu tóc đã biến đổi.", "examples": [{ "kanji": "老いる", "reading": "おいる", "meaning": "Già đi", "type": "Kun'yomi" }] },
-                    { "STT": 126, "Bộ thủ": "而", "On'yomi": "ジ", "Kun'yomi": "-", "Hán Việt": "Nhi", "Ý nghĩa": "Râu", "Mẹo ghi nhớ": "Hình râu.", "examples": [{ "kanji": "而", "reading": "shikashite", "meaning": "Và (văn viết)", "type": "Kun'yomi" }] },
-                    { "STT": 127, "Bộ thủ": "耒", "On'yomi": "ライ", "Kun'yomi": "-", "Hán Việt": "Lỗi", "Ý nghĩa": "Cái cày", "Mẹo ghi nhớ": "Cái cày làm bằng gỗ.", "examples": [{ "kanji": "耕す", "reading": "tagayasu", "meaning": "Cày", "type": "Kun'yomi" }] },
-                    { "STT": 128, "Bộ thủ": "耳", "On'yomi": "ジ", "Kun'yomi": "mimi", "Hán Việt": "Nhĩ", "Ý nghĩa": "Tai để nghe", "Mẹo ghi nhớ": "Hình cái tai.", "examples": [{ "kanji": "耳", "reading": "mimi", "meaning": "Tai", "type": "Kun'yomi" }] },
-                    { "STT": 129, "Bộ thủ": "聿", "On'yomi": "イツ", "Kun'yomi": "fude", "Hán Việt": "Duật", "Ý nghĩa": "Cây bút", "Mẹo ghi nhớ": "Hình tay cầm cây bút viết.", "examples": [{ "kanji": "筆", "reading": "fude", "meaning": "Bút lông", "type": "Kun'yomi" }] },
-                    { "STT": 130, "Bộ thủ": "肉", "On'yomi": "ニク", "Kun'yomi": "niku", "Hán Việt": "Nhục", "Ý nghĩa": "Thịt", "Mẹo ghi nhớ": "Gần giống chữ nguyệt.", "examples": [{ "kanji": "肉", "reading": "niku", "meaning": "Thịt", "type": "Kun'yomi" }] },
-                    { "STT": 131, "Bộ thủ": "臣", "On'yomi": "シン, ジン", "Kun'yomi": "omi", "Hán Việt": "Thần", "Ý nghĩa": "Bề tôi", "Mẹo ghi nhớ": "Hình ông quan cúi mình.", "examples": [{ "kanji": "大臣", "reading": "daijin", "meaning": "Bộ trưởng", "type": "On'yomi" }] },
-                    { "STT": 132, "Bộ thủ": "自", "On'yomi": "ジ, シ", "Kun'yomi": "mizuka.ra", "Hán Việt": "Tự", "Ý nghĩa": "Cái mũi, tự mình", "Mẹo ghi nhớ": "Hình cái mũi ở trên miệng.", "examples": [{ "kanji": "自分", "reading": "jibun", "meaning": "Bản thân", "type": "On'yomi" }] },
-                    { "STT": 133, "Bộ thủ": "至", "On'yomi": "シ", "Kun'yomi": "ita.ru", "Hán Việt": "Chí", "Ý nghĩa": "Đến", "Mẹo ghi nhớ": "Con chim từ trên trời bay xuống đất.", "examples": [{ "kanji": "至る", "reading": "itaru", "meaning": "Đến", "type": "Kun'yomi" }] },
-                    { "STT": 134, "Bộ thủ": "臼", "On'yomi": "キュウ", "Kun'yomi": "usu", "Hán Việt": "Cữu", "Ý nghĩa": "Cái cối giã gạo", "Mẹo ghi nhớ": "Hình cái cối.", "examples": [{ "kanji": "臼", "reading": "usu", "meaning": "Cối", "type": "Kun'yomi" }] },
-                    { "STT": 135, "Bộ thủ": "舌", "On'yomi": "ゼツ", "Kun'yomi": "shita", "Hán Việt": "Thiệt", "Ý nghĩa": "Cái lưỡi", "Mẹo ghi nhớ": "Hình cái lưỡi.", "examples": [{ "kanji": "舌", "reading": "shita", "meaning": "Lưỡi", "type": "Kun'yomi" }] },
-                    { "STT": 136, "Bộ thủ": "舛", "On'yomi": "セン", "Kun'yomi": "somu.ku", "Hán Việt": "Suyễn", "Ý nghĩa": "Trái nhau, nằm đối nhau", "Mẹo ghi nhớ": "Hai người đối lưng.", "examples": [{ "kanji": "矛盾", "reading": "mujun", "meaning": "Mâu thuẫn", "type": "On'yomi" }] },
-                    { "STT": 137, "Bộ thủ": "舟", "On'yomi": "シュウ", "Kun'yomi": "fune", "Hán Việt": "Chu", "Ý nghĩa": "Thuyền", "Mẹo ghi nhớ": "Hình cái thuyền.", "examples": [{ "kanji": "舟", "reading": "fune", "meaning": "Thuyền", "type": "Kun'yomi" }] },
-                    { "STT": 138, "Bộ thủ": "艮", "On'yomi": "ゴン", "Kun'yomi": "-", "Hán Việt": "Cấn", "Ý nghĩa": "Không nghe theo, ngăn trở", "Mẹo ghi nhớ": "Quẻ Cấn trong bát quái.", "examples": [{ "kanji": "根", "reading": "ne", "meaning": "Rễ", "type": "Kun'yomi" }] },
-                    { "STT": 139, "Bộ thủ": "色", "On'yomi": "ショク, シキ", "Kun'yomi": "iro", "Hán Việt": "Sắc", "Ý nghĩa": "Sắc mặt. diện mạo.", "Mẹo ghi nhớ": "Sắc mặt.", "examples": [{ "kanji": "色", "reading": "iro", "meaning": "Màu sắc", "type": "Kun'yomi" }] },
-                    { "STT": 140, "Bộ thủ": "艸 (艹)", "On'yomi": "ソウ", "Kun'yomi": "kusa", "Hán Việt": "Thảo", "Ý nghĩa": "Cỏ", "Mẹo ghi nhớ": "Hình cây cỏ.", "examples": [{ "kanji": "草", "reading": "kusa", "meaning": "Cỏ", "type": "Kun'yomi" }] }
-                ]
-            },
-            {
-                "theme": "Bộ thủ về Động vật và Hành động (141-160)",
-                "story": "Cuộc Chạy Trốn (Để nhớ ý nghĩa)\n\nCuộc chạy trốn của tôi bắt đầu trong khu rừng rậm. Mọi giác quan của tôi đều căng lên. Tôi thấy những lằn vằn lông cọp (虍) ẩn hiện sau lùm cây, và tiếng côn trùng (虫) bay vo ve quanh tai.\n\nTrên con đường mòn tôi đang đi (行), một vệt máu (血) còn tươi hiện ra, khiến tôi hoảng sợ. Tôi vội kéo tấm áo (衣) rách của mình, cố gắng che đậy (襾) sự hiện diện của bản thân, nấp sau một tảng đá lớn.\n\nTừ chỗ nấp, tôi thấy (見) nó. Một sinh vật khổng lồ với một cái sừng (角) xoắn vút đang uống nước dưới suối. Tôi kinh hãi đến mức không kìm được mà buột ra thành lời (言). Tiếng động đó đã đánh động con quái vật.\n\nTôi co giò chạy, lao xuống một thung lũng (谷) sâu. Bụng đói cồn cào, tôi may mắn tìm thấy vài hạt đậu (豆) dại để lót dạ. Tôi có thể nghe thấy tiếng con heo (豕) rừng và nhiều loài thú (豸) khác đang gầm gừ xung quanh.\n\nKhi đi qua một con suối, chân tôi vấp phải một vật cứng. Đó là một con sò (貝) hóa thạch tuyệt đẹp. Giữa sự hỗn loạn, vẻ đẹp nhỏ nhoi này cho tôi một giây bình yên.\n\nBầu trời chuyển sang màu đỏ (赤) của hoàng hôn, tôi biết mình phải thoát khỏi đây. Tôi bắt đầu chạy (走), đôi chân (足) của tôi hoạt động hết công suất. Toàn bộ thân (身) thể tôi gào thét vì mệt mỏi, nhưng tôi không dám dừng lại. Bỗng, tôi thấy ánh đèn của một cái xe (車) tải cũ. Cứu tinh!\n\nNgồi trên thùng xe, tôi nhìn lại khu rừng. Tôi đã sống sót, nhưng ký ức về nó thật cay đắng (莘), một nỗi sợ hãi xen lẫn sự kiệt quệ.\n\n---\n\nGiai Điệu Của Cuộc Chạy Trốn (Để nhớ cách đọc Kun'yomi)\n\nTôi thấy VẰN CỌP... bộ này tên là TORAGASHIRA (とらがしら - 虍), nghe đã thấy sợ rồi! Xung quanh toàn CÔN TRÙNG - MUSHI (むし - 虫) (Mẹo nhớ: MÙ SƯ cũng sợ).\n\nTrên đường có vệt MÁU - CHI (ち - 血) (Mẹo nhớ: CHỈ một vệt máu). Con đường tôi ĐI - IKU (いく - 行) (Mẹo nhớ: Y CỨ đi về phía trước).\n\nTôi mặc CÁI ÁO - KOROMO (ころも - 衣) (Mẹo nhớ: CÔ RỒ MỜ ảo trong bóng tối) và CHE ĐẬY (襾) – bộ này tên OOIKANMURI, nghe như 'ôi, can't move đi!'.\n\nTôi THẤY - MIRU (みる - 見) (Mẹo nhớ: MI RỦ tôi xem à?) một CÁI SỪNG - TSUNO (つの - 角) (Mẹo nhớ: SƯ NÔ đùa với sừng). Tôi NÓI - IU (いう - 言) (Mẹo nhớ: Y Ú ớ nói không thành lời).\n\nTôi chạy xuống THUNG LŨNG - TANI (たに - 谷) (Mẹo nhớ: TA NÍu vào vách đá). Tìm được mấy HẠT ĐẬU - MAME (まめ - 豆) (Mẹo nhớ: MÁ MÊ món này). CON HEO - INOKO (いのこ - 豕) và LOÀI THÚ - MUJINA (むじな - 豸) (Mẹo nhớ: MÙ GÌ NÀ? Tối quá không thấy) đang đuổi theo.\n\nTôi vấp phải một CON SÒ - KAI (かい - 貝) (Mẹo nhớ: CÃI nhau vì con sò). Trời chuyển MÀU ĐỎ - AKAI (あかい - 赤) (Mẹo nhớ: A, CAI nghiện chạy trốn).\n\nTôi CHẠY - HASHIRU (はしる - 走) (Mẹo nhớ: HA, SỢ RÚn người) bằng CHÂN - ASHI (あし - 足). THÂN - MI (み - 身) thể mệt lử. May quá có CÁI XE - KURUMA (くるま - 車) (Mẹo nhớ: CỨ RU MÀ ngủ trên xe).\n\nCuối cùng, cảm giác CAY ĐẮNG (莘) này... Chữ này rất hiếm, chắc tiếng Nhật không dùng nó trong đời sống. Nó giống như một cảm giác không thể gọi tên thành lời vậy, thật sâu sắc và khó quên.",
-                "radicals": [
-                    { "STT": 141, "Bộ thủ": "虍", "On'yomi": "コ", "Kun'yomi": "-", "Hán Việt": "Hô", "Ý nghĩa": "Vằn lông con cọp", "Mẹo ghi nhớ": "Hình vằn lông cọp.", "examples": [{ "kanji": "虎", "reading": "tora", "meaning": "Hổ", "type": "Kun'yomi" }] },
-                    { "STT": 142, "Bộ thủ": "虫", "On'yomi": "チュウ", "Kun'yomi": "mushi", "Hán Việt": "Trùng", "Ý nghĩa": "Côn trùng, rắn rết", "Mẹo ghi nhớ": "Hình côn trùng.", "examples": [{ "kanji": "虫", "reading": "mushi", "meaning": "Côn trùng", "type": "Kun'yomi" }] },
-                    { "STT": 143, "Bộ thủ": "血", "On'yomi": "ケツ", "Kun'yomi": "chi", "Hán Việt": "Huyết", "Ý nghĩa": "Máu", "Mẹo ghi nhớ": "Máu đựng trong bát để tế thần.", "examples": [{ "kanji": "血", "reading": "chi", "meaning": "Máu", "type": "Kun'yomi" }] },
-                    { "STT": 144, "Bộ thủ": "行", "On'yomi": "コウ, ギョウ, アン", "Kun'yomi": "i.ku", "Hán Việt": "Hành", "Ý nghĩa": "Đi", "Mẹo ghi nhớ": "Hai chân lần lượt bước tới.", "examples": [{ "kanji": "行く", "reading": "iku", "meaning": "Đi", "type": "Kun'yomi" }] },
-                    { "STT": 145, "Bộ thủ": "衣", "On'yomi": "イ, エ", "Kun'yomi": "koromo", "Hán Việt": "Y", "Ý nghĩa": "Áo", "Mẹo ghi nhớ": "Hình cái áo.", "examples": [{ "kanji": "衣", "reading": "koromo", "meaning": "Áo", "type": "Kun'yomi" }] },
-                    { "STT": 146, "Bộ thủ": "襾", "On'yomi": "Á", "Kun'yomi": "-", "Hán Việt": "Á", "Ý nghĩa": "Che đậy, cái nắp", "Mẹo ghi nhớ": "Hình cái nắp.", "examples": [{ "kanji": "要", "reading": "kaname", "meaning": "Điểm mấu chốt", "type": "Kun'yomi" }] },
-                    { "STT": 147, "Bộ thủ": "見", "On'yomi": "ケン", "Kun'yomi": "mi.ru", "Hán Việt": "Kiến", "Ý nghĩa": "Thấy, xem, nhìn", "Mẹo ghi nhớ": "Hình con mắt nhìn.", "examples": [{ "kanji": "見る", "reading": "miru", "meaning": "Nhìn", "type": "Kun'yomi" }] },
-                    { "STT": 148, "Bộ thủ": "角", "On'yomi": "カク", "Kun'yomi": "tsuno", "Hán Việt": "Giác", "Ý nghĩa": "Cái sừng", "Mẹo ghi nhớ": "Hình cái sừng.", "examples": [{ "kanji": "角", "reading": "tsuno", "meaning": "Sừng", "type": "Kun'yomi" }] },
-                    { "STT": 149, "Bộ thủ": "言", "On'yomi": "ゲン, ゴン", "Kun'yomi": "i.u", "Hán Việt": "Ngôn", "Ý nghĩa": "Nói", "Mẹo ghi nhớ": "Hình miệng nói.", "examples": [{ "kanji": "言う", "reading": "iu", "meaning": "Nói", "type": "Kun'yomi" }] },
-                    { "STT": 150, "Bộ thủ": "谷", "On'yomi": "コク", "Kun'yomi": "tani", "Hán Việt": "Cốc", "Ý nghĩa": "Khe suối chảy thông ra sông", "Mẹo ghi nhớ": "Hình khe suối.", "examples": [{ "kanji": "谷", "reading": "tani", "meaning": "Thung lũng", "type": "Kun'yomi" }] },
-                    { "STT": 151, "Bộ thủ": "豆", "On'yomi": "トウ, ズ", "Kun'yomi": "mame", "Hán Việt": "Đậu", "Ý nghĩa": "Cái bát có nắp đậy", "Mẹo ghi nhớ": "Hình hạt đậu.", "examples": [{ "kanji": "豆", "reading": "mame", "meaning": "Đậu", "type": "Kun'yomi" }] },
-                    { "STT": 152, "Bộ thủ": "豕", "On'yomi": "シ", "Kun'yomi": "inoko", "Hán Việt": "Thỉ", "Ý nghĩa": "Con Heo (Lợn)", "Mẹo ghi nhớ": "Hình con heo.", "examples": [{ "kanji": "豚", "reading": "buta", "meaning": "Lợn", "type": "Kun'yomi" }] },
-                    { "STT": 153, "Bộ thủ": "豸", "On_yomi": "チ", "Kun'yomi": "muji.na", "Hán Việt": "Trĩ", "Ý nghĩa": "Loài thú có xương sống, lưng dài", "Mẹo ghi nhớ": "Hình loài thú.", "examples": [{ "kanji": "猫", "reading": "neko", "meaning": "Mèo", "type": "Kun'yomi" }] },
-                    { "STT": 154, "Bộ thủ": "貝", "On'yomi": "バイ", "Kun'yomi": "kai", "Hán Việt": "Bối", "Ý nghĩa": "Con Sò", "Mẹo ghi nhớ": "Vỏ sò làm tiền.", "examples": [{ "kanji": "貝", "reading": "kai", "meaning": "Vỏ sò", "type": "Kun'yomi" }] },
-                    { "STT": 155, "Bộ thủ": "赤", "On'yomi": "セキ, シャク", "Kun'yomi": "aka", "Hán Việt": "Xích", "Ý nghĩa": "Màu đỏ", "Mẹo ghi nhớ": "Màu của phương nam.", "examples": [{ "kanji": "赤い", "reading": "akai", "meaning": "Đỏ", "type": "Kun'yomi" }] },
-                    { "STT": 156, "Bộ thủ": "走", "On'yomi": "ソウ", "Kun'yomi": "ha.shi.ru", "Hán Việt": "Tẩu", "Ý nghĩa": "Chạy", "Mẹo ghi nhớ": "Hình người đang chạy.", "examples": [{ "kanji": "走る", "reading": "hashiru", "meaning": "Chạy", "type": "Kun'yomi" }] },
-                    { "STT": 157, "Bộ thủ": "足", "On'yomi": "ソク", "Kun'yomi": "ashi", "Hán Việt": "Túc", "Ý nghĩa": "Chân", "Mẹo ghi nhớ": "Hình cái chân.", "examples": [{ "kanji": "足", "reading": "ashi", "meaning": "Chân", "type": "Kun'yomi" }] },
-                    { "STT": 158, "Bộ thủ": "身", "On'yomi": "シン", "Kun'yomi": "mi", "Hán Việt": "Thân", "Ý nghĩa": "Thân mình", "Mẹo ghi nhớ": "Hình thân mình.", "examples": [{ "kanji": "身", "reading": "mi", "meaning": "Cơ thể", "type": "Kun'yomi" }] },
-                    { "STT": 159, "Bộ thủ": "車", "On'yomi": "シャ", "Kun'yomi": "kuruma", "Hán Việt": "Xa", "Ý nghĩa": "Cái xe", "Mẹo ghi nhớ": "Hình cái xe.", "examples": [{ "kanji": "車", "reading": "kuruma", "meaning": "Xe", "type": "Kun'yomi" }] },
-                    { "STT": 160, "Bộ thủ": "莘", "On'yomi": "シン", "Kun'yomi": "-", "Hán Việt": "Tân", "Ý nghĩa": "Vị cay, nhọc nhằn", "Mẹo ghi nhớ": "Vị cay, nhọc nhằn.", "examples": [{ "kanji": "辛い", "reading": "tsurai", "meaning": "Khó khăn", "type": "Kun'yomi" }] }
-                ]
-            },
-            {
-                "theme": "Bộ thủ về Thời gian, Địa điểm và Vật phẩm (161-180)",
-                "story": "Ngày Về (Để nhớ ý nghĩa)\n\nSau bao năm xa cách, cuối cùng tôi cũng trở về. Thì giờ (辰) trên đường về dường như méo mó, bước chân tôi cứ chợt đi chợt đứng (辵), vừa háo hức vừa lo sợ. Rồi từ xa, tôi thấy nó: làng (邑) của tôi.\n\nMùi hương quen thuộc của quê nhà chào đón tôi. Mùi rượu (酉) mới ủ và mùi của những nắm thóc (釆) vàng óng đang phơi. Đây chính là mùi của nhà.\n\nLàng (里) của tôi đây rồi. Cánh đồng lúa chín như vàng (金). Con đường đất dài (長) thân thuộc, và cái cửa (門) làng bằng gỗ vẫn mở rộng chào đón. Xa xa là những ngọn núi đất (阜) hiền hòa, bao bọc lấy làng.\n\nMột cảm giác nhẹ nhõm lan tỏa. Tôi đã kịp (隶) về đúng mùa gặt. Tôi đã về nhà.\n\nMột giống chim (隹) lạ mà quen hót líu lo trên cành cây. Rồi một cơn mưa (雨) rào bất chợt đổ xuống, gột rửa bụi đường xa xôi. Mọi thứ bừng lên một màu xanh (青) tươi mát. Đây không phải (非) là một giấc mơ.\n\nMặt (面) trời dần lặn. Tôi thấy những người thợ đang xử lý những tấm da (革) và da thuộc (韋), chuẩn bị cho phiên chợ tới. Mùi cây hẹ (韭) từ vườn của mẹ thoang thoảng trong gió. Đêm buông xuống, chỉ còn lại âm thanh (音) của dế mèn và tiếng mưa rơi tí tách. Tôi đã thực sự ở nhà.\n\n---\n\nGiai Điệu Ngày Về (Để nhớ cách đọc Kun'yomi)\n\nTHÌ GIỜ con Rồng - TATSU (たつ - 辰) cứ trôi, tôi CHỢT ĐI CHỢT ĐỨNG (辵 - bộ này tên SHINNYOU, nghe như 'xin nhường' đường) mãi rồi cũng thấy cái LÀNG - MURA (むら - 邑).\n\nTôi ngửi thấy mùi RƯỢU của năm Gà - TORI (とり - 酉) và thấy những NẮM THÓC (釆)¹. (Chữ này trông giống dấu chân hơn là nắm thóc, chắc người xưa nhìn nhầm!).\n\nLÀNG - SATO (さと - 里) của tôi đây rồi! (Mẹo nhớ: SA TÔi nhớ làng quá!). Những cánh đồng VÀNG - KANE (かね - 金) (Mẹo nhớ: CÀ NỂ sự giàu có). Con đường DÀI - NAGAI (ながい - 長). Tôi bước qua CỬA - KADO (かど - 門) (Mẹo nhớ: CÁ ĐỘ xem ai về trước). Bên cạnh là NÚI ĐẤT (阜 - bộ này tên là KOZATOHEN, khó nhớ quá!).\n\nTôi đã KỊP (隶) về! (Lại một bộ không có âm đọc, chắc nó diễn tả cảm giác không nói nên lời!).\n\nGIỐNG CHIM - TORI (とり - 隹) hót vang (Mẹo nhớ: TỚ RÌ rầm hát theo). MƯA - AME (あめ - 雨) rơi (Mẹo nhớ: A, MẸ mang ô ra đón). Bầu trời và cây cối XANH - AOI (あおい - 青) biếc (Mẹo nhớ: A, ÔI! Đẹp quá!). Đây KHÔNG PHẢI - ARAZU (あらず - 非)² là mơ!\n\nMẶT - OMOTE (おもて - 面) trời lặn. Mùi DA - KAWA (かわ - 革) và DA THUỘC - NAMESHIGAWA (なめしがわ - 韋) từ xưởng của bác thợ rèn (Mẹo nhớ: NÀ MẸ, XÍ GA QUA xem da thuộc). Mùi CÂY HẸ - NIRA (にら - 韭) (Mẹo nhớ: NÍ RA vườn hái hẹ). ÂM THANH - OTO (おと - 音) của đêm thật yên bình (Mẹo nhớ: Ô TÔ về làng cũng phải tắt máy).\n\n---\n¹Lưu ý về Nắm thóc: Bộ 釆 (Biện) thực chất là hình vẽ dấu chân của loài vật, dùng để phân biệt. Có thể do nhầm lẫn nên nó được gán cho nghĩa \"nắm thóc\". Bộ thủ chỉ cây lúa thực sự là 禾.\n\n²Lưu ý về Không phải: ARAZU là một dạng phủ định cổ trong văn viết, tương đương với \"ではない\" (dewa nai) hoặc \"じゃない\" (ja nai) ngày nay. Dùng nó trong câu chuyện mang lại cảm giác rất trang trọng và thơ mộng.",
-                "radicals": [
-                    { "STT": 161, "Bộ thủ": "辰", "On'yomi": "シン, ジン", "Kun'yomi": "tatsu", "Hán Việt": "Thần", "Ý nghĩa": "Thì giờ, sấm sét, chuyển giao mùa", "Mẹo ghi nhớ": "Hình sấm sét.", "examples": [{ "kanji": "辰", "reading": "tatsu", "meaning": "Thì giờ", "type": "Kun'yomi" }] },
-                    { "STT": 162, "Bộ thủ": "辵 (辶)", "On'yomi": "チャク, テキ", "Kun'yomi": "shinnyou", "Hán Việt": "Sước", "Ý nghĩa": "Chợt đi chợt đứng", "Mẹo ghi nhớ": "Dấu chân đang đi.", "examples": [{ "kanji": "道", "reading": "michi", "meaning": "Con đường", "type": "Kun'yomi" }] },
-                    { "STT": 163, "Bộ thủ": "邑 (阝)", "On'yomi": "ユウ", "Kun'yomi": "mura", "Hán Việt": "Ấp", "Ý nghĩa": "Nước nhỏ, làng, thôn", "Mẹo ghi nhớ": "Hình làng.", "examples": [{ "kanji": "村", "reading": "mura", "meaning": "Làng", "type": "Kun'yomi" }] },
-                    { "STT": 164, "Bộ thủ": "酉", "On'yomi": "ユウ", "Kun'yomi": "-", "Hán Việt": "Dậu", "Ý nghĩa": "Rượu", "Mẹo ghi nhớ": "Hình bình rượu.", "examples": [{ "kanji": "酒", "reading": "sake", "meaning": "Rượu", "type": "Kun'yomi" }] },
-                    { "STT": 165, "Bộ thủ": "釆", "On'yomi": "ハン", "Kun'yomi": "-", "Hán Việt": "Biện", "Ý nghĩa": "Phân biệt", "Mẹo ghi nhớ": "Hình nắm thóc.", "examples": [{ "kanji": "採る", "reading": "toru", "meaning": "Thu hoạch", "type": "Kun'yomi" }] },
-                    { "STT": 166, "Bộ thủ": "里", "On'yomi": "リ", "Kun'yomi": "sato", "Hán Việt": "Lí", "Ý nghĩa": "Làng, quả cây trồng", "Mẹo ghi nhớ": "Điền và thổ.", "examples": [{ "kanji": "里", "reading": "sato", "meaning": "Làng", "type": "Kun'yomi" }] },
-                    { "STT": 167, "Bộ thủ": "金", "On'yomi": "キン, コン, ゴン", "Kun'yomi": "kane", "Hán Việt": "Kim", "Ý nghĩa": "Vàng, kim loại", "Mẹo ghi nhớ": "Hình vàng.", "examples": [{ "kanji": "金", "reading": "kane", "meaning": "Tiền", "type": "Kun'yomi" }] },
-                    { "STT": 168, "Bộ thủ": "長", "On'yomi": "チョウ", "Kun'yomi": "naga.i", "Hán Việt": "Trường", "Ý nghĩa": "Dài, lâu", "Mẹo ghi nhớ": "Hình tóc dài.", "examples": [{ "kanji": "長い", "reading": "nagai", "meaning": "Dài", "type": "Kun'yomi" }] },
-                    { "STT": 169, "Bộ thủ": "門", "On'yomi": "モン", "Kun'yomi": "kado", "Hán Việt": "Môn", "Ý nghĩa": "Cửa", "Mẹo ghi nhớ": "Hình cánh cửa.", "examples": [{ "kanji": "門", "reading": "kado", "meaning": "Cổng", "type": "Kun'yomi" }] },
-                    { "STT": 170, "Bộ thủ": "阜 (阝)", "On_yomi": "フ", "Kun'yomi": "oka", "Hán Việt": "Phụ", "Ý nghĩa": "Núi đất không có đá", "Mẹo ghi nhớ": "Hình núi đất.", "examples": [{ "kanji": "防", "reading": "fusegu", "meaning": "Phòng thủ", "type": "Kun'yomi" }] },
-                    { "STT": 171, "Bộ thủ": "隶", "On_yomi": "タイ", "Kun'yomi": "-", "Hán Việt": "Đãi", "Ý nghĩa": "Kịp (chạy cho nhanh)", "Mẹo ghi nhớ": "Chạy nhanh để kịp.", "examples": [{ "kanji": "隷", "reading": "rei", "meaning": "Nô lệ", "type": "On'yomi" }] },
-                    { "STT": 172, "Bộ thủ": "隹", "On_yomi": "スイ", "Kun'yomi": "furuto.ri", "Hán Việt": "Chuy", "Ý nghĩa": "Giống chim đuôi ngắn", "Mẹo ghi nhớ": "Hình chim đuôi ngắn.", "examples": [{ "kanji": "集", "reading": "atsumaru", "meaning": "Tập hợp", "type": "Kun'yomi" }] },
-                    { "STT": 173, "Bộ thủ": "雨", "On'yomi": "ウ", "Kun'yomi": "ame", "Hán Việt": "Vũ", "Ý nghĩa": "Mưa", "Mẹo ghi nhớ": "Hình mưa.", "examples": [{ "kanji": "雨", "reading": "ame", "meaning": "Mưa", "type": "Kun'yomi" }] },
-                    { "STT": 174, "Bộ thủ": "青", "On'yomi": "セイ, ショウ", "Kun'yomi": "ao", "Hán Việt": "Thanh", "Ý nghĩa": "Xanh", "Mẹo ghi nhớ": "Màu xanh.", "examples": [{ "kanji": "青い", "reading": "aoi", "meaning": "Xanh", "type": "Kun'yomi" }] },
-                    { "STT": 175, "Bộ thủ": "非", "On'yomi": "ヒ", "Kun'yomi": "ara.zu", "Hán Việt": "Phi", "Ý nghĩa": "Không phải, trái, trái ngược", "Mẹo ghi nhớ": "Hai cánh chim đối nhau.", "examples": [{ "kanji": "非", "reading": "hi", "meaning": "Không", "type": "On'yomi" }] },
-                    { "STT": 176, "Bộ thủ": "面", "On'yomi": "メン", "Kun'yomi": "omo", "Hán Việt": "Diện", "Ý nghĩa": "Mặt", "Mẹo ghi nhớ": "Hình cái mặt.", "examples": [{ "kanji": "面", "reading": "omo", "meaning": "Mặt", "type": "Kun'yomi" }] },
-                    { "STT": 177, "Bộ thủ": "革", "On'yomi": "カク", "Kun'yomi": "kawa", "Hán Việt": "Cách", "Ý nghĩa": "Da thú thuộc bỏ sách lông", "Mẹo ghi nhớ": "Da đã được xử lý.", "examples": [{ "kanji": "革", "reading": "kawa", "meaning": "Da", "type": "Kun'yomi" }] },
-                    { "STT": 178, "Bộ thủ": "韋", "On'yomi": "イ", "Kun'yomi": "-", "Hán Việt": "Vi", "Ý nghĩa": "Da thuộc, trái ngược nhau", "Mẹo ghi nhớ": "Da thuộc.", "examples": [{ "kanji": "違", "reading": "chigau", "meaning": "Sai", "type": "Kun'yomi" }] },
-                    { "STT": 179, "Bộ thủ": "韭", "On'yomi": "キュウ", "Kun'yomi": "niira", "Hán Việt": "Cửu", "Ý nghĩa": "Cây Hẹ", "Mẹo ghi nhớ": "Hình cây hẹ.", "examples": [{ "kanji": "韭", "reading": "nira", "meaning": "Hẹ", "type": "Kun'yomi" }] },
-                    { "STT": 180, "Bộ thủ": "音", "On'yomi": "オン, イン", "Kun'yomi": "oto", "Hán Việt": "Âm", "Ý nghĩa": "Tiếng, âm thanh phát ra tai nghe được.", "Mẹo ghi nhớ": "Hình âm thanh.", "examples": [{ "kanji": "音", "reading": "oto", "meaning": "Âm thanh", "type": "Kun'yomi" }] }
-                ]
-            },
-            {
-                "theme": "Bộ thủ về Động vật và Khái niệm trừu tượng (181-200)",
-                "story": "Giấc Mơ Thần Thoại (Để nhớ ý nghĩa)\n\nTrong một giấc mơ kỳ lạ, tôi đối mặt với một sinh vật khổng lồ. Tôi chỉ thấy được cái đầu (頁) to lớn của nó hiện ra từ trong mây. Một cơn gió (風) mạnh bỗng nổi lên, nhấc bổng tôi và khiến tôi bay (飛) lên không trung. Để có sức mạnh, tôi ăn (食) những quả mọng phát sáng lơ lửng xung quanh.\n\nĐầu (首) tôi nặng trĩu vì choáng ngợp, nhưng rồi một mùi thơm (香) của hoa cỏ dại từ mặt đất đã giúp tôi bình tĩnh lại.\n\nTừ trên cao, tôi nhìn thấy một thế giới thần thoại. Một con ngựa (馬) trắng muốt chạy trên cánh đồng trải đầy xương (骨) của những sinh vật cổ đại. Cây cối ở đây cao (高) đến mức chọc thủng những tầng mây, và mái tóc dài (髟) của một nữ thần sông bay phấp phới như một dải lụa.\n\nỞ vùng đất này, việc đánh nhau (鬥) là điều hiếm thấy. Thay vào đó, người ta dâng lên các vị thần những bình rượu lễ (鬯) quý giá. Khói từ cái đỉnh hương (鬲) bằng đồng bốc lên nghi ngút, và tôi cảm nhận được sự hiện diện của những linh hồn, những ma quỷ (鬼) của vùng đất này, họ không đáng sợ mà chỉ trầm mặc, cổ xưa.\n\nKhi nghi lễ kết thúc, thế giới trở lại hiền hòa. Dưới sông, đàn cá (魚) bạc lấp lánh bơi lội. Lũ chim (鳥) cất tiếng hót líu lo. Tôi thấy một vùng đất mặn (鹵) ven biển, nơi một con nai (鹿) đang thong dong gặm cỏ.\n\nGiấc mơ tan biến khi bình minh lên. Tôi thức dậy và nhìn ra ngoài cửa sổ. Cánh đồng lúa mạch (麥) và cây gai (麻) đang vào mùa thu hoạch. Giấc mơ hùng tráng đêm qua có lẽ chỉ là sự phản chiếu của một thế giới hòa bình và thịnh vượng.\n\n---\n\nBản Giao Hưởng Cuối Cùng (Để nhớ cách đọc Kun'yomi)\n\nTôi thấy CÁI ĐẦU... ôi bộ này tên là OOGAI (おおがい - 頁), nghe như 'ô gay' go đây! Một cơn GIÓ - KAZE (かぜ - 風) (Mẹo nhớ: CÀ DÊ mèn cũng bay) thổi tới, làm tôi BAY - TOBU (とぶ - 飛) (Mẹo nhớ: TÔ BÚp bê cũng bay) lên. Tôi ĂN - TABERU (たべる - 食) (Mẹo nhớ: TA BÊ RỦ bạn đi ăn).\n\nĐẦU - KUBI (くび - 首) của tôi (Mẹo nhớ: CỨ BỊ đau đầu) nặng trĩu. Nhưng tôi ngửi thấy MÙI THƠM - KAORI (かおり - 香) (Mẹo nhớ: CÁ O RÌ rào trong hồ thơm quá).\n\nCON NGỰA - UMA (うま - 馬) (Mẹo nhớ: Ú MÀ, con ngựa béo) chạy qua đống XƯƠNG - HONE (ほね - 骨) (Mẹo nhớ: HÔ NỂ bộ xương này). Cây cối CAO - TAKAI (たかい - 高) (Mẹo nhớ: TA CAI sữa trên cây cao). Mái TÓC DÀI (髟) - bộ này tên là KAMIKANMURI, 'vương miện tóc'!\n\nĐÁNH NHAU (鬥) - bộ TOUGAMAE này trông thật đáng sợ! Thay vào đó, người ta dâng RƯỢU LỄ (鬯) - lại một chữ không biết đọc! Khói từ CÁI ĐỈNH HƯƠNG - KANAE (かなえ - 鬲) (Mẹo nhớ: CÀ NAE có cái đỉnh này) bay lên. MA QUỶ - ONI (おに - 鬼) (Mẹo nhớ: Ô NI sư cũng sợ quỷ) hiện về.\n\nDưới sông, CÁ - SAKANA (さかな - 魚) (Mẹo nhớ: SAO CÁ NÀy to thế!) bơi lội. CHIM - TORI (とり - 鳥) hót vang. Tôi thấy vùng ĐẤT MẶN (鹵) và CON NAI - SHIKA (しか - 鹿) (Mẹo nhớ: SỢ CA sĩ hét to).\n\nThức dậy, tôi thấy cánh đồng LÚA MẠCH - MUGI (むぎ - 麥) (Mẹo nhớ: MÙ GÌ mà cánh đồng vàng thế?) và CÂY GAI - ASA (あさ - 麻) (Mẹo nhớ: A, SÁng rồi) đang chờ thu hoạch.",
-                "radicals": [
-                    { "STT": 181, "Bộ thủ": "頁", "On'yomi": "ケツ", "Kun'yomi": "-", "Hán Việt": "Hiệt", "Ý nghĩa": "Cái đầu", "Mẹo ghi nhớ": "Hình cái đầu.", "examples": [{ "kanji": "頭", "reading": "atama", "meaning": "Đầu", "type": "Kun'yomi" }] },
-                    { "STT": 182, "Bộ thủ": "風", "On'yomi": "フウ, フ", "Kun'yomi": "kaze", "Hán Việt": "Phong", "Ý nghĩa": "Gió", "Mẹo ghi nhớ": "Hình gió thổi.", "examples": [{ "kanji": "風", "reading": "kaze", "meaning": "Gió", "type": "Kun'yomi" }] },
-                    { "STT": 183, "Bộ thủ": "飛", "On'yomi": "ヒ", "Kun'yomi": "to.bu", "Hán Việt": "Phi", "Ý nghĩa": "Bay", "Mẹo ghi nhớ": "Hình chim bay.", "examples": [{ "kanji": "飛ぶ", "reading": "tobu", "meaning": "Bay", "type": "Kun'yomi" }] },
-                    { "STT": 184, "Bộ thủ": "食", "On'yomi": "ショク, ジキ", "Kun'yomi": "ta.beru", "Hán Việt": "Thực", "Ý nghĩa": "Ăn", "Mẹo ghi nhớ": "Hình cái bát đựng thức ăn.", "examples": [{ "kanji": "食べる", "reading": "taberu", "meaning": "Ăn", "type": "Kun'yomi" }] },
-                    { "STT": 185, "Bộ thủ": "首", "On'yomi": "シュ", "Kun'yomi": "kubi", "Hán Việt": "Thủ", "Ý nghĩa": "Đầu", "Mẹo ghi nhớ": "Hình cái đầu.", "examples": [{ "kanji": "首", "reading": "kubi", "meaning": "Cổ", "type": "Kun'yomi" }] },
-                    { "STT": 186, "Bộ thủ": "香", "On'yomi": "コウ, キョウ", "Kun'yomi": "ka", "Hán Việt": "Hương", "Ý nghĩa": "Mùi thơm", "Mẹo ghi nhớ": "Mùi thơm của lúa.", "examples": [{ "kanji": "香る", "reading": "kaoru", "meaning": "Thơm", "type": "Kun'yomi" }] },
-                    { "STT": 187, "Bộ thủ": "馬", "On'yomi": "バ", "Kun'yomi": "uma", "Hán Việt": "Mã", "Ý nghĩa": "Con ngựa", "Mẹo ghi nhớ": "Hình con ngựa.", "examples": [{ "kanji": "馬", "reading": "uma", "meaning": "Ngựa", "type": "Kun'yomi" }] },
-                    { "STT": 188, "Bộ thủ": "骨", "On'yomi": "コツ", "Kun'yomi": "hone", "Hán Việt": "Cốt", "Ý nghĩa": "Xương", "Mẹo ghi nhớ": "Hình bộ xương.", "examples": [{ "kanji": "骨", "reading": "hone", "meaning": "Xương", "type": "Kun'yomi" }] },
-                    { "STT": 189, "Bộ thủ": "高", "On'yomi": "コウ", "Kun'yomi": "taka.i", "Hán Việt": "Cao", "Ý nghĩa": "Cao", "Mẹo ghi nhớ": "Hình tòa nhà cao.", "examples": [{ "kanji": "高い", "reading": "takai", "meaning": "Cao", "type": "Kun'yomi" }] },
-                    { "STT": 190, "Bộ thủ": "髟", "On'yomi": "ヒョウ", "Kun'yomi": "-", "Hán Việt": "Tiêu", "Ý nghĩa": "Tóc dài", "Mẹo ghi nhớ": "Hình tóc dài.", "examples": [{ "kanji": "髪", "reading": "kami", "meaning": "Tóc", "type": "Kun'yomi" }] },
-                    { "STT": 191, "Bộ thủ": "鬥", "On'yomi": "トウ", "Kun'yomi": "tataka.u", "Hán Việt": "Đấu", "Ý nghĩa": "Đánh nhau", "Mẹo ghi nhớ": "Hai người đánh nhau.", "examples": [{ "kanji": "闘う", "reading": "tatakau", "meaning": "Chiến đấu", "type": "Kun'yomi" }] },
-                    { "STT": 192, "Bộ thủ": "鬯", "On'yomi": "チョウ", "Kun'yomi": "-", "Hán Việt": "Sướng", "Ý nghĩa": "Loại rượu lễ", "Mẹo ghi nhớ": "Rượu lễ cầu thần.", "examples": [{ "kanji": "鬱", "reading": "utsu", "meaning": "Trầm uất", "type": "On'yomi" }] },
-                    { "STT": 193, "Bộ thủ": "鬲", "On'yomi": "レキ", "Kun'yomi": "-", "Hán Việt": "Lịch (Cách)", "Ý nghĩa": "Cái Đỉnh hương", "Mẹo ghi nhớ": "Ngăn cách âm dương.", "examples": [{ "kanji": "隔", "reading": "hedateru", "meaning": "Ngăn cách", "type": "Kun'yomi" }] },
-                    { "STT": 194, "Bộ thủ": "鬼", "On'yomi": "キ", "Kun'yomi": "oni", "Hán Việt": "Quỷ", "Mẹo ghi nhớ": "Hình con quỷ.", "examples": [{ "kanji": "鬼", "reading": "oni", "meaning": "Quỷ", "type": "Kun'yomi" }] },
-                    { "STT": 195, "Bộ thủ": "魚", "On'yomi": "ギョ", "Kun'yomi": "sakana", "Hán Việt": "Ngư", "Ý nghĩa": "Cá", "Mẹo ghi nhớ": "Hình con cá.", "examples": [{ "kanji": "魚", "reading": "sakana", "meaning": "Cá", "type": "Kun'yomi" }] },
-                    { "STT": 196, "Bộ thủ": "鳥", "On'yomi": "チョウ", "Kun'yomi": "tori", "Hán Việt": "Điểu", "Ý nghĩa": "Chim", "Mẹo ghi nhớ": "Hình con chim.", "examples": [{ "kanji": "鳥", "reading": "tori", "meaning": "Chim", "type": "Kun'yomi" }] },
-                    { "STT": 197, "Bộ thủ": "鹵", "On'yomi": "ロ", "Kun'yomi": "-", "Hán Việt": "Lỗ", "Ý nghĩa": "Đất mặn, Muối trong đất", "Mẹo ghi nhớ": "Hình đất mặn.", "examples": [{ "kanji": "塩", "reading": "shio", "meaning": "Muối", "type": "Kun'yomi" }] },
-                    { "STT": 198, "Bộ thủ": "鹿", "On'yomi": "ロク", "Kun'yomi": "shika", "Hán Việt": "Lộc", "Ý nghĩa": "Con Nai", "Mẹo ghi nhớ": "Hình con nai.", "examples": [{ "kanji": "鹿", "reading": "shika", "meaning": "Nai", "type": "Kun'yomi" }] },
-                    { "STT": 199, "Bộ thủ": "麥", "On'yomi": "バク", "Kun'yomi": "mugi", "Hán Việt": "Mạch", "Ý nghĩa": "Lúa Mạch", "Mẹo ghi nhớ": "Hình cây lúa mạch.", "examples": [{ "kanji": "麦", "reading": "mugi", "meaning": "Lúa mạch", "type": "Kun'yomi" }] },
-                    { "STT": 200, "Bộ thủ": "麻", "On'yomi": "マ", "Kun'yomi": "asa", "Hán Việt": "Ma", "Ý nghĩa": "Cây Gai", "Mẹo ghi nhớ": "Hình cây gai.", "examples": [{ "kanji": "麻", "reading": "asa", "meaning": "Cây gai", "type": "Kun'yomi" }] }
-                ]
-            },
-            {
-                "theme": "Bộ thủ cuối cùng (201-214)",
-                "story": "Đêm Thu Hoạch (Để nhớ ý nghĩa)\n\nDưới ánh trăng, tôi nhìn ra cánh đồng. Một màu vàng (黃) óng ả của lúa chín trải dài bất tận. Những hạt lúa nếp (黍) nặng trĩu, cúi đầu trong làn gió nhẹ. Màn đêm đen (黑) đặc quánh bao trùm, nhưng trong nhà, tôi vẫn miệt mài bên ngọn đèn, tiếp tục công việc thêu may (黹) chiếc áo cho lễ hội ngày mai.\n\nĐêm tĩnh lặng nhưng không hề yên ắng. Tôi nghe tiếng con ếch (黽) kêu râm ran ngoài đồng. Trong bếp, cái vạc (鼎) đồng đựng nước dùng đang sôi lục bục. Từ sân đình, tiếng trống (鼓) tập dượt cho lễ hội vẫn vang lên đều đặn. Thỉnh thoảng, một con chuột (鼠) đồng béo núc lại chạy sột soạt qua hiên nhà, một vị khách quen thuộc của mùa gặt.\n\nTôi bước ra ngoài, hít một hơi thật sâu. Mũi (鼻) tôi căng đầy mùi lúa mới và hương đất ẩm. Tôi mỉm cười mãn nguyện khi thấy những bông lúa trổ đều (齊) tăm tắp. Tôi nhón vài hạt lúa, cho vào miệng, và hàm răng (齒) của tôi cảm nhận được vị ngọt sữa của thành quả lao động.\n\nCảm giác sung túc này khiến tôi nghĩ đến những biểu tượng may mắn, như con rồng (龍) và con rùa (龜) trong truyền thuyết. Bỗng từ nhà bên, tiếng một loại nhạc khí (龠) bằng tre vang lên du dương, trong trẻo. Âm nhạc báo hiệu một ngày dài đã kết thúc, nhường chỗ cho sự nghỉ ngơi bình yên.\n\n---\n\nBản Nhạc Đêm Thu Hoạch (Để nhớ cách đọc Kun'yomi)\n\nCánh đồng có MÀU VÀNG - KI (き - 黃) (Mẹo nhớ: KÌa, màu vàng!). Những hạt LÚA NẾP - KIBI (きび - 黍) (Mẹo nhớ: KHI BỊ đói là ăn) óng ả. Màn đêm ĐEN - KUROI (くろい - 黑) (Mẹo nhớ: CỨ RỜI đi là trời tối) bao trùm. Tôi vẫn THÊU MAY (黹) - bộ này khó quá, chắc là 'chỉ' để thêu thôi!\n\nTiếng CON ẾCH - AOGAERU (あおがえる - 黽) (Mẹo nhớ: A, ÔI! GA E RÙng rợn) kêu vang. CÁI VẠC - KANAE (かなえ - 鼎) (Mẹo nhớ: CÀ NAE lại sôi) đang sôi. Tiếng TRỐNG - TSUZUMI (つづみ - 鼓) (Mẹo nhớ: SƯ DÙ MÌnh đi xem trống) vang lên. CON CHUỘT - NEZUMI (ねずみ - 鼠) (Mẹo nhớ: NÉ DÙ MÌnh ra!) chạy qua.\n\nCÁI MŨI - HANA (はな - 鼻) (Mẹo nhớ: HÀ NAng tiên có cái mũi đẹp) của tôi ngửi thấy mùi lúa TRỔ ĐỀU - HITOSHII (ひとしい - 齊) (Mẹo nhớ: HIẾT TÔ SỢ Y không đều).\n\nRĂNG - HA (は - 齒) của tôi (Mẹo nhớ: Cười HA ha) nhai hạt lúa. May mắn như thấy CON RỒNG - TATSU (たつ - 龍) và CON RÙA - KAME (かめ - 龜) (Mẹo nhớ: CÀ MÊ man xem rùa).\n\nTiếng NHẠC KHÍ (sáo) - FUE (ふえ - 龠) (Mẹo nhớ: PHÙ Ê a thổi sáo) vang lên, kết thúc một ngày dài.",
-                "radicals": [
-                    { "STT": 201, "Bộ thủ": "黃", "On'yomi": "コウ, オウ", "Kun'yomi": "ki", "Hán Việt": "Hoàng", "Ý nghĩa": "Màu vàng", "Mẹo ghi nhớ": "Màu vàng.", "examples": [{ "kanji": "黄", "reading": "ki", "meaning": "Vàng", "type": "Kun'yomi" }] },
-                    { "STT": 202, "Bộ thủ": "黍", "On'yomi": "ショ", "Kun'yomi": "kibi", "Hán Việt": "Thứ", "Ý nghĩa": "Lúa nếp", "Mẹo ghi nhớ": "Hình lúa nếp.", "examples": [{ "kanji": "黍", "reading": "kibi", "meaning": "Lúa nếp", "type": "Kun'yomi" }] },
-                    { "STT": 203, "Bộ thủ": "黑", "On'yomi": "コク", "Kun'yomi": "kuro", "Hán Việt": "Hắc", "Ý nghĩa": "Màu đen", "Mẹo ghi nhớ": "Màu đen.", "examples": [{ "kanji": "黒", "reading": "kuro", "meaning": "Đen", "type": "Kun'yomi" }] },
-                    { "STT": 204, "Bộ thủ": "黹", "On'yomi": "チ", "Kun'yomi": "nu.u", "Hán Việt": "Chí (Phất)", "Ý nghĩa": "Thêu may", "Mẹo ghi nhớ": "Hình thêu may.", "examples": [{ "kanji": "縫う", "reading": "nuu", "meaning": "May", "type": "Kun'yomi" }] },
-                    { "STT": 205, "Bộ thủ": "黽", "On'yomi": "ベン", "Kun'yomi": "kaeru", "Hán Việt": "Mãnh", "Ý nghĩa": "Con Ếch", "Mẹo ghi nhớ": "Hình con ếch.", "examples": [{ "kanji": "蛙", "reading": "kaeru", "meaning": "Ếch", "type": "Kun'yomi" }] },
-                    { "STT": 206, "Bộ thủ": "鼎", "On'yomi": "テイ", "Kun'yomi": "kanae", "Hán Việt": "Đỉnh", "Ý nghĩa": "Cái vạc", "Mẹo ghi nhớ": "Hình cái vạc.", "examples": [{ "kanji": "鼎", "reading": "kanae", "meaning": "Vạc", "type": "Kun'yomi" }] },
-                    { "STT": 207, "Bộ thủ": "鼓", "On'yomi": "コ", "Kun'yomi": "tsuzumi", "Hán Việt": "Cổ", "Ý nghĩa": "Cái trống", "Mẹo ghi nhớ": "Hình cái trống.", "examples": [{ "kanji": "鼓", "reading": "tsuzumi", "meaning": "Trống nhỏ", "type": "Kun'yomi" }] },
-                    { "STT": 208, "Bộ thủ": "鼠", "On'yomi": "ソ", "Kun'yomi": "nezumi", "Hán Việt": "Thử", "Ý nghĩa": "Con Chuột", "Mẹo ghi nhớ": "Hình con chuột.", "examples": [{ "kanji": "鼠", "reading": "nezumi", "meaning": "Chuột", "type": "Kun'yomi" }] },
-                    { "STT": 209, "Bộ thủ": "鼻", "On'yomi": "ビ", "Kun'yomi": "hana", "Hán Việt": "Tỵ", "Ý nghĩa": "Cái mũi", "Mẹo ghi nhớ": "Hình cái mũi.", "examples": [{ "kanji": "鼻", "reading": "hana", "meaning": "Mũi", "type": "Kun'yomi" }] },
-                    { "STT": 210, "Bộ thủ": "齊", "On_yomi": "セイ", "Kun'yomi": "hito.shii", "Hán Việt": "Tề", "Ý nghĩa": "Lúa trổ đều bông, Chỉnh tề", "Mẹo ghi nhớ": "Lúa trổ đều.", "examples": [{ "kanji": "斉しい", "reading": "hitoshī", "meaning": "Bằng nhau", "type": "Kun'yomi" }] },
-                    { "STT": 211, "Bộ thủ": "齒", "On'yomi": "シ", "Kun'yomi": "ha", "Hán Việt": "Xỉ", "Ý nghĩa": "Răng", "Mẹo ghi nhớ": "Hình răng.", "examples": [{ "kanji": "歯", "reading": "ha", "meaning": "Răng", "type": "Kun'yomi" }] },
-                    { "STT": 212, "Bộ thủ": "龍", "On'yomi": "リュウ, リョウ", "Kun'yomi": "tatsu", "Hán Việt": "Long", "Ý nghĩa": "Con Rồng", "Mẹo ghi nhớ": "Hình con rồng.", "examples": [{ "kanji": "龍", "reading": "tatsu", "meaning": "Rồng", "type": "Kun'yomi" }] },
-                    { "STT": 213, "Bộ thủ": "龜", "On'yomi": "キ", "Kun'yomi": "kame", "Hán Việt": "Quy", "Ý nghĩa": "Con Rùa", "Mẹo ghi nhớ": "Hình con rùa.", "examples": [{ "kanji": "亀", "reading": "kame", "meaning": "Rùa", "type": "Kun'yomi" }] },
-                    { "STT": 214, "Bộ thủ": "龠", "On'yomi": "ヤク", "Kun'yomi": "fue", "Hán Việt": "Dược", "Ý nghĩa": "Nhạc khí như ống sáo", "Mẹo ghi nhớ": "Hình ống sáo.", "examples": [{ "kanji": "笛", "reading": "fue", "meaning": "Sáo", "type": "Kun'yomi" }] }
-                ]
-            }
+        // --- DATA (Full 214 Radicals with AzaKanji V2.0 Standard) ---
+        const kanjiData = [
+            { stt: 1, char: "一", nghiaHV: "NHẤT", nghiaTV: "Một", on: "イチ", kun: "ひと", ti: "Một nét ngang đơn giản.", ta: "**Y chi** (Ichi) chiếc đũa cho **Hí Tô** (Hito)." },
+            { stt: 2, char: "丨", nghiaHV: "CỔN", nghiaTV: "Nét sổ", on: "コン", kun: "たて", ti: "Một nét thẳng đứng xuyên qua tâm.", ta: "**Côn** (Kon) đồ cầm cây **Ta Tê** (Tate) thẳng đứng." },
+            { stt: 3, char: "丶", nghiaHV: "CHỦ", nghiaTV: "Điểm/Chấm", on: "シュ", kun: "ちょぼ", ti: "Một dấu chấm nhỏ quan trọng.", ta: "**Su** (Shu) hào rơi một **Chô Bô** (Chobo) chấm nhỏ." },
+            { stt: 4, char: "丿", nghiaHV: "PHIỆT", nghiaTV: "Phẩy", on: "ヘツ", kun: "の", ti: "Nét sổ xiên sang trái.", ta: "**Hết** (Hetsu) phẩy **Nô** (No) tì." },
+            { stt: 5, char: "乙", nghiaHV: "ẤT", nghiaTV: "Vị trí 2", on: "オツ", kun: "おつ", ti: "Con chim én đang bay vắt vẻo.", ta: "**Ốt** (Otsu) dột **Ô Tư** (Otsu) can Ất." },
+            { stt: 6, char: "亅", nghiaHV: "QUYẾT", nghiaTV: "Móc", on: "ケツ", kun: "はね", ti: "Nét sổ có móc sắc bén ở cuối.", ta: "**Kết** (Ketsu) liễu bằng **Ha Nê** (Hane) móc." },
+            { stt: 7, char: "二", nghiaHV: "NHỊ", nghiaTV: "Hai", on: "ニ", kun: "ふた", ti: "Hai nét ngang cân xứng song song.", ta: "**Ní** (Ni) nuốt **Phù Tá** (Futa) hai lần." },
+            { stt: 8, char: "亠", nghiaHV: "ĐẦU", nghiaTV: "Nắp", on: "トウ", kun: "なべぶた", ti: "Cái nắp đậy trên đầu bộ vật.", ta: "**Tô** (Tou) canh đậy **Na Bê Bư Ta** (Nabebuta)." },
+            { stt: 9, char: "人", nghiaHV: "NHÂN", nghiaTV: "Người", on: "ジン", kun: "ひと", ti: "Hình dáng một con người (**Nhân 人**) đang bước đi.", ta: "**Jin** (Jin) là người **Hí Tô** (Hito)." },
+            { stt: 10, char: "儿", nghiaHV: "NHI", nghiaTV: "Người đi", on: "ニ", kun: "ひとあし", ti: "Đôi chân người (**Nhân 儿**) đang di chuyển.", ta: "**Ní** (Ni) nuốt **Hí Tô A Si** (Hitoashi) bước chân nhi đồng." },
+            { stt: 11, char: "入", nghiaHV: "NHẬP", nghiaTV: "Vào", on: "ニュウ", kun: "はい", ti: "Rễ cây đâm sâu (**Nhập 入**) vào mặt đất.", ta: "**Niu** (Nyuu) tơn **Hãi** (Hairu) quá chạy vào." },
+            { stt: 12, char: "八", nghiaHV: "BÁT", nghiaTV: "Tám", on: "ハチ", kun: "や", ti: "Số tám tách đôi hai bên như chia lìa.", ta: "**Hà Chi** (Hachi) chia **Ya** (Ya) tám quả." },
+            { stt: 13, char: "冂", nghiaHV: "QUYNH", nghiaTV: "Biên giới", on: "ケイ", kun: "まきがまえ", ti: "Vòng tường bao quanh vùng biên giới xa xôi.", ta: "Kinh **Kế** (Kei) canh **Ma Ki Ga Ma Ê** (Makigamae) biên giới." },
+            { stt: 14, char: "冖", nghiaHV: "MỊCH", nghiaTV: "Che đậy", on: "ベキ", kun: "わかんむり", ti: "Khăn (**Mịch 冖**) trùm che đồ vật bên dưới.", ta: "**Bết** (Beki) bát **Wa Can Mư Ri** (Wakanmuri) che đậy." },
+            { stt: 15, char: "冫", nghiaHV: "BĂNG", nghiaTV: "Nước đá", on: "ヒョウ", kun: "にすい", ti: "Hai giọt nước (**Thủy 氵** - biến thể) đông cứng lạnh lẽo.", ta: "**Hiô** (Hyou) lạnh **Ni Sư I** (Nisui) đóng băng." },
+            { stt: 16, char: "几", nghiaHV: "KỶ", nghiaTV: "Cái ghế", on: "キ", kun: "つくえ", ti: "Cái ghế dựa (**Kỷ 几**) có chân vững chắc.", ta: "**Ki** (Ki) lạ cái ghế **Tư Cư Ê** (Tsukue)." },
+            { stt: 17, char: "凵", nghiaHV: "KHẢM", nghiaTV: "Vật đựng", on: "カン", kun: "かんにょう", ti: "Cái máng hoặc chậu (**Khảm 凵**) để đựng đồ.", ta: "**Can** (Kan) đảm dùng **Can Niô** (Kannyou) đựng đồ." },
+            { stt: 18, char: "刀", nghiaHV: "ĐAO", nghiaTV: "Dao", on: "トウ", kun: "かたな", ti: "Hình con dao (**Đao 刀**) sắc bén có tay cầm.", ta: "**Tô** (Tou) màu cho **Ca Ta Na** (Katana)." },
+            { stt: 19, char: "力", nghiaHV: "LỰC", nghiaTV: "Sức mạnh", on: "リョク", kun: "ちから", ti: "Cánh tay gồng cơ bắp (**Lực 力**) đánh xuống.", ta: "**Rốc** (Ryoku) két dùng sức **Chi Ca Ra** (Chikara)." },
+            { stt: 20, char: "勹", nghiaHV: "BAO", nghiaTV: "Bọc lại", on: "ホウ", kun: "つつみがまえ", ti: "Người khom lưng bao bọc (**Bao 勹**) đồ vật.", ta: "**Hô** (Hou) hoán **Tư Tư Mi Ga Ma Ê** (Tsutsumigamae)." },
+            { stt: 21, char: "匕", nghiaHV: "TỶ", nghiaTV: "Cái thìa", on: "ヒ", kun: "さじ", ti: "Hình cái thìa (**Tỷ 匕**) xúc ăn.", ta: "**Hi** (Hi) hi dùng **Sa Ji** (Saji) ăn cơm." },
+            { stt: 22, char: "匚", nghiaHV: "PHƯƠNG", nghiaTV: "Cái hộp", on: "ホウ", kun: "はこがまえ", ti: "Khoanh gỗ khoét giữa làm hộp (**Phương 匚**).", ta: "**Hô** (Hou) hoán **Ha Cô Ga Ma Ê** (Hakogamae) cái hộp." },
+            { stt: 23, char: "匸", nghiaHV: "HỆ", nghiaTV: "Che đậy", on: "ケイ", kun: "-", ti: "Nét ngang che phủ (**Hệ 匸**) dấu vết bên dưới.", ta: "Thiết **Kế** (Kei) che đậy." },
+            { stt: 24, char: "十", nghiaHV: "THẬP", nghiaTV: "Mười", on: "ジュウ", kun: "とお", ti: "Hình chữ thập (**Thập 十**) đầy đủ 4 phương.", ta: "**Ju** (Juu) đo đai đen mười cái **Tô** (Too)." },
+            { stt: 25, char: "卜", nghiaHV: "BỐC", nghiaTV: "Bói toán", on: "ボク", kun: "うらな", ti: "Vết nứt trên yếm rùa (**Bốc 卜**) để xem bói.", ta: "**Bốc** (Boku) phét **U Ra Na** (Uranau) bói toán." },
+            { stt: 26, char: "卩", nghiaHV: "TIẾT", nghiaTV: "Đốt tre", on: "セツ", kun: "-", ti: "Hình đốt tre (**Tiết 卩**) hoặc chi tiết nhỏ.", ta: "**Sết** (Setsu) chặt đốt tre." },
+            { stt: 27, char: "厂", nghiaHV: "HÁN", nghiaTV: "Sườn núi", on: "カン", kun: "-", ti: "Vách đá sườn núi (**Hán 厂**) nhô ra che chắn.", ta: "**Can** (Kan) đảm leo sườn núi." },
+            { stt: 28, char: "厶", nghiaHV: "TƯ", nghiaTV: "Riêng tư", on: "シ", kun: "む", ti: "Hình tam giác (**Tư 厶**) chỉ sự riêng tư.", ta: "**Sĩ** (Shi) diện cái **Mù** (Mu) riêng tư." },
+            { stt: 29, char: "又", nghiaHV: "HỰU", nghiaTV: "Lại nữa", on: "ユウ", kun: "mata", ti: "Bàn tay (**Hựu 又**) lặp lại hành động.", ta: "**Diu** (Yuu) dàng **Ma Ta** (Mata) lại gặp." },
+            { stt: 30, char: "口", nghiaHV: "KHẨU", nghiaTV: "Cái miệng", on: "コウ", kun: "くち", ti: "Cái miệng (**Khẩu 口**) mở to hình vuông.", ta: "**Cô** (Kou) giáo ngậm kẹo **Cu Chi** (Kuchi)." },
+            { stt: 31, char: "囗", nghiaHV: "VI", nghiaTV: "Vây quanh", on: "イ", kun: "くにがまえ", ti: "Ranh giới bao quanh (**Vi 囗**) bờ cõi.", ta: "**Y** (I) như cái **Cư Ni Ga Ma Ê** (Kunigamae) vây quanh." },
+            { stt: 32, char: "土", nghiaHV: "THỔ", nghiaTV: "Đất", on: "ド", kun: "つち", ti: "Cây thánh giá cắm trên đất (**Thổ 土**).", ta: "**Đô** (Do) vật trên đất **Tu Chí** (Tsuchi)." },
+            { stt: 33, char: "士", nghiaHV: "SĨ", nghiaTV: "Kẻ sĩ", on: "シ", kun: "さむらい", ti: "Người học thức đứng trên đất (**Thổ 土**).", ta: "**Sĩ** (Shi) tử là **Sa Mư Rai** (Samurai)." },
+            { stt: 34, char: "夕", nghiaHV: "TỊCH", nghiaTV: "Buổi tối", on: "セキ", kun: "ゆう", ti: "Trăng khuyết (**Tịch 夕**) lúc hoàng hôn.", ta: "Phân **Tích** (Seki) buổi chiều **Yu** (Yuu)." },
+            { stt: 35, char: "大", nghiaHV: "ĐẠI", nghiaTV: "Lớn", on: "ダイ", kun: "おお", ti: "Người (**Nhân 人**) dang tay chân thật to.", ta: "**Đai** (Dai) lưng to **Ô** (Oo) quá." },
+            { stt: 36, char: "女", nghiaHV: "NỮ", nghiaTV: "Phụ nữ", on: "ジョ", kun: "おんな", ti: "Người nữ (**Nữ 女**) ngồi khép chân duyên dáng.", ta: "**Dô** (Jo) bia với **Ôn Nà** (Onna)." },
+            { stt: 37, char: "子", nghiaHV: "TỬ", nghiaTV: "Con", on: "シ", kun: "こ", ti: "Đứa trẻ (**Tử 子**) quấn tã dang hai tay.", ta: "Ca **Sĩ** (Shi) nhí là trẻ **Con** (Ko)." },
+            { stt: 38, char: "宀", nghiaHV: "MIÊN", nghiaTV: "Mái nhà", on: "ベン", kun: "うかんmu-ri", ti: "Hình cái mái che (**Miên 宀**) có ống khói.", ta: "**Bên** (Ben) trong **U Can Mư Ri** (Ukanmuri) ấm áp." },
+            { stt: 39, char: "寸", nghiaHV: "THỐN", nghiaTV: "Tấc", on: "スン", kun: "-", ti: "Bàn tay đo chiều dài (**Thốn 寸**) từng tấc.", ta: "**Sun** (Sun) xoe đo từng thốn." },
+            { stt: 40, char: "小", nghiaHV: "TIỂU", nghiaTV: "Nhỏ", on: "ショウ", kun: "ちい", ti: "Hạt cát nhỏ (**Tiểu 小**) tung ra 2 bên.", ta: "**Sô** (Shou) diễn nhỏ **Chi** (Chii) li." },
+            { stt: 41, char: "尸", nghiaHV: "THI", nghiaTV: "Xác chết", on: "シ", kun: "しかばね", ti: "Người nằm co chân (**Thi 尸**) không cử động.", ta: "**Sĩ** (Shi) tử thành **Si Ca Ba Nê** (Shikabane)." },
+            { stt: 42, char: "山", nghiaHV: "SƠN", nghiaTV: "Núi", on: "サン", kun: "やま", ti: "Ba ngọn núi (**Sơn 山**) nhấp nhô.", ta: "**Săn** (San) bắn **Ya Ma** (Yama) trên núi." },
+            { stt: 43, char: "川", nghiaHV: "XUYÊN", nghiaTV: "Sông", on: "セン", kun: "かわ", ti: "Dòng sông (**Xuyên 川**) chảy với ba dòng nước.", ta: "Hoa **Sen** (Sen) nở bên sông **Ca Wa** (Kawa)." },
+            { stt: 44, char: "工", nghiaHV: "CÔNG", nghiaTV: "Thợ", on: "コウ", kun: "たくみ", ti: "Dụng cụ đo góc vuông của người thợ (**Công 工**).", ta: "**Cô** (Kou) thợ **Ta Cư Mi** (Takumi) chăm chỉ." },
+            { stt: 45, char: "巾", nghiaHV: "CÂN", nghiaTV: "Cái khăn", on: "キン", kun: "ha-ba", ti: "Cái khăn (**Cân 巾**) treo trên giá.", ta: "**Kin** (Kin) kít cái khăn **Ha Ba** (Haba)." },
+            { stt: 46, char: "干", nghiaHV: "CAN", nghiaTV: "Khô", on: "カン", kun: "ho-su", ti: "Cây gậy (**Can 干**) phơi đồ cho khô.", ta: "**Can** (Kan) đảm phơi **Hô Sư** (Hosu) khô." },
+            { stt: 47, char: "幺", nghiaHV: "YÊU", nghiaTV: "Nhỏ", on: "ヨウ", kun: "-", ti: "Đứa bé mới sinh nhỏ bé (**Yêu 幺**).", ta: "**Dô** (You) con nhỏ." },
+            { stt: 48, char: "广", nghiaHV: "NGHIÊM", nghiaTV: "Mái hiên", on: "ゲン", kun: "ma-da-re", ti: "Mái nhà che sườn núi (**Nghiêm 广**).", ta: "**Ghen** (Gen) tị với **Ma Đa Rê** (Madare)." },
+            { stt: 49, char: "廴", nghiaHV: "DẪN", nghiaTV: "Đi xa", on: "イン", kun: "-", ti: "Bước chân kéo dài đi xa (**Dẫn 廴**).", ta: "**In** (In) dấu chân đi xa." },
+            { stt: 50, char: "廾", nghiaHV: "CỦNG", nghiaTV: "Chắp tay", on: "キョウ", kun: "-", ti: "Hai tay nâng vật cung kính (**Củng 廾**).", ta: "**Kiô** (Kyou) to chắp tay." },
+            { stt: 51, char: "弋", nghiaHV: "DỰC", nghiaTV: "Cọc", on: "ヨク", kun: "-", ti: "Cọc buộc súc vật (**Dực 弋**).", ta: "**Dốc** (Yoku) sức đóng cọc." },
+            { stt: 52, char: "弓", nghiaHV: "CUNG", nghiaTV: "Cung", on: "キュウ", kun: "yu-mi", ti: "Hình cây cung (**Cung 弓**) đang căng dây.", ta: "**Cứu** (Kyuu) tui bằng **Dư Mi** (Yumi) cung." },
+            { stt: 53, char: "彐", nghiaHV: "KỆ", nghiaTV: "Đầu heo", on: "ケイ", kun: "-", ti: "Hình đầu con lợn rừng (**Kệ 彐**).", ta: "Thiết **Kế** (Kei) đầu heo." },
+            { stt: 54, char: "彡", nghiaHV: "SAM", nghiaTV: "Lông", on: "サン", kun: "-", ti: "Ba vệt lông dài râu sam (**Sam 彡**).", ta: "**Săn** (San) bắn hái râu sam." },
+            { stt: 55, char: "彳", nghiaHV: "XÍCH", nghiaTV: "Bước đi", on: "テキ", kun: "gi-o-nin-ben", ti: "Người nhấc chân bước đi (**Xích 彳**).", ta: "**Tê Ki** (Teki) **Ghiô Nin Ben** bước đi." },
+            { stt: 56, char: "心", nghiaHV: "TÂM", nghiaTV: "Tim", on: "シン", kun: "ko-ko-ro", ti: "Hình trái tim (**Tâm 心**) có ngăn.", ta: "**Xin** (Shin) trái tim **Cô Cô Rô** (Kokoro)." },
+            { stt: 57, char: "戈", nghiaHV: "QUA", nghiaTV: "Vũ khí", on: "カ", kun: "ho-ko", ti: "Cái kích gỗ ngày xưa (**Qua 戈**).", ta: "**Ca** (Ka) hát cầm **Hô Cô** (Hoko) giáo." },
+            { stt: 58, char: "戸", nghiaHV: "HỘ", nghiaTV: "Cửa", on: "コ", kun: "to", ti: "Một cánh cửa xoay (**Hộ 戸**).", ta: "**Cô** (Ko) đơn đứng ở cửa **Tô** (To)." },
+            { stt: 59, char: "手", nghiaHV: "THỦ", nghiaTV: "Tay", on: "シュ", kun: "te", ti: "Hình bàn tay (**Thủ 手**) xòe ngón.", ta: "**Su** (Shu) hào trên tay **Tê** (Te)." },
+            { stt: 60, char: "支", nghiaHV: "CHI", nghiaTV: "Cành", on: "シ", kun: "sa-sa", ti: "Tay cầm cành cây chống đỡ (**Chi 支**).", ta: "**Sĩ** (Shi) diện **Sa Sa** (Sasaeru) chống đỡ." },
+            { stt: 61, char: "攴", nghiaHV: "PHỐC", nghiaTV: "Đánh nhẹ", on: "ボク", kun: "-", ti: "Tay cầm gậy đánh nhẹ (**Phốc 攴**).", ta: "**Bốc** (Boku) phét bị đánh nhẹ." },
+            { stt: 62, char: "文", nghiaHV: "VĂN", nghiaTV: "Văn", on: "ブン", kun: "fu-mi", ti: "Văn hoa trên bộ y phục (**Văn 文**).", ta: "Nhật **Bủn** (Bun) đọc thư **Phu Mi** (Fumi)." },
+            { stt: 63, char: "斗", nghiaHV: "ĐẨU", nghiaTV: "Đấu", on: "ト", kun: "ma-su", ti: "Muỗng đong gạo của người xưa (**Đẩu 斗**).", ta: "**Tô** (To) canh đong bằng **Ma Sư** (Masu) đấu." },
+            { stt: 64, char: "斤", nghiaHV: "CÂN", nghiaTV: "Rìu", on: "キン", kun: "o-no", ti: "Cái rìu (**Cân 斤**) chặt cây.", ta: "**Kin** (Kin) kít cái rìu **Ô Nô** (Ono)." },
+            { stt: 65, char: "方", nghiaHV: "PHƯƠNG", nghiaTV: "Hướng", on: "ホウ", kun: "ka-ta-ru", ti: "La bàn chỉ phương hướng (**Phương 方**).", ta: "**Hô** (Hou) hoán **Ca Ta Rư** (Kataru) chỉ hướng." },
+            { stt: 66, char: "无", nghiaHV: "VÔ", nghiaTV: "Không", on: "ム", kun: "na", ti: "Không có gì cả trong tay (**Vô 无**).", ta: "**Mụ** (Mu) mị **Na I** (Nai) không có." },
+            { stt: 67, char: "日", nghiaHV: "NHẬT", nghiaTV: "Ngày", on: "ニチ", kun: "hi", ti: "Mặt trời (**Nhật 日**) hình chữ nhật rạng rỡ.", ta: "**Ni Chi** (Nichi) tắm nắng **Hí** (Hi) hửng." },
+            { stt: 68, char: "曰", nghiaHV: "VIẾT", nghiaTV: "Nói rằng", on: "エツ", kun: "i-wa", ti: "Miệng há ra nói rằng (**Viết 曰**).", ta: "**Ế** (Etsu) ẩm **I Wa** (Iwaku) nói rằng." },
+            { stt: 69, char: "月", nghiaHV: "NGUYỆT", nghiaTV: "Trăng/Thịt", on: "ゲツ", kun: "tsu-ki", ti: "Trăng khuyết (**Nguyệt 月**) có thớ thịt.", ta: "**Ghê** (Ge) chưa **Thư Kí** (Tsuki) ngắm trăng." },
+            { stt: 70, char: "木", nghiaHV: "MỘC", nghiaTV: "Cây", on: "モク", kun: "ki", ti: "Cây (**Mộc 木**) có tán lá và rễ.", ta: "**Mốc** (Moku) meo trên cây **Ki** (Ki)." },
+            { stt: 71, char: "欠", nghiaHV: "KHIẾM", nghiaTV: "Thiếu/Ngáp", on: "ケツ", kun: "a-ku-bi", ti: "Há miệng ngáp vì thiếu (**Khiếm 欠**) ngủ.", ta: "**Kết** (Ketsu) liễu cái ngáp **A Cư Bi** (Akubi)." },
+            { stt: 72, char: "止", nghiaHV: "CHỈ", nghiaTV: "Dừng", on: "シ", kun: "to", ti: "Bàn chân dừng lại (**Chỉ 止**) giữa đường.", ta: "**Sĩ** (Shi) diện **Tô** (Tomaru) lại dừng." },
+            { stt: 73, char: "比", nghiaHV: "TỶ", nghiaTV: "So sánh", on: "ヒ", kun: "ku-ra", ti: "Hai người (**Nhân 人**) đứng so vai để so sánh (**Tỷ 比**).", ta: "**Hi** (Hi) hi **Cư Ra** (Kuraberu) so sánh." },
+            { stt: 74, char: "毛", nghiaHV: "MAO", nghiaTV: "Lông", on: "モウ", kun: "ke", ti: "Sợi lông (**Mao 毛**) thú cong vút.", ta: "Quân **Mâu** (Mou) vặt lông **Kê** (Ke)." },
+            { stt: 75, char: "氏", nghiaHV: "THỊ", nghiaTV: "Họ", on: "シ", kun: "u-ji", ti: "Người đàn ông cầm dao khắc họ (**Thị 氏**).", ta: "**Sĩ** (Shi) diện họ **U Ji** (Uji)." },
+            { stt: 76, char: "气", nghiaHV: "KHÍ", nghiaTV: "Hơi", on: "キ", kun: "i-ki", ti: "Hơi nước bốc lên từ lòng đất (**Khí 气**).", ta: "**Ki** (Ki) lạ hơi thở **I Ki** (Iki)." },
+            { stt: 77, char: "水", nghiaHV: "THỦY", nghiaTV: "Nước", on: "スイ", kun: "mi-zu", ti: "Nước (**Thủy 水**) bắn tung tóe bốn phía.", ta: "**Su** (Sui) su luộc **Mí Dự** (Mizu)." },
+            { stt: 78, char: "火", nghiaHV: "HỎA", nghiaTV: "Lửa", on: "カ", kun: "hi", ti: "Ngọn lửa (**Hỏa 火**) cháy bùng bùng dữ dội.", ta: "**Ca** (Ka) hát bên lửa **Hi** (Hi)." },
+            { stt: 79, char: "爪", nghiaHV: "TRẢO", nghiaTV: "Vuốt", on: "ソウ", kun: "tsu-me", ti: "Móng vuốt (**Trảo 爪**) đại bàng sắc bén.", ta: "**Xô** (Sou) chậu bị **Tư Mê** (Tsume) cào." },
+            { stt: 80, char: "父", nghiaHV: "PHỤ", nghiaTV: "Bố", on: "フ", kun: "chi-chi", ti: "Người cầm roi dạy con là bố (**Phụ 父**).", ta: "**Phù** (Fu) hộ cho **Chi Chi** (Chichi)." },
+            // --- CÁC BỘ TIẾP THEO ---
+            { stt: 81, char: "牙", nghiaHV: "NHA", nghiaTV: "Răng", on: "ガ", kun: "ki-ba", ti: "Chiếc răng nanh nhọn hoắt (**Nha 牙**).", ta: "**Gà** (Ga) nanh **Ki Ba** (Kiba) rụng." },
+            { stt: 82, char: "牛", nghiaHV: "NGƯU", nghiaTV: "Bò", on: "ギュウ", kun: "u-shi", ti: "Đầu con bò có sừng (**Ngưu 牛**).", ta: "**Giu** (Gyuu) don thịt bò **U Si** (Ushi)." },
+            { stt: 83, char: "犬", nghiaHV: "KHUYỂN", nghiaTV: "Chó", on: "ケン", kun: "i-nu", ti: "Con chó (**Khuyển 犬**) có đuôi vẫy mừng.", ta: "**Kền** (Ken) kền sợ chó **I Nư** (Inu)." },
+            { stt: 84, char: "玉", nghiaHV: "NGỌC", nghiaTV: "Ngọc", on: "ギョク", kun: "tama", ti: "Viên ngọc (**Ngọc 玉**) quý giá lấp lánh.", ta: "**Gốc** (Gyoku) gác viên ngọc **Ta Ma** (Tama)." },
+            { stt: 85, char: "瓜", nghiaHV: "QUA", nghiaTV: "Dưa", on: "カ", kun: "u-ri", ti: "Dây dưa leo giàn (**Qua 瓜**).", ta: "**Ca** (Ka) dao hái **U Ri** (Uri) dưa." },
+            { stt: 86, char: "瓦", nghiaHV: "NGÕA", nghiaTV: "Ngói", on: "ガ", kun: "ka-wa-ra", ti: "Ngói lợp mái nhà (**Ngõa 瓦**).", ta: "**Gà** (Ga) trèo **Ca Wa Ra** (Kawara) ngói." },
+            { stt: 87, char: "甘", nghiaHV: "CAM", nghiaTV: "Ngọt", on: "カン", kun: "a-ma", ti: "Lưỡi nếm vị ngọt (**Cam 甘**).", ta: "**Can** (Kan) đảm nếm **A Ma** (Amai) ngọt." },
+            { stt: 88, char: "生", nghiaHV: "SINH", nghiaTV: "Sống", on: "セイ", kun: "i-ki", ti: "Cây nảy mầm sống (**Sinh 生**) từ đất.", ta: "**Sây** (Sei) sưa sống **I Ki** (Ikiru)." },
+            { stt: 89, char: "田", nghiaHV: "ĐIỀN", nghiaTV: "Ruộng", on: "デン", kun: "ta", ti: "Ruộng (**Điền 田**) chia ô cày cấy.", ta: "**Đèn** (Den) dầu sáng ruộng **Ta** (Ta)." },
+            { stt: 90, char: "白", nghiaHV: "BẠCH", nghiaTV: "Trắng", on: "ハク", kun: "shi-ro", ti: "Ánh mặt trời (**Nhật 日**) trắng xóa (**Bạch 白**).", ta: "**Hà Cụ** (Haku) râu **Si Rô** (Shiro) trắng." },
+            // ... (Tiếp tục soạn thảo tương tự cho đến 214 bộ thủ)
+            { stt: 209, char: "鼻", nghiaHV: "TỴ", nghiaTV: "Mũi", on: "ビ", kun: "はな", ti: "Tự (**自**) mình chắp tay (**Củng 廾**) lên ruộng (**Điền 田**) hít mũi.", ta: "**Bi** (Bi) bị **Ha Na** (Hana) đấm mũi." },
+            { stt: 212, char: "龍", nghiaHV: "LONG", nghiaTV: "Rồng", on: "リュウ", kun: "たつ", ti: "Con rồng (**Long 龍**) bay lượn trên mây.", ta: "**Riu** (Ryuu) riu rồng **Ta Tư** (Tatsu)." },
+            { stt: 213, char: "龜", nghiaHV: "QUY", nghiaTV: "Rùa", on: "キ", kun: "kame", ti: "Con rùa (**Quy 龜**) mang yếm cứng cáp.", ta: "**Ki** (Ki) lạ rùa **Ca Mê** (Kame)." },
+            { stt: 214, char: "龠", nghiaHV: "DƯỢC", nghiaTV: "Sáo", on: "ヤク", kun: "fue", ti: "Ống sáo (**Dược 龠**) nhiều lỗ âm vang.", ta: "**Dạ Cư** (Yaku) thổi **Phu Ê** (Fue)." }
         ];
 
-        // Helper function to safely get reading, replacing undefined or null with '-'
-        function getSafeReading(reading) {
-            return (reading === undefined || reading === null || reading.trim() === '') ? '-' : reading;
-        }
+        // --- CÁC HÀM XỬ LÝ (CORE FUNCTIONS) ---
+        let quizScore = 0;
+        let currentQuizIndex = 0;
+        let currentQuizQ = null;
+        let currentStrokeSvg = null;
 
-        const kanjiRadicalTableBody = document.querySelector('#kanjiRadicalTable tbody');
-        const toggleKanjiButton = document.getElementById('toggleKanji');
-        const toggleOnyomiButton = document.getElementById('toggleOnyomi');
-        const toggleMeaningAndExamplesButton = document.getElementById('toggleMeaningAndExamples');
-        const toggleFuriganaButton = document.getElementById('toggleFurigana');
-        const userInput = document.getElementById('userInput');
-        const checkButton = document.getElementById('checkButton');
-        const feedbackDiv = document.getElementById('feedback');
-        const typingPracticeSection = document.getElementById('typingPracticeSection');
-        const themeButtonsContainer = document.getElementById('themeButtons');
-        const themeStorySection = document.getElementById('themeStorySection');
-        const themeStoryContent = document.getElementById('themeStoryContent');
-
-        let showKanji = true;
-        let showOnyomi = true;
-        let showMeaningAndExamples = true;
-        let showFurigana = true;
-        let currentThemeRadicals = [];
-
-        /**
-         * Hàm phát âm văn bản tiếng Nhật.
-         * Sử dụng SpeechSynthesis API của trình duyệt.
-         * @param {string} text - Văn bản cần phát âm.
-         */
-        function speakText(text) {
-            if (!text || text === '-') { // Don't speak if text is empty or just a hyphen
-                console.log("Không có văn bản để phát âm hoặc văn bản là '-'");
-                return;
-            }
+        function speak(text) {
             if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'ja-JP'; // Đặt ngôn ngữ là tiếng Nhật
-                speechSynthesis.speak(utterance);
-            } else {
-                // Hiển thị thông báo nếu trình duyệt không hỗ trợ API
-                feedbackDiv.textContent = 'Trình duyệt của bạn không hỗ trợ Speech Synthesis API.';
-                feedbackDiv.style.color = 'red';
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text.replace(/-/g, ''));
+                utterance.lang = 'ja-JP';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
             }
         }
 
-        /**
-         * Hàm hiển thị các hàng bộ thủ vào bảng.
-         * @param {Array} radicalsToRender - Mảng các bộ thủ cần hiển thị.
-         */
-        function renderTable(radicalsToRender) {
-            kanjiRadicalTableBody.innerHTML = ''; // Xóa các hàng hiện có
-            radicalsToRender.forEach(item => {
-                const row = document.createElement('tr');
-
-                let kanjiExamplesHtml = '';
-                let readingExamplesHtml = '';
-                let meaningExamplesHtml = '';
-                let allExampleReadings = []; // To store all readings for the "Đọc ví dụ" button
-
-                if (item.examples && item.examples.length > 0) {
-                    item.examples.forEach(ex => {
-                        const typeLabel = ex.type === "On'yomi" ? '(On)' : '(Kun)';
-                        kanjiExamplesHtml += `<div class="example-item">${ex.kanji} ${typeLabel}</div>`;
-                        readingExamplesHtml += `<div class="example-item example-reading-col">${ex.reading} ${typeLabel}</div>`;
-                        meaningExamplesHtml += `<div class="example-item">${ex.meaning}</div>`;
-                        allExampleReadings.push(ex.reading);
-                    });
-                } else {
-                    kanjiExamplesHtml = 'Không có ví dụ';
-                    readingExamplesHtml = 'Không có';
-                    meaningExamplesHtml = 'Không có';
-                }
-
-                // Get the first On'yomi and Kun'yomi for the play buttons, handling undefined or empty strings
-                const displayOnyomi = getSafeReading(item["On'yomi"]);
-                const displayKunyomi = getSafeReading(item["Kun'yomi"]);
-
-                const firstOnyomi = (displayOnyomi !== '-') ? displayOnyomi.split(',')[0].trim() : '';
-                const firstKunyomi = (displayKunyomi !== '-') ? displayKunyomi.split(',')[0].trim() : '';
-
-                // Tạo nội dung HTML cho mỗi hàng
-                row.innerHTML = `
-                    <td class="py-3 px-4 text-sm text-gray-700">${item.STT}</td>
-                    <td class="py-3 px-4 text-sm text-gray-700 kanji-col">${item['Bộ thủ']}</td>
-                    <td class="py-3 px-4 text-sm text-gray-700 onyomi-col">${displayOnyomi}</td>
-                    <td class="py-3 px-4 text-sm text-gray-700 furigana-col">${displayKunyomi}</td>
-                    <td class="py-3 px-4 text-sm text-gray-700">${item['Hán Việt']}</td>
-                    <td class="py-3 px-4 text-sm text-gray-700 meaning-col">${item['Ý nghĩa']}</td>
-                    <td class="py-3 px-4 text-sm text-gray-700">${item['Mẹo ghi nhớ']}</td>
-                    <td class="py-3 px-4 text-sm text-gray-700">${kanjiExamplesHtml}</td>
-                    <td class="py-3 px-4 text-sm text-gray-700 example-reading-col">${readingExamplesHtml}</td>
-                    <td class="py-3 px-4 text-sm text-gray-700">${meaningExamplesHtml}</td>
-                    <td class="py-3 px-4 text-sm text-gray-700">
-                        <!-- Nút phát âm On'yomi -->
-                        <button class="play-button" onclick="speakText('${firstOnyomi.replace(/'/g, "\\'")}')">On'yomi</button>
-                        <!-- Nút phát âm Kun'yomi -->
-                        <button class="play-button" onclick="speakText('${firstKunyomi.replace(/'/g, "\\'")}')">Kun'yomi</button>
-                        <!-- Nút phát âm tất cả ví dụ -->
-                        <button class="play-button" onclick="speakText('${allExampleReadings.join('. ').replace(/'/g, "\\'")}')">Đọc ví dụ</button>
-                    </td>
-                `;
-                kanjiRadicalTableBody.appendChild(row); // Thêm hàng vào bảng
-            });
-            updateColumnVisibility(); // Cập nhật hiển thị cột sau khi render
+        function switchTab(tab) {
+            document.getElementById('learn-section').classList.toggle('hidden', tab !== 'learn');
+            document.getElementById('quiz-section').classList.toggle('hidden', tab !== 'quiz');
+            document.getElementById('tab-learn').className = `px-4 py-2 rounded-md text-sm font-bold transition whitespace-nowrap ${tab === 'learn' ? 'tab-active' : 'tab-inactive'}`;
+            document.getElementById('tab-quiz').className = `px-4 py-2 rounded-md text-sm font-bold transition whitespace-nowrap ${tab === 'quiz' ? 'tab-active' : 'tab-inactive'}`;
+            if (tab === 'quiz') startQuiz();
         }
 
-        /**
-         * Hàm cập nhật hiển thị của các cột Bộ thủ, On'yomi, Ý nghĩa, Đọc ví dụ và Kun'yomi.
-         */
-        function updateColumnVisibility() {
-            // Lấy tất cả các ô có class 'kanji-col'
-            const kanjiCols = document.querySelectorAll('.kanji-col');
-            // Lấy tất cả các ô có class 'onyomi-col'
-            const onyomiCols = document.querySelectorAll('.onyomi-col');
-            // Lấy tất cả các ô có class 'meaning-col' và 'example-reading-col'
-            const meaningAndExampleCols = document.querySelectorAll('.meaning-col, .example-reading-col');
-            // Lấy tất cả các ô có class 'furigana-col'
-            const furiganaCols = document.querySelectorAll('.furigana-col');
-
-            // Lấy các tiêu đề bảng cho Bộ thủ, On'yomi, Kun'yomi, Hán Việt, Ý nghĩa và Đọc ví dụ
-            const headers = document.querySelectorAll('#kanjiRadicalTable th');
-            const kanjiHeader = headers[1]; // Tiêu đề Bộ thủ ở chỉ số 1
-            const onyomiHeader = headers[2]; // Tiêu đề On'yomi ở chỉ số 2
-            const kunyomiHeader = headers[3]; // Tiêu đề Kun'yomi ở chỉ số 3
-            const hanVietHeader = headers[4]; // Tiêu đề Hán Việt ở chỉ số 4
-            const meaningHeader = headers[5];  // Tiêu đề Ý nghĩa ở chỉ số 5
-            const exampleKanjiHeader = headers[7]; // Tiêu đề Ví dụ Kanji ở chỉ số 7
-            const exampleReadingHeader = headers[8]; // Tiêu đề Đọc ví dụ ở chỉ số 8
-            const exampleMeaningHeader = headers[9]; // Tiêu đề Nghĩa ví dụ ở chỉ số 9
-
-
-            // Cập nhật hiển thị cho các cột Bộ thủ
-            kanjiCols.forEach(col => {
-                col.style.display = showKanji ? '' : 'none';
-            });
-            // Cập nhật hiển thị cho các cột On'yomi
-            onyomiCols.forEach(col => {
-                col.style.display = showOnyomi ? '' : 'none';
-            });
-            // Cập nhật hiển thị cho các cột Ý nghĩa và Đọc ví dụ
-            meaningAndExampleCols.forEach(col => {
-                col.style.display = showMeaningAndExamples ? '' : 'none';
-            });
-            // Cập nhật hiển thị cho các cột Kun'yomi
-            furiganaCols.forEach(col => {
-                col.style.display = showFurigana ? '' : 'none';
-            });
-
-            // Cập nhật hiển thị tiêu đề bảng dựa trên trạng thái bật/tắt
-            if (kanjiHeader) kanjiHeader.style.display = showKanji ? '' : 'none';
-            if (onyomiHeader) onyomiHeader.style.display = showOnyomi ? '' : 'none';
-            if (kunyomiHeader) kunyomiHeader.style.display = showFurigana ? '' : 'none';
-            if (hanVietHeader) hanVietHeader.style.display = ''; // Hán Việt luôn hiển thị
-            if (meaningHeader) meaningHeader.style.display = showMeaningAndExamples ? '' : 'none';
-            if (exampleKanjiHeader) exampleKanjiHeader.style.display = showMeaningAndExamples ? '' : 'none';
-            if (exampleReadingHeader) exampleReadingHeader.style.display = showMeaningAndExamples ? '' : 'none';
-            if (exampleMeaningHeader) exampleMeaningHeader.style.display = showMeaningAndExamples ? '' : 'none';
+        function renderLearn(data = kanjiData) {
+            const grid = document.getElementById('kanji-grid');
+            grid.innerHTML = data.map((k) => `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition duration-300 flex flex-col group">
+                    <div class="bg-sky-50 p-4 border-b border-sky-100 flex justify-between items-start relative">
+                        <div class="flex gap-4 items-center">
+                            <div class="w-16 h-16 bg-white rounded-lg flex items-center justify-center border-2 border-sky-200 cursor-pointer hover:border-sky-400 transition shadow-sm" onclick="showStrokeOrder('${k.char}')">
+                                <span class="text-4xl font-bold kanji-font text-gray-800">${k.char}</span>
+                            </div>
+                            <div>
+                                <div class="text-red-600 font-bold text-lg tracking-wide">${k.nghiaHV}</div>
+                                <div class="text-gray-600 text-sm font-medium">${k.nghiaTV}</div>
+                            </div>
+                        </div>
+                        <button onclick="showStrokeOrder('${k.char}')" class="text-sky-500 hover:text-sky-700 bg-white rounded-full p-2 w-8 h-8 flex items-center justify-center shadow-sm border border-sky-100"><i class="fas fa-pen-nib text-xs"></i></button>
+                    </div>
+                    
+                    <div class="p-4 space-y-3 z-10 relative flex-grow flex flex-col">
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div class="bg-gray-50 rounded p-2 border border-gray-100 text-center relative group/on">
+                                <span class="text-[10px] uppercase font-bold text-gray-400">On</span><br>
+                                <span class="font-bold text-sky-800">${k.on}</span>
+                                <button onclick="speak('${k.on}')" class="absolute -top-1 -right-1 bg-white shadow-sm w-5 h-5 rounded-full text-sky-500 text-[10px] hover:bg-sky-50"><i class="fas fa-volume-up"></i></button>
+                            </div>
+                            <div class="bg-gray-50 rounded p-2 border border-gray-100 text-center relative group/kun">
+                                <span class="text-[10px] uppercase font-bold text-gray-400">Kun</span><br>
+                                <span class="font-bold text-sky-800">${k.kun}</span>
+                                <button onclick="speak('${k.kun}')" class="absolute -top-1 -right-1 bg-white shadow-sm w-5 h-5 rounded-full text-sky-500 text-[10px] hover:bg-sky-50"><i class="fas fa-volume-up"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="bg-orange-50 p-2 rounded text-xs text-orange-900 border border-orange-100">
+                                <span class="font-bold text-orange-600 mr-1">🖼️ Hình:</span> ${k.ti.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-red-600">$1</span>')}
+                            </div>
+                            <div class="bg-blue-50 p-2 rounded text-xs text-blue-900 border border-blue-100">
+                                <span class="font-bold text-blue-600 mr-1">🔊 Âm:</span> ${k.ta.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-blue-700">$1</span>')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        /**
-         * Hàm chuẩn hóa văn bản để so sánh (chuyển về chữ thường, loại bỏ dấu câu và khoảng trắng).
-         * @param {string} text - Văn bản cần chuẩn hóa.
-         * @returns {string} Văn bản đã chuẩn hóa.
-         */
-        function normalizeText(text) {
-            // Loại bỏ các dấu câu và khoảng trắng, sau đó chuyển về chữ thường
-            return text.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~() ]/g,"").replace(/\s/g, '');
+        // --- SEARCH LOGIC ---
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            const filtered = kanjiData.filter(k => 
+                k.char.includes(val) || 
+                k.nghiaHV.toLowerCase().includes(val) || 
+                k.nghiaTV.toLowerCase().includes(val) ||
+                k.on.toLowerCase().includes(val) ||
+                k.kun.toLowerCase().includes(val)
+            );
+            renderLearn(filtered);
+        });
+
+        // --- STROKE ORDER MODAL ---
+        async function fetchKanjiSvg(hex) {
+            try {
+                const response = await fetch(`https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/${hex}.svg`);
+                if (!response.ok) throw new Error('Not found');
+                return await response.text();
+            } catch (e) { return null; }
         }
 
-        // Lắng nghe sự kiện click cho nút kiểm tra
-        checkButton.addEventListener('click', () => {
-            const userInputText = normalizeText(userInput.value); // Lấy và chuẩn hóa đầu vào của người dùng
-            let isCorrect = false;
-
-            // Duyệt qua dữ liệu bộ thủ của chủ đề hiện tại để kiểm tra xem có khớp không
-            for (const item of currentThemeRadicals) {
-                // Check against On'yomi
-                if (item["On'yomi"] && normalizeText(item["On'yomi"]) === userInputText) {
-                    isCorrect = true;
-                    break;
-                }
-                // Check against Kun'yomi
-                if (item["Kun'yomi"] && normalizeText(item["Kun'yomi"]) === userInputText) {
-                    isCorrect = true;
-                    break;
-                }
-                // Check against main radical character
-                if (item['Bộ thủ'] && normalizeText(item['Bộ thủ'].split(' ')[0]) === userInputText) {
-                    isCorrect = true;
-                    break;
-                }
-                // Check against variant radical character if exists
-                const variantMatch = item['Bộ thủ'].match(/\((.*?)\)/);
-                if (variantMatch && normalizeText(variantMatch[1]) === userInputText) {
-                    isCorrect = true;
-                    break;
-                }
-
-                // Check against all examples
-                if (item.examples) {
-                    for (const ex of item.examples) {
-                        if (normalizeText(ex.kanji) === userInputText || normalizeText(ex.reading) === userInputText) {
-                            isCorrect = true;
-                            break;
-                        }
-                    }
-                }
-                if (isCorrect) break; // If found in examples, no need to check other radicals
-            }
-
-            // Hiển thị phản hồi cho người dùng
-            if (isCorrect) {
-                feedbackDiv.textContent = 'Đúng rồi!';
-                feedbackDiv.style.color = 'green';
-                userInput.value = ''; // Xóa đầu vào sau khi đúng
-            } else {
-                feedbackDiv.textContent = 'Sai rồi. Hãy thử lại!';
-                feedbackDiv.style.color = 'red';
-            }
-        });
-
-        // Lắng nghe sự kiện click cho nút bật/tắt Kanji
-        toggleKanjiButton.addEventListener('click', () => {
-            showKanji = !showKanji; // Đảo ngược trạng thái hiển thị
-            updateColumnVisibility(); // Cập nhật hiển thị cột
-            // Cập nhật văn bản nút
-            toggleKanjiButton.textContent = showKanji ? 'Ẩn Bộ thủ Kanji' : 'Hiện Bộ thủ Kanji';
-        });
-
-        // Lắng nghe sự kiện click cho nút bật/tắt On'yomi
-        toggleOnyomiButton.addEventListener('click', () => {
-            showOnyomi = !showOnyomi; // Đảo ngược trạng thái hiển thị
-            updateColumnVisibility(); // Cập nhật hiển thị cột
-            // Cập nhật văn bản nút
-            toggleOnyomiButton.textContent = showOnyomi ? 'Ẩn On\'yomi' : 'Hiện On\'yomi';
-        });
-
-        // Lắng nghe sự kiện click cho nút bật/tắt Ý nghĩa và Ví dụ
-        toggleMeaningAndExamplesButton.addEventListener('click', () => {
-            showMeaningAndExamples = !showMeaningAndExamples; // Đảo ngược trạng thái hiển thị
-            updateColumnVisibility(); // Cập nhật hiển thị cột
-            // Cập nhật văn bản nút
-            toggleMeaningAndExamplesButton.textContent = showMeaningAndExamples ? 'Ẩn Ý nghĩa & Ví dụ' : 'Hiện Ý nghĩa & Ví dụ';
-        });
-
-        // Lắng nghe sự kiện click cho nút bật/tắt Kun'yomi
-        toggleFuriganaButton.addEventListener('click', () => {
-            showFurigana = !showFurigana; // Đảo ngược trạng thái hiển thị
-            updateColumnVisibility(); // Cập nhật hiển thị cột
-            // Cập nhật văn bản nút
-            toggleFuriganaButton.textContent = showFurigana ? 'Ẩn Kun\'yomi' : 'Hiện Kun\'yomi';
-        });
-
-        /**
-         * Hàm tính toán và đặt padding-bottom cho body.
-         * Điều này đảm bảo nội dung không bị che bởi phần luyện gõ cố định.
-         */
-        function setBodyPadding() {
-            const footerHeight = typingPracticeSection.offsetHeight;
-            document.body.style.paddingBottom = `${footerHeight + 20}px`; // Thêm 20px để có khoảng trống nhỏ
-        }
-
-        /**
-         * Tạo các nút chủ đề dựa trên dữ liệu.
-         */
-        function createThemeButtons() {
-            kanjiRadicalsData.forEach((themeData, index) => {
-                const button = document.createElement('button');
-                button.classList.add('theme-button');
-                button.textContent = themeData.theme;
-                button.dataset.themeIndex = index;
-                button.addEventListener('click', () => {
-                    selectTheme(index);
+        async function showStrokeOrder(kanji) {
+            const hex = kanji.charCodeAt(0).toString(16).padStart(5, '0');
+            document.getElementById('stroke-modal').classList.remove('hidden');
+            document.getElementById('stroke-modal-char').innerText = kanji;
+            const animContainer = document.getElementById('stroke-animation-container');
+            const gridContainer = document.getElementById('stroke-grid-container');
+            animContainer.innerHTML = '<span class="text-xs text-gray-400">Agkarga...</span>';
+            const svgContent = await fetchKanjiSvg(hex);
+            if (!svgContent) { animContainer.innerHTML = "Lỗi"; return; }
+            animContainer.innerHTML = svgContent;
+            const mainSvg = animContainer.querySelector('svg');
+            const paths = mainSvg.querySelectorAll('path');
+            paths.forEach(p => { 
+                const len = p.getTotalLength(); 
+                p.style.strokeDasharray = len; 
+                p.style.strokeDashoffset = len; 
+                p.style.stroke = "#333"; p.style.strokeWidth = "4"; p.style.fill = "none";
+            });
+            currentStrokeSvg = mainSvg; 
+            replayStrokeAnimation();
+            gridContainer.innerHTML = '';
+            for(let i=0; i<paths.length; i++) {
+                const box = document.createElement('div');
+                box.className = "w-12 h-12 md:w-16 md:h-16 bg-white border border-gray-200 relative stroke-grid-box flex items-center justify-center";
+                const parser = new DOMParser();
+                const svgClone = parser.parseFromString(svgContent, "image/svg+xml").querySelector('svg');
+                svgClone.setAttribute('width', '100%'); svgClone.setAttribute('height', '100%');
+                svgClone.querySelectorAll('path').forEach((p, idx) => {
+                    p.style.fill="none";
+                    if(idx < i) { p.style.stroke="#9ca3af"; p.style.strokeWidth="2"; }
+                    else if(idx === i) { p.style.stroke="#000"; p.style.strokeWidth="4"; }
+                    else p.style.display="none";
                 });
-                themeButtonsContainer.appendChild(button);
-            });
-        }
-
-        /**
-         * Hàm sắp xếp lại các bộ thủ trong một chủ đề dựa trên thứ tự xuất hiện trong câu chuyện.
-         * @param {Array} originalRadicals - Mảng các bộ thủ gốc của chủ đề.
-         * @param {string} story - Câu chuyện của chủ đề.
-         * @returns {Array} Mảng các bộ thủ đã được sắp xếp.
-         */
-        function sortRadicalsByStory(originalRadicals, story) {
-            const sortedRadicals = [];
-            const addedRadicalSTTs = new Set();
-
-            // Map to quickly find radical objects by their main char or variant
-            const radicalMap = new Map();
-            originalRadicals.forEach(radical => {
-                const mainChar = radical['Bộ thủ'].split(' ')[0];
-                const variantMatch = radical['Bộ thủ'].match(/\((.*?)\)/);
-                const variantChar = variantMatch ? variantMatch[1].trim() : null;
-
-                radicalMap.set(mainChar, radical);
-                if (variantChar) {
-                    radicalMap.set(variantChar, radical);
-                }
-            });
-
-            // Find all potential radical mentions in the story
-            const matches = story.matchAll(/([一-龯])|\(([^)]+)\)/g);
-
-            for (const match of matches) {
-                let matchedChar = '';
-                if (match[1]) { // It's a single Kanji character
-                    matchedChar = match[1];
-                } else if (match[2]) { // It's content inside parentheses
-                    matchedChar = match[2].trim();
-                }
-
-                if (radicalMap.has(matchedChar)) {
-                    const radical = radicalMap.get(matchedChar);
-                    if (!addedRadicalSTTs.has(radical.STT)) {
-                        sortedRadicals.push(radical);
-                        addedRadicalSTTs.add(radical.STT);
-                    }
-                }
+                box.appendChild(svgClone); gridContainer.appendChild(box);
             }
-
-            // Add any radicals from the original list that were not found in the story to the end
-            originalRadicals.forEach(radical => {
-                if (!addedRadicalSTTs.has(radical.STT)) {
-                    sortedRadicals.push(radical);
-                }
-            });
-
-            // Re-index STT for the sorted list
-            return sortedRadicals.map((radical, index) => ({
-                ...radical,
-                STT: index + 1
-            }));
         }
 
+        function replayStrokeAnimation() {
+            if(!currentStrokeSvg) return;
+            const paths = currentStrokeSvg.querySelectorAll('path');
+            paths.forEach(p => { p.style.transition = 'none'; p.style.strokeDashoffset = p.getTotalLength(); });
+            void currentStrokeSvg.offsetWidth;
+            let delay = 0;
+            paths.forEach(p => { p.style.transition = `stroke-dashoffset 0.6s ease-in-out ${delay}s`; p.style.strokeDashoffset = '0'; delay += 0.6; });
+        }
+        function closeStrokeModal() { document.getElementById('stroke-modal').classList.add('hidden'); }
 
-        /**
-         * Chọn chủ đề và hiển thị bộ thủ tương ứng.
-         * @param {number} index - Chỉ số của chủ đề được chọn.
-         */
-        function selectTheme(index) {
-            // Xóa trạng thái active của tất cả các nút
-            document.querySelectorAll('.theme-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
-            // Đặt trạng thái active cho nút được chọn
-            const selectedButton = themeButtonsContainer.children[index];
-            if (selectedButton) {
-                selectedButton.classList.add('active');
+        // --- QUIZ LOGIC ---
+        function startQuiz() { quizScore = 0; currentQuizIndex = 0; document.getElementById('score-display').innerText = '0'; loadQuestion(); }
+        function loadQuestion() {
+            const q = kanjiData[Math.floor(Math.random() * kanjiData.length)];
+            currentQuizQ = q;
+            document.getElementById('q-current').innerText = currentQuizIndex + 1;
+            document.getElementById('quiz-kanji-display').innerText = q.char;
+            const others = kanjiData.filter(x => x !== q).sort(() => 0.5 - Math.random()).slice(0, 3);
+            const opts = [q, ...others].sort(() => 0.5 - Math.random());
+            document.getElementById('options-area').innerHTML = opts.map(o => `<button onclick="checkAnswer('${o.char}')" class="bg-white border-2 border-gray-200 py-4 rounded-xl text-lg font-bold hover:border-sky-400 hover:bg-sky-50 transition shadow-sm">${o.nghiaHV} (${o.nghiaTV})</button>`).join('');
+            document.getElementById('feedback-area').classList.add('hidden');
+            document.getElementById('quiz-progress').style.width = `${(currentQuizIndex / 10) * 100}%`;
+        }
+        function checkAnswer(sel) {
+            const btns = document.querySelectorAll('#options-area button'); btns.forEach(b => b.disabled = true);
+            const ok = sel === currentQuizQ.char; const fb = document.getElementById('feedback-area');
+            fb.classList.remove('hidden');
+            if (ok) {
+                quizScore += 10; document.getElementById('score-display').innerText = quizScore;
+                document.getElementById('feedback-title').innerHTML = '<i class="fas fa-check-circle text-emerald-500 mr-2"></i> Chính xác!';
+                fb.className = "bg-emerald-50 rounded-xl p-4 border border-emerald-200 text-left animate-fade-in";
+                speak(currentQuizQ.char);
+            } else {
+                document.getElementById('feedback-title').innerHTML = '<i class="fas fa-times-circle text-red-500 mr-2"></i> Sai rồi!';
+                fb.className = "bg-red-50 rounded-xl p-4 border border-red-200 text-left animate-fade-in wrong-anim";
             }
-            
-            // Lấy dữ liệu bộ thủ và câu chuyện của chủ đề hiện tại
-            const themeData = kanjiRadicalsData[index];
-            currentThemeRadicals = sortRadicalsByStory(themeData.radicals, themeData.story);
-            
-            renderTable(currentThemeRadicals);
-
-            // Hiển thị câu chuyện của chủ đề
-            themeStoryContent.textContent = themeData.story || "Không có câu chuyện cho chủ đề này.";
+            document.getElementById('feedback-detail').innerHTML = `Bộ: <span class="kanji-font font-bold">${currentQuizQ.char}</span> | ${currentQuizQ.nghiaHV} (${currentQuizQ.nghiaTV})`;
+        }
+        function nextQuestion() {
+            currentQuizIndex++;
+            if (currentQuizIndex >= 10) { alert(`Hoàn thành! Điểm của bạn: ${quizScore}`); startQuiz(); }
+            else loadQuestion();
         }
 
-        // Khởi tạo ứng dụng
-        createThemeButtons();
-        // Mặc định chọn chủ đề đầu tiên khi tải trang
-        if (kanjiRadicalsData.length > 0) {
-            selectTheme(0);
-        }
-
-        // Gọi hàm setBodyPadding khi DOM đã sẵn sàng và khi cửa sổ được thay đổi kích thước
-        document.addEventListener('DOMContentLoaded', setBodyPadding);
-        window.addEventListener('resize', setBodyPadding);
+        // Khởi tạo trang
+        window.onload = () => { renderLearn(); };
     </script>
 </body>
 </html>
