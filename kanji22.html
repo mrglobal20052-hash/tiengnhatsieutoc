@@ -2,243 +2,520 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bài học Kanji tương tác (Phần 22)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AzaKanji - Ngày 22/24 (80 Hán Tự)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-        }
-        .kanji-card {
-            background-color: white;
-            border-radius: 12px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            transition: all 0.3s ease-in-out;
-            padding: 16px 24px;
-        }
-        .kanji-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-        }
-        .kanji-header-title {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            flex-grow: 1;
-        }
-        .kanji-char-header {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #1e2sd93b;
-            min-width: 50px;
-            text-align: center;
-        }
-        .kanji-details {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s ease-in-out, margin-top 0.4s ease-in-out, padding-top 0.4s ease-in-out;
-        }
-        .kanji-card.active .kanji-details {
-            max-height: 1500px;
-            border-top: 1px solid #e2e8f0;
-            margin-top: 20px;
-            padding-top: 20px;
-        }
-        .chevron {
-            transition: transform 0.3s ease;
-            font-size: 1.5rem;
-            color: #94a3b8;
-            padding-left: 1rem;
-        }
-        .kanji-card.active .chevron {
-            transform: rotate(180deg);
-        }
-        .speak-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1.5rem;
-            margin-left: 10px;
-            color: #475569;
-            transition: color 0.2s;
-        }
-        .speak-btn:hover {
-            color: #0ea5e9;
-        }
-        .example-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #e2e8f0;
-        }
-         .example-item:last-child {
-            border-bottom: none;
-        }
+        body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; overflow-x: hidden; }
+        .kanji-font { font-family: 'Noto Sans JP', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .modal-enter { animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        .correct-anim { animation: pulse-green 0.5s; }
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+        
+        .wrong-anim { animation: shake 0.4s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        /* Tab Active State */
+        .tab-active { background-color: #0369a1; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .tab-inactive { background-color: #e0f2fe; color: #0c4a6e; }
+
+        /* Stroke Grid Styles */
+        .stroke-path { fill: none; stroke: #333; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+        .stroke-grid-box { border: 1px solid #e5e7eb; background-color: white; position: relative; }
+        .stroke-grid-box::after { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: repeating-linear-gradient(to bottom, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); z-index: 0; }
+        .stroke-grid-box::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: repeating-linear-gradient(to right, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); z-index: 0; }
     </style>
 </head>
-<body class="p-4 sm:p-6 md:p-8">
-    <div class="max-w-3xl mx-auto">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl sm:text-4xl font-bold text-slate-800">Bài học Kanji chi tiết (1688-1767)</h1>
-            <p class="text-slate-500 mt-2">Tổng hợp Kanji. Bấm vào mỗi chữ để xem chi tiết.</p>
-        </header>
+<body class="flex flex-col min-h-screen">
 
-        <main id="kanji-app">
-            <!-- Kanji data will be injected here by JavaScript -->
-        </main>
+    <!-- Header -->
+    <header class="bg-sky-700 text-white shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="location.reload()">
+                    <i class="fas fa-torii-gate text-3xl text-yellow-400"></i>
+                    <div>
+                        <h1 class="text-xl font-bold uppercase tracking-wider">AZAKANJI</h1>
+                        <p class="text-xs text-sky-200">Kanji siêu tốc, học rộng hiểu sâu</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2 overflow-x-auto max-w-full pb-1 md:pb-0">
+                    <div class="flex bg-sky-800 rounded-lg p-1">
+                        <button onclick="switchTab('learn')" id="tab-learn" class="px-4 py-2 rounded-md text-sm font-bold transition whitespace-nowrap tab-active">
+                            <i class="fas fa-book-open mr-2"></i>Học Tập
+                        </button>
+                        <button onclick="switchTab('quiz')" id="tab-quiz" class="px-4 py-2 rounded-md text-sm font-bold transition whitespace-nowrap tab-inactive ml-1">
+                            <i class="fas fa-gamepad mr-2"></i>Kiểm Tra
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6 flex-grow" id="app-container">
+        
+        <!-- LEARN SECTION -->
+        <div id="learn-section" class="fade-in">
+            <div class="mb-6 bg-white p-4 rounded-xl shadow-sm border-l-4 border-sky-500 flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-1"><i class="fas fa-calendar-day text-sky-500 mr-2"></i>Ngày 22: 80 Hán Tự (N2-N1)</h3>
+                    <p class="text-sm text-gray-600">Trừu tượng, Văn hóa, Tự nhiên & Đời sống.</p>
+                </div>
+            </div>
+            
+            <div id="kanji-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- Cards will be injected here -->
+            </div>
+        </div>
+
+        <!-- QUIZ SECTION -->
+        <div id="quiz-section" class="hidden fade-in max-w-2xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                <div class="bg-gradient-to-r from-emerald-500 to-teal-600 p-6 text-white flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold"><i class="fas fa-puzzle-piece mr-2"></i>Thử Thách Ngày 22</h2>
+                        <p class="text-emerald-100 text-xs mt-1">Ôn tập 80 chữ vừa học</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-emerald-200 uppercase font-bold">Điểm số</div>
+                        <div class="text-3xl font-bold" id="score-display">0</div>
+                    </div>
+                </div>
+                
+                <div class="p-6 md:p-8">
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
+                        <div id="quiz-progress" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+
+                    <div id="question-area" class="text-center mb-8">
+                        <div class="text-gray-500 text-sm font-bold mb-4 uppercase tracking-wide">Câu hỏi <span id="q-current">1</span> / <span id="q-total">10</span></div>
+                        <div class="mb-4">
+                            <span class="text-6xl kanji-font font-bold text-gray-800" id="quiz-kanji-display"></span>
+                        </div>
+                        <div class="text-lg text-gray-600 font-medium" id="quiz-question-text">Hán tự này có nghĩa là gì?</div>
+                    </div>
+
+                    <div id="options-area" class="grid grid-cols-2 gap-4 mb-6">
+                        <!-- Options injected here -->
+                    </div>
+
+                    <div id="feedback-area" class="hidden bg-gray-50 rounded-xl p-4 border border-gray-200 text-left animate-fade-in">
+                        <div id="feedback-title" class="font-bold text-lg mb-2 flex items-center"></div>
+                        <p id="feedback-detail" class="text-gray-600 text-sm mb-3"></p>
+                        <button onclick="nextQuestion()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow transition">Tiếp tục <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- STROKE ORDER MODAL -->
+    <div id="stroke-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" onclick="closeStrokeModal()"></div>
+            <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl w-full modal-enter relative">
+                <div class="bg-sky-600 px-4 py-3 flex justify-between items-center text-white">
+                    <h3 class="font-bold text-lg"><i class="fas fa-pen-nib mr-2"></i>Tập Viết: <span id="stroke-modal-char" class="text-2xl ml-2 font-bold"></span></h3>
+                    <button onclick="closeStrokeModal()" class="hover:text-gray-200 text-2xl">&times;</button>
+                </div>
+                <div class="p-4 md:p-6 bg-gray-50 max-h-[80vh] overflow-y-auto">
+                    <div class="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start justify-center">
+                        <div class="bg-white p-4 rounded-lg shadow border border-gray-200 text-center w-full md:w-auto">
+                            <p class="text-xs text-gray-500 mb-2 font-bold uppercase tracking-wider">Mô phỏng</p>
+                            <div id="stroke-animation-container" class="w-40 h-40 mx-auto bg-white border border-gray-300 relative stroke-grid-box flex items-center justify-center">
+                                <span class="text-gray-400 text-xs">Đang tải...</span>
+                            </div>
+                            <button onclick="replayStrokeAnimation()" class="mt-3 text-sm bg-sky-100 text-sky-700 px-4 py-2 rounded-full hover:bg-sky-200 transition w-full font-bold flex items-center justify-center"><i class="fas fa-redo mr-2"></i> Viết lại</button>
+                        </div>
+                        <div class="flex-1 w-full">
+                            <p class="text-xs text-gray-500 mb-3 font-bold uppercase tracking-wider text-center md:text-left">Thứ tự nét</p>
+                            <div id="stroke-grid-container" class="flex flex-wrap gap-2 justify-center md:justify-start"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
+        // --- DATA DAY 22 (80 Kanji N2-N1 - AzaKanji Method) ---
         const kanjiData = [
-            { char: "貢", nghiaHV: "Cống", nghiaTV: "Cống hiến", onyomi: "コウ (kou)", kunyomi: "みつぐ (mitsugu)", soNet: 10, link: "https://jisho.org/search/%E8%B2%A2%20%23kanji", meo: "Bộ **Bối (貝)** và **Công (工)**.", cauChuyen: "Công (工) nhân dùng tiền (貝) để **cống hiến**.", viDu: [{ jp: "貢献", furigana: "こうけん - kouken", vn: "Cống hiến" }] },
-            { char: "衡", nghiaHV: "Hành", nghiaTV: "Cái cân", onyomi: "コウ (kou)", kunyomi: "-", soNet: 16, link: "https://jisho.org/search/%E8%A1%A1%20%23kanji", meo: "Bộ **Hành (行)**.", cauChuyen: "**Cái cân** (衡) để đo lường khi đi (行).", viDu: [{ jp: "均衡", furigana: "きんこう - kinkou", vn: "Cân bằng" }] },
-            { char: "侯", nghiaHV: "Hầu", nghiaTV: "Tước hầu", onyomi: "コウ (kou)", kunyomi: "-", soNet: 9, link: "https://jisho.org/search/%E4%BE%AF%20%23kanji", meo: "Bộ **Nhân (亻)** và **Thỉ (矢)**.", cauChuyen: "Người (亻) bắn tên (矢) giỏi được phong **tước hầu**.", viDu: [{ jp: "侯爵", furigana: "こうしゃく - koushaku", vn: "Hầu tước" }] },
-            { char: "溝", nghiaHV: "Câu", nghiaTV: "Cái rãnh", onyomi: "コウ (kou)", kunyomi: "みぞ (mizo)", soNet: 13, link: "https://jisho.org/search/%E6%BA%9D%20%23kanji", meo: "Bộ **Thủy (氵)**.", cauChuyen: "**Cái rãnh** (溝) có nước (氵).", viDu: [{ jp: "溝", furigana: "みぞ - mizo", vn: "Rãnh, mương" }] },
-            { char: "剛", nghiaHV: "Cương", nghiaTV: "Cứng rắn", onyomi: "ゴウ (gou)", kunyomi: "-", soNet: 10, link: "https://jisho.org/search/%E5%89%9B%20%23kanji", meo: "Bộ **Đao (刂)**.", cauChuyen: "**Cứng rắn** (剛) như dao (刂).", viDu: [{ jp: "剛健", furigana: "ごうけん - gouken", vn: "Cứng cỏi" }] },
-            { char: "拷", nghiaHV: "Khảo", nghiaTV: "Tra khảo", onyomi: "ゴウ (gou)", kunyomi: "-", soNet: 9, link: "https://jisho.org/search/%E6%8B%B7%20%23kanji", meo: "Bộ **Thủ (手)** và **Khảo (考)**.", cauChuyen: "Dùng tay (手) để **tra khảo** (拷) suy nghĩ (考).", viDu: [{ jp: "拷問", furigana: "ごうもん - goumon", vn: "Tra tấn" }] },
-            { char: "酷", nghiaHV: "Khốc", nghiaTV: "Tàn khốc", onyomi: "コク (koku)", kunyomi: "ひどい (hidoi)", soNet: 14, link: "https://jisho.org/search/%E9%85%B7%20%23kanji", meo: "Bộ **Dậu (酉)** và **Cáo (告)**.", cauChuyen: "Uống rượu (酉) và bị cáo (告) buộc một cách **tàn khốc**.", viDu: [{ jp: "残酷", furigana: "ざんこく - zankoku", vn: "Tàn khốc" }] },
-            { char: "昆", nghiaHV: "Côn", nghiaTV: "Côn trùng", onyomi: "コン (kon)", kunyomi: "-", soNet: 8, link: "https://jisho.org/search/%E6%98%86%20%23kanji", meo: "Bộ **Nhật (日)** và **Tỷ (比)**.", cauChuyen: "So sánh (比) với mặt trời (日) là loài **côn trùng**.", viDu: [{ jp: "昆虫", furigana: "こんちゅう - konchuu", vn: "Côn trùng" }] },
-            { char: "懇", nghiaHV: "Khẩn", nghiaTV: "Khẩn khoản", onyomi: "コン (kon)", kunyomi: "ねんごろ (nengoro)", soNet: 17, link: "https://jisho.org/search/%E懇%20%23kanji", meo: "Bộ **Tâm (心)**.", cauChuyen: "Trái tim (心) **khẩn khoản**.", viDu: [{ jp: "懇親会", furigana: "こんしんかい - konshinkai", vn: "Tiệc thân mật" }] },
-            { char: "苛", nghiaHV: "Hà", nghiaTV: "Hà khắc", onyomi: "カ (ka)", kunyomi: "いじめる (ijimeru)", soNet: 8, link: "https://jisho.org/search/%E8%8B%9B%20%23kanji", meo: "Bộ **Thảo (艹)** và **Khả (可)**.", cauChuyen: "Cỏ (艹) có thể (可) **hà khắc**.", viDu: [{ jp: "苛酷", furigana: "かこく - kakoku", vn: "Hà khắc" }] },
-            { char: "崖", nghiaHV: "Nhai", nghiaTV: "Vách đá", onyomi: "ガイ (gai)", kunyomi: "がけ (gake)", soNet: 11, link: "https://jisho.org/search/%E5%B4–%20%23kanji", meo: "Bộ **Sơn (山)**.", cauChuyen: "**Vách đá** (崖) trên núi (山).", viDu: [{ jp: "崖", furigana: "がけ - gake", vn: "Vách đá" }] },
-            { char: "蓋", nghiaHV: "Cái", nghiaTV: "Nắp vung", onyomi: "ガイ (gai)", kunyomi: "ふた (futa)", soNet: 13, link: "https://jisho.org/search/%E8%93%8B%20%23kanji", meo: "Bộ **Thảo (艹)** và **Mãnh (皿)**.", cauChuyen: "**Nắp vung** (蓋) làm bằng cỏ (艹) đậy lên đĩa (皿).", viDu: [{ jp: "蓋", furigana: "ふた - futa", vn: "Cái nắp" }] },
-            { char: "骸", nghiaHV: "Hài", nghiaTV: "Hài cốt", onyomi: "ガイ (gai)", kunyomi: "-", soNet: 16, link: "https://jisho.org/search/%E9%AA%B8%20%23kanji", meo: "Bộ **Cốt (骨)**.", cauChuyen: "**Hài cốt** (骸) là xương (骨).", viDu: [{ jp: "骸骨", furigana: "がいこつ - gaikotsu", vn: "Bộ xương" }] },
-            { char: "柿", nghiaHV: "Thị", nghiaTV: "Quả hồng", onyomi: "シ (shi)", kunyomi: "かき (kaki)", soNet: 9, link: "https://jisho.org/search/%E6%9F%BF%20%23kanji", meo: "Bộ **Mộc (木)** và **Thị (市)**.", cauChuyen: "Cây (木) ở chợ (市) bán **quả hồng**.", viDu: [{ jp: "柿", furigana: "かき - kaki", vn: "Quả hồng" }] },
-            { char: "鍵", nghiaHV: "Kiện", nghiaTV: "Chìa khóa", onyomi: "ケン (ken)", kunyomi: "かぎ (kagi)", soNet: 17, link: "https://jisho.org/search/%E9%8D%B5%20%23kanji", meo: "Bộ **Kim (金)** và **Kiến (建)**.", cauChuyen: "**Chìa khóa** (鍵) bằng kim loại (金) để xây (建) nhà.", viDu: [{ jp: "鍵", furigana: "かぎ - kagi", vn: "Chìa khóa" }] },
-            { char: "溺", nghiaHV: "Nịch", nghiaTV: "Chết đuối", onyomi: "デキ (deki)", kunyomi: "おぼれる (oboreru)", soNet: 13, link: "https://jisho.org/search/%E6%BA%BA%20%23kanji", meo: "Bộ **Thủy (氵)**.", cauChuyen: "**Chết đuối** (溺) trong nước (氵).", viDu: [{ jp: "溺れる", furigana: "おぼれる - oboreru", vn: "Chết đuối" }] },
-            { char: "塡", nghiaHV: "Điền", nghiaTV: "Lấp đầy", onyomi: "テン (ten)", kunyomi: "-", soNet: 13, link: "https://jisho.org/search/%E5%A1%AB%20%23kanji", meo: "Bộ **Thổ (土)** và **Chân (真)**.", cauChuyen: "Dùng đất (土) thật (真) để **lấp đầy**.", viDu: [{ jp: "充填", furigana: "じゅうてん - juuten", vn: "Lấp đầy" }] },
-            { char: "妬", nghiaHV: "Đố", nghiaTV: "Ghen tỵ", onyomi: "ト (to)", kunyomi: "ねたむ (netamu)", soNet: 8, link: "https://jisho.org/search/%E5%A6%AC%20%23kanji", meo: "Bộ **Nữ (女)** và **Thạch (石)**.", cauChuyen: "Người phụ nữ (女) ném đá (石) vì **ghen tỵ**.", viDu: [{ jp: "妬む", furigana: "ねたむ - netamu", vn: "Ghen tỵ" }] },
-            { char: "賭", nghiaHV: "Đổ", nghiaTV: "Cờ bạc", onyomi: "ト (to)", kunyomi: "かける (kakeru)", soNet: 16, link: "https://jisho.org/search/%E8%B3%AD%20%23kanji", meo: "Bộ **Bối (貝)** và **Giả (者)**.", cauChuyen: "Người (者) dùng tiền (貝) để **cờ bạc**.", viDu: [{ jp: "賭ける", furigana: "かける - kakeru", vn: "Cá cược" }] },
-            { char: "藤", nghiaHV: "Đằng", nghiaTV: "Dây leo", onyomi: "トウ (tou)", kunyomi: "ふじ (fuji)", soNet: 18, link: "https://jisho.org/search/%E8%97%A4%20%23kanji", meo: "Bộ **Thảo (艹)**.", cauChuyen: "**Dây leo** (藤) là một loại cỏ (艹).", viDu: [{ jp: "佐藤", furigana: "さとう - Satou", vn: "Họ Satou" }] },
-            { char: "瞳", nghiaHV: "Đồng", nghiaTV: "Con ngươi", onyomi: "ドウ (dou)", kunyomi: "ひとみ (hitomi)", soNet: 17, link: "https://jisho.org/search/%E7%9E%B3%20%23kanji", meo: "Bộ **Mục (目)** và **Đồng (童)**.", cauChuyen: "**Con ngươi** (瞳) của đứa trẻ (童) trong mắt (目).", viDu: [{ jp: "瞳", furigana: "ひとみ - hitomi", vn: "Con ngươi" }] },
-            { char: "栃", nghiaHV: "Dẻ", nghiaTV: "Cây dẻ", onyomi: "トチ (tochi)", kunyomi: "-", soNet: 9, link: "https://jisho.org/search/%E6%A0%83%20%23kanji", meo: "Bộ **Mộc (木)**.", cauChuyen: "**Cây dẻ** (栃) là loại cây (木).", viDu: [{ jp: "栃木", furigana: "とちぎ - Tochigi", vn: "Tỉnh Tochigi" }] },
-            { char: "頓", nghiaHV: "Đốn", nghiaTV: "Bỗng nhiên", onyomi: "トン (ton)", kunyomi: "-", soNet: 13, link: "https://jisho.org/search/%E9%A0%93%20%23kanji", meo: "Bộ **Hiệt (頁)**.", cauChuyen: "**Bỗng nhiên** (頓) cái đầu (頁) cúi xuống.", viDu: [{ jp: "頓挫", furigana: "とんざ - tonza", vn: "Thất bại" }] },
-            { char: "貪", nghiaHV: "Tham", nghiaTV: "Tham lam", onyomi: "ドン (don)", kunyomi: "むさぼる (musaboru)", soNet: 11, link: "https://jisho.org/search/%E8_B2_AA%20%23kanji", meo: "Bộ **Bối (貝)** và **Kim (今)**.", cauChuyen: "Bây giờ (今) vẫn **tham lam** (貪) tiền (貝).", viDu: [{ jp: "貪欲", furigana: "どんよく - donyoku", vn: "Tham lam" }] },
-            { char: "井", nghiaHV: "Tỉnh", nghiaTV: "Cái giếng", onyomi: "セイ (sei)", kunyomi: "い (i)", soNet: 4, link: "https://jisho.org/search/%E4%BA%95%20%23kanji", meo: "Tượng hình.", cauChuyen: "Hình ảnh **cái giếng**.", viDu: [{ jp: "井戸", furigana: "いど - ido", vn: "Cái giếng" }] },
-            { char: "軟", nghiaHV: "Nhuyễn", nghiaTV: "Mềm", onyomi: "ナン (nan)", kunyomi: "やわらかい (yawarakai)", soNet: 11, link: "https://jisho.org/search/%E8%BB%9F%20%23kanji", meo: "Bộ **Xa (車)** và **Khiếm (欠)**.", cauChuyen: "Cái xe (車) thiếu (欠) bánh nên **mềm**.", viDu: [{ jp: "軟らかい", furigana: "やわらかい - yawarakai", vn: "Mềm" }] },
-            { char: "尼", nghiaHV: "Ni", nghiaTV: "Ni cô", onyomi: "ニ (ni)", kunyomi: "-", soNet: 5, link: "https://jisho.org/search/%E5%B0%BC%20%23kanji", meo: "Tượng hình.", cauChuyen: "Người **ni cô**.", viDu: [{ jp: "尼", furigana: "あま - ama", vn: "Nữ tu" }] },
-            { char: "忍", nghiaHV: "Nhẫn", nghiaTV: "Nhẫn nại", onyomi: "ニン (nin)", kunyomi: "しのぶ (shinobu)", soNet: 7, link: "https://jisho.org/search/%E5%BF%8D%20%23kanji", meo: "Bộ **Tâm (心)** và **Nhận (刃)**.", cauChuyen: "Lưỡi dao (刃) kề tim (心) vẫn **nhẫn nại**.", viDu: [{ jp: "忍者", furigana: "にんじゃ - ninja", vn: "Ninja" }, { jp: "我慢", furigana: "がまん - gaman", vn: "Chịu đựng" }] },
-            { char: "妊", nghiaHV: "Nhâm", nghiaTV: "Mang thai", onyomi: "ニン (nin)", kunyomi: "-", soNet: 8, link: "https://jisho.org/search/%E5%A6%8A%20%23kanji", meo: "Bộ **Nữ (女)**.", cauChuyen: "Người phụ nữ (女) **mang thai**.", viDu: [{ jp: "妊婦", furigana: "にんぷ - ninpu", vn: "Phụ nữ mang thai" }] },
-            { char: "寧", nghiaHV: "Ninh", nghiaTV: "Lịch sự", onyomi: "ネイ (nei)", kunyomi: "-", soNet: 14, link: "https://jisho.org/search/%E5%AF%A7%20%23kanji", meo: "Bộ **Miên (宀)**.", cauChuyen: "**Lịch sự** (寧) dưới mái nhà (宀).", viDu: [{ jp: "丁寧", furigana: "ていねい - teinei", vn: "Lịch sự" }] },
-            { char: "匂", nghiaHV: "Mùi", nghiaTV: "Mùi", onyomi: "ニオ (nio)", kunyomi: "におう (niou)", soNet: 4, link: "https://jisho.org/search/%E5%8C%82%20%23kanji", meo: "Bộ **Bao (勹)** và **Thủy (匕)**.", cauChuyen: "Bao (勹) bọc cái thìa (匕) có **mùi**.", viDu: [{ jp: "匂い", furigana: "におい - nioi", vn: "Mùi" }] },
-            { char: "虹", nghiaHV: "Hồng", nghiaTV: "Cầu vồng", onyomi: "コウ (kou)", kunyomi: "にじ (niji)", soNet: 9, link: "https://jisho.org/search/%E8%99%B9%20%23kanji", meo: "Bộ **Trùng (虫)** và **Công (工)**.", cauChuyen: "**Cầu vồng** (虹) như con côn trùng (虫) của công nhân (工).", viDu: [{ jp: "虹", furigana: "にじ - niji", vn: "Cầu vồng" }] },
-            { char: "捻", nghiaHV: "Niệp", nghiaTV: "Vặn, xoắn", onyomi: "ネン (nen)", kunyomi: "ひねる (hineru)", soNet: 11, link: "https://jisho.org/search/%E6%8D%BB%20%23kanji", meo: "Bộ **Thủ (手)**.", cauChuyen: "Dùng tay (手) **vặn xoắn**.", viDu: [{ jp: "捻挫", furigana: "ねんざ - nenza", vn: "Bong gân" }] },
-            { char: "把", nghiaHV: "Bả", nghiaTV: "Cầm, nắm", onyomi: "ハ (ha)", kunyomi: "-", soNet: 7, link: "https://jisho.org/search/%E6%8A%8A%20%23kanji", meo: "Bộ **Thủ (手)**.", cauChuyen: "Dùng tay (手) **cầm nắm**.", viDu: [{ jp: "把握", furigana: "はあく - haaku", vn: "Nắm vững" }] },
-            { char: "覇", nghiaHV: "Bá", nghiaTV: "Bá quyền", onyomi: "ハ (ha)", kunyomi: "-", soNet: 19, link: "https://jisho.org/search/%E8%A6%87%20%23kanji", meo: "Bộ **Tây (西)**.", cauChuyen: "**Bá quyền** (覇) ở phương Tây (西).", viDu: [{ jp: "制覇", furigana: "せいは - seiha", vn: "Chinh phục" }] },
-            { char: "廃", nghiaHV: "Phế", nghiaTV: "Phế bỏ", onyomi: "ハイ (hai)", kunyomi: "すたれる (sutareru)", soNet: 12, link: "https://jisho.org/search/%E5%BB%83%20%23kanji", meo: "Bộ **Nghiễm (广)**.", cauChuyen: "**Phế bỏ** (廃) ngôi nhà (广).", viDu: [{ jp: "廃止", furigana: "はいし - haishi", vn: "Hủy bỏ" }] },
-            { char: "培", nghiaHV: "Bồi", nghiaTV: "Bồi dưỡng", onyomi: "バイ (bai)", kunyomi: "つちかう (tsuchikau)", soNet: 11, link: "https://jisho.org/search/%E5%9F%B9%20%23kanji", meo: "Bộ **Thổ (土)**.", cauChuyen: "**Bồi dưỡng** (培) đất (土).", viDu: [{ jp: "栽培", furigana: "さいばい - saibai", vn: "Trồng trọt" }] },
-            { char: "陪", nghiaHV: "Bồi", nghiaTV: "Hầu cận", onyomi: "バイ (bai)", kunyomi: "-", soNet: 11, link: "https://jisho.org/search/%E9%99%AA%20%23kanji", meo: "Bộ **Phụ (阝)**.", cauChuyen: "**Hầu cận** (陪) bên cạnh.", viDu: [{ jp: "陪審", furigana: "ばいしん - baishin", vn: "Bồi thẩm đoàn" }] },
-            { char: "媒", nghiaHV: "Môi", nghiaTV: "Môi giới", onyomi: "バイ (bai)", kunyomi: "-", soNet: 12, link: "https://jisho.org/search/%E5%AA%92%20%23kanji", meo: "Bộ **Nữ (女)**.", cauChuyen: "Người phụ nữ (女) làm **môi giới**.", viDu: [{ jp: "媒体", furigana: "ばいたい - baitai", vn: "Phương tiện truyền thông" }] },
-            { char: "伯", nghiaHV: "Bá", nghiaTV: "Bác", onyomi: "ハク (haku)", kunyomi: "-", soNet: 7, link: "https://jisho.org/search/%E4%BC%AF%20%23kanji", meo: "Bộ **Nhân (亻)** và **Bạch (白)**.", cauChuyen: "Người (亻) tóc trắng (白) là **bác**.", viDu: [{ jp: "伯父", furigana: "おじ - oji", vn: "Bác trai" }] },
-            { char: "舶", nghiaHV: "Bạc", nghiaTV: "Tàu lớn", onyomi: "ハク (haku)", kunyomi: "-", soNet: 11, link: "https://jisho.org/search/%E8%88%B6%20%23kanji", meo: "Bộ **Thuyền (舟)** và **Bạch (白)**.", cauChuyen: "**Tàu lớn** (舶) màu trắng (白).", viDu: [{ jp: "船舶", furigana: "せんぱく - senpaku", vn: "Tàu thuyền" }] },
-            { char: "漠", nghiaHV: "Mạc", nghiaTV: "Sa mạc", onyomi: "バク (baku)", kunyomi: "-", soNet: 13, link: "https://jisho.org/search/%E6%BC%A0%20%23kanji", meo: "Bộ **Thủy (氵)** và **Mạc (莫)**.", cauChuyen: "Nơi không (莫) có nước (氵) là **sa mạc**.", viDu: [{ jp: "砂漠", furigana: "さばく - sabaku", vn: "Sa mạc" }] },
-            { char: "肌", nghiaHV: "Cơ", nghiaTV: "Da", onyomi: "キ (ki)", kunyomi: "はだ (hada)", soNet: 6, link: "https://jisho.org/search/%E8%82%8C%20%23kanji", meo: "Bộ **Nhục (月)** và **Kỷ (几)**.", cauChuyen: "Làn **da** (肌) của cơ thể (月).", viDu: [{ jp: "肌", furigana: "はだ - hada", vn: "Da" }] },
-            { char: "鉢", nghiaHV: "Bát", nghiaTV: "Cái bát", onyomi: "ハチ (hachi)", kunyomi: "-", soNet: 13, link: "https://jisho.org/search/%E9%89%A2%20%23kanji", meo: "Bộ **Kim (金)** và **Bản (本)**.", cauChuyen: "**Cái bát** (鉢) bằng kim loại (金) là cơ bản (本).", viDu: [{ jp: "植木鉢", furigana: "うえきばち - uekibachi", vn: "Chậu cây" }] },
-            { char: "閥", nghiaHV: "Phiệt", nghiaTV: "Phe phái", onyomi: "バツ (batsu)", kunyomi: "-", soNet: 14, link: "https://jisho.org/search/%E9%96%A5%20%23kanji", meo: "Bộ **Môn (門)**.", cauChuyen: "**Phe phái** (閥) trong cổng (門).", viDu: [{ jp: "財閥", furigana: "ざいばつ - zaibatsu", vn: "Tài phiệt" }] },
-            { char: "煩", nghiaHV: "Phiền", nghiaTV: "Phiền não", onyomi: "ハン (han)", kunyomi: "わずらわしい (wazurawashii)", soNet: 13, link: "https://jisho.org/search/%E7%85%A9%20%23kanji", meo: "Bộ **Hỏa (火)** và **Hiệt (頁)**.", cauChuyen: "Lửa (火) cháy trên đầu (頁) gây **phiền não**.", viDu: [{ jp: "煩わしい", furigana: "わずらわしい - wazurawashii", vn: "Phiền phức" }] },
-            { char: "頒", nghiaHV: "Ban", nghiaTV: "Ban bố", onyomi: "ハン (han)", kunyomi: "-", soNet: 13, link: "https://jisho.org/search/%E9%A0%92%20%23kanji", meo: "Bộ **Hiệt (頁)** và **Phân (分)**.", cauChuyen: "**Ban bố** (頒) cho từng phần (分) người (頁).", viDu: [{ jp: "頒布", furigana: "はんぷ - hanpu", vn: "Phân phát" }] },
-            { char: "披", nghiaHV: "Phi", nghiaTV: "Vạch ra", onyomi: "ヒ (hi)", kunyomi: "-", soNet: 8, link: "https://jisho.org/search/%E6%8A%AB%20%23kanji", meo: "Bộ **Thủ (手)** và **Bì (皮)**.", cauChuyen: "Dùng tay (手) **vạch** (披) lớp da (皮).", viDu: [{ jp: "披露", furigana: "ひろう - hirou", vn: "Công bố" }] },
-            { char: "扉", nghiaHV: "Phi", nghiaTV: "Cánh cửa", onyomi: "ヒ (hi)", kunyomi: "とびら (tobira)", soNet: 12, link: "https://jisho.org/search/%E6%89%89%20%23kanji", meo: "Bộ **Hộ (戸)** và **Phi (非)**.", cauChuyen: "**Cánh cửa** (扉) không (非) phải là cửa (戸) bình thường.", viDu: [{ jp: "扉", furigana: "とびら - tobira", vn: "Cánh cửa" }] },
-            { char: "妃", nghiaHV: "Phi", nghiaTV: "Phi tần", onyomi: "ヒ (hi)", kunyomi: "-", soNet: 6, link: "https://jisho.org/search/%E5%A6%83%20%23kanji", meo: "Bộ **Nữ (女)** và **Kỷ (己)**.", cauChuyen: "Người phụ nữ (女) của riêng mình (己) là **phi tần**.", viDu: [{ jp: "王妃", furigana: "おうひ - ouhi", vn: "Hoàng hậu" }] },
-            { char: "罷", nghiaHV: "Bãi", nghiaTV: "Bãi bỏ", onyomi: "ヒ (hi)", kunyomi: "やめる (yameru)", soNet: 15, link: "https://jisho.org/search/%E7%BD%B7%20%23kanji", meo: "Bộ **Võng (网)**.", cauChuyen: "**Bãi bỏ** (罷) cái lưới (网).", viDu: [{ jp: "罷免", furigana: "ひめん - himen", vn: "Sa thải" }] },
-            { char: "猫", nghiaHV: "Miêu", nghiaTV: "Con mèo", onyomi: "ビョウ (byou)", kunyomi: "ねこ (neko)", soNet: 11, link: "https://jisho.org/search/%E7%8C%AB%20%23kanji", meo: "Bộ **Khuyển (犭)** và **Miêu (苗)**.", cauChuyen: "**Con mèo** (猫) là loài động vật (犭) giống cây mạ (苗).", viDu: [{ jp: "猫", furigana: "ねこ - neko", vn: "Con mèo" }] },
-            { char: "頻", nghiaHV: "Tần", nghiaTV: "Tần suất", onyomi: "ヒン (hin)", kunyomi: "-", soNet: 17, link: "https://jisho.org/search/%E9%A0%BB%20%23kanji", meo: "Bộ **Hiệt (頁)**.", cauChuyen: "**Tần suất** (頻) của cái đầu (頁).", viDu: [{ jp: "頻繁", furigana: "ひんぱん - hinpan", vn: "Thường xuyên" }] },
-            { char: "賓", nghiaHV: "Tân", nghiaTV: "Khách quý", onyomi: "ヒン (hin)", kunyomi: "-", soNet: 15, link: "https://jisho.org/search/%E8%B3%93%20%23kanji", meo: "Bộ **Bối (貝)**.", cauChuyen: "**Khách quý** (賓) mang tiền (貝) đến.", viDu: [{ jp: "来賓", furigana: "らいひん - raihin", vn: "Khách mời" }] },
-            { char: "瓶", nghiaHV: "Bình", nghiaTV: "Cái chai", onyomi: "ビン (bin)", kunyomi: "-", soNet: 11, link: "https://jisho.org/search/%E7%93%B6%20%23kanji", meo: "Bộ **Ngõa (瓦)**.", cauChuyen: "**Cái chai** (瓶) bằng sành (瓦).", viDu: [{ jp: "瓶", furigana: "びん - bin", vn: "Chai, lọ" }] },
-            { char: "譜", nghiaHV: "Phổ", nghiaTV: "Gia phả", onyomi: "フ (fu)", kunyomi: "-", soNet: 19, link: "https://jisho.org/search/%E8%AD%9C%20%23kanji", meo: "Bộ **Ngôn (言)** và **Phổ (普)**.", cauChuyen: "Lời nói (言) phổ (普) biến là **gia phả**.", viDu: [{ jp: "楽譜", furigana: "がくふ - gakufu", vn: "Bản nhạc" }] },
-            { char: "扶", nghiaHV: "Phù", nghiaTV: "Phù hộ", onyomi: "フ (fu)", kunyomi: "-", soNet: 7, link: "https://jisho.org/search/%E6%89%B6%20%23kanji", meo: "Bộ **Thủ (手)** và **Phu (夫)**.", cauChuyen: "Dùng tay (手) **phù hộ** (扶) người chồng (夫).", viDu: [{ jp: "扶養", furigana: "ふよう - fuyou", vn: "Nuôi dưỡng" }] },
-            { char: "附", nghiaHV: "Phụ", nghiaTV: "Gắn vào", onyomi: "フ (fu)", kunyomi: "-", soNet: 8, link: "https://jisho.org/search/%E9%99%84%20%23kanji", meo: "Bộ **Phụ (阝)** và **Phó (付)**.", cauChuyen: "**Gắn vào** (附) một cách phụ (付) thuộc.", viDu: [{ jp: "附属", furigana: "ふぞく - fuzoku", vn: "Trực thuộc" }] },
-            { char: "侮", nghiaHV: "Vũ", nghiaTV: "Coi thường", onyomi: "ブ (bu)", kunyomi: "あなどる (anadoru)", soNet: 8, link: "https://jisho.org/search/%E4%BE%AE%20%23kanji", meo: "Bộ **Nhân (亻)** và **Mỗi (毎)**.", cauChuyen: "Mỗi (毎) người (亻) đều bị **coi thường**.", viDu: [{ jp: "侮辱", furigana: "ぶじょく - bujoku", vn: "Sỉ nhục" }] },
-            { char: "沸", nghiaHV: "Phí", nghiaTV: "Sôi", onyomi: "フツ (futsu)", kunyomi: "わく (waku)", soNet: 8, link: "https://jisho.org/search/%E6%B2%B8%20%23kanji", meo: "Bộ **Thủy (氵)** và **Phất (弗)**.", cauChuyen: "Nước (氵) không (弗) ngừng **sôi**.", viDu: [{ jp: "沸騰", furigana: "ふっとう - futtou", vn: "Sôi sùng sục" }] },
-            { char: "雰", nghiaHV: "Phân", nghiaTV: "Bầu không khí", onyomi: "フン (fun)", kunyomi: "-", soNet: 12, link: "https://jisho.org/search/%E9%9B%B0%20%23kanji", meo: "Bộ **Vũ (雨)** và **Phân (分)**.", cauChuyen: "Mưa (雨) phân (分) chia tạo nên **bầu không khí**.", viDu: [{ jp: "雰囲気", furigana: "ふんいき - fun'iki", vn: "Bầu không khí" }] },
-            { char: "憤", nghiaHV: "Phẫn", nghiaTV: "Phẫn nộ", onyomi: "フン (fun)", kunyomi: "いきどおる (ikidooru)", soNet: 15, link: "https://jisho.org/search/%E6%86%A4%20%23kanji", meo: "Bộ **Tâm (忄)**.", cauChuyen: "Trái tim (忄) **phẫn nộ**.", viDu: [{ jp: "憤慨", furigana: "ふんがい - fungai", vn: "Phẫn uất" }] },
-            { char: "幣", nghiaHV: "Tệ", nghiaTV: "Tiền tệ", onyomi: "ヘイ (hei)", kunyomi: "-", soNet: 15, link: "https://jisho.org/search/%E5%B9%A3%20%23kanji", meo: "Bộ **Cân (巾)**.", cauChuyen: "**Tiền tệ** (幣) bằng vải (巾).", viDu: [{ jp: "紙幣", furigana: "しへい - shihei", vn: "Tiền giấy" }] },
-            { char: "弊", nghiaHV: "Tệ", nghiaTV: "Tệ hại", onyomi: "ヘイ (hei)", kunyomi: "-", soNet: 15, link: "https://jisho.org/search/%E5%BC%8A%20%23kanji", meo: "Bộ **Củng (廾)**.", cauChuyen: "Điều **tệ hại** (弊).", viDu: [{ jp: "弊社", furigana: "へいしゃ - heisha", vn: "Công ty chúng tôi" }] },
-            { char: "塀", nghiaHV: "Biên", nghiaTV: "Tường rào", onyomi: "ヘイ (hei)", kunyomi: "-", soNet: 12, link: "https://jisho.org/search/%E5%A1%80%20%23kanji", meo: "Bộ **Thổ (土)** và **Bình (屏)**.", cauChuyen: "**Tường rào** (塀) bằng đất (土).", viDu: [{ jp: "塀", furigana: "へい - hei", vn: "Tường rào" }] },
-            { char: "併", nghiaHV: "Tinh", nghiaTV: "Sáp nhập", onyomi: "ヘイ (hei)", kunyomi: "あわせる (awaseru)", soNet: 8, link: "https://jisho.org/search/%E4%BD%B5%20%23kanji", meo: "Bộ **Nhân (亻)**.", cauChuyen: "**Sáp nhập** (併) người (亻).", viDu: [{ jp: "合併", furigana: "がっぺい - gappei", vn: "Sáp nhập" }] },
-            { char: "偏", nghiaHV: "Thiên", nghiaTV: "Lệch", onyomi: "ヘン (hen)", kunyomi: "かたよる (katayoru)", soNet: 11, link: "https://jisho.org/search/%E5%81%8F%20%23kanji", meo: "Bộ **Nhân (亻)** và **Biên (扁)**.", cauChuyen: "Người (亻) bị **lệch** (偏) về một bên.", viDu: [{ jp: "偏見", furigana: "へんけん - henken", vn: "Thành kiến" }] },
-            { char: "遍", nghiaHV: "Biến", nghiaTV: "Phổ biến", onyomi: "ヘン (hen)", kunyomi: "-", soNet: 12, link: "https://jisho.org/search/%E9%81%8D%20%23kanji", meo: "Bộ **Sước (辶)** và **Biên (扁)**.", cauChuyen: "Đi (辶) khắp nơi trở nên **phổ biến**.", viDu: [{ jp: "普遍", furigana: "ふへん - fuhen", vn: "Phổ biến" }] },
-            { char: "浦", nghiaHV: "Phổ", nghiaTV: "Bến sông", onyomi: "ホ (ho)", kunyomi: "うら (ura)", soNet: 10, link: "https://jisho.org/search/%E6%B5%A6%20%23kanji", meo: "Bộ **Thủy (氵)**.", cauChuyen: "**Bến sông** (浦) có nước (氵).", viDu: [{ jp: "浦", furigana: "うら - ura", vn: "Bến cảng nhỏ" }] },
-            { char: "褒", nghiaHV: "Bao", nghiaTV: "Khen ngợi", onyomi: "ホウ (hou)", kunyomi: "ほめる (homeru)", soNet: 15, link: "https://jisho.org/search/%E8%A4%92%20%23kanji", meo: "Bộ **Y (衣)**.", cauChuyen: "**Khen ngợi** (褒) trang phục (衣).", viDu: [{ jp: "褒める", furigana: "ほめる - homeru", vn: "Khen ngợi" }] },
-            { char: "泡", nghiaHV: "Bào", nghiaTV: "Bọt", onyomi: "ホウ (hou)", kunyomi: "あわ (awa)", soNet: 8, link: "https://jisho.org/search/%E6%B3%A1%20%23kanji", meo: "Bộ **Thủy (氵)** và **Bao (包)**.", cauChuyen: "Nước (氵) bao (包) bọc không khí tạo thành **bọt**.", viDu: [{ jp: "泡", furigana: "あわ - awa", vn: "Bọt" }] },
-            { char: "俸", nghiaHV: "Bổng", nghiaTV: "Bổng lộc", onyomi: "ホウ (hou)", kunyomi: "-", soNet: 10, link: "https://jisho.org/search/%E4%BF%B8%20%23kanji", meo: "Bộ **Nhân (亻)** và **Phụng (奉)**.", cauChuyen: "Người (亻) phụng (奉) sự nhận **bổng lộc**.", viDu: [{ jp: "俸給", furigana: "ほうきゅう - houkyuu", vn: "Lương bổng" }] },
-            { char: "剖", nghiaHV: "Phẫu", nghiaTV: "Phẫu thuật", onyomi: "ボウ (bou)", kunyomi: "-", soNet: 10, link: "https://jisho.org/search/%E5%89%96%20%23kanji", meo: "Bộ **Đao (刂)**.", cauChuyen: "Dùng dao (刂) để **phẫu thuật**.", viDu: [{ jp: "解剖", furigana: "かいぼう - kaibou", vn: "Giải phẫu" }] },
-            { char: "紡", nghiaHV: "Phưởng", nghiaTV: "Dệt", onyomi: "ボウ (bou)", kunyomi: "つむぐ (tsumugu)", soNet: 10, link: "https://jisho.org/search/%E7%B4%A1%20%23kanji", meo: "Bộ **Mịch (糸)** và **Phương (方)**.", cauChuyen: "Sợi chỉ (糸) ở các phương (方) được **dệt** lại.", viDu: [{ jp: "紡績", furigana: "ぼうせき - bouseki", vn: "Dệt may" }] },
-            { char: "僕", nghiaHV: "Bộc", nghiaTV: "Tôi", onyomi: "ボク (boku)", kunyomi: "-", soNet: 14, link: "https://jisho.org/search/%E5%83%95%20%23kanji", meo: "Bộ **Nhân (亻)**.", cauChuyen: "Cách xưng hô **tôi** (僕) của người (亻).", viDu: [{ jp: "僕", furigana: "ぼく - boku", vn: "Tôi (con trai)" }] },
-            { char: "撲", nghiaHV: "Phác", nghiaTV: "Đánh", onyomi: "ボク (boku)", kunyomi: "-", soNet: 15, link: "https://jisho.org/search/%E6%92%B2%20%23kanji", meo: "Bộ **Thủ (手)**.", cauChuyen: "Dùng tay (手) để **đánh**.", viDu: [{ jp: "撲滅", furigana: "ぼくめつ - bokumetsu", vn: "Tiêu diệt" }] },
-            { char: "朴", nghiaHV: "Phác", nghiaTV: "Chất phác", onyomi: "ボク (boku)", kunyomi: "-", soNet: 6, link: "https://jisho.org/search/%E6%9C%B4%20%23kanji", meo: "Bộ **Mộc (木)** và **Bốc (卜)**.", cauChuyen: "Cây (木) bói (卜) toán **chất phác**.", viDu: [{ jp: "素朴", furigana: "そぼく - soboku", vn: "Mộc mạc" }] },
-            { char: "堀", nghiaHV: "Quật", nghiaTV: "Cái hào", onyomi: "クツ (kutsu)", kunyomi: "ほり (hori)", soNet: 11, link: "https://jisho.org/search/%E5%A0%80%20%23kanji", meo: "Bộ **Thổ (土)**.", cauChuyen: "**Cái hào** (堀) bằng đất (土).", viDu: [{ jp: "堀", furigana: "ほり - hori", vn: "Hào, kênh" }] },
-            { char: "奔", nghiaHV: "Bôn", nghiaTV: "Bôn ba", onyomi: "ホン (hon)", kunyomi: "-", soNet: 8, link: "https://jisho.org/search/%E5%A5%94%20%23kanji", meo: "Bộ **Đại (大)**.", cauChuyen: "**Bôn ba** (奔) khắp nơi.", viDu: [{ jp: "奔走", furigana: "ほんそう - honsou", vn: "Bôn ba" }] },
-            { char: "睦", nghiaHV: "Mục", nghiaTV: "Hòa thuận", onyomi: "ボク (boku)", kunyomi: "むつむ (mutsumu)", soNet: 13, link: "https://jisho.org/search/%E7%9D%A6%20%23kanji", meo: "Bộ **Mục (目)**.", cauChuyen: "Nhìn (目) nhau **hòa thuận**.", viDu: [{ jp: "親睦", furigana: "しんぼく - shinboku", vn: "Thân thiết" }] },
+            // Abstract & Culture - 10
+            { char: "儒", nghiaHV: "NHO", nghiaTV: "Nho giáo", on: "ジュ", kun: "-", ti: "Người (**Nhân 亻**) cần (**Nhu 需**) học nho giáo.", ta: "**Giữ** (Ju) gìn nho giáo.", examples: [{ w: "儒教", r: "じゅきょう", m: "Nho giáo" }, { w: "儒学", r: "じゅがく", m: "Nho học" }] },
+            { char: "倹", nghiaHV: "KIỆM", nghiaTV: "Tiết kiệm", on: "ケン", kun: "つま", ti: "Người (**Nhân 亻**) kiểm (**Kiểm 僉**) soát chi tiêu là tiết kiệm.", ta: "**Kền** (Ken) kền **Tư Ma** (Tsumashii) tiết kiệm.", examples: [{ w: "倹約", r: "けんやく", m: "Tiết kiệm" }, { w: "節倹", r: "せっけん", m: "Tiết kiệm" }] },
+            { char: "僚", nghiaHV: "LIÊU", nghiaTV: "Đồng nghiệp", on: "リョウ", kun: "-", ti: "Người (**Nhân 亻**) cùng liêu (**Liêu 寮**) trại.", ta: "**Liô** (Ryou) là đồng nghiệp.", examples: [{ w: "同僚", r: "どうりょう", m: "Đồng nghiệp" }, { w: "官僚", r: "かんりょう", m: "Quan chức" }] },
+            { char: "宛", nghiaHV: "UYỂN", nghiaTV: "Địa chỉ", on: "エン", kun: "あ", ti: "Dưới mái nhà (**Miên 宀**) buổi tối (**Tịch 夕**) gửi thư (**Tiết 卩**).", ta: "**Em** (En) gửi **A** (Ateru) địa chỉ.", examples: [{ w: "宛先", r: "あてさき", m: "Nơi nhận" }, { w: "宛名", r: "あてな", m: "Tên người nhận" }] },
+            { char: "嵐", nghiaHV: "LAM", nghiaTV: "Bão", on: "ラン", kun: "あらし", ti: "Gió (**Phong 風**) thổi núi (**Sơn 山**) thành bão.", ta: "**Lan** (Ran) can **A Ra Si** (Arashi) bão tố.", examples: [{ w: "嵐", r: "あらし", m: "Cơn bão" }, { w: "砂嵐", r: "すなあらし", m: "Bão cát" }] },
+            { char: "畏", nghiaHV: "ÚY", nghiaTV: "Sợ hãi", on: "イ", kun: "おそ", ti: "Ruộng (**Điền 田**) có ma (**Lệ 甶** - biến thể) đáng sợ.", ta: "**Y** (I) như **Ô Sô** (Osoreru) sợ hãi.", examples: [{ w: "畏敬", r: "いけい", m: "Kính sợ" }, { w: "畏れる", r: "おそれる", m: "Sợ hãi" }] },
+            { char: "萎", nghiaHV: "UY", nghiaTV: "Héo", on: "イ", kun: "な", ti: "Cỏ (**Thảo 艹**) bị ủy (**Ủy 委**) thác héo mòn.", ta: "**Y** (I) như **Na** (Naeru) héo.", examples: [{ w: "萎縮", r: "いしゅく", m: "Teo lại" }, { w: "萎える", r: "なえる", m: "Héo đi" }] },
+            { char: "椅", nghiaHV: "Y", nghiaTV: "Ghế", on: "イ", kun: "-", ti: "Cây (**Mộc 木**) kỳ (**Kỳ 奇**) lạ làm ghế.", ta: "**Y** (I) như cái ghế.", examples: [{ w: "椅子", r: "いす", m: "Cái ghế" }, { w: "車椅子", r: "くるまいす", m: "Xe lăn" }] },
+            { char: "彙", nghiaHV: "VỊ", nghiaTV: "Tập hợp", on: "イ", kun: "-", ti: "Nhà (**Nghiễm 彑**) có quả (**Quả 果**) tụ tập.", ta: "**Y** (I) như từ vựng.", examples: [{ w: "語彙", r: "ごい", m: "Từ vựng" }, { w: "彙報", r: "いほう", m: "Báo cáo tổng hợp" }] },
+            { char: "謁", nghiaHV: "YẾT", nghiaTV: "Yết kiến", on: "エツ", kun: "-", ti: "Nói (**Ngôn 言**) chuyện khi nào (**Cát 曷**) yết kiến.", ta: "**Ế** (Etsu) ẩm yết kiến.", examples: [{ w: "拝謁", r: "はいえつ", m: "Bái kiến" }, { w: "謁見", r: "えっけん", m: "Yết kiến" }] },
+
+            // Emotions & Nature - 10
+            { char: "怨", nghiaHV: "OÁN", nghiaTV: "Oán hận", on: "エン", kun: "うら", ti: "Tim (**Tâm 心**) nằm dưới uyển (**Uyển 夗**) oán hận.", ta: "**Em** (En) **U Ra** (Uramu) oán hận.", examples: [{ w: "怨恨", r: "えんこん", m: "Thù hận" }, { w: "怨む", r: "うらむ", m: "Oán trách" }] },
+            { char: "媛", nghiaHV: "VIỆN", nghiaTV: "Công chúa/Đẹp", on: "エン", kun: "-", ti: "Phụ nữ (**Nữ 女**) được viện (**Viện 爰**) trợ xinh đẹp.", ta: "**Em** (En) là công chúa.", examples: [{ w: "愛媛", r: "えひめ", m: "Tỉnh Ehime" }, { w: "才媛", r: "さいえん", m: "Tài nữ" }] },
+            { char: "艶", nghiaHV: "DIỄM", nghiaTV: "Quyến rũ/Bóng", on: "エン", kun: "つや", ti: "Màu (**Sắc 色**) phong phú (**Phong 豊**) diễm lệ.", ta: "**Em** (En) **Tư Ya** (Tsuya) bóng bẩy.", examples: [{ w: "艶やか", r: "あでやか", m: "Làm dáng" }, { w: "艶", r: "つや", m: "Độ bóng" }] },
+            { char: "苑", nghiaHV: "UYỂN", nghiaTV: "Vườn", on: "エン", kun: "-", ti: "Cỏ (**Thảo 艹**) trong nhà (**Nguyên 夗**) là vườn uyển.", ta: "**Em** (En) ra vườn.", examples: [{ w: "御苑", r: "ぎょえん", m: "Ngự uyển" }, { w: "公園", r: "こうえん", m: "Công viên (dùng chữ Viên)" }] },
+            { char: "鴛", nghiaHV: "UYÊN", nghiaTV: "Uyên ương", on: "エン", kun: "-", ti: "Chim (**Điểu 鳥**) uyển (**Uyển 夗**) chuyển uyên ương.", ta: "**Em** (En) là uyên ương.", examples: [{ w: "鴛鴦", r: "おしどり", m: "Uyên ương" }] },
+            { char: "凹", nghiaHV: "AO", nghiaTV: "Lõm", on: "オウ", kun: "へこ", ti: "Hình vuông bị lõm.", ta: "**Ông** (Ou) **Hê Cô** (Hekomu) lõm xuống.", examples: [{ w: "凹凸", r: "おうとつ", m: "Lồi lõm" }, { w: "凹む", r: "へこむ", m: "Lõm xuống" }] },
+            { char: "旺", nghiaHV: "VƯỢNG", nghiaTV: "Thịnh vượng", on: "オウ", kun: "-", ti: "Mặt trời (**Nhật 日**) vua (**Vương 王**) thịnh vượng.", ta: "**Ông** (Ou) vua thịnh vượng.", examples: [{ w: "旺盛", r: "おうせい", m: "Thịnh vượng" }] },
+            { char: "岡", nghiaHV: "CƯƠNG", nghiaTV: "Ngọn đồi", on: "コウ", kun: "おか", ti: "Lưới (**Võng 冂**) trên núi (**Sơn 山**) cương.", ta: "**Cô** (Kou) lên đồi **Ô Ca** (Oka).", examples: [{ w: "静岡", r: "しずおか", m: "Shizuoka" }, { w: "福岡", r: "ふくおか", m: "Fukuoka" }] },
+            { char: "翁", nghiaHV: "ÔNG", nghiaTV: "Ông già", on: "オウ", kun: "おきな", ti: "Công (**Công 公**) lông (**Vũ 羽**) là ông già.", ta: "**Ông** (Ou) **Ô Ki Na** (Okina) ông già.", examples: [{ w: "翁", r: "おきな", m: "Ông lão" }] },
+            { char: "臆", nghiaHV: "ỨC", nghiaTV: "Rụt rè", on: "オク", kun: "-", ti: "Thịt (**Nhục ⺼**) ý (**Ý 意**) nghĩ rụt rè.", ta: "**Ốc** (Oku) rụt rè.", examples: [{ w: "臆病", r: "おくびょう", m: "Nhát gan" }, { w: "臆測", r: "おくそく", m: "Suy đoán" }] },
+
+            // Life & Objects - 10
+            { char: "乙", nghiaHV: "ẤT", nghiaTV: "Can Ất", on: "オツ", kun: "-", ti: "Hình con chim én.", ta: "**Ốt** (Otsu) dột.", examples: [{ w: "乙女", r: "おとめ", m: "Thiếu nữ" }, { w: "甲乙", r: "こうおつ", m: "Giáp Ất" }] },
+            { char: "俺", nghiaHV: "YÊM", nghiaTV: "Tao (xưng hô)", on: "-", kun: "おれ", ti: "Người (**Nhân 亻**) to lớn (**Yêm 奄**) xưng tao.", ta: "**Ô Rê** (Ore) là tao.", examples: [{ w: "俺", r: "おれ", m: "Tao" }] },
+            { char: "苛", nghiaHV: "HÀ", nghiaTV: "Hà khắc/Mắng", on: "カ", kun: "-", ti: "Cỏ (**Thảo 艹**) có thể (**Khả 可**) hà khắc.", ta: "**Ca** (Ka) hát hà khắc.", examples: [{ w: "苛酷", r: "かこく", m: "Hà khắc" }, { w: "苛める", r: "いじめる", m: "Bắt nạt" }] },
+            { char: "牙", nghiaHV: "NHA", nghiaTV: "Răng nanh", on: "ガ", kun: "きば", ti: "Hình răng nanh.", ta: "**Gà** (Ga) có **Ki Ba** (Kiba) răng nanh.", examples: [{ w: "象牙", r: "ぞうげ", m: "Ngà voi" }, { w: "牙", r: "きば", m: "Răng nanh" }] },
+            { char: "瓦", nghiaHV: "NGÕA", nghiaTV: "Ngói", on: "ガ", kun: "かわら", ti: "Viên ngói lợp nhà.", ta: "**Gà** (Ga) trèo **Ca Wa Ra** (Kawara) ngói.", examples: [{ w: "瓦", r: "かわら", m: "Ngói" }, { w: "煉瓦", r: "れんが", m: "Gạch" }] },
+            { char: "楷", nghiaHV: "HÀI", nghiaTV: "Chữ Khải", on: "カイ", kun: "-", ti: "Cây (**Mộc 木**) đều (**Giai 皆**) là chữ Khải.", ta: "**Cai** (Kai) quản chữ viết.", examples: [{ w: "楷書", r: "かいしょ", m: "Khải thư" }] },
+            { char: "潰", nghiaHV: "HỘI", nghiaTV: "Nghiền nát", on: "カイ", kun: "つぶ", ti: "Nước (**Thủy 氵**) quý (**Quý 貴**) bị nghiền nát.", ta: "**Cai** (Kai) quản **Tư Bư** (Tsubusu) nghiền.", examples: [{ w: "決潰", r: "けっかい", m: "Vỡ đê" }, { w: "潰す", r: "つぶす", m: "Nghiền nát" }] },
+            { char: "諧", nghiaHV: "HÀI", nghiaTV: "Hài hòa", on: "カイ", kun: "-", ti: "Nói (**Ngôn 言**) đều (**Giai 皆**) hài hòa.", ta: "**Cai** (Kai) quản hài hòa.", examples: [{ w: "俳諧", r: "はいかい", m: "Thơ Haikai" }, { w: "諧調", r: "かいちょう", m: "Hài hòa" }] },
+            { char: "崖", nghiaHV: "NHAI", nghiaTV: "Vách đá", on: "ガイ", kun: "がけ", ti: "Núi (**Sơn 山**) nhai (**Nhai 厓**) vách đá.", ta: "**Gai** (Gai) góc **Ga Kê** (Gake) vách đá.", examples: [{ w: "断崖", r: "だんがい", m: "Vách đứng" }, { w: "崖", r: "がけ", m: "Vách đá" }] },
+            { char: "蓋", nghiaHV: "CÁI", nghiaTV: "Nắp", on: "ガイ", kun: "ふた", ti: "Cỏ (**Thảo 艹**) đậy đĩa (**Mãnh 皿**) đi (**Khứ 去**) là nắp.", ta: "**Gai** (Gai) góc **Phu Ta** (Futa) nắp.", examples: [{ w: "頭蓋骨", r: "ずがいこつ", m: "Hộp sọ" }, { w: "蓋", r: "ふた", m: "Cái nắp" }] },
+
+            // Body & Medical - 10
+            { char: "骸", nghiaHV: "HÀI", nghiaTV: "Hài cốt", on: "ガイ", kun: "-", ti: "Xương (**Cốt 骨**) con heo (**Hợi 亥**) là hài cốt.", ta: "**Gai** (Gai) góc hài cốt.", examples: [{ w: "骸骨", r: "がいこつ", m: "Bộ xương" }, { w: "死骸", r: "しがい", m: "Tử thi" }] },
+            { char: "柿", nghiaHV: "THỊ", nghiaTV: "Quả hồng", on: "シ", kun: "かき", ti: "Cây (**Mộc 木**) ở chợ (**Thị 市**) bán hồng.", ta: "**Sĩ** (Shi) tử ăn **Ca Ki** (Kaki) hồng.", examples: [{ w: "柿", r: "かき", m: "Quả hồng" }, { w: "干し柿", r: "ほしがき", m: "Hồng khô" }] },
+            { char: "顎", nghiaHV: "NGẠC", nghiaTV: "Cằm/Hàm", on: "ガク", kun: "あご", ti: "Đầu (**Hiệt 頁**) ngạc nhiên (**Ngạc 咢**) cằm rớt.", ta: "**Gà Cư** (Gaku) **A Gô** (Ago) cằm.", examples: [{ w: "顎", r: "あご", m: "Cằm" }, { w: "顎関節", r: "がくかんせつ", m: "Khớp hàm" }] },
+            { char: "葛", nghiaHV: "CÁT", nghiaTV: "Sắn dây", on: "カツ", kun: "くず", ti: "Cỏ (**Thảo 艹**) khát (**Khát 曷**) nước là sắn dây.", ta: "**Ca Tư** (Katsu) **Cư Dư** (Kuzu) sắn dây.", examples: [{ w: "葛藤", r: "かっとう", m: "Xung đột" }, { w: "葛", r: "くず", m: "Cây sắn dây" }] },
+            { char: "鎌", nghiaHV: "LIÊM", nghiaTV: "Cái liềm", on: "レン", kun: "かま", ti: "Kim loại (**Kim 金**) liêm khiết (**Liêm 兼**) là liềm.", ta: "**Ren** (Ren) **Ca Ma** (Kama) cái liềm.", examples: [{ w: "鎌", r: "かま", m: "Cái liềm" }, { w: "鎌倉", r: "かまくら", m: "Kamakura" }] },
+            { char: "韓", nghiaHV: "HÀN", nghiaTV: "Hàn Quốc", on: "カン", kun: "-", ti: "Mười (**Thập 十**) mặt trời (**Nhật 日**) sớm (**Tảo 早**) da (**Vi 韋**) Hàn.", ta: "**Can** (Kan) đảm Hàn Quốc.", examples: [{ w: "韓国", r: "かんこく", m: "Hàn Quốc" }, { w: "韓流", r: "かんりゅう", m: "Làn sóng Hàn" }] },
+            { char: "玩", nghiaHV: "NGOẠN", nghiaTV: "Chơi đùa", on: "ガン", kun: "-", ti: "Vua (**Vương 王**) nguyên (**Nguyên 元**) vẹn chơi đùa.", ta: "**Gan** (Gan) lì ngoạn mục.", examples: [{ w: "玩具", r: "がんぐ", m: "Đồ chơi" }, { w: "愛玩", r: "あいがん", m: "Yêu thích" }] },
+            { char: "癌", nghiaHV: "NHAM", nghiaTV: "Ung thư", on: "ガン", kun: "-", ti: "Bệnh (**Nạch 疒**) như núi đá (**Nham 嵒**).", ta: "**Gan** (Gan) lì ung thư.", examples: [{ w: "癌", r: "がん", m: "Ung thư" }, { w: "肺癌", r: "はいがん", m: "Ung thư phổi" }] },
+            { char: "岐", nghiaHV: "KỲ", nghiaTV: "Phân nhánh", on: "キ", kun: "-", ti: "Núi (**Sơn 山**) chi (**Chi 支**) nhánh.", ta: "**Ki** (Ki) lạ phân nhánh.", examples: [{ w: "分岐", r: "ぶんき", m: "Phân nhánh" }, { w: "岐路", r: "きろ", m: "Đường rẽ" }] },
+            { char: "几", nghiaHV: "KI", nghiaTV: "Cái bàn", on: "キ", kun: "-", ti: "Hình cái bàn nhỏ.", ta: "**Ki** (Ki) lạ cái bàn.", examples: [{ w: "几帳面", r: "きちょうめん", m: "Ngăn nắp" }] },
+
+            // Others - 10
+            { char: "輝", nghiaHV: "HUY", nghiaTV: "Sáng/Lấp lánh", on: "キ", kun: "かがや", ti: "Ánh sáng (**Quang 光**) quân đội (**Quân 軍**) huy hoàng.", ta: "**Ki** (Ki) lạ **Ca Ga Ya** (Kagayaku) tỏa sáng.", examples: [{ w: "輝く", r: "かがやく", m: "Tỏa sáng" }, { w: "光輝", r: "こうき", m: "Huy hoàng" }] },
+            { char: "儀", nghiaHV: "NGHI", nghiaTV: "Nghi thức", on: "ギ", kun: "-", ti: "Người (**Nhân 亻**) nghĩa (**Nghĩa 義**) khí làm nghi thức.", ta: "**Ghi** (Gi) chép nghi thức.", examples: [{ w: "儀式", r: "ぎしき", m: "Nghi thức" }, { w: "礼儀", r: "れいぎ", m: "Lễ nghi" }] },
+            { char: "戯", nghiaHV: "HÍ", nghiaTV: "Vui chơi/Kịch", on: "ギ", kun: "たわむ", ti: "Hổ (**Hổ 虍**) đậu trên hư (**Hư 虚**) qua (**Qua 戈**) chơi.", ta: "**Ghi** (Gi) chép **Ta Wa Mư** (Tawamureru) vui đùa.", examples: [{ w: "遊戯", r: "ゆうぎ", m: "Trò chơi" }, { w: "戯曲", r: "ぎきょく", m: "Kịch bản" }] },
+            { char: "拮", nghiaHV: "CẬT", nghiaTV: "Cạnh tranh", on: "キツ", kun: "-", ti: "Tay (**Thủ 扌**) cát (**Cát 吉**) tường cạnh tranh.", ta: "**Ki Tư** (Kitsu) cạnh tranh.", examples: [{ w: "拮抗", r: "きっこう", m: "Đối kháng" }, { w: "拮据", r: "きっきょ", m: "Làm việc chăm chỉ" }] },
+            { char: "僑", nghiaHV: "KIỀU", nghiaTV: "Kiều bào", on: "キョウ", kun: "-", ti: "Người (**Nhân 亻**) cao (**Kiều 喬**) là kiều bào.", ta: "**Kiô** (Kyou) bào.", examples: [{ w: "華僑", r: "かきょう", m: "Hoa kiều" }, { w: "僑居", r: "きょうきょ", m: "Tạm trú" }] },
+            { char: "禦", nghiaHV: "NGỰ", nghiaTV: "Chống cự", on: "ギョ", kun: "-", ti: "Thần (**Kỳ 示**) ngự (**Ngự 御**) trị.", ta: "**Gió** (Gyo) ngự trị.", examples: [{ w: "防御", r: "ぼうぎょ", m: "Phòng ngự" }, { w: "制御", r: "せいぎょ", m: "Chế ngự" }] },
+            { char: "灸", nghiaHV: "CỨU", nghiaTV: "Cứu ngải", on: "キュウ", kun: "-", ti: "Lâu (**Cửu 久**) ngày dùng lửa (**Hỏa 火**) cứu.", ta: "**Cứu** (Kyuu) ngải.", examples: [{ w: "針灸", r: "しんきゅう", m: "Châm cứu" }, { w: "灸", r: "きゅう", m: "Cứu ngải" }] },
+            { char: "汲", nghiaHV: "CẤP", nghiaTV: "Múc nước", on: "キュウ", kun: "く", ti: "Nước (**Thủy 氵**) đuổi kịp (**Cập 及**) múc lên.", ta: "**Cứu** (Kyuu) **Cư** (Kumu) múc.", examples: [{ w: "汲む", r: "くむ", m: "Múc (nước)" }, { w: "汲み取る", r: "くみとる", m: "Hiểu được" }] },
+            { char: "佐", nghiaHV: "TÁ", nghiaTV: "Phò tá", on: "サ", kun: "-", ti: "Người (**Nhân 亻**) bên trái (**Tả 左**) phò tá.", ta: "**Sa** (Sa) ngã phò tá.", examples: [{ w: "補佐", r: "ほさ", m: "Trợ lý" }, { w: "大佐", r: "たいさ", m: "Đại tá" }] },
+            { char: "唆", nghiaHV: "TOA", nghiaTV: "Xúi giục", on: "サ", kun: "そそのか", ti: "Miệng (**Khẩu 口**) lăng xăng (**Toa 夋**) xúi giục.", ta: "**Sa** (Sa) ngã **Xô Xô Nô Ca** (Sosonokasu) xúi.", examples: [{ w: "示唆", r: "しさ", m: "Gợi ý" }, { w: "唆す", r: "そそのかす", m: "Xúi giục" }] },
+            { char: "詐", nghiaHV: "TRÁ", nghiaTV: "Lừa dối", on: "サ", kun: "いつわ", ti: "Nói (**Ngôn 言**) làm (**Tác 乍**) giả.", ta: "**Sa** (Sa) ngã **I Tư Wa** (Itsuwaru) lừa.", examples: [{ w: "詐欺", r: "さぎ", m: "Lừa đảo" }, { w: "詐称", r: "さしょう", m: "Mạo danh" }] },
+            { char: "宰", nghiaHV: "TỂ", nghiaTV: "Tể tướng", on: "サイ", kun: "-", ti: "Nhà (**Miên 宀**) cay đắng (**Tân 辛**) tể tướng.", ta: "**Sai** (Sai) bảo tể tướng.", examples: [{ w: "主宰", r: "しゅさい", m: "Chủ tọa" }, { w: "宰相", r: "さいしょう", m: "Tể tướng" }] },
+            { char: "載", nghiaHV: "TẢI", nghiaTV: "Chất lên/Đăng", on: "サイ", kun: "の", ti: "Xe (**Xa 車**) chở cây qua (**Qua 戈**) đất (**Thổ 土**) - *biến thể*.", ta: "**Sai** (Sai) khiến **Nô** (Noseru) chất lên.", examples: [{ w: "掲載", r: "けいさい", m: "Đăng bài" }, { w: "載せる", r: "のせる", m: "Chất lên" }] },
+            { char: "索", nghiaHV: "SÁCH", nghiaTV: "Tìm kiếm/Dây", on: "サク", kun: "-", ti: "Mười (**Thập 十**) sợ tơ (**Mịch 冖** + **Mịch 糸**) tìm kiếm.", ta: "**Sa Cư** (Saku) tìm kiếm.", examples: [{ w: "検索", r: "けんさく", m: "Tìm kiếm" }, { w: "索引", r: "さくいん", m: "Mục lục" }] },
+            { char: "傘", nghiaHV: "TẢN", nghiaTV: "Cái ô", on: "サン", kun: "かさ", ti: "Người (**Nhân 人**) đứng dưới bốn người trong ô.", ta: "**Sân** (San) chơi **Ca Sa** (Kasa) cái ô.", examples: [{ w: "傘", r: "かさ", m: "Cái ô" }, { w: "雨傘", r: "あまがさ", m: "Ô che mưa" }] },
+            { char: "桟", nghiaHV: "SÀN", nghiaTV: "Khung/Giá", on: "サン", kun: "-", ti: "Cây (**Mộc 木**) cạn (**Tiên 戋**) làm sàn.", ta: "**Sân** (San) gỗ.", examples: [{ w: "桟橋", r: "さんばし", m: "Cầu tàu" }, { w: "桟", r: "さん", m: "Thanh ngang" }] },
+            { char: "嗣", nghiaHV: "TỰ", nghiaTV: "Thừa kế", on: "シ", kun: "-", ti: "Miệng (**Khẩu 口**) tư (**Tư 司**) sách (**Sách 冊**) thừa kế.", ta: "**Sĩ** (Shi) tử thừa kế.", examples: [{ w: "継嗣", r: "けいし", m: "Người thừa kế" }] },
+            { char: "雌", nghiaHV: "THƯ", nghiaTV: "Giống cái", on: "シ", kun: "めす", ti: "Dừng (**Chỉ 止**) thìa (**Chủy 匕**) chim (**Chuy 隹**) mái.", ta: "**Sĩ** (Shi) diện **Mê Sư** (Mesu) con cái.", examples: [{ w: "雌雄", r: "しゆう", m: "Đực cái" }, { w: "雌", r: "めす", m: "Con cái" }] },
+            { char: "諮", nghiaHV: "TƯ", nghiaTV: "Hỏi ý kiến", on: "シ", kun: "はか", ti: "Nói (**Ngôn 言**) thứ sau (**Tư 次**) miệng (**Khẩu 口**).", ta: "**Sĩ** (Shi) diện **Ha Ca** (Hakaru) tư vấn.", examples: [{ w: "諮問", r: "しもん", m: "Tư vấn" }, { w: "諮る", r: "はかる", m: "Thảo luận" }] },
+            { char: "賜", nghiaHV: "TỨ", nghiaTV: "Ban thưởng", on: "シ", kun: "たまわ", ti: "Tiền (**Bối 貝**) dễ (**Dị 易**) ban thưởng.", ta: "**Sĩ** (Shi) diện **Ta Ma Wa** (Tamawaru) ban cho.", examples: [{ w: "賜る", r: "たまわる", m: "Được ban cho" }, { w: "下賜", r: "かし", m: "Hạ ban" }] },
+            { char: "滋", nghiaHV: "TƯ", nghiaTV: "Nuôi dưỡng", on: "ジ", kun: "-", ti: "Nước (**Thủy 氵**) đen (**Huyền 兹**) nuôi dưỡng.", ta: "**Gì** (Ji) cơ nuôi dưỡng.", examples: [{ w: "滋養", r: "じよう", m: "Dinh dưỡng" }, { w: "滋賀", r: "しが", m: "Shiga (tỉnh)" }] },
+            { char: "璽", nghiaHV: "TỶ", nghiaTV: "Ấn vua", on: "ジ", kun: "-", ti: "Mưa (**Vũ 雨**) ngọc (**Ngọc 玉**) làm ấn.", ta: "**Gì** (Ji) cơ ngọc tỷ.", examples: [{ w: "御璽", r: "ぎょじ", m: "Ngọc tỷ" }] },
+            { char: "漆", nghiaHV: "TẤT", nghiaTV: "Cây sơn", on: "シツ", kun: "うるし", ti: "Nước (**Thủy 氵**) cây (**Mộc 木**) người (**Nhân 人**) nước (**Thủy 水**).", ta: "**Si Tư** (Shitsu) **U Rư Si** (Urushi) sơn mài.", examples: [{ w: "漆器", r: "しっき", m: "Đồ sơn mài" }, { w: "漆", r: "うるし", m: "Cây sơn" }] },
+            { char: "遮", nghiaHV: "CHÁ", nghiaTV: "Che/Chặn", on: "シャ", kun: "さえぎ", ti: "Đi (**Sước 辶**) nhà (**Thứ 庶**) che chắn.", ta: "**Sa** (Sha) ngã **Sa Ê Ghi** (Saegiru) chặn lại.", examples: [{ w: "遮断", r: "しゃだん", m: "Ngắt/Chặn" }, { w: "遮る", r: "さえぎる", m: "Chắn/Cắt ngang" }] },
+            { char: "蛇", nghiaHV: "XÀ", nghiaTV: "Rắn", on: "ジャ", kun: "へび", ti: "Sâu (**Trùng 虫**) trong nhà (**Miên 宀**) thìa (**Chủy 匕**).", ta: "**Gia** (Ja) đình **Hê Bi** (Hebi) rắn.", examples: [{ w: "蛇口", r: "じゃぐち", m: "Vòi nước" }, { w: "蛇", r: "へび", m: "Con rắn" }] },
+            { char: "珠", nghiaHV: "CHÂU", nghiaTV: "Châu báu", on: "シュ", kun: "-", ti: "Vua (**Vương 王**) đỏ (**Chu 朱**) ngọc.", ta: "**Su** (Shu) hào châu báu.", examples: [{ w: "真珠", r: "しんじゅ", m: "Trân châu" }, { w: "数珠", r: "じゅず", m: "Chuỗi hạt" }] },
+            { char: "儒", nghiaHV: "NHO", nghiaTV: "Nho giáo", on: "ジュ", kun: "-", ti: "Người (**Nhân 亻**) cần (**Nhu 需**) học.", ta: "**Giữ** (Ju) gìn nho học.", examples: [{ w: "儒教", r: "じゅきょう", m: "Nho giáo" }] },
+            { char: "樹", nghiaHV: "THỤ", nghiaTV: "Cây", on: "ジュ", kun: "き", ti: "Cây (**Mộc 木**) trống (**Cổ 壴**) thốn (**Thốn 寸**).", ta: "**Giữ** (Ju) lấy cây **Ki** (Ki).", examples: [{ w: "樹木", r: "じゅもく", m: "Lùm cây" }, { w: "植樹", r: "しょくじゅ", m: "Trồng cây" }] },
+            { char: "崇", nghiaHV: "SÙNG", nghiaTV: "Tôn sùng", on: "スウ", kun: "-", ti: "Núi (**Sơn 山**) tông (**Tông 宗**) cao.", ta: "**Su** (Suu) hào sùng bái.", examples: [{ w: "崇拝", r: "すうはい", m: "Sùng bái" }, { w: "崇高", r: "すうこう", m: "Cao cả" }] },
+            { char: "嵩", nghiaHV: "SÙNG", nghiaTV: "Cao/Chất đống", on: "スウ", kun: "かさ", ti: "Núi (**Sơn 山**) cao (**Cao 高**).", ta: "**Su** (Suu) hào **Ca Sa** (Kasa) tăng lên.", examples: [{ w: "嵩む", r: "かさむ", m: "Tăng lên" }] },
+            { char: "雛", nghiaHV: "SÔ", nghiaTV: "Gà con/Búp bê", on: "スウ", kun: "ひな", ti: "Cỏ (**Thảo 艹**) chim (**Chuy 隹**) sô (**Sô 芻**).", ta: "**Su** (Suu) hào **Hi Na** (Hina) búp bê.", examples: [{ w: "雛祭り", r: "ひなまつり", m: "Lễ hội búp bê" }, { w: "雛", r: "ひな", m: "Gà con" }] },
+            { char: "据", nghiaHV: "CỨ", nghiaTV: "Đặt/Ngồi", on: "-", kun: "す", ti: "Tay (**Thủ 扌**) cư (**Cư 居**) trú.", ta: "**Sư** (Sueru) đặt xuống.", examples: [{ w: "据える", r: "すえる", m: "Đặt/Để" }, { w: "据え置き", r: "すえおき", m: "Cố định" }] },
+            { char: "杉", nghiaHV: "SAM", nghiaTV: "Cây tuyết tùng", on: "-", kun: "すぎ", ti: "Cây (**Mộc 木**) sam (**Sam 彡**) dài.", ta: "**Sư Ghi** (Sugi) cây sam.", examples: [{ w: "杉", r: "すぎ", m: "Tuyết tùng" }] },
+            { char: "斉", nghiaHV: "TỀ", nghiaTV: "Đều/Cùng", on: "セイ", kun: "-", ti: "Văn (**Văn 文**) trên hai vạch.", ta: "**Sây** (Sei) sưa tề chỉnh.", examples: [{ w: "一斉に", r: "いっせいに", m: "Đồng loạt" }, { w: "校歌斉唱", r: "こうかせいしょう", m: "Hát đồng ca" }] },
+            { char: "脊", nghiaHV: "TÍCH", nghiaTV: "Lưng/Cột sống", on: "セキ", kun: "-", ti: "Người (**Nhân 人**) hai bên sườn (**Nhục ⺼**).", ta: "Phân **Tích** (Seki) cột sống.", examples: [{ w: "脊椎", r: "せきつい", m: "Xương sống" }, { w: "背脊", r: "はいせき", m: "Lưng" }] },
+            { char: "戚", nghiaHV: "THÍCH", nghiaTV: "Thân thích", on: "セキ", kun: "-", ti: "Mậu (**Mậu 戊**) nhỏ (**Tiểu 小**) trên qua (**Qua 戈** - biến thể).", ta: "Phân **Tích** (Seki) bà con.", examples: [{ w: "親戚", r: "しんせき", m: "Họ hàng" }] },
+            { char: "晒", nghiaHV: "THÍCH", nghiaTV: "Phơi nắng", on: "-", kun: "さら", ti: "Ngày (**Nhật 日**) tây (**Tây 西**) phơi.", ta: "**Sa Ra** (Sarasu) phơi bày.", examples: [{ w: "晒す", r: "さらす", m: "Phơi/Dầm" }, { w: "日晒し", r: "ひざらし", m: "Phơi nắng" }] }
         ];
 
+        // --- STATE ---
+        let currentTab = 'learn';
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+        let currentQuizQuestion = null;
+        let currentStrokeSvg = null;
+
+        // --- UTILS ---
         function speak(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'ja-JP';
-                utterance.rate = 0.9;
-                window.speechSynthesis.speak(utterance);
-            } else {
-                alert('Rất tiếc, trình duyệt của bạn không hỗ trợ chức năng đọc văn bản.');
+                // Clean text for speech: remove special chars
+                const clean = text.replace(/\[.*?\]/g, '').replace(/<.*?>/g, '').replace(/・/g, '').replace(/\*/g, '');
+                const u = new SpeechSynthesisUtterance(clean);
+                u.lang = 'ja-JP'; u.rate = 0.9;
+                window.speechSynthesis.speak(u);
             }
         }
 
-        const appContainer = document.getElementById('kanji-app');
+        function getKanjiHex(kanji) {
+            return kanji.charCodeAt(0).toString(16).padStart(5, '0');
+        }
 
-        kanjiData.forEach((kanji, index) => {
-            const card = document.createElement('div');
-            card.className = 'kanji-card';
+        async function fetchKanjiSvg(hex) {
+            try {
+                const response = await fetch(`https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/${hex}.svg`);
+                if (!response.ok) throw new Error('Not found');
+                return await response.text();
+            } catch (e) { return null; }
+        }
 
-            const examplesHtml = kanji.viDu.map(vd => `
-                <li class="example-item">
-                    <span class="text-slate-700">${vd.jp} (${vd.furigana}): ${vd.vn}</span>
-                    <button class="speak-btn" onclick="event.stopPropagation(); speak('${vd.jp}')" aria-label="Đọc ví dụ ${vd.jp}">🔊</button>
-                </li>
-            `).join('');
+        // --- TABS ---
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('learn-section').classList.toggle('hidden', tab !== 'learn');
+            document.getElementById('quiz-section').classList.toggle('hidden', tab !== 'quiz');
+            
+            const btnLearn = document.getElementById('tab-learn');
+            const btnQuiz = document.getElementById('tab-quiz');
+            
+            if (tab === 'learn') {
+                btnLearn.classList.add('tab-active'); btnLearn.classList.remove('tab-inactive');
+                btnQuiz.classList.add('tab-inactive'); btnQuiz.classList.remove('tab-active');
+            } else {
+                btnQuiz.classList.add('tab-active'); btnQuiz.classList.remove('tab-inactive');
+                btnLearn.classList.add('tab-inactive'); btnLearn.classList.remove('tab-active');
+                startQuiz();
+            }
+        }
 
-            card.innerHTML = `
-                <div class="kanji-header">
-                    <div class="kanji-header-title">
-                        <span class="text-slate-400 font-semibold text-xl w-10 text-center">${index + 1688}</span>
-                        <span class="kanji-char-header">${kanji.char}</span>
-                        <div>
-                             <div class="text-lg text-slate-800 font-semibold">${kanji.nghiaHV} <span class="text-slate-600 font-normal">| ${kanji.nghiaTV}</span></div>
-                             <div class="text-slate-500 text-sm mt-1">Kun: ${kanji.kunyomi}</div>
+        // --- RENDER LEARN ---
+        function renderLearn() {
+            const grid = document.getElementById('kanji-grid');
+            grid.innerHTML = kanjiData.map((k, idx) => `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition duration-300 flex flex-col group">
+                    <!-- HEADER -->
+                    <div class="bg-sky-50 p-4 border-b border-sky-100 flex justify-between items-start relative">
+                        <div class="flex gap-4 items-center">
+                            <div class="w-16 h-16 bg-white rounded-lg flex items-center justify-center border-2 border-sky-200 cursor-pointer hover:border-sky-400 transition shadow-sm" onclick="showStrokeOrder('${k.char}')">
+                                <span class="text-4xl font-bold kanji-font text-gray-800">${k.char}</span>
+                            </div>
+                            <div>
+                                <div class="text-red-600 font-bold text-lg tracking-wide">${k.nghiaHV}</div>
+                                <div class="text-gray-600 text-sm font-medium">${k.nghiaTV}</div>
+                            </div>
+                        </div>
+                        <button onclick="showStrokeOrder('${k.char}')" class="text-sky-500 hover:text-sky-700 bg-white rounded-full p-2 w-8 h-8 flex items-center justify-center shadow-sm border border-sky-100"><i class="fas fa-pen-nib text-xs"></i></button>
+                        <div class="absolute -bottom-3 right-4 text-6xl text-gray-100 font-black -z-0 pointer-events-none select-none">${idx + 1688}</div>
+                    </div>
+                    
+                    <!-- BODY -->
+                    <div class="p-4 space-y-3 z-10 relative flex-grow flex flex-col">
+                        <!-- READINGS with Audio -->
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div class="bg-gray-50 rounded p-2 border border-gray-100">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-[10px] uppercase font-bold text-gray-400">On</span>
+                                    <button onclick="speak('${k.on}')" class="text-sky-400 hover:text-sky-600"><i class="fas fa-volume-up text-xs"></i></button>
+                                </div>
+                                <span class="font-bold text-sky-800 kanji-font text-base">${k.on}</span>
+                            </div>
+                            <div class="bg-gray-50 rounded p-2 border border-gray-100">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-[10px] uppercase font-bold text-gray-400">Kun</span>
+                                    <button onclick="speak('${k.kun}')" class="text-sky-400 hover:text-sky-600"><i class="fas fa-volume-up text-xs"></i></button>
+                                </div>
+                                <span class="font-bold text-sky-800 kanji-font text-base">${k.kun}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- MNEMONICS (AZAKANJI STYLE) -->
+                        <div class="space-y-2">
+                            <div class="bg-orange-50 p-2 rounded text-xs text-orange-900 border border-orange-100">
+                                <span class="font-bold text-orange-600 mr-1">🖼️ Hình:</span> ${k.ti}
+                            </div>
+                            <div class="bg-blue-50 p-2 rounded text-xs text-blue-900 border border-blue-100">
+                                <span class="font-bold text-blue-600 mr-1">🔊 Âm:</span> ${k.ta.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-blue-700">$1</span>')}
+                            </div>
+                        </div>
+
+                        <!-- EXAMPLES with Audio -->
+                        <div class="pt-2 border-t border-gray-100 space-y-2 mt-auto">
+                            ${k.examples.map(ex => `
+                                <div class="flex justify-between items-center group/ex cursor-pointer p-1 rounded hover:bg-gray-50" onclick="speak('${ex.w}')">
+                                    <div>
+                                        <div class="kanji-font font-bold text-gray-800 text-sm">${ex.w} <span class="text-xs font-normal text-gray-400">(${ex.r})</span></div>
+                                        <div class="text-xs text-gray-500">${ex.m}</div>
+                                    </div>
+                                    <i class="fas fa-volume-up text-xs text-gray-300 group-hover/ex:text-sky-500 transition"></i>
+                                </div>
+                            `).join('')}
                         </div>
                     </div>
-                    <span class="chevron">▼</span>
                 </div>
-                <div class="kanji-details">
-                    <ul class="space-y-2 text-slate-600">
-                        <li><strong>On'yomi:</strong> ${kanji.onyomi}</li>
-                        <li><strong>Số nét:</strong> ${kanji.soNet}</li>
-                        <li><strong>Thứ tự nét viết:</strong> <a href="${kanji.link}" target="_blank" onclick="event.stopPropagation()" class="text-sky-600 hover:underline">Xem tại Jisho.org</a></li>
-                    </ul>
-                    <div class="mt-4 pt-4 border-t border-slate-200">
-                        <p class="text-slate-600"><strong>Mẹo ghi nhớ:</strong> ${kanji.meo.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-800">$1</strong>')}</p>
-                        <p class="text-slate-500 italic mt-1">"${kanji.cauChuyen.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}"</p>
-                    </div>
-                    <div class="mt-4">
-                        <h4 class="font-semibold text-slate-700 mb-2">Ví dụ:</h4>
-                        <ul class="list-none p-0">${examplesHtml}</ul>
-                    </div>
-                </div>
-            `;
-            appContainer.appendChild(card);
-        });
-        
-        document.querySelectorAll('.kanji-header').forEach(header => {
-            header.addEventListener('click', () => {
-                header.parentElement.classList.toggle('active');
+            `).join('');
+        }
+
+        // --- STROKE ORDER MODAL ---
+        async function showStrokeOrder(kanji) {
+            const hex = getKanjiHex(kanji);
+            document.getElementById('stroke-modal').classList.remove('hidden');
+            document.getElementById('stroke-modal-char').innerText = kanji;
+            
+            const animContainer = document.getElementById('stroke-animation-container');
+            const gridContainer = document.getElementById('stroke-grid-container');
+            animContainer.innerHTML = '<span class="text-xs text-gray-400">Đang tải...</span>';
+            
+            const svgContent = await fetchKanjiSvg(hex);
+            if (!svgContent) {
+                animContainer.innerHTML = "<p class='p-4 text-red-500 text-xs'>Lỗi</p>";
+                gridContainer.innerHTML = "";
+                return;
+            }
+
+            // Animation Setup
+            animContainer.innerHTML = svgContent;
+            const mainSvg = animContainer.querySelector('svg');
+            mainSvg.setAttribute('width', '100%'); mainSvg.setAttribute('height', '100%');
+            const paths = mainSvg.querySelectorAll('path');
+            paths.forEach(p => {
+                const len = p.getTotalLength();
+                p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
+                p.style.stroke = "#333"; p.style.strokeWidth = "4"; p.style.fill = "none";
+                p.style.strokeLinecap = "round"; p.style.strokeLinejoin = "round";
             });
-        });
+            currentStrokeSvg = mainSvg;
+            replayStrokeAnimation();
+
+            // Grid Setup
+            gridContainer.innerHTML = '';
+            for(let i=0; i<paths.length; i++) {
+                const box = document.createElement('div');
+                box.className = "w-12 h-12 md:w-16 md:h-16 bg-white border border-gray-200 relative stroke-grid-box flex items-center justify-center";
+                const parser = new DOMParser();
+                const svgClone = parser.parseFromString(svgContent, "image/svg+xml").querySelector('svg');
+                svgClone.setAttribute('width', '100%'); svgClone.setAttribute('height', '100%');
+                svgClone.querySelectorAll('path').forEach((p, idx) => {
+                    p.style.fill="none"; p.style.strokeLinecap="round"; p.style.strokeLinejoin="round";
+                    if(idx < i) { p.style.stroke="#9ca3af"; p.style.strokeWidth="3"; }
+                    else if(idx === i) { p.style.stroke="#000"; p.style.strokeWidth="4"; }
+                    else p.style.display="none";
+                });
+                box.appendChild(svgClone);
+                gridContainer.appendChild(box);
+            }
+        }
+
+        function replayStrokeAnimation() {
+            if(!currentStrokeSvg) return;
+            const paths = currentStrokeSvg.querySelectorAll('path');
+            paths.forEach(p => { p.style.transition = 'none'; p.style.strokeDashoffset = p.getTotalLength(); });
+            void currentStrokeSvg.offsetWidth;
+            let delay = 0;
+            paths.forEach(p => {
+                p.style.transition = `stroke-dashoffset 0.6s ease-in-out ${delay}s`;
+                p.style.strokeDashoffset = '0';
+                delay += 0.6;
+            });
+        }
+
+        function closeStrokeModal() { document.getElementById('stroke-modal').classList.add('hidden'); }
+
+        // --- QUIZ LOGIC ---
+        function startQuiz() {
+            quizScore = 0;
+            currentQuizIndex = 0;
+            document.getElementById('score-display').innerText = '0';
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const qType = Math.random() > 0.5 ? 'kanji-meaning' : 'meaning-kanji';
+            const target = kanjiData[Math.floor(Math.random() * kanjiData.length)];
+            currentQuizQuestion = { target, type: qType };
+
+            const display = document.getElementById('quiz-kanji-display');
+            const questionText = document.getElementById('quiz-question-text');
+            const optionsArea = document.getElementById('options-area');
+            
+            document.getElementById('feedback-area').classList.add('hidden');
+            document.getElementById('q-current').innerText = currentQuizIndex + 1;
+            document.getElementById('quiz-progress').style.width = `${((currentQuizIndex) / 10) * 100}%`;
+
+            // Generate distractors
+            const others = kanjiData.filter(k => k !== target).sort(() => 0.5 - Math.random()).slice(0, 3);
+            const options = [target, ...others].sort(() => 0.5 - Math.random());
+
+            if (qType === 'kanji-meaning') {
+                display.innerText = target.char;
+                questionText.innerText = "Hán tự này có nghĩa là gì?";
+                optionsArea.innerHTML = options.map(opt => `
+                    <button onclick="checkAnswer('${opt.char}')" class="quiz-opt-btn bg-white border-2 border-gray-200 p-4 rounded-xl hover:border-sky-400 hover:bg-sky-50 transition active:scale-95 shadow-sm text-lg font-bold text-gray-700">
+                        ${opt.nghiaHV} (${opt.nghiaTV})
+                    </button>
+                `).join('');
+            } else {
+                display.innerText = target.nghiaHV;
+                questionText.innerText = `Chọn Kanji tương ứng với "${target.nghiaTV}"`;
+                optionsArea.innerHTML = options.map(opt => `
+                    <button onclick="checkAnswer('${opt.char}')" class="quiz-opt-btn bg-white border-2 border-gray-200 p-4 rounded-xl hover:border-sky-400 hover:bg-sky-50 transition active:scale-95 shadow-sm text-4xl font-bold kanji-font text-gray-800">
+                        ${opt.char}
+                    </button>
+                `).join('');
+            }
+        }
+
+        function checkAnswer(selectedChar) {
+            const btns = document.querySelectorAll('.quiz-opt-btn');
+            btns.forEach(b => b.disabled = true);
+
+            const isCorrect = selectedChar === currentQuizQuestion.target.char;
+            const feedbackArea = document.getElementById('feedback-area');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackDetail = document.getElementById('feedback-detail');
+
+            feedbackArea.classList.remove('hidden');
+
+            if (isCorrect) {
+                quizScore += 10;
+                document.getElementById('score-display').innerText = quizScore;
+                feedbackTitle.innerHTML = '<i class="fas fa-check-circle text-emerald-500 mr-2"></i> Chính xác!';
+                feedbackTitle.className = "font-bold text-lg mb-1 flex items-center text-emerald-700";
+                feedbackDetail.innerHTML = `
+                    <span class="text-3xl kanji-font font-bold text-gray-800 mr-2">${currentQuizQuestion.target.char}</span>
+                    <span class="font-bold text-red-600">${currentQuizQuestion.target.nghiaHV}</span>: ${currentQuizQuestion.target.nghiaTV}
+                `;
+                feedbackArea.className = "bg-emerald-50 rounded-xl p-4 border border-emerald-200 text-left animate-fade-in";
+                speak(currentQuizQuestion.target.char);
+            } else {
+                feedbackTitle.innerHTML = '<i class="fas fa-times-circle text-red-500 mr-2"></i> Sai rồi!';
+                feedbackTitle.className = "font-bold text-lg mb-1 flex items-center text-red-700";
+                feedbackDetail.innerHTML = `Đáp án đúng là: <strong>${currentQuizQuestion.target.char} (${currentQuizQuestion.target.nghiaTV})</strong>`;
+                feedbackArea.className = "bg-red-50 rounded-xl p-4 border border-red-200 text-left animate-fade-in wrong-anim";
+            }
+        }
+
+        function nextQuestion() {
+            currentQuizIndex++;
+            if (currentQuizIndex >= 10) {
+                alert(`Hoàn thành! Bạn đạt ${quizScore} điểm.`);
+                startQuiz();
+            } else {
+                loadQuestion();
+            }
+        }
+
+        // INIT
+        renderLearn();
 
     </script>
 </body>
