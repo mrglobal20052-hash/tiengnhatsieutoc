@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Trợ Từ Tinh Tấn</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-yellow: #FFD93D;
+            --primary-red: #FF6B6B;
+            --bg-gradient: linear-gradient(135deg, #FFF9E3 0%, #FFFFFF 100%);
+            --card-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .glow-aura {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255, 217, 61, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+            z-index: -1;
+            animation: pulse 6s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
+            50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.6; }
+        }
+
+        .perspective-container {
+            perspective: 2000px;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .is-flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            border: 4px solid white;
+        }
+
+        .card-front {
+            background: white;
+            border: 6px solid var(--primary-yellow);
+        }
+
+        .card-back {
+            background: var(--primary-yellow);
+            transform: rotateY(180deg);
+        }
+
+        .particle-main {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--primary-red);
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.05));
+        }
+
+        .level-tag {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: #FF6B6B;
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.2);
+        }
+
+        .meaning-box {
+            background: #FFF5CC;
+            padding: 0.6rem 1.5rem;
+            border-radius: 999px;
+            color: #856404;
+            font-weight: 600;
+            font-size: 1rem;
+            max-width: 90%;
+        }
+
+        .example-item {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 1.5rem;
+            padding: 0.8rem 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            text-align: left;
+            position: relative;
+            margin-bottom: 0.8rem;
+        }
+
+        .speaker-btn {
+            position: absolute;
+            right: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #FF6B6B;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 50;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+            border: none;
+        }
+
+        .music-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .progress-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #CBD5E1;
+        }
+
+        .progress-dot.active {
+            width: 15px;
+            background: var(--primary-red);
+            border-radius: 4px;
+        }
+
+        .floating {
+            animation: floating 4s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .scroll-box {
+            overflow-y: auto;
+            max-height: 100%;
+            width: 100%;
+            padding: 0.5rem;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4 min-h-screen">
+    <div class="glow-aura"></div>
+
+    <!-- Music Control -->
+    <div class="music-control" onclick="toggleMusic()">
+        <span id="music-icon" class="text-xl">🔇</span>
+        <div class="flex flex-col">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Zen meditation</span>
+            <span class="text-xs font-bold text-gray-700">528Hz Focus</span>
+        </div>
+        <audio id="bg-music" loop>
+            <!-- Nhạc Zen nhẹ nhàng hơn -->
+            <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <!-- Header -->
+    <header class="text-center mb-4">
+        <h1 class="text-3xl font-bold text-orange-600 mb-1 tracking-tight">Flashcard Vũ Điệu Trợ Từ 🎵</h1>
+        <p class="text-gray-500 text-sm font-medium">Đầy đủ hệ thống N5 → N3</p>
+    </header>
+
+    <!-- Main App -->
+    <main class="w-full max-w-sm flex flex-col items-center">
+        
+        <div id="dots-container" class="flex flex-wrap justify-center gap-1 mb-6 w-full px-2"></div>
+
+        <div id="card-container" class="perspective-container w-full aspect-[4/5] mb-8">
+            <div class="card-inner" id="card-inner">
+                <!-- Front -->
+                <div class="card-face card-front" onclick="toggleFlip()">
+                    <div class="level-tag" id="ui-level">N5</div>
+                    <div class="particle-main floating" id="ui-particle">は</div>
+                    <div class="meaning-box mt-4 mb-4 text-center" id="ui-meaning">Chủ đề câu</div>
+                    <p class="text-gray-400 text-[10px] font-medium bg-gray-50 px-3 py-1.5 rounded-full">Chạm nhẹ để lật thẻ ✨</p>
+                </div>
+                <!-- Back -->
+                <div class="card-face card-back">
+                    <div class="scroll-box flex flex-col justify-center">
+                        <div class="example-item shadow-sm">
+                            <div class="pr-12">
+                                <p class="text-lg font-bold text-gray-800 leading-tight" id="ui-ex1-jp"></p>
+                                <p class="text-[10px] text-orange-600 font-bold mt-1" id="ui-ex1-hira"></p>
+                                <p class="text-xs text-gray-600 border-t pt-1 mt-1" id="ui-ex1-vn"></p>
+                            </div>
+                            <button class="speaker-btn" onclick="speakText(1, event)">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="example-item shadow-sm">
+                            <div class="pr-12">
+                                <p class="text-lg font-bold text-gray-800 leading-tight" id="ui-ex2-jp"></p>
+                                <p class="text-[10px] text-orange-600 font-bold mt-1" id="ui-ex2-hira"></p>
+                                <p class="text-xs text-gray-600 border-t pt-1 mt-1" id="ui-ex2-vn"></p>
+                            </div>
+                            <button class="speaker-btn" onclick="speakText(2, event)">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-gray-700 font-bold text-[10px] cursor-pointer" onclick="toggleFlip()">
+                        ↺ Lật lại mặt trước
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex items-center space-x-6">
+            <button onclick="changeCard(-1)" class="w-12 h-12 bg-white rounded-xl shadow-lg flex items-center justify-center text-xl hover:bg-gray-50 transition-all active:scale-90">
+                ←
+            </button>
+            <div class="bg-white/80 px-4 py-2 rounded-full shadow-inner border border-gray-100">
+                <span class="text-lg font-bold text-gray-700" id="ui-counter">1 / 35</span>
+            </div>
+            <button onclick="changeCard(1)" class="w-12 h-12 bg-white rounded-xl shadow-lg flex items-center justify-center text-xl hover:bg-gray-50 transition-all active:scale-90">
+                →
+            </button>
+        </div>
+    </main>
+
+    <footer class="mt-8 text-center max-w-xs px-4">
+        <p class="text-gray-400 italic text-[10px] leading-relaxed">"Ánh sáng Chân Ngã đồng hành cùng tri thức."</p>
+    </footer>
+
+    <script>
+        const flashcards = [
+            // --- CẤP ĐỘ N5 ---
+            { level: "N5", particle: "は", meaning: "Thì, là... (Chủ đề)", ex1_jp: "私は学生です。", ex1_hira: "わたしは がくせいです", ex1_vn: "Tôi là sinh viên.", ex2_jp: "俺, 学生だよ。", ex2_hira: "おれ, がくせいだよ", ex2_vn: "Tớ là sinh viên đấy." },
+            { level: "N5", particle: "が", meaning: "Chủ ngữ / Tồn tại", ex1_jp: "教室に学生がいます。", ex1_hira: "きょうしつに がくせいが います", ex1_vn: "Có sinh viên trong lớp học.", ex2_jp: "教室に学生がいる。", ex2_hira: "きょうしつに がくせいが いる", ex2_vn: "Có sinh viên trong lớp kìa." },
+            { level: "N5", particle: "を", meaning: "Tác động hành động", ex1_jp: "コーヒーを飲みます。", ex1_hira: "こーひーを のみます", ex1_vn: "Tôi uống cà phê.", ex2_jp: "コーヒー飲む。", ex2_hira: "こーひー のむ", ex2_vn: "Uống cà phê không?" },
+            { level: "N5", particle: "に", meaning: "Thời gian / Địa điểm", ex1_jp: "7時に起きます。", ex1_hira: "しちじに おきます", ex1_vn: "Tôi thức dậy lúc 7 giờ.", ex2_jp: "7時に起きる。", ex2_hira: "しちじに おきる", ex2_vn: "7 giờ dậy nhé." },
+            { level: "N5", particle: "で", meaning: "Nơi chốn / Phương tiện", ex1_jp: "電車で行きます。", ex1_hira: "でんしゃで いきます", ex1_vn: "Tôi đi bằng tàu điện.", ex2_jp: "電車で行く。", ex2_hira: "でんしゃで いく", ex2_vn: "Đi tàu điện nhé." },
+            { level: "N5", particle: "へ", meaning: "Hướng di chuyển", ex1_jp: "日本へ行きます。", ex1_hira: "にほんへ いきます", ex1_vn: "Tôi đi Nhật Bản.", ex2_jp: "日本行く。", ex2_hira: "にほん いく", ex2_vn: "Đi Nhật đây." },
+            { level: "N5", particle: "と", meaning: "Và / Cùng với", ex1_jp: "友達と遊びます。", ex1_hira: "ともだちと あそびます", ex1_vn: "Tôi chơi với bạn bè.", ex2_jp: "友達と遊ぶ。", ex2_hira: "ともだちと あそぶ", ex2_vn: "Chơi với bạn." },
+            { level: "N5", particle: "も", meaning: "Cũng...", ex1_jp: "私も学生です。", ex1_hira: "わたしも がくせいです", ex1_vn: "Tôi cũng là sinh viên.", ex2_jp: "俺も学生だよ。", ex2_hira: "おれも がくせいだよ", ex2_vn: "Tớ cũng là sinh viên đây." },
+            { level: "N5", particle: "の", meaning: "Của... (Sở hữu)", ex1_jp: "これは私の本です。", ex1_hira: "これは わたしの ほん です", ex1_vn: "Đây là quyển sách của tôi.", ex2_jp: "これ, 俺の本。", ex2_hira: "これ, おれの ほん", ex2_vn: "Đây là sách của tớ." },
+            { level: "N5", particle: "から", meaning: "Từ (Mốc/Nguồn)", ex1_jp: "9時から働きます。", ex1_hira: "くじから はたらきます", ex1_vn: "Tôi làm việc từ 9 giờ.", ex2_jp: "9時からだよ。", ex2_hira: "くじから だよ", ex2_vn: "Từ 9 giờ đấy." },
+            { level: "N5", particle: "まで", meaning: "Đến (Giới hạn)", ex1_jp: "5時まで勉強します。", ex1_hira: "ごじまで べんきょう します", ex1_vn: "Tôi học đến 5 giờ.", ex2_jp: "5時までやる。", ex2_hira: "ごじまで やる", ex2_vn: "Làm đến 5 giờ thôi." },
+            { level: "N5", particle: "か", meaning: "Hoặc / Câu hỏi", ex1_jp: "お茶を飲みますか。", ex1_hira: "おちゃを のみますか", ex1_vn: "Bạn uống trà không?", ex2_jp: "飲むか？", ex2_hira: "のむか", ex2_vn: "Uống không?" },
+            { level: "N5", particle: "ね", meaning: "Nhỉ / Nhé", ex1_jp: "いい天気ですね。", ex1_hira: "いい てんき ですね", ex1_vn: "Thời tiết đẹp nhỉ.", ex2_jp: "暑いね。", ex2_hira: "あついね", ex2_vn: "Nóng nhỉ." },
+            { level: "N5", particle: "よ", meaning: "Đấy / Nhé", ex1_jp: "これ、おいしいですよ。", ex1_hira: "これ おいしいですよ", ex1_vn: "Cái này ngon lắm đấy.", ex2_jp: "行くよ！", ex2_hira: "いくよ", ex2_vn: "Đi đây nhé!" },
+
+            // --- CẤP ĐỘ N4 ---
+            { level: "N4", particle: "より", meaning: "So sánh hơn", ex1_jp: "これよりあれが安いです。", ex1_hira: "これより あれが やすいです", ex1_vn: "Cái kia rẻ hơn cái này.", ex2_jp: "こっちの方が好き。", ex2_hira: "こっちのほうが すき", ex2_vn: "Tớ thích bên này hơn." },
+            { level: "N4", particle: "ほど", meaning: "Đến mức / Không bằng", ex1_jp: "昨日ほど暑くないです。", ex1_hira: "きのうほど あつくない です", ex1_vn: "Không nóng bằng hôm qua.", ex2_jp: "死ぬほど疲れた。", ex2_hira: "しぬほど つかれた", ex2_vn: "Mệt muốn chết." },
+            { level: "N4", particle: "くらい/ぐらい", meaning: "Khoảng / Đến mức", ex1_jp: "30分ぐらい休みます。", ex1_hira: "さんじゅっぷん ぐらい やすみます", ex1_vn: "Nghỉ khoảng 30 phút.", ex2_jp: "これくらい、いいよ。", ex2_hira: "これくらい いいよ", ex2_vn: "Tầm này là được rồi." },
+            { level: "N4", particle: "しか", meaning: "Chỉ (Phủ định)", ex1_jp: "1000円しかありません。", ex1_hira: "せんえんしか ありません", ex1_vn: "Tôi chỉ có 1000 yên.", ex2_jp: "一人しかいない。", ex2_hira: "ひとりしか いない", ex2_vn: "Chỉ có mỗi một người." },
+            { level: "N4", particle: "だけ", meaning: "Chỉ (Khẳng định)", ex1_jp: "私だけが行きます。", ex1_hira: "わたしだけが いきます", ex1_vn: "Chỉ tôi đi thôi.", ex2_jp: "寝るだけだ。", ex2_hira: "ねるだけだ", ex2_vn: "Chỉ ngủ thôi." },
+            { level: "N4", particle: "までに", meaning: "Trước khi", ex1_jp: "5時までに帰ります。", ex1_hira: "ごじまでに かえります", ex1_vn: "Về trước 5 giờ.", ex2_jp: "明日までにやって。", ex2_hira: "あしたまでに やって", ex2_vn: "Làm xong trước mai nhé." },
+            { level: "N4", particle: "ばかり", meaning: "Toàn là / Vừa mới", ex1_jp: "肉ばかり食べます。", ex1_hira: "にくばかり たべます", ex1_vn: "Toàn ăn thịt thôi.", ex2_jp: "起きたばかりだ。", ex2_hira: "おきたばかりだ", ex2_vn: "Vừa mới dậy xong." },
+
+            // --- CÁC TRỢ TỪ GHÉP (MỚI) ---
+            { level: "N4-N3", particle: "には", meaning: "Đối với... thì...", ex1_jp: "私には難しいです。", ex1_hira: "わたしには むずかしいです", ex1_vn: "Đối với tôi thì khó.", ex2_jp: "俺에는無理。", ex2_hira: "おれには むり", ex2_vn: "Với tớ thì chịu." },
+            { level: "N4-N3", particle: "とは", meaning: "Cái gọi là / Nghĩa là...", ex1_jp: "自由とは何ですか。", ex1_hira: "じゆうとは なんですか", ex1_vn: "Tự do có nghĩa là gì?", ex2_jp: "自由って何？", ex2_hira: "じゆうって なに", ex2_vn: "Tự do là gì vậy?" },
+            { level: "N4-N3", particle: "への", meaning: "Hướng tới / Đến", ex1_jp: "日本への旅行。", ex1_hira: "にほんへの りょこう", ex1_vn: "Chuyến đi đến Nhật Bản.", ex2_jp: "日本への旅行、楽しみ！", ex2_hira: "にほんへの りょこう たのしみ", ex2_vn: "Đi Nhật thích quá!" },
+            { level: "N4-N3", particle: "にも", meaning: "Cũng ở / Cũng cho", ex1_jp: "東京にも雪が降りました。", ex1_hira: "とうきょうにも ゆきが ふりました", ex1_vn: "Ở Tokyo cũng có tuyết.", ex2_jp: "東京にも雪降ったよ。", ex2_hira: "とうきょうにも ゆき ふったよ", ex2_vn: "Tokyo cũng có tuyết rồi." },
+            { level: "N4-N3", particle: "とも", meaning: "Cùng với cả", ex1_jp: "家族とも相談します。", ex1_hira: "かぞくとも そうだん します", ex1_vn: "Tôi sẽ thảo luận với cả gia đình.", ex2_jp: "家族とも話す。", ex2_hira: "かぞくとも はなす", ex2_vn: "Cũng sẽ nói với cả nhà." },
+
+            // --- CẤP ĐỘ N3 ---
+            { level: "N3", particle: "において", meaning: "Tại / Ở (Trang trọng)", ex1_jp: "会議はホールにおいて行われます。", ex1_hira: "かいぎは ほーるに おいて おこなわれます", ex1_vn: "Hội nghị tổ chức tại hội trường.", ex2_jp: "歴史において重要だ。", ex2_hira: "れきしにおいて じゅうようだ", ex2_vn: "Quan trọng trong lịch sử." },
+            { level: "N3", particle: "として", meaning: "Với tư cách là...", ex1_jp: "留学生として来ました。", ex1_hira: "りゅうがくせいとして きました", ex1_vn: "Đến với tư cách du học sinh.", ex2_jp: "趣味としてやってる。", ex2_hira: "しゅみとして やってる", ex2_vn: "Làm vì sở thích thôi." },
+            { level: "N3", particle: "によって", meaning: "Do / Bởi / Tùy vào", ex1_jp: "台風によって壊れました。", ex1_hira: "たいふうによって こわれました", ex1_vn: "Bị hỏng do bão.", ex2_jp: "人によって違う。", ex2_hira: "ひとによって ちがう", ex2_vn: "Tùy người mà khác." },
+            { level: "N3", particle: "に対して", meaning: "Đối với / Trái với", ex1_jp: "先生に対して失礼です。", ex1_hira: "せんせいに たいして しつれい です", ex1_vn: "Thất lễ đối với giáo viên.", ex2_jp: "客に対して怒るな。", ex2_hira: "きゃくに たいして おこるな", ex2_vn: "Đừng giận với khách." },
+            { level: "N3", particle: "について", meaning: "Về việc... / Liên quan", ex1_jp: "将来について考えます。", ex1_hira: "しょうらいに ついて かんがえます", ex1_vn: "Suy nghĩ về tương lai.", ex2_jp: "これについて話そう。", ex2_hira: "これについて はなそう", ex2_vn: "Nói về chuyện này đi." },
+            { level: "N3", particle: "にわたって", meaning: "Suốt / Khắp (Phạm vi)", ex1_jp: "20年にわたって研究しました。", ex1_hira: "にじゅうねんに わたって けんきゅう しました", ex1_vn: "Nghiên cứu suốt 20 năm.", ex2_jp: "広範囲にわたる。", ex2_hira: "こうはんいに わたる", ex2_vn: "Trải dài trên phạm vi rộng." },
+            { level: "N3", particle: "に沿って", meaning: "Dọc theo / Men theo", ex1_jp: "川に沿って歩きます。", ex1_hira: "かわに そって あるきます", ex1_vn: "Đi bộ dọc theo con sông.", ex2_jp: "計画に沿ってやる。", ex2_hira: "けいかくに そって やる", ex2_vn: "Làm theo kế hoạch." },
+            { level: "N3", particle: "に際して", meaning: "Nhân dịp / Khi làm gì", ex1_jp: "受験に際して注意すること。", ex1_hira: "じゅけんに さいして ちゅうい すること", ex1_vn: "Điều cần chú ý khi đi thi.", ex2_jp: "帰国に際して挨拶する。", ex2_hira: "きこくに さいして あいさつ する", ex2_vn: "Chào hỏi khi về nước." },
+            { level: "N3", particle: "をめぐって", meaning: "Xoay quanh (Tranh luận)", ex1_jp: "その問題をめぐって争います。", ex1_hira: "そのもんだいを めぐって あらそいます", ex1_vn: "Tranh cãi xoay quanh vấn đề đó.", ex2_jp: "噂をめぐって大騒ぎだ。", ex2_hira: "うわさを めぐって おおさわぎだ", ex2_vn: "Lùm xùm xoay quanh lời đồn." }
+        ];
+
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        function initProgressDots() {
+            const container = document.getElementById('dots-container');
+            container.innerHTML = '';
+            flashcards.forEach((_, idx) => {
+                const dot = document.createElement('div');
+                dot.className = `progress-dot ${idx === currentIndex ? 'active' : ''}`;
+                container.appendChild(dot);
+            });
+        }
+
+        function toggleFlip() {
+            isFlipped = !isFlipped;
+            const card = document.getElementById('card-container');
+            if (isFlipped) card.classList.add('is-flipped');
+            else card.classList.remove('is-flipped');
+        }
+
+        function updateUI() {
+            const data = flashcards[currentIndex];
+            const cardInner = document.getElementById('card-inner');
+            cardInner.style.opacity = '0';
+            
+            setTimeout(() => {
+                document.getElementById('ui-level').innerText = data.level;
+                document.getElementById('ui-particle').innerText = data.particle;
+                document.getElementById('ui-meaning').innerText = data.meaning;
+                document.getElementById('ui-ex1-jp').innerText = data.ex1_jp;
+                document.getElementById('ui-ex1-hira').innerText = data.ex1_hira;
+                document.getElementById('ui-ex1-vn').innerText = data.ex1_vn;
+                document.getElementById('ui-ex2-jp').innerText = data.ex2_jp;
+                document.getElementById('ui-ex2-hira').innerText = data.ex2_hira;
+                document.getElementById('ui-counter').innerText = `${currentIndex + 1} / ${flashcards.length}`;
+                initProgressDots();
+                cardInner.style.opacity = '1';
+            }, 200);
+        }
+
+        function changeCard(dir) {
+            isFlipped = false;
+            document.getElementById('card-container').classList.remove('is-flipped');
+            currentIndex += dir;
+            if (currentIndex >= flashcards.length) currentIndex = 0;
+            if (currentIndex < 0) currentIndex = flashcards.length - 1;
+            updateUI();
+        }
+
+        function speakText(exampleNum, event) {
+            event.stopPropagation();
+            const data = flashcards[currentIndex];
+            const text = exampleNum === 1 ? data.ex1_jp : data.ex2_jp;
+            
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ja-JP';
+            utterance.rate = 0.8; 
+            
+            const voices = window.speechSynthesis.getVoices();
+            const jaVoice = voices.find(v => v.lang.includes('ja-JP') || v.lang.includes('ja'));
+            if (jaVoice) utterance.voice = jaVoice;
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function toggleMusic() {
+            const music = document.getElementById('bg-music');
+            const icon = document.getElementById('music-icon');
+            if (music.paused) {
+                music.play().catch(e => console.log("Music blocked:", e));
+                icon.innerText = '🔊';
+            } else {
+                music.pause();
+                icon.innerText = '🔇';
+            }
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+        }
+
+        window.onload = () => {
+            initProgressDots();
+            updateUI();
+        };
+    </script>
+</body>
+</html>
