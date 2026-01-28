@@ -8,319 +8,415 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Nunito', sans-serif; background-color: #fffaf0; overflow-x: hidden; }
+        body { font-family: 'Nunito', sans-serif; background-color: #f0f9ff; overflow-x: hidden; }
         .kanji-font { font-family: 'Noto Sans JP', sans-serif; }
         
-        .kanji-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            perspective: 1000px;
-        }
-        
-        .kanji-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-
-        .level-n5 { background-color: #22c55e; }
-        .level-n4 { background-color: #3b82f6; }
-        .level-n3 { background-color: #f59e0b; }
-
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
 
-        .fade-in { animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .modal-enter { animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes modalIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-
-        .stroke-diagram {
-            filter: grayscale(1) contrast(1.2);
-            mix-blend-mode: multiply;
+        /* Flashcard Animation */
+        .perspective { perspective: 1000px; }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
         }
+        .is-flipped .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .card-front { background: white; border: 2px solid #e2e8f0; }
+        .card-back { background: #fffbeb; border: 2px solid #fde68a; transform: rotateY(180deg); }
+
+        /* Stroke Grid Styles */
+        .stroke-path { fill: none; stroke: #333; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+        .stroke-grid-box { border: 1px solid #e5e7eb; background-color: white; position: relative; }
+        .stroke-grid-box::after { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: repeating-linear-gradient(to bottom, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); z-index: 0; }
+        .stroke-grid-box::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: repeating-linear-gradient(to right, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); z-index: 0; }
+
+        .level-n5 { border-top: 5px solid #22c55e; }
+        .level-n4 { border-top: 5px solid #3b82f6; }
+        .level-n3 { border-top: 5px solid #f59e0b; }
+
+        .modal-enter { animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
     <!-- Header -->
-    <header class="bg-orange-600 text-white shadow-lg sticky top-0 z-40">
+    <header class="bg-sky-700 text-white shadow-lg sticky top-0 z-40">
         <div class="container mx-auto px-4 py-3">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-3 cursor-pointer" onclick="location.reload()">
-                    <i class="fas fa-hamsa text-3xl text-yellow-300"></i>
+                    <i class="fas fa-hamsa text-3xl text-yellow-400"></i>
                     <div>
                         <h1 class="text-xl font-bold uppercase tracking-wider">AzaKanji Master</h1>
-                        <p class="text-xs text-orange-200">Kho Kanji Tinh Tấn (Full N5-N3)</p>
+                        <p class="text-xs text-sky-200">Kanji Trợ Từ • Flip Flashcards</p>
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <a href="https://tiengnhatsieutoc.com/ftrotu.html" class="px-3 py-2 bg-orange-700 rounded-lg text-xs font-bold hover:bg-orange-800 transition">
-                        <i class="fas fa-arrow-left mr-1"></i> Trợ Từ
+                    <a href="https://tiengnhatsieutoc.com/ftrotu.html" class="px-4 py-2 bg-sky-800 rounded-lg text-sm font-bold hover:bg-sky-900 transition flex items-center">
+                        <i class="fas fa-home mr-2"></i> Trợ Từ
                     </a>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="container mx-auto px-4 py-6 flex-grow">
-        
         <div class="mb-8 text-center fade-in">
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">🏮 Chân Ngã Khai Sáng - Kanji Chinh Phục</h2>
-            <p class="text-gray-600 text-sm max-w-lg mx-auto italic">
-                Toàn bộ Kanji xuất hiện trong kho ví dụ Trợ Từ. Bấm vào chữ để luyện viết và ghi nhớ bộ thủ.
-            </p>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">🏮 Chân Ngã Khai Sáng - Kanji Tinh Tấn</h2>
+            <p class="text-gray-600 text-sm max-w-lg mx-auto italic">Chạm để lật thẻ, nhấn vào nút <i class="fas fa-pen-nib mx-1"></i> để xem cách viết chi tiết.</p>
         </div>
 
         <!-- Filter Tabs -->
         <div class="flex justify-center gap-2 mb-8 overflow-x-auto pb-2">
-            <button id="btn-all" onclick="filterLevel('all')" class="filter-btn px-4 py-2 rounded-full bg-orange-600 text-white font-bold text-sm shadow-md">Tất cả</button>
-            <button id="btn-N5" onclick="filterLevel('N5')" class="filter-btn px-4 py-2 rounded-full bg-white text-gray-600 font-bold text-sm border">N5</button>
-            <button id="btn-N4" onclick="filterLevel('N4')" class="filter-btn px-4 py-2 rounded-full bg-white text-gray-600 font-bold text-sm border">N4</button>
-            <button id="btn-N3" onclick="filterLevel('N3')" class="filter-btn px-4 py-2 rounded-full bg-white text-gray-600 font-bold text-sm border">N3</button>
+            <button onclick="filterLevel('all')" class="filter-btn px-5 py-2 rounded-full bg-sky-600 text-white font-bold text-sm shadow-md transition" id="btn-all">Tất cả</button>
+            <button onclick="filterLevel('N5')" class="filter-btn px-5 py-2 rounded-full bg-white text-gray-600 font-bold text-sm border hover:bg-sky-50 transition" id="btn-N5">N5</button>
+            <button onclick="filterLevel('N4')" class="filter-btn px-5 py-2 rounded-full bg-white text-gray-600 font-bold text-sm border hover:bg-sky-50 transition" id="btn-N4">N4</button>
+            <button onclick="filterLevel('N3')" class="filter-btn px-5 py-2 rounded-full bg-white text-gray-600 font-bold text-sm border hover:bg-sky-50 transition" id="btn-N3">N3</button>
         </div>
 
         <!-- Kanji Grid -->
-        <div id="kanji-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div id="kanji-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             <!-- Cards will be injected here -->
         </div>
     </main>
 
-    <!-- KANJI DETAIL MODAL -->
-    <div id="kanji-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+    <!-- STROKE ORDER MODAL (Nâng cấp API) -->
+    <div id="stroke-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" onclick="closeModal()"></div>
-            <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl w-full modal-enter relative">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" onclick="closeStrokeModal()"></div>
+            <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl w-full modal-enter relative">
                 
-                <div class="bg-gradient-to-br from-orange-500 to-red-600 p-8 text-white text-center relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-4">
-                        <button onclick="closeModal()" class="text-white opacity-70 hover:opacity-100 text-2xl">&times;</button>
-                    </div>
-                    <div class="relative z-10 flex flex-col items-center">
-                        <div class="text-8xl font-bold kanji-font mb-2 drop-shadow-lg" id="m-kanji"></div>
-                        <div class="text-xl font-bold tracking-widest uppercase opacity-90" id="m-hanviet"></div>
-                    </div>
-                    <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-white opacity-10 rounded-full"></div>
+                <div class="bg-sky-600 px-6 py-4 flex justify-between items-center text-white">
+                    <h3 class="text-xl font-bold flex items-center">
+                        <i class="fas fa-pen-nib mr-3"></i> Luyện Viết Tinh Tấn
+                    </h3>
+                    <button onclick="closeStrokeModal()" class="hover:text-gray-200 text-2xl">&times;</button>
                 </div>
 
-                <div class="p-6 space-y-6">
-                    <!-- Stroke Order Section -->
-                    <div class="bg-white p-4 rounded-2xl border-2 border-orange-100 shadow-inner">
-                        <h4 class="text-orange-600 font-bold text-xs uppercase mb-3 tracking-widest flex items-center">
-                            <i class="fas fa-pen-nib mr-2"></i> Thứ tự nét (Luyện thân)
-                        </h4>
-                        <div class="flex justify-center items-center min-h-[120px] bg-gray-50 rounded-xl overflow-hidden p-2">
-                            <img id="m-stroke-img" src="" alt="Stroke Order" class="max-h-32 stroke-diagram" onerror="this.src='https://placehold.co/100x100?text=No+Stroke+Data'">
+                <div class="p-6 bg-gray-50 max-h-[85vh] overflow-y-auto">
+                    <div class="flex flex-col lg:flex-row gap-8">
+                        <!-- Left: Animation & Info -->
+                        <div class="lg:w-1/3 space-y-6">
+                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-center">
+                                <div id="stroke-animation-container" class="w-48 h-48 mx-auto stroke-grid-box flex items-center justify-center bg-white border border-gray-300">
+                                    <span class="text-gray-400 text-xs">Đang tải...</span>
+                                </div>
+                                <div class="mt-4 flex gap-2">
+                                    <button onclick="replayStrokeAnimation()" class="flex-1 bg-sky-100 text-sky-700 py-2 rounded-xl font-bold text-sm hover:bg-sky-200 transition"><i class="fas fa-redo mr-2"></i> Viết lại</button>
+                                    <button onclick="speakModal()" class="w-12 bg-sky-50 text-sky-600 py-2 rounded-xl hover:bg-sky-100 transition"><i class="fas fa-volume-up"></i></button>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+                                <div class="text-4xl font-bold kanji-font text-sky-700 mb-1" id="m-char"></div>
+                                <div class="text-lg font-bold text-red-600 tracking-wider mb-2" id="m-hanviet"></div>
+                                <div class="bg-sky-50 p-3 rounded-xl border border-sky-100 mb-3">
+                                    <h4 class="text-[10px] uppercase font-bold text-sky-500 mb-1">Ý nghĩa</h4>
+                                    <p class="text-gray-800 font-bold" id="m-nghia"></p>
+                                </div>
+                                <div class="bg-yellow-50 p-3 rounded-xl border border-yellow-100">
+                                    <h4 class="text-[10px] uppercase font-bold text-yellow-600 mb-1">Phân rã & Ghi nhớ</h4>
+                                    <p class="text-gray-700 text-xs italic leading-relaxed" id="m-phanra"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Stroke Grid & Examples -->
+                        <div class="lg:w-2/3 space-y-6">
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+                                <h4 class="text-gray-400 font-bold text-xs uppercase mb-4 tracking-widest">Thứ tự từng nét</h4>
+                                <div id="stroke-grid-container" class="flex flex-wrap gap-3"></div>
+                            </div>
+
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+                                <h4 class="text-gray-400 font-bold text-xs uppercase mb-4 tracking-widest">Âm đọc & Ví dụ</h4>
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div class="bg-gray-50 p-2 rounded-lg">
+                                        <span class="text-[9px] uppercase font-bold text-gray-400 block">On</span>
+                                        <span class="font-bold text-sky-800" id="m-on"></span>
+                                    </div>
+                                    <div class="bg-gray-50 p-2 rounded-lg">
+                                        <span class="text-[9px] uppercase font-bold text-gray-400 block">Kun</span>
+                                        <span class="font-bold text-sky-800" id="m-kun"></span>
+                                    </div>
+                                </div>
+                                <div class="bg-sky-50 p-4 rounded-xl border border-sky-100">
+                                    <p class="text-xl text-gray-800 kanji-font mb-1" id="m-vidu-jp"></p>
+                                    <p class="text-sm text-gray-500 italic" id="m-vidu-vi"></p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-orange-50 p-4 rounded-2xl border border-orange-100">
-                            <h4 class="text-orange-800 font-bold text-xs uppercase mb-1 tracking-wider">Ý nghĩa (Trí)</h4>
-                            <p class="text-gray-800 font-bold text-lg" id="m-nghia"></p>
-                        </div>
-                        <div class="bg-yellow-50 p-4 rounded-2xl border border-yellow-100">
-                            <h4 class="text-yellow-800 font-bold text-xs uppercase mb-1 tracking-wider">Phân rã bộ thủ</h4>
-                            <p class="text-gray-700 text-sm italic" id="m-phanra"></p>
-                        </div>
-                    </div>
-
-                    <div class="flex gap-4">
-                        <div class="flex-1 bg-gray-50 p-3 rounded-xl">
-                            <h4 class="text-gray-500 font-bold text-[10px] uppercase">Âm ON</h4>
-                            <p class="text-gray-800 font-bold" id="m-on"></p>
-                        </div>
-                        <div class="flex-1 bg-gray-50 p-3 rounded-xl">
-                            <h4 class="text-gray-500 font-bold text-[10px] uppercase">Âm KUN</h4>
-                            <p class="text-gray-800 font-bold" id="m-kun"></p>
-                        </div>
-                    </div>
-
-                    <div class="border-t pt-4">
-                        <h4 class="text-gray-400 font-bold text-[10px] uppercase mb-3">Ứng dụng trong ví dụ Trợ từ</h4>
-                        <div class="bg-white border rounded-2xl p-4 relative group">
-                            <p class="text-lg text-gray-800 kanji-font mb-1" id="m-vidu-jp"></p>
-                            <p class="text-xs text-gray-500 italic" id="m-vidu-vi"></p>
-                            <button onclick="speakModal()" class="absolute top-4 right-4 w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center hover:bg-orange-200 transition">
-                                <i class="fas fa-volume-up"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="p-6 bg-gray-50 text-center flex gap-3">
-                    <button onclick="closeModal()" class="flex-1 py-3 bg-orange-600 text-white font-bold rounded-2xl shadow-lg hover:bg-orange-700 transition active:scale-95">Thanh lọc xong</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer class="p-6 text-center text-gray-400 text-xs">
-        "Thanh lọc các thể, gieo mầm tri thức. Mục tiêu N3 tháng 7/2026."
-    </footer>
-
     <script>
+        // --- DATA (75 Kanji from Particle Examples) ---
         const kanjiData = [
-            // --- N5 KANJI (25 chữ trích xuất) ---
-            { k: "私", h: "TƯ", n: "Tôi (Lịch sự)", l: "N5", pr: "禾 (Cây lúa) + ム (Riêng tư).<br>💡 Cây lúa là tài sản riêng tư của tôi.", on: "SHI", kun: "watashi", v_jp: "私は学生です。", v_vi: "Tôi là sinh viên." },
-            { k: "俺", h: "YÊM", n: "Tớ/Tao (Thân mật)", l: "N5", pr: "亻 (Người) + 大 (To lớn) + 电 (Điện).<br>💡 Người đàn ông to lớn phát ra điện chính là 'Tao'.", on: "EN", kun: "ore", v_jp: "俺, 学生だよ。", v_vi: "Tớ là sinh viên đấy." },
-            { k: "学", h: "HỌC", n: "Học tập", l: "N5", pr: "⺍ (Tri thức) + 冖 (Mái nhà) + 子 (Trẻ em).<br>💡 Trẻ em dưới mái nhà học tập rạng ngời tri thức.", on: "GAKU", kun: "mana(bu)", v_jp: "私は学生です。", v_vi: "Tôi là sinh viên." },
-            { k: "生", h: "SINH", n: "Sống, sinh ra", l: "N5", pr: "Hình ảnh mầm xanh nảy mầm trên mặt đất.<br>💡 Sự sống bắt đầu từ đất mẹ.", on: "SEI", kun: "i(kiru) / u(mareru)", v_jp: "学生がいます。", v_vi: "Có sinh viên." },
-            { k: "教", h: "GIÁO", n: "Dạy bảo", l: "N5", pr: "孝 (Hiếu thảo) + 攵 (Đánh nhẹ).<br>💡 Dạy trẻ con lòng hiếu thảo bằng cách uốn nắn.", on: "KYOU", kun: "oshi(eru)", v_jp: "教室に学生がいます。", v_vi: "Có sinh viên trong lớp học." },
-            { k: "室", h: "THẤT", n: "Phòng", l: "N5", pr: "宀 (Mái nhà) + 至 (Đến).<br>💡 Bước đến dưới mái nhà chính là đi vào căn phòng.", on: "SHITSU", kun: "muro", v_jp: "教室に学生がいます。", v_vi: "Trong lớp học có sinh viên." },
-            { k: "本", h: "BẢN", n: "Sách, gốc", l: "N5", pr: "木 (Cây) + 一 (Gạch ngang ở gốc).<br>💡 Gốc của cây dùng làm giấy in sách.", on: "HON", kun: "moto", v_jp: "これは私の本です。", v_vi: "Đây là cuốn sách của tôi." },
-            { k: "読", h: "ĐỘC", n: "Đọc", l: "N5", pr: "言 (Lời nói) + 売 (Bán).<br>💡 Đọc những lời nói trong cuốn sách đang được bán.", on: "DOKU", kun: "yo(mu)", v_jp: "本を読みます。", v_vi: "Tôi đọc sách." },
-            { k: "飲", h: "ẨM", n: "Uống", l: "N5", pr: "食 (Thực phẩm) + 欠 (Thiếu/Há miệng).<br>💡 Ăn xong thấy thiếu nước nên phải há miệng uống.", on: "IN", kun: "no(mu)", v_jp: "コーヒーを飲みます。", v_vi: "Tôi uống cà phê." },
-            { k: "時", h: "THỜI", n: "Thời gian", l: "N5", pr: "日 (Mặt trời) + 寺 (Chùa).<br>💡 Nhìn bóng nắng trên chùa để biết thời gian.", on: "JI", kun: "toki", v_jp: "７時に起きます。", v_vi: "Tôi dậy lúc 7 giờ." },
-            { k: "起", h: "KHỞI", n: "Thức dậy", l: "N5", pr: "走 (Chạy) + 己 (Bản thân).<br>💡 Bản thân phải thức dậy để chạy đua với đời.", on: "KI", kun: "o(kiru)", v_jp: "７時に起きます。", v_vi: "Tôi dậy lúc 7 giờ." },
-            { k: "電", h: "ĐIỆN", n: "Điện", l: "N5", pr: "雨 (Mưa) + ⚡ (Tia sét).<br>💡 Tia sét xé toạc bầu trời trong mưa tạo ra điện.", on: "DEN", kun: "-", v_jp: "電車で行きます。", v_vi: "Tôi đi bằng tàu điện." },
-            { k: "車", h: "XA", n: "Xe", l: "N5", pr: "Hình ảnh chiếc xe thô sơ nhìn từ trên xuống.<br>💡 Cỗ xe có trục và bánh lăn.", on: "SHA", kun: "kuruma", v_jp: "電車で行きます。", v_vi: "Tôi đi bằng tàu điện." },
-            { k: "行", h: "HÀNH", n: "Đi", l: "N5", pr: "Hình ảnh một ngã tư đường.<br>💡 Bước chân tại ngã tư hành trình cuộc đời.", on: "KOU", kun: "i(ku)", v_jp: "日本へ行きます。", v_vi: "Tôi đi Nhật Bản." },
-            { k: "日", h: "NHẬT", n: "Ngày, mặt trời", l: "N5", pr: "Hình ảnh mặt trời hình tròn có vạch ngang.<br>💡 Nguồn sáng rạng ngời của mỗi ngày.", on: "NICHI", kun: "hi / ka", v_jp: "日本へ行きます。", v_vi: "Tôi đi Nhật Bản." },
-            { k: "友", h: "HỮU", n: "Bạn bè", l: "N5", pr: "𠂇 (Tay trái) + 又 (Tay phải).<br>💡 Bạn bè là người nắm lấy cả hai tay ta.", on: "YUU", kun: "tomo", v_jp: "友達と遊びます。", v_vi: "Tôi chơi với bạn bè." },
-            { k: "達", h: "ĐẠT", n: "Đến, nhiều", l: "N5", pr: "土 (Đất) + 羊 (Cừu) + 辶 (Đường).<br>💡 Đàn cừu đi trên đường để đạt đến vùng đất tốt.", on: "TATSU", kun: "tachi", v_jp: "友達と遊びます。", v_vi: "Chơi với bạn bè." },
-            { k: "遊", h: "DU", n: "Chơi", l: "N5", pr: "方 (Cờ/Phương) + 子 (Trẻ em) + 辶 (Đường).<br>💡 Trẻ em cầm cờ chạy chơi khắp các con đường.", on: "YUU", kun: "aso(bu)", v_jp: "友達と遊びます。", v_vi: "Tôi chơi với bạn bè." },
-            { k: "働", h: "ĐỘNG", n: "Làm việc", l: "N5", pr: "亻 (Người) + 動 (Chuyển động).<br>💡 Con người chuyển động cơ thể để làm việc.", on: "DOU", kun: "hatara(ku)", v_jp: "９時から働きます。", v_vi: "Tôi làm việc từ 9 giờ." },
-            { k: "暑", h: "THỬ", n: "Nóng", l: "N5", pr: "日 (Mặt trời) + 者 (Người).<br>💡 Người đứng dưới nắng mặt trời lâu thấy rất nóng.", on: "SHO", kun: "atsu(i)", v_jp: "暑いですね。", v_vi: "Nóng nhỉ." },
-            { k: "天", h: "THIÊN", n: "Trời", l: "N5", pr: "Một người (大) dang tay dưới bầu trời.<br>💡 Bầu trời cao rộng vô cùng.", on: "TEN", kun: "ama", v_jp: "いい天気ですね。", v_vi: "Thời tiết đẹp nhỉ." },
-            { k: "気", h: "KHÍ", n: "Khí chất", l: "N5", pr: "𠂉 (Mây) + 米 (Gạo).<br>💡 Hơi nước bốc lên từ nồi cơm đang chín.", on: "KI", kun: "iki", v_jp: "いい天気ですね。", v_vi: "Thời tiết đẹp nhỉ." },
-            { k: "茶", h: "TRÀ", n: "Trà", l: "N5", pr: "艹 (Cỏ) + 人 (Người) + 木 (Cây).<br>💡 Người ngồi dưới tán cây hái lá cỏ pha trà.", on: "CHA", kun: "-", v_jp: "お茶を飲みます。", v_vi: "Tôi uống trà." },
-            { k: "五", h: "NGŨ", n: "Số 5", l: "N5", pr: "Hình ảnh năm ngón tay co lại.<br>💡 Số đếm ngũ hành.", on: "GO", kun: "itsu(tsu)", v_jp: "５時まで勉強します。", v_vi: "Học đến 5 giờ." },
-            { k: "九", h: "CỬU", n: "Số 9", l: "N5", pr: "Hình ảnh một người đang gập đầu gối.<br>💡 Số chín của trời đất.", on: "KYUU", kun: "kokono(tsu)", v_jp: "９時から働きます。", v_vi: "Làm việc từ 9 giờ." },
+            { char: "私", nghiaHV: "TƯ", nghiaTV: "Tôi (Lịch sự)", l: "N5", pr: "禾 (Cây lúa) + ム (Riêng tư).<br>💡 Cây lúa là tài sản riêng tư của tôi.", on: "SHI", kun: "watashi", v_jp: "私は学生です。", v_vi: "Tôi là sinh viên." },
+            { char: "俺", nghiaHV: "YÊM", nghiaTV: "Tao/Tớ (Thân mật)", l: "N5", pr: "亻 (Người) + 大 (To lớn) + 电 (Điện).<br>💡 Người đàn ông to lớn phát ra điện chính là 'Tao'.", on: "EN", kun: "ore", v_jp: "俺, 学生だよ。", v_vi: "Tớ là sinh viên đấy." },
+            { char: "学", nghiaHV: "HỌC", nghiaTV: "Học tập", l: "N5", pr: "⺍ (Tri thức) + 冖 (Mái nhà) + 子 (Trẻ em).<br>💡 Trẻ em dưới mái nhà học tập rạng ngời tri thức.", on: "GAKU", kun: "mana(bu)", v_jp: "私は学生です。", v_vi: "Tôi là sinh viên." },
+            { char: "生", nghiaHV: "SINH", nghiaTV: "Sống, sinh ra", l: "N5", pr: "Hình ảnh mầm xanh nảy mầm trên mặt đất.<br>💡 Sự sống bắt đầu từ đất mẹ.", on: "SEI / SHOU", kun: "i(kiru) / u(mareru)", v_jp: "学生がいます。", v_vi: "Có sinh viên." },
+            { char: "教", nghiaHV: "GIÁO", nghiaTV: "Dạy bảo", l: "N5", pr: "孝 (Hiếu thảo) + 攵 (Đánh nhẹ).<br>💡 Dạy trẻ con lòng hiếu thảo bằng cách uốn nắn.", on: "KYOU", kun: "oshi(eru)", v_jp: "教室に学生がいます。", v_vi: "Có sinh viên trong lớp học." },
+            { char: "室", nghiaHV: "THẤT", nghiaTV: "Căn phòng", l: "N5", pr: "宀 (Mái nhà) + 至 (Đến).<br>💡 Đi đến dưới mái nhà chính là đi vào căn phòng.", on: "SHITSU", kun: "muro", v_jp: "教室に学生がいます。", v_vi: "Trong lớp học có sinh viên." },
+            { char: "本", nghiaHV: "BẢN", nghiaTV: "Sách, gốc", l: "N5", pr: "木 (Cây) + 一 (Gạch ngang ở gốc).<br>💡 Gốc của cây dùng làm giấy in sách.", on: "HON", kun: "moto", v_jp: "これは私の本です。", v_vi: "Đây là cuốn sách của tôi." },
+            { char: "読", nghiaHV: "ĐỘC", nghiaTV: "Đọc", l: "N5", pr: "言 (Lời nói) + 売 (Bán).<br>💡 Đọc những lời nói trong cuốn sách đang được bán.", on: "DOKU", kun: "yo(mu)", v_jp: "本を読みます。", v_vi: "Tôi đọc sách." },
+            { char: "飲", nghiaHV: "ẨM", nghiaTV: "Uống", l: "N5", pr: "食 (Thực phẩm) + 欠 (Thiếu/Há miệng).<br>💡 Ăn xong thấy thiếu nước nên phải há miệng uống.", on: "IN", kun: "no(mu)", v_jp: "コーヒーを飲みます。", v_vi: "Tôi uống cà phê." },
+            { char: "時", nghiaHV: "THỜI", nghiaTV: "Thời gian", l: "N5", pr: "日 (Mặt trời) + 寺 (Chùa).<br>💡 Nhìn bóng nắng trên chùa để biết thời gian.", on: "JI", kun: "toki", v_jp: "７時に起きます。", v_vi: "Tôi dậy lúc 7 giờ." },
+            { char: "起", nghiaHV: "KHỞI", nghiaTV: "Thức dậy", l: "N5", pr: "走 (Chạy) + 己 (Bản thân).<br>💡 Bản thân phải thức dậy để chạy đua với đời.", on: "KI", kun: "o(kiru)", v_jp: "７時に起きます。", v_vi: "Tôi dậy lúc 7 giờ." },
+            { char: "電", nghiaHV: "ĐIỆN", nghiaTV: "Điện", l: "N5", pr: "雨 (Mưa) + ⚡ (Tia sét).<br>💡 Tia sét xé toạc bầu trời trong mưa tạo ra điện.", on: "DEN", kun: "-", v_jp: "電車で行きます。", v_vi: "Tôi đi bằng tàu điện." },
+            { char: "車", nghiaHV: "XA", nghiaTV: "Xe", l: "N5", pr: "Hình ảnh chiếc xe thô sơ nhìn từ trên xuống.<br>💡 Cỗ xe có trục và bánh lăn.", on: "SHA", kun: "kuruma", v_jp: "電車で行きます。", v_vi: "Tôi đi bằng tàu điện." },
+            { char: "行", nghiaHV: "HÀNH", nghiaTV: "Đi", l: "N5", pr: "Hình ảnh một ngã tư đường.<br>💡 Bước chân tại ngã tư hành trình cuộc đời.", on: "KOU", kun: "i(ku)", v_jp: "日本へ行きます。", v_vi: "Tôi đi Nhật Bản." },
+            { char: "日", nghiaHV: "NHẬT", nghiaTV: "Ngày, mặt trời", l: "N5", pr: "Hình ảnh mặt trời hình tròn có vạch ngang.<br>💡 Nguồn sáng rạng ngời của mỗi ngày.", on: "NICHI", kun: "hi / ka", v_jp: "日本へ行きます。", v_vi: "Tôi đi Nhật Bản." },
+            { char: "友", nghiaHV: "HỮU", nghiaTV: "Bạn", l: "N5", pr: "𠂇 (Tay trái) + 又 (Tay phải).<br>💡 Bạn bè là người nắm lấy cả hai tay ta.", on: "YUU", kun: "tomo", v_jp: "友達と遊びます。", v_vi: "Tôi chơi với bạn bè." },
+            { char: "達", nghiaHV: "ĐẠT", nghiaTV: "Đến, nhiều", l: "N5", pr: "土 (Đất) + 羊 (Cừu) + 辶 (Đường).<br>💡 Đàn cừu đi trên đường để đạt đến vùng đất tốt.", on: "TATSU", kun: "tachi", v_jp: "友達と遊びます。", v_vi: "Chơi với bạn bè." },
+            { char: "遊", nghiaHV: "DU", nghiaTV: "Chơi", l: "N5", pr: "方 (Cờ/Phương) + 子 (Trẻ em) + 辶 (Đường).<br>💡 Trẻ em cầm cờ chạy chơi khắp các con đường.", on: "YUU", kun: "aso(bu)", v_jp: "友達と遊びます。", v_vi: "Tôi chơi với bạn bè." },
+            { char: "働", nghiaHV: "ĐỘNG", nghiaTV: "Làm việc", l: "N5", pr: "亻 (Người) + 動 (Chuyển động).<br>💡 Con người chuyển động cơ thể để làm việc.", on: "DOU", kun: "hatara(ku)", v_jp: "９時から働きます。", v_vi: "Tôi làm việc từ 9 giờ." },
+            { char: "暑", nghiaHV: "THỬ", nghiaTV: "Nóng", l: "N5", pr: "日 (Mặt trời) + 者 (Người).<br>💡 Người đứng dưới nắng mặt trời lâu thấy rất nóng.", on: "SHO", kun: "atsu(i)", v_jp: "暑いですね。", v_vi: "Nóng nhỉ." },
+            { char: "天", nghiaHV: "THIÊN", nghiaTV: "Trời", l: "N5", pr: "Một người (大) dang tay dưới bầu trời.<br>💡 Bầu trời cao rộng vô cùng.", on: "TEN", kun: "ama", v_jp: "いい天気ですね。", v_vi: "Thời tiết đẹp nhỉ." },
+            { char: "気", nghiaHV: "KHÍ", nghiaTV: "Khí chất", l: "N5", pr: "𠂉 (Mây) + 米 (Gạo).<br>💡 Hơi nước bốc lên từ nồi cơm đang chín.", on: "KI", kun: "iki", v_jp: "いい天気ですね。", v_vi: "Thời tiết đẹp nhỉ." },
+            { char: "茶", nghiaHV: "TRÀ", nghiaTV: "Trà", l: "N5", pr: "艹 (Cỏ) + 人 (Người) + 木 (Cây).<br>💡 Người ngồi dưới tán cây hái lá cỏ pha trà.", on: "CHA", kun: "-", v_jp: "お茶を飲みます。", v_vi: "Tôi uống trà." },
+            { char: "五", nghiaHV: "NGŨ", nghiaTV: "Số 5", l: "N5", pr: "Hình ảnh năm ngón tay co lại.<br>💡 Số đếm ngũ hành.", on: "GO", kun: "itsu(tsu)", v_jp: "５時まで勉強します。", v_vi: "Học đến 5 giờ." },
+            { char: "九", nghiaHV: "CỬU", nghiaTV: "Số 9", l: "N5", pr: "Hình ảnh một người đang gập đầu gối.<br>💡 Số chín của trời đất.", on: "KYUU", kun: "kokono(tsu)", v_jp: "９時から働きます。", v_vi: "Làm việc từ 9 giờ." },
 
-            // --- N4 KANJI (10 chữ trích xuất) ---
-            { k: "安", h: "AN", n: "Rẻ, an tâm", l: "N4", pr: "宀 (Mái nhà) + 女 (Phụ nữ).<br>💡 Phụ nữ ở trong nhà thì tâm mới an, chi tiêu rẻ.", on: "AN", kun: "yasu(i)", v_jp: "これよりあれが安いです。", v_vi: "Cái kia rẻ hơn cái này." },
-            { k: "昨", h: "TẠC", n: "Hôm qua", l: "N4", pr: "日 (Mặt trời) + 乍 (Dừng lại).<br>💡 Ngày mặt trời đã dừng lại và trôi qua là hôm qua.", on: "SAKU", kun: "-", v_jp: "昨日ほど暑くないです。", v_vi: "Không nóng bằng hôm qua." },
-            { k: "休", h: "HƯU", n: "Nghỉ ngơi", l: "N4", pr: "亻 (Người) + 木 (Cây).<br>💡 Người tựa vào gốc cây để nghỉ ngơi tĩnh tại.", on: "KYUU", kun: "yasu(mu)", v_jp: "30分ぐらい休みます。", v_vi: "Nghỉ 30 phút." },
-            { k: "帰", h: "QUY", n: "Trở về", l: "N4", pr: "刂 (Dao) + 止 (Dừng) + 巾 (Khăn).<br>💡 Dừng việc dùng dao, lau khăn và trở về nhà.", on: "KI", kun: "kae(ru)", v_jp: "5時までに帰ります。", v_vi: "Tôi sẽ về trước 5 giờ." },
-            { k: "分", h: "PHÂN", n: "Phút, chia", l: "N4", pr: "八 (Chia) + 刀 (Dao).<br>💡 Dùng dao chia đôi sự vật thành từng phần.", on: "BUN", kun: "wa(karu)", v_jp: "30分ぐらい休みます。", v_vi: "Nghỉ 30 phút." },
-            { k: "勉", h: "MIỄN", n: "Chăm chỉ", l: "N4", pr: "免 (Miễn cưỡng) + 力 (Sức lực).<br>💡 Dùng sức lực miễn cưỡng làm việc là chăm chỉ.", on: "BEN", kun: "tsuto(meru)", v_jp: "5時まで勉強します。", v_vi: "Tôi học đến 5 giờ." },
-            { k: "強", h: "CƯỜNG", n: "Mạnh mẽ", l: "N4", pr: "弓 (Cung) + 口 (Miệng) + 虫 (Sâu).<br>💡 Con sâu cứng miệng như cái cung là mạnh mẽ.", on: "KYOU", kun: "tsuyo(i)", v_jp: "5時まで勉強します。", v_vi: "Tôi học đến 5 giờ." },
-            { k: "肉", h: "NHỤC", n: "Thịt", l: "N4", pr: "Hình ảnh thớ thịt được cắt ra.<br>💡 Cung cấp năng lượng cho cơ thể.", on: "NIKU", kun: "-", v_jp: "肉ばかり食べます。", v_vi: "Toàn ăn thịt thôi." },
-            { k: "死", h: "TỬ", n: "Chết", l: "N4", pr: "歹 (Xương tàn) + ヒ (Người).<br>💡 Con người nằm cạnh bộ xương tàn là cái chết.", on: "SHI", kun: "shi(nu)", v_jp: "死ぬほど疲れました。", v_vi: "Mệt muốn chết." },
-            { k: "疲", h: "BÌ", n: "Mệt mỏi", l: "N4", pr: "疒 (Bệnh) + 皮 (Da).<br>💡 Lớp da bị bệnh làm cơ thể thấy mệt mỏi.", on: "HI", kun: "tsuka(reru)", v_jp: "死ぬほど疲れました。", v_vi: "Mệt muốn chết." },
+            // --- N4 ---
+            { char: "安", nghiaHV: "AN", nghiaTV: "Rẻ, an tâm", l: "N4", pr: "宀 (Mái nhà) + 女 (Phụ nữ).<br>💡 Phụ nữ ở trong nhà thì tâm mới an, chi tiêu rẻ.", on: "AN", kun: "yasu(i)", v_jp: "これよりあれが安いです。", v_vi: "Cái kia rẻ hơn cái này." },
+            { char: "昨", nghiaHV: "TẠC", nghiaTV: "Hôm qua", l: "N4", pr: "日 (Mặt trời) + 乍 (Dừng lại).<br>💡 Ngày mặt trời đã dừng lại và trôi qua là hôm qua.", on: "SAKU", kun: "-", v_jp: "昨日ほど暑くないです。", v_vi: "Không nóng bằng hôm qua." },
+            { char: "休", nghiaHV: "HƯU", nghiaTV: "Nghỉ ngơi", l: "N4", pr: "亻 (Người) + 木 (Cây).<br>💡 Người tựa vào gốc cây để nghỉ ngơi tĩnh tại.", on: "KYUU", kun: "yasu(mu)", v_jp: "30分ぐらい休みます。", v_vi: "Nghỉ 30 phút." },
+            { char: "帰", nghiaHV: "QUY", nghiaTV: "Trở về", l: "N4", pr: "刂 (Dao) + 止 (Dừng) + 巾 (Khăn).<br>💡 Dừng việc dùng dao, lau khăn và trở về nhà.", on: "KI", kun: "kae(ru)", v_jp: "5時までに帰ります。", v_vi: "Tôi sẽ về trước 5 giờ." },
+            { char: "分", nghiaHV: "PHÂN", nghiaTV: "Phút, chia", l: "N4", pr: "八 (Chia) + 刀 (Dao).<br>💡 Dùng dao chia đôi sự vật thành từng phần.", on: "BUN / FUN", kun: "wa(karu)", v_jp: "30分ぐらい休みます。", v_vi: "Nghỉ 30 phút." },
+            { char: "勉", nghiaHV: "MIỄN", nghiaTV: "Chăm chỉ", l: "N4", pr: "免 (Miễn cưỡng) + 力 (Sức lực).<br>💡 Dùng sức lực miễn cưỡng làm việc là chăm chỉ.", on: "BEN", kun: "tsuto(meru)", v_jp: "5時まで勉強します。", v_vi: "Tôi học đến 5 giờ." },
+            { char: "强", nghiaHV: "CƯỜNG", nghiaTV: "Mạnh mẽ", l: "N4", pr: "弓 (Cung) + 口 (Miệng) + 虫 (Sâu).<br>💡 Con sâu cứng miệng như cái cung là mạnh mẽ.", on: "KYOU", kun: "tsuyo(i)", v_jp: "5時まで勉強します。", v_vi: "Tôi học đến 5 giờ." },
+            { char: "肉", nghiaHV: "NHỤC", nghiaTV: "Thịt", l: "N4", pr: "Hình ảnh thớ thịt được cắt ra.<br>💡 Cung cấp năng lượng cho cơ thể.", on: "NIKU", kun: "-", v_jp: "肉ばかり食べます。", v_vi: "Toàn ăn thịt thôi." },
+            { char: "死", nghiaHV: "TỬ", nghiaTV: "Chết", l: "N4", pr: "歹 (Xương tàn) + ヒ (Người).<br>💡 Con người nằm cạnh bộ xương tàn là cái chết.", on: "SHI", kun: "shi(nu)", v_jp: "死ぬほど疲れました。", v_vi: "Mệt muốn chết." },
+            { char: "疲", nghiaHV: "BÌ", nghiaTV: "Mệt mỏi", l: "N4", pr: "疒 (Bệnh) + 皮 (Da).<br>💡 Lớp da bị bệnh làm cơ thể thấy mệt mỏi.", on: "HI", kun: "tsuka(reru)", v_jp: "死ぬほど疲れました。", v_vi: "Mệt muốn chết." },
 
-            // --- N3 KANJI (40 chữ trích xuất toàn bộ) ---
-            { k: "難", h: "NAN", n: "Khó khăn", l: "N3", pr: "𦰩 (Đất bùn) + 隹 (Chim nhỏ).<br>💡 Con chim bị dính trong đất bùn thật khó thoát ra.", on: "NAN", kun: "muzuka(shii)", v_jp: "私에는難[むずか]しいです。", v_vi: "Đối với tôi thì khó." },
-            { k: "自", h: "TỰ", n: "Tự mình", l: "N3", pr: "Hình ảnh cái mũi.<br>💡 Chỉ vào mũi mình khi nói 'Chính tôi'.", on: "JI", kun: "mizuka(ra)", v_jp: "自由とは何ですか。", v_vi: "Tự do có nghĩa là gì?" },
-            { k: "由", h: "DO", n: "Lý do, nguồn", l: "N3", pr: "Hình ảnh cái hạt đang nảy mầm.<br>💡 Nguồn gốc mọi sự việc bắt đầu từ đây.", on: "YUU", kun: "yoshi", v_jp: "自由とは何ですか。", v_vi: "Tự do là cái gì?" },
-            { k: "何", h: "HÀ", n: "Cái gì", l: "N3", pr: "亻 (Người) + 可 (Có thể).<br>💡 Người vác trên vai vật gì có thể làm gì?", on: "KA", kun: "nani / nan", v_jp: "自由とは何ですか。", v_vi: "Tự do là cái gì?" },
-            { k: "旅", h: "LỮ", n: "Du lịch", l: "N3", pr: "方 (Lá cờ) + 人 (Người).<br>💡 Đoàn người cầm lá cờ đi du lịch phương xa.", on: "RYO", kun: "tabi", v_jp: "日本への旅行。", v_vi: "Chuyến đi đến Nhật." },
-            { k: "東", h: "ĐÔNG", n: "Phía đông", l: "N3", pr: "日 (Mặt trời) + 木 (Cây).<br>💡 Mặt trời mọc lên từ ngọn cây phía Đông.", on: "TOU", kun: "higashi", v_jp: "東京にも雪が降りました。", v_vi: "Ở Tokyo cũng có tuyết." },
-            { k: "京", h: "KINH", n: "Kinh đô", l: "N3", pr: "Hình ảnh một tòa tháp cao trên đất.<br>💡 Thành phố trung tâm với kiến trúc cao lớn.", on: "KYOU", kun: "miyako", v_jp: "東京にも雪が降りました。", v_vi: "Ở Tokyo cũng có tuyết." },
-            { k: "雪", h: "TUYẾT", n: "Tuyết", l: "N3", pr: "雨 (Mưa) + 彐 (Bàn tay/Chổi).<br>💡 Mưa đông lại có thể dùng tay nắm lấy hoặc dùng chổi quét.", on: "SETSU", kun: "yuki", v_jp: "東京にも雪が降りました。", v_vi: "Ở Tokyo cũng có tuyết." },
-            { k: "降", h: "GIÁNG", n: "Rơi, xuống", l: "N3", pr: "阝 (Gò đất) + 舛 (Sai chân).<br>💡 Bước xuống gò đất nên chân bị lệch sang bên.", on: "KOU", kun: "fu(ru) / o(riru)", v_jp: "雪が降りました。", v_vi: "Tuyết rơi rồi." },
-            { k: "家", h: "GIA", n: "Gia đình", l: "N3", pr: "宀 (Mái nhà) + 豕 (Lợn).<br>💡 Xưa kia nuôi lợn dưới mái nhà để sinh kế gia đình.", on: "KA", kun: "ie / ya", v_jp: "家族とも相談します。", v_vi: "Thảo luận với cả nhà." },
-            { k: "族", h: "TỘC", n: "Dòng tộc", l: "N3", pr: "方 (Cờ) + 矢 (Mũi tên).<br>💡 Tộc người dưới lá cờ dùng cung tên bảo vệ dòng máu.", on: "ZOKU", kun: "-", v_jp: "家族とも相談します。", v_vi: "Thảo luận với gia đình." },
-            { k: "相", h: "TƯƠNG", n: "Tương quan", l: "N3", pr: "木 (Cây) + 目 (Mắt).<br>💡 Dùng mắt quan sát sự tương quan của các loài cây.", on: "SOU", kun: "ai", v_jp: "家族とも相談します。", v_vi: "Thảo luận cùng gia đình." },
-            { k: "談", h: "ĐÀM", n: "Đàm luận", l: "N3", pr: "言 (Lời nói) + 炎 (Hai ngọn lửa).<br>💡 Nói chuyện nóng bỏng, hăng say đàm luận như lửa.", on: "DAN", kun: "-", v_jp: "家族とも相談します。", v_vi: "Thảo luận với gia đình." },
-            { k: "話", h: "THOẠI", n: "Nói chuyện", l: "N3", pr: "言 (Lời nói) + 舌 (Lưỡi).<br>💡 Dùng lưỡi uốn nắn thành lời nói để đàm thoại.", on: "WA", kun: "hana(su)", v_jp: "家族とも話す。", v_vi: "Nói chuyện với cả nhà." },
-            { k: "会", h: "HỘI", n: "Gặp, hội", l: "N3", pr: "人 (Người) + 云 (Mây/Lời nói).<br>💡 Nhiều người tụ họp lại cùng bàn luận như mây trôi.", on: "KAI", kun: "a(u)", v_jp: "会議はホールで行われます。", v_vi: "Hội nghị tổ chức tại sảnh." },
-            { k: "議", h: "NGHỊ", n: "Bàn bạc", l: "N3", pr: "言 (Lời nói) + 義 (Chính nghĩa).<br>💡 Dùng lời lẽ chính trực để bàn luận đại sự.", on: "GI", kun: "-", v_jp: "会議はホールで行われます。", v_vi: "Hội nghị diễn ra tại sảnh." },
-            { k: "歴", h: "LỊCH", n: "Lịch sử", l: "N3", pr: "厂 (Sườn núi) + 林 (Rừng) + 止 (Dừng).<br>💡 Bước chân dừng lại giữa rừng bên núi để ghi lại lịch sử.", on: "REKI", kun: "-", v_jp: "歴史において重要だ。", v_vi: "Quan trọng trong lịch sử." },
-            { k: "史", h: "SỬ", n: "Sử sách", l: "N3", pr: "口 (Miệng) + 乂 (Bút).<br>💡 Tay cầm bút viết lại lời miệng nói về sự thật đời trước.", on: "SHI", kun: "-", v_jp: "歴史において重要だ。", v_vi: "Quan trọng trong lịch sử." },
-            { k: "重", h: "TRỌNG", n: "Nặng, trọng", l: "N3", pr: "千 (Ngàn) + 里 (Dặm).<br>💡 Đi bộ ngàn dặm thấy hành trang thật nặng nề.", on: "JUU", kun: "omo(i)", v_jp: "歴史において重要だ。", v_vi: "Quan trọng trong lịch sử." },
-            { k: "要", h: "YẾU", n: "Quan trọng", l: "N3", pr: "覀 (Che đậy) + 女 (Phụ nữ).<br>💡 Thắt lưng người phụ nữ là điểm yếu cần che đậy.", on: "YOU", kun: "i(ru)", v_jp: "歴史において重要だ。", v_vi: "Quan trọng trong lịch sử." },
-            { k: "留", h: "LƯU", n: "Dừng lại, ở", l: "N3", pr: "卯 (Cửa) + 田 (Ruộng).<br>💡 Dừng lại bên ruộng để canh giữ mùa màng.", on: "RYUU", kun: "to(maru)", v_jp: "留学生として来ました。", v_vi: "Đến với tư cách du học sinh." },
-            { k: "人", h: "NHÂN", n: "Con người", l: "N3", pr: "Hình ảnh người đứng nghiêng đang bước đi.<br>💡 Thực thể mang tinh linh của vũ trụ.", on: "JIN", kun: "hito", v_jp: "人によって違います。", v_vi: "Tùy vào mỗi người." },
-            { k: "台", h: "ĐÀI", n: "Cái bục", l: "N3", pr: "厶 (Riêng) + 口 (Miệng).<br>💡 Dùng miệng nói trên bục cao riêng biệt.", on: "DAI", kun: "-", v_jp: "台風によって壊れました。", v_vi: "Bị hỏng do bão." },
-            { k: "风", h: "PHONG", n: "Gió", l: "N3", pr: "𠂉 (Mây) + 乂 (Cắt).<br>💡 Gió cắt ngang những đám mây trên trời.", on: "FUU", kun: "kaze", v_jp: "台風によって壊れました。", v_vi: "Hỏng do bão." },
-            { k: "壊", h: "HOẠI", n: "Hỏng, nát", l: "N3", pr: "土 (Thổ) + 罒 (Mắt) + 衣 (Y phục).<br>💡 Nhìn y phục rách nát rơi xuống đất là hỏng hoàn toàn.", on: "KAI", kun: "kowa(su)", v_jp: "台風によって壊れました。", v_vi: "Hỏng do bão." },
-            { k: "先", h: "TIÊN", n: "Trước, tiên", l: "N3", pr: "土 (Đất) + 儿 (Chân).<br>💡 Người bước đi trên đất đầu tiên là bậc bề trên.", on: "SEN", kun: "saki", v_jp: "先生に対して失礼です。", v_vi: "Thất lễ với giáo viên." },
-            { k: "対", h: "ĐỐI", n: "Đối lập", l: "N3", pr: "文 (Văn) + 寸 (Đo).<br>💡 Dùng văn chương đo lường để đối đáp lại.", on: "TAI", kun: "-", v_jp: "先生に対して失礼です。", v_vi: "Thất lễ với giáo viên." },
-            { k: "失", h: "THẤT", n: "Mất", l: "N3", pr: "夫 (Người chồng) + gạch lệch.<br>💡 Người chồng đánh mất đi phương hướng hành động.", on: "SHITSU", kun: "ushina(u)", v_jp: "先生に対して失礼です。", v_vi: "Thất lễ với giáo viên." },
-            { k: "礼", h: "LỄ", n: "Lễ nghi", l: "N3", pr: "礻 (Thần linh) + 乚 (Cúi người).<br>💡 Cúi người trước thần linh để giữ đúng lễ nghi.", on: "REI", kun: "-", v_jp: "先生に対して失礼です。", v_vi: "Thất lễ với giáo viên." },
-            { k: "将", h: "TƯƠNG", n: "Tương lai", l: "N3", pr: "爿 (Gỗ) + 肉 (Thịt) + 寸 (Đo).<br>💡 Tay dâng thịt và gỗ cung phụng tướng quân tương lai.", on: "SHOU", kun: "-", v_jp: "将来について考えます。", v_vi: "Suy nghĩ về tương lai." },
-            { k: "来", h: "LAI", n: "Đến", l: "N3", pr: "Hình ảnh cây lúa từ phương xa tới.<br>💡 Những điều tốt đẹp sẽ đến trong tương lai.", on: "RAI", kun: "ku(ru)", v_jp: "将来について考えます。", v_vi: "Suy nghĩ tương lai." },
-            { k: "考", h: "KHẢO", n: "Suy nghĩ", l: "N3", pr: "耂 (Người già) + 丂 (Kỹ năng).<br>💡 Người già có kỹ năng suy nghĩ và khảo cứu sâu sắc.", on: "KOU", kun: "kanga(eru)", v_jp: "将来について考えます。", v_vi: "Suy nghĩ về tương lai." },
-            { k: "研", h: "NGHIÊN", n: "Mài, nghiên", l: "N3", pr: "石 (Đá) + 开 (Giàn giáo).<br>💡 Mài đá trên giàn giáo để nghiên cứu độ bền.", on: "KEN", kun: "to(gu)", v_jp: "20年にわたって研究しました。", v_vi: "Nghiên cứu suốt 20 năm." },
-            { k: "究", h: "CỨU", n: "Tìm tòi", l: "N3", pr: "穴 (Hang động) + 九 (Chín lần).<br>💡 Vào hang động 9 lần để tìm tòi cho đến cùng.", on: "KYUU", kun: "kiwa(meru)", v_jp: "20年にわたって研究しました。", v_vi: "Nghiên cứu 20 năm ròng." },
-            { k: "範", h: "PHẠM", n: "Khuôn mẫu", l: "N3", pr: "竹 (Tre) + 車 (Xe) + 㔾 (Nước).<br>💡 Khuôn mẫu vận chuyển tre bằng xe qua vùng nước.", on: "HAN", kun: "-", v_jp: "広範囲にわたる。", v_vi: "Trải dài phạm vi rộng." },
-            { k: "囲", h: "VI", n: "Vây quanh", l: "N3", pr: "囗 (Vây quanh) + 井 (Cái giếng).<br>💡 Xây hàng rào vây quanh cái giếng để bảo vệ.", on: "I", kun: "kako(mu)", v_jp: "広範囲にわたる。", v_vi: "Trải dài phạm vi rộng." },
-            { k: "沿", h: "DUYÊN", n: "Men theo", l: "N3", pr: "氵 (Nước) + 㕣 (Miệng cống).<br>💡 Nước chảy men theo miệng cống dẫn ra sông.", on: "EN", kun: "so(u)", v_jp: "川に沿って歩きます。", v_vi: "Đi dọc theo con sông." },
-            { k: "歩", h: "BỘ", n: "Đi bộ", l: "N3", pr: "止 (Dừng) + 少 (Một ít).<br>💡 Nhấc chân lên rồi dừng lại một ít chính là đi bộ.", on: "HO", kun: "aru(ku)", v_jp: "川に沿って歩きます。", v_vi: "Đi dọc theo con sông." },
-            { k: "際", h: "TẾ", n: "Dịp, khi", l: "N3", pr: "阝 (Gò đất) + 祭 (Tế lễ).<br>💡 Tổ chức tế lễ trên gò đất vào các dịp trang trọng.", on: "SAI", kun: "kiwa", v_jp: "受験に際して注意すること。", v_vi: "Lưu ý khi đi thi." },
-            { k: "注", h: "CHÚ", n: "Rót, chú ý", l: "N3", pr: "氵 (Nước) + 主 (Chủ nhân).<br>💡 Nước rót vào bình khiến chủ nhân phải chú ý.", on: "CHUU", kun: "sogu", v_jp: "受験に際して注意すること。", v_vi: "Điều chú ý khi đi thi." },
-            { k: "意", h: "Ý", n: "Ý định", l: "N3", pr: "音 (Âm thanh) + 心 (Trái tim).<br>💡 Tiếng nói từ tận đáy lòng chính là ý định.", on: "I", kun: "-", v_jp: "受験に際して注意すること。", v_vi: "Điều chú ý khi đi thi." },
-            { k: "问", h: "VẤN", n: "Hỏi", l: "N3", pr: "门 (Cửa) + 口 (Miệng).<br>💡 Mở miệng đứng ở cửa để hỏi han.", on: "MON", kun: "to(u)", v_jp: "その問題をめぐって争います。", v_vi: "Tranh cãi xoay quanh vấn đề." },
-            { k: "题", h: "ĐỀ", n: "Đề bài", l: "N3", pr: "是 (Đúng) + 页 (Đầu).<br>💡 Đúng là cái đầu đề của bài thi.", on: "DAI", kun: "-", v_jp: "その問題をめぐって争います。", v_vi: "Tranh cãi quanh vấn đề đó." },
-            { k: "争", h: "TRANH", n: "Tranh giành", l: "N3", pr: "爫 (Móng vuốt) + 亅 (Gậy).<br>💡 Dùng móng vuốt và gậy gộc để tranh giành.", on: "SOU", kun: "araso(u)", v_jp: "その問題をめぐって争います。", v_vi: "Tranh cãi xoay quanh vấn đề." },
-            { k: "噂", h: "ĐỒN", n: "Lời đồn", l: "N3", pr: "口 (Miệng) + 尊 (Tôn trọng).<br>💡 Miệng đồn đại về những người được tôn trọng.", on: "SON", kun: "uwasa", v_jp: "噂をめぐって大騒ぎだ。", v_vi: "Lùm xùm xoay quanh lời đồn." },
-            { k: "騒", h: "TAO", n: "Làm loạn", l: "N3", pr: "馬 (Ngựa) + 蚤 (Côn trùng).<br>💡 Con ngựa bị côn trùng cắn nên nhảy loạn (tao động).", on: "SOU", kun: "sawa(gu)", v_jp: "噂をめぐって大騒ぎだ。", v_vi: "Lùm xùm xoay quanh lời đồn." },
-            { k: "川", h: "XUYÊN", n: "Sông", l: "N3", pr: "Hình ảnh ba dòng nước đang chảy hiền hòa.<br>💡 Con sông nuôi dưỡng sự sống.", on: "SEN", kun: "kawa", v_jp: "川に沿って歩きます。", v_vi: "Đi bộ dọc theo con sông." },
-            { k: "计", h: "KẾ", n: "Kế hoạch", l: "N3", pr: "言 (Lời nói) + 十 (Số 10).<br>💡 Nói 10 lời chín chắn để lập nên kế hoạch.", on: "KEI", kun: "haka(ru)", v_jp: "計画に沿ってやる。", v_vi: "Làm theo kế hoạch." },
-            { k: "画", h: "HỌA", n: "Bức họa", l: "N3", pr: "田 (Ruộng) + 凵 (Bao quanh).<br>💡 Vẽ viền bao quanh cánh đồng thành bức họa.", on: "GAKU", kun: "-", v_jp: "計画に沿ってやる。", v_vi: "Làm theo kế hoạch." },
-            { k: "受", h: "THỤ", n: "Nhận, thi", l: "N3", pr: "爫 (Móng) + 冖 (Mái) + 又 (Tay).<br>💡 Dùng tay nhận chiếc thuyền dưới mái che.", on: "JU", kun: "u(keru)", v_jp: "受験に際して注意すること。", v_vi: "Lưu ý khi đi thi." },
-            { k: "验", h: "NGHIỆM", n: "Kiểm tra", l: "N3", pr: "馬 (Ngựa) + 佥 (Mọi người).<br>💡 Mọi người cùng cưỡi ngựa để kiểm tra thực lực.", on: "KEN", kun: "-", v_jp: "受験に際して注意すること。", v_vi: "Lưu ý khi đi thi." }
+            // --- N3 ---
+            { char: "難", nghiaHV: "NAN", nghiaTV: "Khó khăn", l: "N3", pr: "𦰩 (Đất bùn) + 隹 (Chim nhỏ).<br>💡 Con chim bị dính trong đất bùn thật khó thoát ra.", on: "NAN", kun: "muzuka(shii)", v_jp: "私には難しいです。", v_vi: "Đối với tôi thì khó." },
+            { char: "自", nghiaHV: "TỰ", nghiaTV: "Tự mình", l: "N3", pr: "Hình ảnh cái mũi.<br>💡 Chỉ vào mũi mình khi nói 'Chính tôi'.", on: "JI", kun: "mizuka(ra)", v_jp: "自由とは何ですか。", v_vi: "Tự do có nghĩa là gì?" },
+            { char: "由", nghiaHV: "DO", nghiaTV: "Lý do, nguồn", l: "N3", pr: "Hình ảnh cái hạt đang nảy mầm.<br>💡 Nguồn gốc mọi sự việc bắt đầu từ đây.", on: "YUU", kun: "yoshi", v_jp: "自由とは何ですか。", v_vi: "Tự do là cái gì?" },
+            { char: "何", nghiaHV: "HÀ", nghiaTV: "Cái gì", l: "N3", pr: "亻 (Người) + 可 (Có thể).<br>💡 Người vác trên vai vật gì có thể làm gì?", on: "KA", kun: "nani / nan", v_jp: "自由とは何ですか。", v_vi: "Tự do là cái gì?" },
+            { char: "旅", nghiaHV: "LỮ", nghiaTV: "Du lịch", l: "N3", pr: "方 (Lá cờ) + 人 (Người).<br>💡 Đoàn người cầm lá cờ đi du lịch phương xa.", on: "RYO", kun: "tabi", v_jp: "日本への旅行。", v_vi: "Chuyến đi đến Nhật." },
+            { char: "东", nghiaHV: "ĐÔNG", nghiaTV: "Phía đông", l: "N3", pr: "日 (Mặt trời) + 木 (Cây).<br>💡 Mặt trời mọc lên từ ngọn cây phía Đông.", on: "TOU", kun: "higashi", v_jp: "東京にも雪が降りました。", v_vi: "Ở Tokyo cũng có tuyết." },
+            { char: "京", nghiaHV: "KINH", nghiaTV: "Kinh đô", l: "N3", pr: "Hình ảnh một tòa tháp cao trên đất.<br>💡 Thành phố trung tâm với kiến trúc cao lớn.", on: "KYOU", kun: "miyako", v_jp: "東京にも雪が降りました。", v_vi: "Ở Tokyo cũng có tuyết." },
+            { char: "雪", nghiaHV: "TUYẾT", nghiaTV: "Tuyết", l: "N3", pr: "雨 (Mưa) + 彐 (Bàn tay/Chổi).<br>💡 Mưa đông lại có thể dùng tay nắm lấy hoặc dùng chổi quét.", on: "SETSU", kun: "yuki", v_jp: "東京にも雪が降りました。", v_vi: "Ở Tokyo cũng có tuyết." },
+            { char: "降", nghiaHV: "GIÁNG", nghiaTV: "Rơi, xuống", l: "N3", pr: "阝 (Gò đất) + 舛 (Sai chân).<br>💡 Bước xuống gò đất nên chân bị lệch sang bên.", on: "KOU", kun: "fu(ru) / o(riru)", v_jp: "雪が降りました。", v_vi: "Tuyết rơi rồi." },
+            { char: "家", nghiaHV: "GIA", nghiaTV: "Gia đình", l: "N3", pr: "宀 (Mái nhà) + 豕 (Lợn).<br>💡 Xưa kia nuôi lợn dưới mái nhà để sinh kế gia đình.", on: "KA", kun: "ie / ya", v_jp: "家族とも相談します。", v_vi: "Thảo luận với cả nhà." },
+            { char: "族", nghiaHV: "TỘC", nghiaTV: "Dòng tộc", l: "N3", pr: "方 (Cờ) + 矢 (Mũi tên).<br>💡 Tộc người dưới lá cờ dùng cung tên bảo vệ dòng máu.", on: "ZOKU", kun: "-", v_jp: "家族とも相談します。", v_vi: "Thảo luận với gia đình." },
+            { char: "相", nghiaHV: "TƯƠNG", nghiaTV: "Tương quan", l: "N3", pr: "木 (Cây) + 目 (Mắt).<br>💡 Dùng mắt quan sát sự tương quan của các loài cây.", on: "SOU / SHOU", kun: "ai", v_jp: "家族とも相談します。", v_vi: "Thảo luận cùng gia đình." },
+            { char: "談", nghiaHV: "ĐÀM", nghiaTV: "Đàm luận", l: "N3", pr: "言 (Lời nói) + 炎 (Hai ngọn lửa).<br>💡 Nói chuyện nóng bỏng, hăng say đàm luận như lửa.", on: "DAN", kun: "-", v_jp: "家族とも相談します。", v_vi: "Thảo luận với gia đình." },
+            { char: "话", nghiaHV: "THOẠI", nghiaTV: "Nói chuyện", l: "N3", pr: "言 (Lời nói) + 舌 (Lưỡi).<br>💡 Dùng lưỡi uốn nắn thành lời nói để đàm thoại.", on: "WA", kun: "hana(su)", v_jp: "家族とも話す。", v_vi: "Nói chuyện với cả nhà." },
+            { char: "会", nghiaHV: "HỘI", nghiaTV: "Gặp, hội", l: "N3", pr: "人 (Người) + 云 (Mây/Lời nói).<br>💡 Nhiều người tụ họp lại cùng bàn luận như mây trôi.", on: "KAI", kun: "a(u)", v_jp: "会議はホールで行われます。", v_vi: "Hội nghị tổ chức tại sảnh." },
+            { char: "议", nghiaHV: "NGHỊ", nghiaTV: "Bàn bạc", l: "N3", pr: "言 (Lời nói) + 義 (Chính nghĩa).<br>💡 Dùng lời lẽ chính trực để bàn luận đại sự.", on: "GI", kun: "-", v_jp: "会議はホールで行われます。", v_vi: "Hội nghị diễn ra tại sảnh." },
+            { char: "历", nghiaHV: "LỊCH", nghiaTV: "Lịch sử", l: "N3", pr: "厂 (Sườn núi) + 林 (Rừng) + 止 (Dừng).<br>💡 Bước chân dừng lại giữa rừng bên núi để ghi lại lịch sử.", on: "REKI", kun: "-", v_jp: "歴史において重要だ。", v_vi: "Quan trọng trong lịch sử." },
+            { char: "史", nghiaHV: "SỬ", nghiaTV: "Sử sách", l: "N3", pr: "口 (Miệng) + 乂 (Bút).<br>💡 Tay cầm bút viết lại lời miệng nói về sự thật đời trước.", on: "SHI", kun: "-", v_jp: "歴史において重要だ。", v_vi: "Quan trọng trong lịch sử." },
+            { char: "重", nghiaHV: "TRỌNG", nghiaTV: "Nặng, trọng", l: "N3", pr: "千 (Ngàn) + 里 (Dặm).<br>💡 Đi bộ ngàn dặm thấy hành trang thật nặng nề.", on: "JUU", kun: "omo(i)", v_jp: "歴史において重要だ。", v_vi: "Quan trọng trong lịch sử." },
+            { char: "要", nghiaHV: "YẾU", nghiaTV: "Quan trọng", l: "N3", pr: "覀 (Che đậy) + 女 (Phụ nữ).<br>💡 Thắt lưng người phụ nữ là điểm yếu cần che đậy.", on: "YOU", kun: "i(ru)", v_jp: "歴史において重要だ。", v_vi: "Quan trọng trong lịch sử." },
+            { char: "留", nghiaHV: "LƯU", nghiaTV: "Dừng lại, ở", l: "N3", pr: "卯 (Cửa) + 田 (Ruộng).<br>💡 Dừng lại bên ruộng để canh giữ mùa màng.", on: "RYUU", kun: "to(maru)", v_jp: "留学生として来ました。", v_vi: "Đến với tư cách du học sinh." },
+            { char: "人", nghiaHV: "NHÂN", nghiaTV: "Con người", l: "N3", pr: "Hình ảnh người đứng nghiêng đang bước đi.<br>💡 Thực thể mang tinh linh của vũ trụ.", on: "JIN", kun: "hito", v_jp: "人によって違います。", v_vi: "Tùy vào mỗi người." },
+            { char: "台", nghiaHV: "ĐÀI", nghiaTV: "Cái bục", l: "N3", pr: "厶 (Riêng) + 口 (Miệng).<br>💡 Dùng miệng nói trên bục cao riêng biệt.", on: "DAI", kun: "-", v_jp: "台風によって壊leました。", v_vi: "Bị hỏng do bão." },
+            { char: "风", nghiaHV: "PHONG", nghiaTV: "Gió", l: "N3", pr: "𠂉 (Mây) + 乂 (Cắt).<br>💡 Gió cắt ngang những đám mây trên trời.", on: "FUU", kun: "kaze", v_jp: "台風によって壊れました。", v_vi: "Hỏng do bão." },
+            { char: "坏", nghiaHV: "HOẠI", nghiaTV: "Hỏng, nát", l: "N3", pr: "土 (Thổ) + 罒 (Mắt) + 衣 (Y phục).<br>💡 Nhìn y phục rách nát rơi xuống đất là hỏng hoàn toàn.", on: "KAI", kun: "kowa(su)", v_jp: "台風によって壊れました。", v_vi: "Hỏng do bão." },
+            { char: "先", nghiaHV: "TIÊN", nghiaTV: "Trước, tiên", l: "N3", pr: "土 (Đất) + 儿 (Chân).<br>💡 Người bước đi trên đất đầu tiên là bậc bề trên.", on: "SEN", kun: "saki", v_jp: "先生に対して失礼です。", v_vi: "Thất lễ với giáo viên." },
+            { char: "对", nghiaHV: "ĐỐI", nghiaTV: "Đối lập", l: "N3", pr: "文 (Văn) + 寸 (Đo).<br>💡 Dùng văn chương đo lường để đối đáp lại.", on: "TAI", kun: "-", v_jp: "先生に対して失礼です。", v_vi: "Thất lễ với giáo viên." },
+            { char: "失", nghiaHV: "THẤT", nghiaTV: "Mất", l: "N3", pr: "夫 (Người chồng) + gạch lệch.<br>💡 Người chồng đánh mất đi phương hướng hành động.", on: "SHITSU", kun: "ushina(u)", v_jp: "先生に対して失礼です。", v_vi: "Thất lễ với giáo viên." },
+            { char: "礼", nghiaHV: "LỄ", nghiaTV: "Lễ nghi", l: "N3", pr: "礻 (Thần linh) + 乚 (Cúi người).<br>💡 Cúi người trước thần linh để giữ đúng lễ nghi.", on: "REI", kun: "-", v_jp: "先生に対して失礼です。", v_vi: "Thất lễ với giáo viên." },
+            { char: "将", nghiaHV: "TƯƠNG", nghiaTV: "Tương lai", l: "N3", pr: "爿 (Gỗ) + 肉 (Thịt) + 寸 (Đo).<br>💡 Tay dâng thịt và gỗ cung phụng tướng quân tương lai.", on: "SHOU", kun: "-", v_jp: "将来について考えます。", v_vi: "Suy nghĩ về tương lai." },
+            { char: "来", nghiaHV: "LAI", nghiaTV: "Đến", l: "N3", pr: "Hình ảnh cây lúa từ phương xa tới.<br>💡 Những điều tốt đẹp sẽ đến trong tương lai.", on: "RAI", kun: "ku(ru)", v_jp: "将来について考えます。", v_vi: "Suy nghĩ tương lai." },
+            { char: "考", nghiaHV: "KHẢO", nghiaTV: "Suy nghĩ", l: "N3", pr: "耂 (Người già) + 丂 (Kỹ năng).<br>💡 Người già có kỹ năng suy nghĩ và khảo cứu sâu sắc.", on: "KOU", kun: "kanga(eru)", v_jp: "将来について考えます。", v_vi: "Suy nghĩ về tương lai." },
+            { char: "研", nghiaHV: "NGHIÊN", nghiaTV: "Mài, nghiên", l: "N3", pr: "石 (Đá) + 开 (Giàn giáo).<br>💡 Mài đá trên giàn giáo để nghiên cứu độ bền.", on: "KEN", kun: "to(gu)", v_jp: "20年にわたって研究しました。", v_vi: "Nghiên cứu suốt 20 năm." },
+            { char: "究", nghiaHV: "CỨU", nghiaTV: "Tìm tòi", l: "N3", pr: "穴 (Hang động) + 九 (Chín lần).<br>💡 Vào hang động 9 lần để tìm tòi cho đến cùng.", on: "KYUU", kun: "kiwa(meru)", v_jp: "20年にわたって研究しました。", v_vi: "Nghiên cứu 20 năm ròng." },
+            { char: "范", nghiaHV: "PHẠM", nghiaTV: "Khuôn mẫu", l: "N3", pr: "竹 (Tre) + 車 (Xe) + 㔾 (Nước).<br>💡 Khuôn mẫu vận chuyển tre bằng xe qua vùng nước.", on: "HAN", kun: "-", v_jp: "広範囲にわたる。", v_vi: "Trải dài phạm vi rộng." },
+            { char: "围", nghiaHV: "VI", nghiaTV: "Vây quanh", l: "N3", pr: "囗 (Vây quanh) + 井 (Cái giếng).<br>💡 Xây hàng rào vây quanh cái giếng để bảo vệ.", on: "I", kun: "kako(mu)", v_jp: "広範囲にわたる。", v_vi: "Trải dài phạm vi rộng." },
+            { char: "沿", nghiaHV: "DUYÊN", nghiaTV: "Men theo", l: "N3", pr: "氵 (Nước) + 㕣 (Miệng cống).<br>💡 Nước chảy men theo miệng cống dẫn ra sông.", on: "EN", kun: "so(u)", v_jp: "川に沿って歩きます。", v_vi: "Đi dọc theo con sông." },
+            { char: "歩", nghiaHV: "BỘ", nghiaTV: "Đi bộ", l: "N3", pr: "止 (Dừng) + 少 (Một ít).<br>💡 Nhấc chân lên rồi dừng lại một ít chính là đi bộ.", on: "HO", kun: "aru(ku)", v_jp: "川に沿って歩きます。", v_vi: "Đi dọc theo con sông." },
+            { char: "际", nghiaHV: "TẾ", nghiaTV: "Dịp, khi", l: "N3", pr: "阝 (Gò đất) + 祭 (Tế lễ).<br>💡 Tổ chức tế lễ trên gò đất vào các dịp trang trọng.", on: "SAI", kun: "kiwa", v_jp: "受験に際して注意すること。", v_vi: "Lưu ý khi đi thi." },
+            { char: "注", nghiaHV: "CHÚ", nghiaTV: "Rót, chú ý", l: "N3", pr: "氵 (Nước) + 主 (Chủ nhân).<br>💡 Nước rót vào bình khiến chủ nhân phải chú ý.", on: "CHUU", kun: "sogu", v_jp: "受験に際して注意すること。", v_vi: "Điều chú ý khi đi thi." },
+            { char: "意", nghiaHV: "Ý", nghiaTV: "Ý định", l: "N3", pr: "音 (Âm thanh) + 心 (Trái tim).<br>💡 Tiếng nói từ tận đáy lòng chính là ý định.", on: "I", kun: "-", v_jp: "受験に際して注意すること。", v_vi: "Điều chú ý khi đi thi." },
+            { char: "问", nghiaHV: "VẤN", nghiaTV: "Hỏi", l: "N3", pr: "门 (Cửa) + 口 (Miệng).<br>💡 Mở miệng đứng ở cửa để hỏi han.", on: "MON", kun: "to(u)", v_jp: "その問題をめぐって争います。", v_vi: "Tranh cãi xoay quanh vấn đề." },
+            { char: "题", nghiaHV: "ĐỀ", nghiaTV: "Đề bài", l: "N3", pr: "是 (Đúng) + 页 (Đầu).<br>💡 Đúng là cái đầu đề của bài thi.", on: "DAI", kun: "-", v_jp: "その問題をめぐって争います。", v_vi: "Tranh cãi quanh vấn đề đó." },
+            { char: "争", nghiaHV: "TRANH", nghiaTV: "Tranh giành", l: "N3", pr: "爫 (Móng vuốt) + 亅 (Gậy).<br>💡 Dùng móng vuốt và gậy gộc để tranh giành.", on: "SOU", kun: "araso(u)", v_jp: "その問題をめぐって争います。", v_vi: "Tranh cãi xoay quanh vấn đề." },
+            { char: "噂", nghiaHV: "ĐỒN", nghiaTV: "Lời đồn", l: "N3", pr: "口 (Miệng) + 尊 (Tôn trọng).<br>💡 Miệng đồn đại về những người được tôn trọng.", on: "SON", kun: "uwasa", v_jp: "噂をめぐって大騒ぎだ。", v_vi: "Lùm xùm xoay quanh lời đồn." },
+            { char: "騒", nghiaHV: "TAO", nghiaTV: "Làm loạn", l: "N3", pr: "馬 (Ngựa) + 蚤 (Côn trùng).<br>💡 Con ngựa bị côn trùng cắn nên nhảy loạn (tao động).", on: "SOU", kun: "sawa(gu)", v_jp: "噂をめぐって大騒ぎだ。", v_vi: "Lùm xùm xoay quanh lời đồn." },
+            { char: "川", nghiaHV: "XUYÊN", nghiaTV: "Sông", l: "N3", pr: "Hình ảnh ba dòng nước đang chảy hiền hòa.<br>💡 Con sông nuôi dưỡng sự sống.", on: "SEN", kun: "kawa", v_jp: "川に沿って歩きます。", v_vi: "Đi bộ dọc theo con sông." },
+            { char: "计", nghiaHV: "KẾ", nghiaTV: "Kế hoạch", l: "N3", pr: "言 (Lời nói) + 十 (Số 10).<br>💡 Nói 10 lời chín chắn để lập nên kế hoạch.", on: "KEI", kun: "haka(ru)", v_jp: "計画に沿ってやる。", v_vi: "Làm theo kế hoạch." },
+            { char: "画", nghiaHV: "HỌA", nghiaTV: "Bức họa", l: "N3", pr: "田 (Ruộng) + 凵 (Bao quanh).<br>💡 Vẽ viền bao quanh cánh đồng thành bức họa.", on: "GAKU", kun: "-", v_jp: "計画に沿ってやる。", v_vi: "Làm theo kế hoạch." },
+            { char: "受", nghiaHV: "THỤ", nghiaTV: "Nhận, thi", l: "N3", pr: "爫 (Móng) + 冖 (Mái) + 又 (Tay).<br>💡 Dùng tay nhận chiếc thuyền dưới mái che.", on: "JU", kun: "u(keru)", v_jp: "受験に際して注意すること。", v_vi: "Lưu ý khi đi thi." },
+            { char: "验", nghiaHV: "NGHIỆM", nghiaTV: "Kiểm tra", l: "N3", pr: "馬 (Ngựa) + 佥 (Mọi người).<br>💡 Mọi người cùng cưỡi ngựa để kiểm tra thực lực.", on: "KEN", kun: "-", v_jp: "受験に際して注意すること。", v_vi: "Lưu ý khi đi thi." }
         ];
 
+        // --- STATE ---
         let currentFilter = 'all';
+        let currentStrokeSvg = null;
 
-        function getUnicodeHex(char) {
-            return char.charCodeAt(0).toString(16).padStart(5, '0');
-        }
-
-        function renderKanji() {
-            const grid = document.getElementById('kanji-grid');
-            const filteredData = currentFilter === 'all' ? kanjiData : kanjiData.filter(i => i.l === currentFilter);
-            
-            grid.innerHTML = filteredData.map(item => `
-                <div class="kanji-card bg-white rounded-2xl p-4 flex flex-col items-center cursor-pointer shadow-sm border border-gray-100" onclick="openModal('${item.k}')">
-                    <div class="text-4xl font-bold kanji-font text-gray-800 mb-1">${item.k}</div>
-                    <div class="text-[10px] font-black text-orange-600 tracking-tighter mb-2 uppercase">${item.h}</div>
-                    <div class="text-xs text-gray-500 font-medium text-center line-clamp-1">${item.n}</div>
-                    <div class="mt-3 px-2 py-0.5 rounded-full text-[9px] font-bold text-white level-${item.l.toLowerCase()}">${item.l}</div>
-                </div>
-            `).join('');
-        }
-
-        function openModal(kanjiChar) {
-            const item = kanjiData.find(i => i.k === kanjiChar);
-            if (!item) return;
-
-            document.getElementById('m-kanji').innerText = item.k;
-            document.getElementById('m-hanviet').innerText = item.h;
-            document.getElementById('m-nghia').innerText = item.n;
-            document.getElementById('m-phanra').innerHTML = item.pr;
-            document.getElementById('m-on').innerText = item.on;
-            document.getElementById('m-kun').innerText = item.kun;
-            document.getElementById('m-vidu-jp').innerText = item.v_jp;
-            document.getElementById('m-vidu-vi').innerText = item.v_vi;
-
-            const unicodeDecimal = kanjiChar.charCodeAt(0);
-            document.getElementById('m-stroke-img').src = `https://kanji.jisho.org/static/images/stroke_diagrams/${unicodeDecimal}_frames.png`;
-
-            document.getElementById('kanji-modal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('kanji-modal').classList.add('hidden');
-        }
-
-        function filterLevel(level) {
-            currentFilter = level;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('bg-orange-600', 'text-white');
-                btn.classList.add('bg-white', 'text-gray-600');
-            });
-            const activeBtn = document.getElementById(`btn-${level}`);
-            activeBtn.classList.add('bg-orange-600', 'text-white');
-            activeBtn.classList.remove('bg-white', 'text-gray-600');
-            renderKanji();
-        }
-
-        function speakModal() {
-            const text = document.getElementById('m-vidu-jp').innerText;
+        // --- UTILS ---
+        function speak(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                const u = new SpeechSynthesisUtterance(text);
-                u.lang = 'ja-JP';
-                u.rate = 0.85;
+                const clean = text.replace(/\[.*?\]/g, '').replace(/<.*?>/g, '').replace(/・/g, '').replace(/\*/g, '');
+                const u = new SpeechSynthesisUtterance(clean);
+                u.lang = 'ja-JP'; u.rate = 0.9;
                 window.speechSynthesis.speak(u);
             }
         }
 
-        window.onload = renderKanji;
+        function getKanjiHex(kanji) {
+            return kanji.charCodeAt(0).toString(16).padStart(5, '0');
+        }
+
+        async function fetchKanjiSvg(hex) {
+            try {
+                const response = await fetch(`https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/${hex}.svg`);
+                if (!response.ok) throw new Error('Not found');
+                return await response.text();
+            } catch (e) { return null; }
+        }
+
+        // --- RENDER ---
+        function renderLearn() {
+            const grid = document.getElementById('kanji-grid');
+            const filteredData = currentFilter === 'all' ? kanjiData : kanjiData.filter(i => i.l === currentFilter);
+            
+            grid.innerHTML = filteredData.map(k => `
+                <div class="perspective h-48">
+                    <div class="card-inner h-full w-full" onclick="this.parentElement.classList.toggle('is-flipped')">
+                        <!-- Front -->
+                        <div class="card-front level-${k.l.toLowerCase()} p-4">
+                            <div class="text-5xl font-bold kanji-font text-gray-800 mb-2">${k.char}</div>
+                            <div class="text-lg font-bold text-red-600 tracking-wide uppercase">${k.nghiaHV}</div>
+                            <button onclick="event.stopPropagation(); showStrokeOrder('${k.char}')" class="absolute bottom-3 right-3 text-sky-500 hover:text-sky-700 bg-sky-50 rounded-full w-10 h-10 flex items-center justify-center shadow-sm border border-sky-100 transition-all active:scale-90">
+                                <i class="fas fa-pen-nib"></i>
+                            </button>
+                        </div>
+                        <!-- Back -->
+                        <div class="card-back p-4 text-center">
+                            <div class="text-sm font-bold text-sky-800 mb-2">${k.nghiaTV}</div>
+                            <div class="space-y-1 mb-2">
+                                <div class="text-[10px] text-gray-400 font-bold uppercase">On/Kun</div>
+                                <div class="text-xs font-bold text-gray-700">${k.on} / ${k.kun}</div>
+                            </div>
+                            <div class="text-[10px] text-gray-500 italic px-2">Nhấn biểu tượng bút để xem cách viết</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- STROKE ORDER MODAL (Logic từ mã tham khảo) ---
+        async function showStrokeOrder(kanji) {
+            const k = kanjiData.find(i => i.char === kanji);
+            if (!k) return;
+
+            document.getElementById('stroke-modal').classList.remove('hidden');
+            document.getElementById('m-char').innerText = k.char;
+            document.getElementById('m-hanviet').innerText = k.nghiaHV;
+            document.getElementById('m-nghia').innerText = k.nghiaTV;
+            document.getElementById('m-phanra').innerHTML = k.pr;
+            document.getElementById('m-on').innerText = k.on;
+            document.getElementById('m-kun').innerText = k.kun;
+            document.getElementById('m-vidu-jp').innerText = k.v_jp;
+            document.getElementById('m-vidu-vi').innerText = k.v_vi;
+
+            const animContainer = document.getElementById('stroke-animation-container');
+            const gridContainer = document.getElementById('stroke-grid-container');
+            animContainer.innerHTML = '<span class="text-xs text-gray-400">Đang tải...</span>';
+            
+            const hex = getKanjiHex(kanji);
+            const svgContent = await fetchKanjiSvg(hex);
+            
+            if (!svgContent) {
+                animContainer.innerHTML = "<p class='p-4 text-red-500 text-xs'>Lỗi tải hình ảnh</p>";
+                gridContainer.innerHTML = "";
+                return;
+            }
+
+            animContainer.innerHTML = svgContent;
+            const mainSvg = animContainer.querySelector('svg');
+            mainSvg.setAttribute('width', '100%'); mainSvg.setAttribute('height', '100%');
+            
+            const paths = mainSvg.querySelectorAll('path');
+            paths.forEach(p => {
+                const len = p.getTotalLength();
+                p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
+                p.style.stroke = "#333"; p.style.strokeWidth = "4"; p.style.fill = "none";
+                p.style.strokeLinecap = "round"; p.style.strokeLinejoin = "round";
+            });
+            
+            currentStrokeSvg = mainSvg;
+            replayStrokeAnimation();
+
+            // Render Stroke Grid
+            gridContainer.innerHTML = '';
+            for(let i=0; i<paths.length; i++) {
+                const box = document.createElement('div');
+                box.className = "w-14 h-14 bg-white border border-gray-200 relative stroke-grid-box flex items-center justify-center rounded-lg shadow-sm";
+                const parser = new DOMParser();
+                const svgClone = parser.parseFromString(svgContent, "image/svg+xml").querySelector('svg');
+                svgClone.setAttribute('width', '100%'); svgClone.setAttribute('height', '100%');
+                svgClone.querySelectorAll('path').forEach((p, idx) => {
+                    p.style.fill="none"; p.style.strokeLinecap="round"; p.style.strokeLinejoin="round";
+                    if(idx < i) { p.style.stroke="#cbd5e1"; p.style.strokeWidth="3"; }
+                    else if(idx === i) { p.style.stroke="#0ea5e9"; p.style.strokeWidth="5"; }
+                    else p.style.display="none";
+                });
+                box.appendChild(svgClone);
+                gridContainer.appendChild(box);
+            }
+        }
+
+        function replayStrokeAnimation() {
+            if(!currentStrokeSvg) return;
+            const paths = currentStrokeSvg.querySelectorAll('path');
+            paths.forEach(p => { 
+                p.style.transition = 'none'; 
+                p.style.strokeDashoffset = p.getTotalLength(); 
+            });
+            void currentStrokeSvg.offsetWidth;
+            let delay = 0;
+            paths.forEach(p => {
+                p.style.transition = `stroke-dashoffset 0.6s ease-in-out ${delay}s`;
+                p.style.strokeDashoffset = '0';
+                delay += 0.6;
+            });
+        }
+
+        function closeStrokeModal() { document.getElementById('stroke-modal').classList.add('hidden'); }
+
+        function filterLevel(level) {
+            currentFilter = level;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-sky-600', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-600');
+            });
+            document.getElementById(`btn-${level}`).classList.add('bg-sky-600', 'text-white');
+            renderLearn();
+        }
+
+        function speakModal() {
+            const text = document.getElementById('m-vidu-jp').innerText;
+            speak(text);
+        }
+
+        window.onload = renderLearn;
     </script>
 </body>
 </html>
