@@ -11,8 +11,10 @@
         body { font-family: 'Nunito', sans-serif; background-color: #f1f5f9; overflow-x: hidden; }
         .kanji-font { font-family: 'Noto Sans JP', sans-serif; }
         
-        /* Flip Card Animation Fix */
-        .perspective { perspective: 1000px; }
+        /* Flip Card Animation Fix - Overlap prevention */
+        .perspective { perspective: 1500px; position: relative; z-index: 1; }
+        .perspective:hover { z-index: 10; } /* Ensure current card is on top when interacting */
+
         .card-inner {
             position: relative;
             width: 100%;
@@ -22,6 +24,7 @@
             cursor: pointer;
         }
         .card-inner.is-flipped { transform: rotateY(180deg); }
+        
         .card-front, .card-back {
             position: absolute;
             width: 100%;
@@ -32,8 +35,10 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            top: 0;
+            left: 0;
         }
-        .card-front { background: white; border: 2px solid #e2e8f0; z-index: 2; }
+        .card-front { background: white; border: 2px solid #e2e8f0; z-index: 2; transform: rotateY(0deg); }
         .card-back { background: #ecfdf5; border: 2px solid #a7f3d0; transform: rotateY(180deg); z-index: 1; }
 
         /* Stroke Grid */
@@ -48,6 +53,10 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         .active-filter { background-color: #059669 !important; color: white !important; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3); }
+
+        /* Conjugation Matrix Styling */
+        .matrix-row { border-bottom: 1px solid #f1f5f9; }
+        .matrix-row:last-child { border-bottom: none; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -56,15 +65,15 @@
     <header class="bg-emerald-800 text-white shadow-xl sticky top-0 z-40">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3 cursor-pointer" onclick="location.reload()">
-                <i class="fas fa-dharmachakra text-3xl text-yellow-400 animate-spin-slow"></i>
+                <i class="fas fa-dharmachakra text-3xl text-yellow-400"></i>
                 <div>
                     <h1 class="text-xl font-black uppercase tracking-tighter">AzaKanji Master</h1>
-                    <p class="text-[10px] text-emerald-200 opacity-90 uppercase font-bold tracking-widest">Đồng Nhất Thể Trí • 95 Động Từ</p>
+                    <p class="text-[10px] text-emerald-200 opacity-90 uppercase font-bold tracking-widest leading-none">Đồng Nhất Thể Trí • 95 Động Từ</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <button onclick="showPoem()" class="text-[10px] md:text-xs bg-emerald-700 px-3 py-2 rounded-xl border border-emerald-600 hover:bg-emerald-600 transition font-bold uppercase tracking-wide">
-                    <i class="fas fa-scroll mr-1"></i> Thần Chú
+                <button onclick="showPoem()" class="text-[10px] md:text-xs bg-yellow-500 text-emerald-950 px-4 py-2 rounded-xl hover:bg-yellow-400 transition font-black uppercase tracking-wide shadow-md">
+                    <i class="fas fa-scroll mr-1"></i> BÍ KÍP THẦN CHÚ
                 </button>
                 <div class="text-xs bg-emerald-900 px-3 py-2 rounded-xl font-mono border border-emerald-700">
                     <span id="completed-count" class="text-yellow-400 font-bold">0</span>/95
@@ -95,27 +104,96 @@
         </div>
     </main>
 
-    <!-- POEM MODAL (THẦN CHÚ) -->
-    <div id="poem-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-gray-900/80 backdrop-blur-md" onclick="closePoem()"></div>
-        <div class="bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl relative modal-enter">
-            <div class="bg-gradient-to-br from-emerald-700 to-teal-900 p-8 text-white text-center">
-                <h2 class="text-2xl font-black uppercase tracking-widest italic mb-1">BÍ KÍP THẦN CHÚ TE & TA</h2>
-                <p class="text-emerald-300 text-xs font-bold">Kích hoạt Thể Trí - Động từ Nhóm 1</p>
-            </div>
-            <div class="p-10 text-center bg-emerald-50">
-                <div class="space-y-6 text-emerald-950 font-black text-xl italic leading-tight">
-                    <p>“Ư (U) - Chú (Tsu) - Rờ (Ru)... <br><span class="text-red-600 text-3xl not-italic tracking-tighter">sướng Tê Tê (って)</span>”</p>
-                    <p>“Bú (Bu) - Mu (Mu) - Nụ (Nu)... <br><span class="text-red-600 text-3xl not-italic tracking-tighter">phải Ấn Đè (んで)</span> mới phê”</p>
-                    <p class="text-emerald-700">“Ku là Ite, Gu là Ide”</p>
-                    <p>“Sung (Su) thì Sĩ Tệ (shite)... <br><span class="text-emerald-600 underline">gì không thông?</span>”</p>
+    <!-- EXPANDED POEM MODAL (BÍ KÍP TỔNG HỢP) -->
+    <div id="poem-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-gray-900/80 backdrop-blur-md" onclick="closePoem()"></div>
+            <div class="bg-white rounded-[2.5rem] w-full max-w-3xl overflow-hidden shadow-2xl relative modal-enter">
+                <div class="bg-gradient-to-br from-emerald-700 to-teal-900 p-6 text-white text-center">
+                    <h2 class="text-2xl font-black uppercase tracking-widest italic mb-1">CẨM NANG THẦN CHÚ ĐỘNG TỪ</h2>
+                    <p class="text-emerald-300 text-xs font-bold uppercase tracking-widest">Đồng nhất Thân - Tâm - Trí</p>
                 </div>
+                
+                <div class="p-8 bg-slate-50 max-h-[75vh] overflow-y-auto no-scrollbar">
+                    <div class="space-y-8">
+                        <!-- Thần chú Te/Ta -->
+                        <section>
+                            <h3 class="text-emerald-800 font-black text-sm mb-4 border-b-2 border-emerald-100 pb-1 uppercase tracking-wider"><i class="fas fa-music mr-2"></i> 1. Thần chú Thể Te & Ta (Nhóm 1)</h3>
+                            <div class="bg-white p-6 rounded-3xl border border-emerald-100 shadow-sm text-center">
+                                <div class="space-y-4 text-emerald-950 font-black text-lg italic leading-tight">
+                                    <p>“Ư (U) - Chú (Tsu) - Rờ (Ru)... <br><span class="text-red-600 text-2xl not-italic tracking-tighter">sướng Tê Tê (って)</span>”</p>
+                                    <p>“Bú (Bu) - Mu (Mu) - Nụ (Nu)... <br><span class="text-red-600 text-2xl not-italic tracking-tighter">phải Ấn Đè (nde - んで)</span> mới phê”</p>
+                                    <p class="text-emerald-700">“Ku là Ite, Gu là Ide”</p>
+                                    <p>“Sung (Su) thì Sĩ Tệ (shite)... <br><span class="text-emerald-600 underline">gì không thông?</span>”</p>
+                                </div>
+                                <p class="mt-4 text-[10px] text-gray-400">*Lưu ý: Thể Ta chia y hệt Te, chỉ thay Te/De bằng Ta/Da.</p>
+                            </div>
+                        </section>
+
+                        <!-- Chiến thuật A-I-U-E-O -->
+                        <section>
+                            <h3 class="text-emerald-800 font-black text-sm mb-4 border-b-2 border-emerald-100 pb-1 uppercase tracking-wider"><i class="fas fa-chess-board mr-2"></i> 2. Chiến thuật Ma Trận A-I-U-E-O (Nhóm 1)</h3>
+                            <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-emerald-50 text-emerald-800 font-black uppercase tracking-tighter">
+                                        <tr>
+                                            <th class="p-3">Hàng</th>
+                                            <th class="p-3">Thể (Form)</th>
+                                            <th class="p-3">Mẹo Nhớ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="font-bold text-slate-700">
+                                        <tr class="matrix-row"><td class="p-3 text-emerald-600 font-black">A</td><td class="p-3">Phủ định (Nai) / Bị động / Sai khiến</td><td class="p-3">"Á! Bị bắt/Không làm"</td></tr>
+                                        <tr class="matrix-row"><td class="p-3 text-emerald-600 font-black">I</td><td class="p-3">Lịch sự (Masu)</td><td class="p-3">"I là lịch sự"</td></tr>
+                                        <tr class="matrix-row"><td class="p-3 text-emerald-600 font-black">U</td><td class="p-3">Từ điển (Jisho)</td><td class="p-3">"U là gốc"</td></tr>
+                                        <tr class="matrix-row"><td class="p-3 text-emerald-600 font-black">E</td><td class="p-3">Khả năng (Kanou)</td><td class="p-3">"Em làm được"</td></tr>
+                                        <tr class="matrix-row"><td class="p-3 text-emerald-600 font-black">O</td><td class="p-3">Ý chí (Ikou)</td><td class="p-3">"Ô! Làm thôi"</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <!-- Định nghĩa 9 Thể -->
+                        <section>
+                            <h3 class="text-emerald-800 font-black text-sm mb-4 border-b-2 border-emerald-100 pb-1 uppercase tracking-wider"><i class="fas fa-book mr-2"></i> 3. Ý Nghĩa 9 Đại Công Năng</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
+                                    <span class="text-emerald-600 font-black mr-2">1. Jisho:</span> Nguyên mẫu / Tra từ.
+                                </div>
+                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
+                                    <span class="text-emerald-600 font-black mr-2">2. Masu:</span> Lịch sự / Trang trọng.
+                                </div>
+                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
+                                    <span class="text-emerald-600 font-black mr-2">3. Nai:</span> Phủ định "Không làm".
+                                </div>
+                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
+                                    <span class="text-emerald-600 font-black mr-2">4. Te:</span> Nối câu / Trạng thái.
+                                </div>
+                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
+                                    <span class="text-emerald-600 font-black mr-2">5. Ta:</span> Quá khứ "Đã làm".
+                                </div>
+                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
+                                    <span class="text-emerald-600 font-black mr-2">6. Kanou:</span> "Có thể" (Năng lực).
+                                </div>
+                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
+                                    <span class="text-emerald-600 font-black mr-2">7. Ikou:</span> Rủ rê / Định làm.
+                                </div>
+                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
+                                    <span class="text-emerald-600 font-black mr-2">8. Ukemi:</span> Chịu tác động "Bị / Được".
+                                </div>
+                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
+                                    <span class="text-emerald-600 font-black mr-2">9. Shieki:</span> Quyền lực "Bắt / Cho phép".
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+                <button onclick="closePoem()" class="w-full py-5 bg-white text-emerald-800 font-black uppercase tracking-widest hover:bg-gray-50 transition border-t text-sm">THÔNG SUỐT!</button>
             </div>
-            <button onclick="closePoem()" class="w-full py-5 bg-white text-emerald-800 font-black uppercase tracking-widest hover:bg-gray-50 transition border-t text-sm">KHAI THÔNG CHÂN NGÃ!</button>
         </div>
     </div>
 
-    <!-- DETAIL MODAL -->
+    <!-- DETAIL MODAL (SAME AS BEFORE) -->
     <div id="verb-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen px-4 py-6 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-slate-900/90 transition-opacity backdrop-blur-sm" onclick="closeModal()"></div>
@@ -139,8 +217,6 @@
                 <!-- Modal Body -->
                 <div class="p-8 bg-slate-50 max-h-[80vh] overflow-y-auto no-scrollbar">
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                        
-                        <!-- Left Panel: Kanji & Radicals -->
                         <div class="lg:col-span-4 space-y-6">
                             <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200 text-center relative overflow-hidden group">
                                 <div id="stroke-animation" class="w-52 h-52 mx-auto stroke-grid-box flex items-center justify-center bg-white"></div>
@@ -165,15 +241,12 @@
                             </div>
                         </div>
 
-                        <!-- Right Panel: Conjugation & Grammar -->
                         <div class="lg:col-span-8 space-y-6">
                             <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
                                 <h4 class="text-[10px] uppercase font-black text-slate-400 mb-5 tracking-[0.2em] border-b pb-2">
                                     <i class="fas fa-magic mr-2"></i> Ma Trận 9 Thể Biến Đổi
                                 </h4>
-                                <div class="grid grid-cols-3 gap-3" id="conjugation-grid">
-                                    <!-- 9 Forms -->
-                                </div>
+                                <div class="grid grid-cols-3 gap-3" id="conjugation-grid"></div>
                             </div>
 
                             <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
@@ -197,7 +270,7 @@
     </div>
 
     <script>
-        // --- DATA 95 VERBS (Standardized PR & Radicals) ---
+    // --- DATA 95 VERBS (Standardized PR & Radicals) ---
         const verbsData = [
             // --- Nhóm 1: Di Chuyển ---
             { id: 1, char: "行", hv: "HÀNH", nghia: "Đi", level: "N5", onkun: "コウ / い.く", pr: "彳 (Bước ngắn) + 亍 (Bước dài).<br>💡 Đi Y như Cụ già bước trái bước phải tại ngã tư.", forms: ["いく", "いきます", "いかない", "いって", "いった", "いける", "いこう", "いかれる", "いかせる"], ex_jp: "日本へ行きます。", ex_vi: "Đi về phía Nhật Bản - Trợ từ へ" },
@@ -462,3 +535,5 @@
     </script>
 </body>
 </html>
+
+     
