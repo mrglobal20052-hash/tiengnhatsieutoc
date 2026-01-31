@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AzaKanji Master Verbs - Chinh Phục 95 Động Từ</title>
+    <title>AzaVerb Master - Chinh Phục 95 Động Từ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Nunito', sans-serif; background-color: #f1f5f9; overflow-x: hidden; }
         .kanji-font { font-family: 'Noto Sans JP', sans-serif; }
         
-        /* Flip Card Animation Fix - Overlap prevention */
-        .perspective { perspective: 1500px; position: relative; z-index: 1; }
-        .perspective:hover { z-index: 10; } /* Ensure current card is on top when interacting */
+        /* Cố định khung bao để không bị nhảy dòng khi lật */
+        .card-container { height: 300px; width: 100%; position: relative; perspective: 1500px; }
+        .card-container:hover { z-index: 50; }
 
         .card-inner {
-            position: relative;
+            position: absolute;
             width: 100%;
             height: 100%;
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -39,10 +39,10 @@
             left: 0;
         }
         .card-front { background: white; border: 2px solid #e2e8f0; z-index: 2; transform: rotateY(0deg); }
-        .card-back { background: #ecfdf5; border: 2px solid #a7f3d0; transform: rotateY(180deg); z-index: 1; }
+        .card-back { background: #f0fdfa; border: 2px solid #99f6e4; transform: rotateY(180deg); z-index: 1; }
 
-        /* Stroke Grid */
-        .stroke-grid-box { border: 1px solid #e5e7eb; background-color: white; position: relative; }
+        /* Lưới tập viết */
+        .stroke-grid-box { border: 1px solid #e2e8f0; background-color: white; position: relative; }
         .stroke-grid-box::after { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; border-left: 1px dashed #cbd5e1; }
         .stroke-grid-box::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; border-top: 1px dashed #cbd5e1; }
 
@@ -52,30 +52,26 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .active-filter { background-color: #059669 !important; color: white !important; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3); }
-
-        /* Conjugation Matrix Styling */
-        .matrix-row { border-bottom: 1px solid #f1f5f9; }
-        .matrix-row:last-child { border-bottom: none; }
+        .active-filter { background-color: #0d9488 !important; color: white !important; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3); }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
     <!-- Header -->
-    <header class="bg-emerald-800 text-white shadow-xl sticky top-0 z-40">
+    <header class="bg-teal-900 text-white shadow-xl sticky top-0 z-40">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3 cursor-pointer" onclick="location.reload()">
                 <i class="fas fa-dharmachakra text-3xl text-yellow-400"></i>
                 <div>
-                    <h1 class="text-xl font-black uppercase tracking-tighter">AzaKanji Master</h1>
-                    <p class="text-[10px] text-emerald-200 opacity-90 uppercase font-bold tracking-widest leading-none">Đồng Nhất Thể Trí • 95 Động Từ</p>
+                    <h1 class="text-xl font-black uppercase tracking-tighter">AzaVerb Master</h1>
+                    <p class="text-[10px] text-teal-200 opacity-90 uppercase font-bold tracking-widest leading-none">Thanh Lọc Thể Trí • 95 Động Từ</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <button onclick="showPoem()" class="text-[10px] md:text-xs bg-yellow-500 text-emerald-950 px-4 py-2 rounded-xl hover:bg-yellow-400 transition font-black uppercase tracking-wide shadow-md">
+                <button onclick="showPoem()" class="text-[10px] bg-yellow-500 text-teal-950 px-4 py-2 rounded-xl hover:bg-yellow-400 transition font-black uppercase tracking-wide shadow-md">
                     <i class="fas fa-scroll mr-1"></i> BÍ KÍP THẦN CHÚ
                 </button>
-                <div class="text-xs bg-emerald-900 px-3 py-2 rounded-xl font-mono border border-emerald-700">
+                <div class="text-xs bg-teal-950 px-3 py-2 rounded-xl font-mono border border-teal-700">
                     <span id="completed-count" class="text-yellow-400 font-bold">0</span>/95
                 </div>
             </div>
@@ -86,179 +82,133 @@
         <!-- Dashboard Controls -->
         <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-200 mb-8 flex flex-col md:flex-row gap-5 justify-between items-center">
             <div class="flex gap-2 overflow-x-auto pb-1 w-full md:w-auto no-scrollbar">
-                <button onclick="filterLevel('all')" id="btn-all" class="filter-btn px-5 py-2.5 rounded-2xl text-sm font-black bg-gray-100 text-gray-500 transition active-filter">TẤT CẢ</button>
-                <button onclick="filterLevel('N5')" id="btn-N5" class="filter-btn px-5 py-2.5 rounded-2xl text-sm font-black bg-gray-100 text-gray-500 transition">N5</button>
-                <button onclick="filterLevel('N4')" id="btn-N4" class="filter-btn px-5 py-2.5 rounded-2xl text-sm font-black bg-gray-100 text-gray-500 transition">N4</button>
-                <button onclick="filterLevel('N3')" id="btn-N3" class="filter-btn px-5 py-2.5 rounded-2xl text-sm font-black bg-gray-100 text-gray-500 transition">N3</button>
+                <button onclick="filterLevel('all')" id="btn-all" class="filter-btn px-5 py-2.5 rounded-2xl text-xs font-black bg-gray-100 text-gray-500 transition active-filter">TẤT CẢ</button>
+                <button onclick="filterLevel('N5')" id="btn-N5" class="filter-btn px-5 py-2.5 rounded-2xl text-xs font-black bg-gray-100 text-gray-500 transition">N5</button>
+                <button onclick="filterLevel('N4')" id="btn-N4" class="filter-btn px-5 py-2.5 rounded-2xl text-xs font-black bg-gray-100 text-gray-500 transition">N4</button>
+                <button onclick="filterLevel('N3')" id="btn-N3" class="filter-btn px-5 py-2.5 rounded-2xl text-xs font-black bg-gray-100 text-gray-500 transition">N3</button>
             </div>
             
             <div class="relative w-full md:w-80">
-                <input type="text" id="verb-search" onkeyup="searchVerb()" placeholder="Tìm Kanji, Hán Việt, Nghĩa..." class="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 focus:outline-none text-sm font-medium transition-all">
+                <input type="text" id="verb-search" onkeyup="searchVerb()" placeholder="Tìm Kanji, Hán Việt, Nghĩa..." class="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 focus:ring-4 focus:ring-teal-100 focus:border-teal-500 focus:outline-none text-sm font-medium transition-all">
                 <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
             </div>
         </div>
 
         <!-- Verbs Grid -->
-        <div id="verbs-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            <!-- Dynamic Verbs Injected Here -->
+        <div id="verbs-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <!-- Dynamic Verbs -->
         </div>
     </main>
 
-    <!-- EXPANDED POEM MODAL (BÍ KÍP TỔNG HỢP) -->
+    <!-- POEM MODAL -->
     <div id="poem-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="fixed inset-0 bg-gray-900/80 backdrop-blur-md" onclick="closePoem()"></div>
-            <div class="bg-white rounded-[2.5rem] w-full max-w-3xl overflow-hidden shadow-2xl relative modal-enter">
-                <div class="bg-gradient-to-br from-emerald-700 to-teal-900 p-6 text-white text-center">
-                    <h2 class="text-2xl font-black uppercase tracking-widest italic mb-1">CẨM NANG THẦN CHÚ ĐỘNG TỪ</h2>
-                    <p class="text-emerald-300 text-xs font-bold uppercase tracking-widest">Đồng nhất Thân - Tâm - Trí</p>
+            <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-md" onclick="closePoem()"></div>
+            <div class="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl relative modal-enter">
+                <div class="bg-teal-800 p-6 text-white text-center">
+                    <h2 class="text-xl font-black uppercase tracking-widest italic mb-1 italic">CẨM NANG THẦN CHÚ ĐỘNG TỪ</h2>
+                    <p class="text-teal-200 text-[10px] font-bold uppercase tracking-widest italic">Master 9 Thể Chia - Đồng Nhất Thể Trí</p>
                 </div>
-                
-                <div class="p-8 bg-slate-50 max-h-[75vh] overflow-y-auto no-scrollbar">
-                    <div class="space-y-8">
-                        <!-- Thần chú Te/Ta -->
-                        <section>
-                            <h3 class="text-emerald-800 font-black text-sm mb-4 border-b-2 border-emerald-100 pb-1 uppercase tracking-wider"><i class="fas fa-music mr-2"></i> 1. Thần chú Thể Te & Ta (Nhóm 1)</h3>
-                            <div class="bg-white p-6 rounded-3xl border border-emerald-100 shadow-sm text-center">
-                                <div class="space-y-4 text-emerald-950 font-black text-lg italic leading-tight">
-                                    <p>“Ư (U) - Chú (Tsu) - Rờ (Ru)... <br><span class="text-red-600 text-2xl not-italic tracking-tighter">sướng Tê Tê (って)</span>”</p>
-                                    <p>“Bú (Bu) - Mu (Mu) - Nụ (Nu)... <br><span class="text-red-600 text-2xl not-italic tracking-tighter">phải Ấn Đè (nde - んで)</span> mới phê”</p>
-                                    <p class="text-emerald-700">“Ku là Ite, Gu là Ide”</p>
-                                    <p>“Sung (Su) thì Sĩ Tệ (shite)... <br><span class="text-emerald-600 underline">gì không thông?</span>”</p>
-                                </div>
-                                <p class="mt-4 text-[10px] text-gray-400">*Lưu ý: Thể Ta chia y hệt Te, chỉ thay Te/De bằng Ta/Da.</p>
-                            </div>
-                        </section>
-
-                        <!-- Chiến thuật A-I-U-E-O -->
-                        <section>
-                            <h3 class="text-emerald-800 font-black text-sm mb-4 border-b-2 border-emerald-100 pb-1 uppercase tracking-wider"><i class="fas fa-chess-board mr-2"></i> 2. Chiến thuật Ma Trận A-I-U-E-O (Nhóm 1)</h3>
-                            <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-                                <table class="w-full text-left text-xs">
-                                    <thead class="bg-emerald-50 text-emerald-800 font-black uppercase tracking-tighter">
-                                        <tr>
-                                            <th class="p-3">Hàng</th>
-                                            <th class="p-3">Thể (Form)</th>
-                                            <th class="p-3">Mẹo Nhớ</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="font-bold text-slate-700">
-                                        <tr class="matrix-row"><td class="p-3 text-emerald-600 font-black">A</td><td class="p-3">Phủ định (Nai) / Bị động / Sai khiến</td><td class="p-3">"Á! Bị bắt/Không làm"</td></tr>
-                                        <tr class="matrix-row"><td class="p-3 text-emerald-600 font-black">I</td><td class="p-3">Lịch sự (Masu)</td><td class="p-3">"I là lịch sự"</td></tr>
-                                        <tr class="matrix-row"><td class="p-3 text-emerald-600 font-black">U</td><td class="p-3">Từ điển (Jisho)</td><td class="p-3">"U là gốc"</td></tr>
-                                        <tr class="matrix-row"><td class="p-3 text-emerald-600 font-black">E</td><td class="p-3">Khả năng (Kanou)</td><td class="p-3">"Em làm được"</td></tr>
-                                        <tr class="matrix-row"><td class="p-3 text-emerald-600 font-black">O</td><td class="p-3">Ý chí (Ikou)</td><td class="p-3">"Ô! Làm thôi"</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </section>
-
-                        <!-- Định nghĩa 9 Thể -->
-                        <section>
-                            <h3 class="text-emerald-800 font-black text-sm mb-4 border-b-2 border-emerald-100 pb-1 uppercase tracking-wider"><i class="fas fa-book mr-2"></i> 3. Ý Nghĩa 9 Đại Công Năng</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
-                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
-                                    <span class="text-emerald-600 font-black mr-2">1. Jisho:</span> Nguyên mẫu / Tra từ.
-                                </div>
-                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
-                                    <span class="text-emerald-600 font-black mr-2">2. Masu:</span> Lịch sự / Trang trọng.
-                                </div>
-                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
-                                    <span class="text-emerald-600 font-black mr-2">3. Nai:</span> Phủ định "Không làm".
-                                </div>
-                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
-                                    <span class="text-emerald-600 font-black mr-2">4. Te:</span> Nối câu / Trạng thái.
-                                </div>
-                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
-                                    <span class="text-emerald-600 font-black mr-2">5. Ta:</span> Quá khứ "Đã làm".
-                                </div>
-                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
-                                    <span class="text-emerald-600 font-black mr-2">6. Kanou:</span> "Có thể" (Năng lực).
-                                </div>
-                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
-                                    <span class="text-emerald-600 font-black mr-2">7. Ikou:</span> Rủ rê / Định làm.
-                                </div>
-                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
-                                    <span class="text-emerald-600 font-black mr-2">8. Ukemi:</span> Chịu tác động "Bị / Được".
-                                </div>
-                                <div class="bg-white p-3 rounded-2xl border border-slate-200">
-                                    <span class="text-emerald-600 font-black mr-2">9. Shieki:</span> Quyền lực "Bắt / Cho phép".
-                                </div>
-                            </div>
-                        </section>
+                <div class="p-8 bg-slate-50 space-y-6">
+                    <!-- Thần chú Te/Ta -->
+                    <div class="bg-white p-6 rounded-3xl border border-teal-100 shadow-sm text-center">
+                        <h4 class="text-[10px] font-black text-teal-600 uppercase mb-3 tracking-widest">Bí kíp chia thể Te/Ta (Nhóm 1)</h4>
+                        <div class="space-y-4 text-teal-950 font-black text-lg italic leading-tight">
+                            <p>“Ư (U) - Chú (Tsu) - Rờ (Ru)... <br><span class="text-red-600 text-2xl not-italic">sướng Tê Tê (って)</span>”</p>
+                            <p>“Bú (Bu) - Mu (Mu) - Nụ (Nu)... <br><span class="text-red-600 text-2xl not-italic">phải Ấn Đè (nde - んで)</span> mới phê”</p>
+                            <p class="text-teal-700">“Ku là Ite, Gu là Ide”</p>
+                            <p>“Sung (Su) thì Sĩ Tệ (shite)... <br><span class="text-teal-600 underline">gì không thông?</span>”</p>
+                        </div>
+                    </div>
+                    <!-- Định nghĩa 9 thể -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[10px] font-bold">
+                        <div class="bg-teal-50 p-3 rounded-2xl text-teal-800 border border-teal-100">1. <span class="text-red-600">Jisho</span>: Nguyên mẫu / Tra từ điển.</div>
+                        <div class="bg-teal-50 p-3 rounded-2xl text-teal-800 border border-teal-100">2. <span class="text-red-600">Masu</span>: Thể lịch sự (I + ます).</div>
+                        <div class="bg-teal-50 p-3 rounded-2xl text-teal-800 border border-teal-100">3. <span class="text-red-600">Nai</span>: Phủ định (A + ない).</div>
+                        <div class="bg-teal-50 p-3 rounded-2xl text-teal-800 border border-teal-100">4. <span class="text-red-600">Te</span>: Nối câu / Sai bảo nhẹ.</div>
+                        <div class="bg-teal-50 p-3 rounded-2xl text-teal-800 border border-teal-100">5. <span class="text-red-600">Ta</span>: Quá khứ "Đã làm".</div>
+                        <div class="bg-teal-50 p-3 rounded-2xl text-teal-800 border border-teal-100">6. <span class="text-red-600">Kanou</span>: Khả năng (E + る).</div>
+                        <div class="bg-teal-50 p-3 rounded-2xl text-teal-800 border border-teal-100">7. <span class="text-red-600">Ikou</span>: Ý chí "Cùng làm" (O + う).</div>
+                        <div class="bg-teal-50 p-3 rounded-2xl text-teal-800 border border-teal-100">8. <span class="text-red-600">Ukemi</span>: Bị động "Bị/Được làm".</div>
+                        <div class="bg-teal-50 p-3 rounded-2xl text-teal-800 border border-teal-100">9. <span class="text-red-600">Shieki</span>: Sai khiến "Bắt làm".</div>
                     </div>
                 </div>
-                <button onclick="closePoem()" class="w-full py-5 bg-white text-emerald-800 font-black uppercase tracking-widest hover:bg-gray-50 transition border-t text-sm">THÔNG SUỐT!</button>
+                <button onclick="closePoem()" class="w-full py-4 bg-white text-teal-800 font-black uppercase tracking-widest hover:bg-gray-50 transition border-t text-sm">ĐÃ THÔNG SUỐT!</button>
             </div>
         </div>
     </div>
 
-    <!-- DETAIL MODAL (SAME AS BEFORE) -->
+    <!-- DETAIL MODAL -->
     <div id="verb-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen px-4 py-6 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-slate-900/90 transition-opacity backdrop-blur-sm" onclick="closeModal()"></div>
-            <div class="inline-block align-bottom bg-white rounded-[3rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl w-full modal-enter relative">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-slate-900/90 transition-opacity backdrop-blur-md" onclick="closeModal()"></div>
+            <div class="inline-block align-bottom bg-white rounded-[3rem] text-left overflow-hidden shadow-2xl transform transition-all max-w-5xl w-full modal-enter relative">
                 
-                <!-- Modal Header -->
-                <div class="bg-emerald-800 px-8 py-6 flex justify-between items-center text-white">
+                <div class="bg-teal-800 px-8 py-6 flex justify-between items-center text-white border-b border-white/10">
                     <div class="flex items-center gap-5">
                         <span id="m-level" class="px-3 py-1 rounded-full text-[10px] font-black border-2 border-white/30 bg-white/10 uppercase tracking-widest"></span>
                         <h3 class="flex items-center">
                             <span id="m-char-title" class="text-5xl font-black kanji-font tracking-tighter"></span>
                             <div class="ml-4 flex flex-col">
                                 <span id="m-hanviet" class="text-yellow-400 font-black uppercase text-lg tracking-widest leading-none"></span>
-                                <span id="m-nghia-full" class="text-emerald-100 text-sm font-bold opacity-80 mt-1"></span>
+                                <span id="m-group" class="text-teal-200 text-xs font-bold mt-1 uppercase"></span>
                             </div>
                         </h3>
                     </div>
                     <button onclick="closeModal()" class="w-12 h-12 flex items-center justify-center rounded-full hover:bg-white/10 transition-all text-3xl font-light">&times;</button>
                 </div>
 
-                <!-- Modal Body -->
                 <div class="p-8 bg-slate-50 max-h-[80vh] overflow-y-auto no-scrollbar">
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        
+                        <!-- Left Panel: Kanji Stroke & Audio -->
                         <div class="lg:col-span-4 space-y-6">
-                            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200 text-center relative overflow-hidden group">
-                                <div id="stroke-animation" class="w-52 h-52 mx-auto stroke-grid-box flex items-center justify-center bg-white"></div>
-                                <button onclick="replayStroke()" class="mt-4 px-6 py-2 rounded-full bg-emerald-50 text-emerald-700 text-xs font-black uppercase tracking-widest hover:bg-emerald-100 transition"><i class="fas fa-redo mr-2"></i> Viết lại</button>
+                            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200 text-center relative group">
+                                <h4 class="text-[9px] uppercase font-black text-slate-400 mb-4 tracking-widest">Thứ tự viết (Stroke Order)</h4>
+                                <div id="stroke-animation" class="w-44 h-44 mx-auto stroke-grid-box flex items-center justify-center bg-white shadow-inner rounded-xl"></div>
+                                <button onclick="replayStroke()" class="mt-4 px-6 py-2 rounded-full bg-teal-50 text-teal-700 text-[10px] font-black uppercase tracking-widest hover:bg-teal-100 transition"><i class="fas fa-redo mr-2"></i> Viết lại</button>
                             </div>
                             
                             <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
-                                <h4 class="text-[10px] uppercase font-black text-slate-400 mb-4 tracking-[0.2em] border-b pb-2 flex items-center justify-between">
-                                    <span>Âm Đọc & Giải Mã</span>
-                                    <button onclick="speakKanji()" class="text-emerald-500 hover:scale-125 transition active:scale-95"><i class="fas fa-volume-up text-lg"></i></button>
-                                </h4>
-                                <div class="mb-4">
-                                    <p class="text-xs font-black text-emerald-800 uppercase tracking-wider mb-1">Âm On / Kun</p>
-                                    <p class="text-lg font-bold text-slate-800 kanji-font" id="m-onkun"></p>
-                                </div>
-                                <div class="bg-orange-50/70 p-5 rounded-2xl border border-orange-100">
-                                    <h4 class="text-[10px] uppercase font-black text-orange-600 mb-2 flex items-center tracking-widest">
-                                        <i class="fas fa-puzzle-piece mr-2"></i> Phân Rã Bộ Thủ (PR)
-                                    </h4>
-                                    <p class="text-slate-700 text-sm font-medium italic leading-relaxed" id="m-pr"></p>
+                                <h4 class="text-[9px] uppercase font-black text-slate-400 mb-4 tracking-widest border-b pb-2">Âm Đọc & Âm Thanh</h4>
+                                <div class="space-y-4">
+                                    <div class="flex justify-between items-center p-3 rounded-2xl bg-teal-50/50 border border-teal-100">
+                                        <div>
+                                            <p class="text-[9px] text-teal-600 font-black uppercase tracking-tighter">Onyomi (Âm Hán)</p>
+                                            <p class="text-lg font-bold text-slate-800" id="m-onyomi"></p>
+                                        </div>
+                                        <button onclick="speakType('on')" class="w-10 h-10 bg-white text-teal-600 rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition active:scale-95 border border-teal-100"><i class="fas fa-volume-up"></i></button>
+                                    </div>
+                                    <div class="flex justify-between items-center p-3 rounded-2xl bg-orange-50/50 border border-orange-100">
+                                        <div>
+                                            <p class="text-[9px] text-orange-600 font-black uppercase tracking-tighter">Kunyomi (Âm Nhật)</p>
+                                            <p class="text-lg font-bold text-slate-800" id="m-kunyomi"></p>
+                                        </div>
+                                        <button onclick="speakType('kun')" class="w-10 h-10 bg-white text-orange-600 rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition active:scale-95 border border-orange-100"><i class="fas fa-volume-up"></i></button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Right Panel: Conjugation & Examples -->
                         <div class="lg:col-span-8 space-y-6">
                             <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
-                                <h4 class="text-[10px] uppercase font-black text-slate-400 mb-5 tracking-[0.2em] border-b pb-2">
-                                    <i class="fas fa-magic mr-2"></i> Ma Trận 9 Thể Biến Đổi
+                                <h4 class="text-[10px] uppercase font-black text-slate-400 mb-5 tracking-widest flex justify-between">
+                                    <span>Hệ Thống 9 Thể Biến Đổi (Kanji + Đuôi)</span>
                                 </h4>
-                                <div class="grid grid-cols-3 gap-3" id="conjugation-grid"></div>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="conjugation-grid">
+                                    <!-- Conjugations -->
+                                </div>
                             </div>
 
                             <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
-                                <h4 class="text-[10px] uppercase font-black text-slate-400 mb-4 tracking-[0.2em] border-b pb-2">
-                                    <i class="fas fa-vial mr-2"></i> Ví Dụ Chân Ngã (Lồng Trợ Từ)
-                                </h4>
-                                <div class="bg-emerald-800 p-6 rounded-2xl relative group overflow-hidden shadow-lg">
-                                    <div class="absolute -right-4 -bottom-4 text-white/5 text-8xl"><i class="fas fa-quote-right"></i></div>
-                                    <p class="text-2xl text-white kanji-font font-black mb-2 pr-12 leading-snug" id="m-example-jp"></p>
-                                    <p class="text-emerald-300 text-sm font-bold italic" id="m-example-vi"></p>
-                                    <button onclick="speakExample()" class="absolute top-6 right-6 w-12 h-12 bg-white/10 text-white rounded-full flex items-center justify-center hover:bg-white/20 transition-all active:scale-90">
-                                        <i class="fas fa-volume-up text-xl"></i>
+                                <h4 class="text-[10px] uppercase font-black text-slate-400 mb-4 tracking-widest border-b pb-2">Ví Dụ Thực Chiến (Shadowing)</h4>
+                                <div class="bg-teal-900 p-6 rounded-2xl relative overflow-hidden shadow-lg group">
+                                    <div class="absolute -right-4 -bottom-4 text-white/5 text-8xl transform rotate-12"><i class="fas fa-quote-right"></i></div>
+                                    <p class="text-2xl text-white kanji-font font-black mb-2 pr-14 leading-snug" id="m-example-jp"></p>
+                                    <p class="text-teal-300 text-sm font-bold italic" id="m-example-vi"></p>
+                                    <button onclick="speakExample()" class="absolute top-6 right-6 w-14 h-14 bg-white/10 text-white rounded-full flex items-center justify-center hover:bg-white/20 transition-all active:scale-90 shadow-xl border border-white/20">
+                                        <i class="fas fa-volume-up text-2xl"></i>
                                     </button>
                                 </div>
                             </div>
@@ -270,106 +220,114 @@
     </div>
 
     <script>
-    // --- DATA 95 VERBS (Standardized PR & Radicals) ---
+        // --- COMPLETE 95 VERBS DATA ---
         const verbsData = [
-            // --- Nhóm 1: Di Chuyển ---
-            { id: 1, char: "行", hv: "HÀNH", nghia: "Đi", level: "N5", onkun: "コウ / い.く", pr: "彳 (Bước ngắn) + 亍 (Bước dài).<br>💡 Đi Y như Cụ già bước trái bước phải tại ngã tư.", forms: ["いく", "いきます", "いかない", "いって", "いった", "いける", "いこう", "いかれる", "いかせる"], ex_jp: "日本へ行きます。", ex_vi: "Đi về phía Nhật Bản - Trợ từ へ" },
-            { id: 2, char: "来", hv: "LAI", nghia: "Đến", level: "N5", onkun: "ライ / く.る", pr: "木 (Cây) + 丷 (Mầm non).<br>💡 Cu Rũ chờ cây lúa mọc thêm nhánh báo tương lai đang đến.", forms: ["くる", "きます", "こない", "きて", "きた", "こられる", "こよう", "こられる", "こさせる"], ex_jp: "友達が遊びに来ます。", ex_vi: "Bạn đến chơi - Trợ từ が" },
-            { id: 3, char: "帰", hv: "QUY", nghia: "Về", level: "N5", onkun: "キ / かえ.る", pr: "⻏ (Gò đất) + 帚 (Chổi).<br>💡 Mua Cá Ế mang về cho quân sư quét dọn nhà cửa đón quy hồi.", forms: ["かえる", "かえります", "かえらない", "かえって", "かえった", "かえれる", "かえろう", "かえられる", "かえさせる"], ex_jp: "5時までに帰ります。", ex_vi: "Về trước 5 giờ - Trợ từ までに" },
-            { id: 4, char: "入", hv: "NHẬP", nghia: "Vào", level: "N5", onkun: "ニュウ / はい.る", pr: "Hình cái lều (giống chữ 人 nhưng vạch trái ngắn hơn).<br>💡 Hãi quá rủ nhau chui (Nhập) vào lều.", forms: ["はいる", "はいります", "はいらない", "はいって", "はいった", "はいれる", "はいろう", "はいられる", "はいらせる"], ex_jp: "部屋に入ります。", ex_vi: "Vào phòng - Trợ từ に" },
-            { id: 5, char: "出", hv: "XUẤT", nghia: "Ra ngoài", level: "N5", onkun: "シュツ / で.る", pr: "山 (Núi) + 山 (Núi).<br>💡 Hai ngọn núi chồng lên nhau Xuất hiện lừng lững.", forms: ["でる", "でます", "でない", "でて", "でた", "でられる", "でよう", "でられる", "でさせる"], ex_jp: "家を出ます。", ex_vi: "Ra khỏi nhà - Trợ từ を" },
-            { id: 6, char: "入", hv: "NHẬP", nghia: "Cho vào", level: "N5", onkun: "ニュウ / い.れる", pr: "人 (Người) + 入 (Vào).<br>💡 Y như Rể Rủ đem đồ vật cho vào bên trong lều.", forms: ["いれる", "いれます", "いれない", "いれて", "いれた", "いれられる", "いれよう", "いれられる", "いれさせる"], ex_jp: "かばんに財布を入れます。", ex_vi: "Cho ví vào cặp - Trợ từ に" },
-            { id: 7, char: "出", hv: "XUẤT", nghia: "Lấy ra", level: "N5", onkun: "シュツ / だ.す", pr: "山 + 山.<br>💡 Đá Sù lông lấy đồ vật từ trong hang núi ra.", forms: ["だす", "だします", "ださない", "だして", "だした", "だせる", "だそう", "だされる", "ださせる"], ex_jp: "荷物を出します。", ex_vi: "Lấy hành lý ra - Trợ từ を" },
-            { id: 8, char: "歩", hv: "BỘ", nghia: "Đi bộ", level: "N5", onkun: "ホ / ある.く", pr: "止 (Dừng) + 少 (Một chút).<br>💡 Dừng lại một chút rồi A! Rủ Cú đi bộ tiếp.", forms: ["あるく", "あるきます", "あるかない", "あるいて", "あるいた", "あるける", "あるこう", "あるかれる", "あるかせる"], ex_jp: "道に沿って歩きます。", ex_vi: "Đi bộ dọc theo đường - Trợ từ にそって" },
-            { id: 9, char: "走", hv: "TẨU", nghia: "Chạy", level: "N5", onkun: "ソウ / はし.る", pr: "土 (Đất) + 疋 (Chân).<br>💡 Há Xì một cái, dùng đôi chân chạy phăm phăm trên đất.", forms: ["はしる", "はしります", "はしらない", "はしって", "はしった", "はしれる", "はしろう", "はしられる", "はしらせる"], ex_jp: "公園を走ります。", ex_vi: "Chạy trong công viên - Trợ từ を" },
-            { id: 10, char: "乗", hv: "THỪA", nghia: "Lên xe", level: "N5", onkun: "ジョウ / の.る", pr: "禾 (Lúa) + 千 (Ngàn).<br>💡 Nô đùa chất lúa lên ngàn chiếc xe Thừa kế.", forms: ["|のる", "のります", "のらない", "のって", "のった", "のれる", "のろう", "のられる", "のらせる"], ex_jp: "電車に乗ります。", ex_vi: "Lên tàu điện - Trợ từ に" },
-            { id: 11, char: "降", hv: "GIÁNG", nghia: "Xuống xe", level: "N5", onkun: "コウ / お.りる", pr: "阝 (Gò đất) + 夅 (Chân bước chéo).<br>💡 Ô! Ri bước chân xuống gò đất giáng trần.", forms: ["おりる", "おおります", "おりない", "おりて", "おりた", "おりられる", "おりよう", "おりられる", "おりさせる"], ex_jp: "バスを降ります。", ex_vi: "Xuống xe buýt - Trợ từ を" },
-            { id: 12, char: "登", hv: "ĐĂNG", nghia: "Leo núi", level: "N5", onkun: "トウ / のぼ.る", pr: "癶 (Chân) + 豆 (Đậu).<br>💡 Nô bộc leo núi bằng đôi chân thần dẫm trên hạt đậu.", forms: ["のぼる", "のぼります", "のぼらない", "のぼって", "のぼった", "のぼれる", "のぼろう", "のぼられる", "のぼらせる"], ex_jp: "山を登ります。", ex_vi: "Leo núi - Trợ từ を" },
-            { id: 13, char: "渡", hv: "ĐỘ", nghia: "Băng qua", level: "N5", onkun: "ト / わた.る", pr: "氵 (Nước) + 度 (Mức độ).<br>💡 Wa! Ta băng qua dòng nước nóng 30 độ.", forms: ["わたる", "わたります", "わたらない", "わたって", "わたった", "わたれる", "わたろう", "わたられる", "わたらせる"], ex_jp: "川を渡ります。", ex_vi: "Băng qua sông - Trợ từ を" },
-            
-            // --- ID 14+ (FIXED PR & RADICALS) ---
-            { id: 14, char: "曲", hv: "KHÚC", nghia: "Rẽ, quẹo", level: "N5", onkun: "キョク / まが.る", pr: "田 (Ruộng) + 凵 (Bao quanh).<br>💡 Ma Gà rẽ trái bao quanh cánh ruộng tạo Khúc quanh.", forms: ["まがる", "まがります", "まがらない", "まがって", "ま가った", "まがれる", "まがろう", "まがられる", "まがらせる"], ex_jp: "角を右に曲がります。", ex_vi: "Rẽ phải ở góc - Trợ từ を/に" },
-            { id: 15, char: "着", hv: "TRƯỚC", nghia: "Đến nơi", level: "N5", onkun: "チャク / つ.く", pr: "⺶ (Dê) + 目 (Mắt).<br>💡 Xù lông Cú khi con dê mở mắt thấy đã Đến đích.", forms: ["つく", "つきます", "つかない", "ついて", "ついた", "つける", "つこう", "つかれる", "つかせる"], ex_jp: "駅に着きます。", ex_vi: "Đến nhà ga - Trợ từ に" },
-            { id: 16, char: "急", hv: "CẤP", nghia: "Vội, gấp", level: "N5", onkun: "キュウ / いそ.ぐ", pr: "刍 (Bó cỏ) + 心 (Tim).<br>💡 I như Sô-cô-la tan vì trái tim vội vã chạy qua bó cỏ Cấp bách.", forms: ["いそぐ", "いそぎます", "いそがない", "いそいで", "いそいだ", "いそげる", "いそごう", "いそがれる", "いそがせる"], ex_jp: "急いで帰ります。", ex_vi: "Vội vàng trở về." },
-            { id: 17, char: "止", hv: "CHỈ", nghia: "Tạnh, dừng", level: "N5", onkun: "シ / や.む", pr: "Hình bàn chân hướng lên.<br>💡 Da dẻ Mù mịt khi bước chân dừng lại tạnh mưa.", forms: ["やむ", "やみます", "やまない", "やんで", "やんだ", "-", "-", "-", "-"], ex_jp: "雨がやみました。", ex_vi: "Mưa đã tạnh - Trợ từ が" },
-            { id: 18, char: "動", hv: "ĐỘNG", nghia: "Di chuyển", level: "N5", onkun: "ドウ / うご.く", pr: "重 (Nặng) + 力 (Lực).<br>💡 U Gồ ghề khó di chuyển vật nặng bằng sức Lực.", forms: ["うごく", "うごきます", "うごかない", "うごいて", "うごいた", "うごける", "うごこう", "うごかれる", "うごかせる"], ex_jp: "機械が動いています。", ex_vi: "Máy đang chạy - Trợ từ が" },
-            { id: 19, char: "待", hv: "ĐÃI", nghia: "Đợi", level: "N5", onkun: "タイ / ま.つ", pr: "彳 (Đi) + 寺 (Chùa).<br>💡 Má Tự đợi con đi lễ chùa về.", forms: ["まつ", "まちます", "まったない", "まって", "まった", "まてる", "まとう", "またれる", "またせる"], ex_jp: "駅で友達を待ちます。", ex_vi: "Đợi bạn ở nhà ga - Trợ từ で" },
-            { id: 20, char: "食", hv: "THỰC", nghia: "Ăn", level: "N5", onkun: "ショク / た.べる", pr: "人 (Người) + 良 (Tốt).<br>💡 Ta Bề sê ra Thực phẩm tốt cho cơ thể người.", forms: ["たべる", "たべます", "たべない", "たべて", "たべた", "たべられる", "たべよう", "たべられる", "たべさせる"], ex_jp: "肉ばかり食べます。", ex_vi: "Toàn ăn thịt thôi - Trợ từ ばかり" },
-            { id: 21, char: "飲", hv: "ẨM", nghia: "Uống", level: "N5", onkun: "イン / の.む", pr: "食 (Ăn) + 欠 (Thiếu).<br>💡 Nô đùa vỡ mũ, ăn xong Thiếu nước nên phải Uống.", forms: ["のむ", "のみます", "nomanai", "のんで", "のんだ", "のめる", "のもう", "のまれる", "のませる"], ex_jp: "お茶を飲みます。", ex_vi: "Uống trà - Trợ từ を" },
-            { id: 22, char: "吸", hv: "HẤP", nghia: "Hút", level: "N5", onkun: "キュウ / す.う", pr: "口 (Miệng) + 及 (Kịp).<br>💡 Su Su xào, dùng miệng hút kịp hơi thở là Hô Hấp.", forms: ["すう", "すいます", "すわない", "すって", "すった", "すえる", "すおう", "すわれる", "すわせる"], ex_jp: "タバコを吸います。", ex_vi: "Hút thuốc - Trợ từ を" },
-            { id: 23, char: "立", hv: "LẬP", nghia: "Đứng", level: "N5", onkun: "リツ / た.つ", pr: "Hình người đứng trên đất.<br>💡 Ta Tự đứng thẳng để tự Lập.", forms: ["たつ", "たちます", "たたない", "たって", "たった", "たてる", "たとう", "たたられる", "たたせる"], ex_jp: "ドアの前に立ちます。", ex_vi: "Đứng trước cửa - Trợ từ に" },
-            { id: 24, char: "座", hv: "TỌA", nghia: "Ngồi", level: "N5", onkun: "ザ / すわ.る", pr: "广 (Nhà) + 土 (Đất) + 人.<br>💡 Su Wa rủ nhau ngồi trên đất tọa đàm trong nhà.", forms: ["すわる", "すわります", "すわらない", "すわって", "すわった", "すわれる", "すわろう", "すわられる", "すわらせる"], ex_jp: "椅子に座ります。", ex_vi: "Ngồi vào ghế - Trợ từ に" },
-            { id: 25, char: "寝", hv: "TẨM", nghia: "Ngủ", level: "N5", onkun: "シン / ね.る", pr: "宀 (Nhà) + 爿 (Giường).<br>💡 Nể tình mới cho vào nhà leo lên giường Ngủ.", forms: ["ねる", "ねます", "ねない", "ねて", "ねた", "ねられる", "ねよう", "ねられる", "ねさせる"], ex_jp: "10時に寝ます。", ex_vi: "Ngủ lúc 10h - Trợ từ に" },
-            { id: 26, char: "起", hv: "KHỞI", nghia: "Thức dậy", level: "N5", onkun: "キ / お.きる", pr: "走 (Chạy) + 己 (Thân).<br>💡 Ô! Kì lạ, bản thân phải chạy khỏi giường để Khởi động.", forms: ["おきる", "おきます", "おきない", "おきて", "おきた", "おkiられる", "おきよう", "おkiられる", "おきさせる"], ex_jp: "7時に起きます。", ex_vi: "Thức dậy lúc 7h - Trợ từ に" },
-            { id: 27, char: "浴", hv: "DỤC", nghia: "Tắm", level: "N5", onkun: "ヨク / あび.る", pr: "氵 (Nước) + 谷 (Thung lũng).<br>💡 A! Bi đi tắm ở thung lũng có nhiều nước.", forms: ["|あびる", "あびます", "あびない", "あびて", "あびた", "あびられる", "あびよう", "あびられる", "あびさせる"], ex_jp: "シャワーを浴びます。", ex_vi: "Tắm vòi sen - Trợ từ を" },
-            { id: 28, char: "磨", hv: "MA", nghia: "Mài, đánh", level: "N5", onkun: "マ / みが.く", pr: "广 (Nhà) + 麻 (Gai) + 石.<br>💡 Mi Gà Cú dùng đá mài gai trong nhà.", forms: ["みがく", "みがきます", "みがかない", "みがいて", "みがいた", "みがける", "みがこう", "みがかれる", "みがかせs"], ex_jp: "歯を磨きます。", ex_vi: "Đánh răng - Trợ từ を" },
-            { id: 29, char: "洗", hv: "TẨY", nghia: "Rửa", level: "N5", onkun: "セン / あら.う", pr: "氵 (Nước) + 先 (Trước).<br>💡 A! Rau cần phải Rửa bằng nước trước tiên.", forms: ["あらう", "あらいます", "あらわない", "あrって", "あらった", "あらえる", "あらおう", "あらわれる", "あらわせる"], ex_jp: "手を洗います。", ex_vi: "Rửa tay - Trợ từ を" },
-            { id: 30, char: "切", hv: "THIẾT", nghia: "Cắt", level: "N5", onkun: "セツ / き.る", pr: "七 (Bảy) + 刀 (Dao).<br>💡 Ki bo không cho mượn 7 con dao Thiết sắc lẹm.", forms: ["|きる", "きります", "きらない", "きって", "きた", "きれる", "きよう", "きられる", "kiさせる"], ex_jp: "紙を切ります。", ex_vi: "Cắt giấy - Trợ từ を" },
-            { id: 31, char: "焼", hv: "THIÊU", nghia: "Nướng", level: "N5", onkun: "ショウ / や.く", pr: "火 (Lửa) + 尭 (Cao).<br>💡 Dạ Cụ thích dùng lửa cao Thiêu nướng đồ ăn.", forms: ["やく", "やきます", "やかない", "やいて", "やいた", "やける", "やこう", "やかれる", "やかせる"], ex_jp: "魚を焼きます。", ex_vi: "Nướng cá - Trợ từ を" },
-            { id: 32, char: "泊", hv: "BẠC", nghia: "Trọ lại", level: "N5", onkun: "ハク / とま.る", pr: "氵 (Nước) + 白 (Trắng).<br>💡 Tô mì Mà Rủ nhau trọ lại bến nước Trắng.", forms: ["とまる", "tまります", "tまらない", "tまって", "tまった", "tまれる", "tまろう", "tまられる", "tまらせる"], ex_jp: "ホテルに泊まります。", ex_vi: "Trọ lại khách sạn - Trợ từ に" },
-            { id: 33, char: "休", hv: "HƯU", nghia: "Nghỉ ngơi", level: "N5", onkun: "キュウ / やす.む", pr: "亻 (Người) + 木 (Cây).<br>💡 Ya! Sư Mù đang dựa vào cây nghỉ Hưu.", forms: ["やすむ", "やすみます", "やすまない", "やすんで", "やすんだ", "やすめる", "やすもう", "やすまれる", "やすませる"], ex_jp: "30分ぐらい休みます。", ex_vi: "Nghỉ cỡ 30p - Trợ từ ぐらい" },
-            { id: 34, char: "買", hv: "MÃI", nghia: "Mua", level: "N5", onkun: "バイ / か.う", pr: "罒 (Lưới) + 貝 (Vỏ sò/Tiền).<br>💡 Ca U sầu dùng lưới chụp tiền đi Mua hớ.", forms: ["かう", "かいます", "かわらない", "かって", "かった", "かえる", "かおう", "かわわれる", "かわわせる"], ex_jp: "パンを買います。", ex_vi: "Mua bánh mì - Trợ từ を" },
-            { id: 35, char: "売", hv: "MẠI", nghia: "Bán", level: "N5", onkun: "バイ / う.る", pr: "士 (Sĩ) + 冖 (Khăn) + 儿.<br>💡 U Rũ vì kẻ sĩ trùm khăn đi Bán chân.", forms: ["うる", "うります", "うらない", "うって", "うった", "うれる", "うろう", "うられる", "うらせる"], ex_jp: "車を売ります。", ex_vi: "Bán xe - Trợ từ を" },
-            { id: 36, char: "払", hv: "PHẤT", nghia: "Trả tiền", level: "N3", onkun: "フツ / はら.う", pr: "扌 (Tay) + ム (Riêng).<br>💡 Hả? Rau đắt thế, trả tiền riêng rồi Phất tay đi.", forms: ["はらう", "はらいます", "はらわない", "はらって", "はらった", "はらえる", "はらおう", "はらわれる", "はらわせる"], ex_jp: "代金を払います。", ex_vi: "Trả tiền hàng - Trợ từ を" },
-            { id: 37, char: "貸", hv: "THẢI", nghia: "Cho mượn", level: "N4", onkun: "タイ / か.s", pr: "代 (Thay) + 貝 (Tiền).<br>💡 Ca sĩ Sù tiền, lấy tiền Thay thế đi cho vay mượn.", forms: ["かす", "かします", "かさない", "かして", "かした", "かせる", "かそう", "かされる", "かせさせる"], ex_jp: "お金を貸します。", ex_vi: "Cho vay tiền - Trợ từ を" },
-            { id: 38, char: "借", hv: "TÁ", nghia: "Mượn", level: "N4", onkun: "シャク / か.りる", pr: "亻 (Người) + 昔 (Xưa).<br>💡 Ca Ri Lư thưa tiền nên người Xưa đi Mượn.", forms: ["かりる", "かります", "かりない", "かりて", "かりた", "かりられる", "かりよう", "かりられる", "かりさせる"], ex_jp: "本を借ります。", ex_vi: "Mượn sách - Trợ từ を" },
-            { id: 39, char: "返", hv: "PHẢN", nghia: "Trả lại", level: "N4", onkun: "ヘン / かえ.す", pr: "反 (Ngược) + 辶 (Đường).<br>💡 Ca Ế Sù nợ nên đi ngược đường Trả lại đồ.", forms: ["かえす", "かえします", "かえさない", "かえして", "かえした", "かえせる", "かえそう", "かerられる", "かえさせる"], ex_jp: "本を返します。", ex_vi: "Trả lại sách - Trợ từ を" },
-            { id: 40, char: "見", hv: "KIẾN", nghia: "Xem, nhìn", level: "N5", onkun: "ケン / み.る", pr: "目 (Mắt) + 儿 (Chân).<br>💡 Mi Rủ mắt gắn trên chân đi Kiến tập.", forms: ["みる", "みます", "みない", "みて", "みた", "みられる", "みよう", "みられる", "みさせる"], ex_jp: "テレビを見る。", ex_vi: "Xem tivi - Trợ từ を" },
-            { id: 41, char: "開", hv: "KHAI", nghia: "Mở (tha)", level: "N4", onkun: "カイ / あ.ける", pr: "門 (Cửa) + 开 (Hai tay).<br>💡 A! Kệ cứ để hai tay Khai mở cổng trường.", forms: ["あける", "あけます", "あけない", "あけて", "あけた", "あけられる", "あけよう", "あけられる", "あけさせる"], ex_jp: "窓を開けます。", ex_vi: "Mở cửa sổ - Trợ từ を" },
-            { id: 42, char: "閉", hv: "BẾ", nghia: "Đóng (tha)", level: "N4", onkun: "ヘイ / し.める", pr: "門 (Cửa) + 才 (Tài).<br>💡 Si Mê đóng cửa lòng để trọng dụng nhân tài Bế môn.", forms: ["しめる", "しめます", "しめない", "しめて", "しめた", "しめられる", "しめよう", "しmeられる", "しめさせる"], ex_jp: "ドアを閉めます。", ex_vi: "Đóng cửa - Trợ từ を" },
-            { id: 43, char: "押", hv: "ÁP", nghia: "Ấn, đẩy", level: "N4", onkun: "オウ / お.s", pr: "扌 (Tay) + 甲 (Giáp).<br>💡 Ô! Sư dùng tay ấn vào áo giáp trấn Áp.", forms: ["おす", "おします", "おさない", "おして", "おした", "おせる", "おそう", "おされる", "おさせる"], ex_jp: "ボタンを押します。", ex_vi: "Ấn nút - Trợ từ を" },
-            { id: 44, char: "引", hv: "DẪN", nghia: "Kéo", level: "N4", onkun: "イン / ひ.く", pr: "弓 (Cung) + 丨 (Vạch).<br>💡 Hi hóp má Cụ dùng vạch thẳng Kéo cung Dẫn căng.", forms: ["ひく", "ひきます", "ひかない", "ひいて", "ひいた", "ひける", "ひこう", "ひかれる", "ひかせる"], ex_jp: "風邪を引きました。", ex_vi: "Bị cảm - Trợ từ を" },
-            { id: 45, char: "作", hv: "TÁC", nghia: "Làm, chế tác", level: "N4", onkun: "サク / つく.r", pr: "亻 (Người) + 乍 (Dừng).<br>💡 Xu Cũ Rủ người dừng lại chế Tác sản phẩm.", forms: ["つくる", "つくります", "つくらない", "つくって", "つくった", "つくる", "つkろう", "つkられる", "つくらせる"], ex_jp: "料理を作ります。", ex_vi: "Nấu ăn - Trợ từ を" },
-            { id: 46, char: "使", hv: "SỬ", nghia: "Sử dụng", level: "N4", onkun: "シ / つか.う", pr: "亻 (Người) + 吏 (Quan).<br>💡 Xù Cáu khi bị quan bắt Sử dụng lính.", forms: ["つかう", "つかいます", "つかわない", "つかって", "つかった", "つかえる", "つかおう", "つかわれる", "つかわせる"], ex_jp: "ペンを使います。", ex_vi: "Sử dụng bút - Trợ từ を" },
-            { id: 47, char: "直", hv: "TRỰC", nghia: "Sửa", level: "N3", onkun: "チョク / なお.す", pr: "十 (Mười) + 目 (Mắt).<br>💡 Nào! Sửa thẳng mười con mắt soi vào Trực diện.", forms: ["|なおす", "なおします", "なおさない", "なおして", "なおした", "なおせる", "なおそう", "なおされる", "なおさせる"], ex_jp: "間違いを直します。", ex_vi: "Sửa lỗi sai - Trợ từ を" },
-            { id: 48, char: "探", hv: "THÁM", nghia: "Tìm kiếm", level: "N3", onkun: "タン / さが.s", pr: "扌 (Tay) + 罙 (Hang).<br>💡 Sa Gà Sù lông Thám hiểm tìm đồ trong hang.", forms: ["さがす", "さがします", "さがさない", "さがして", "さがした", "さがせる", "さがそう", "さがされる", "さがさせる"], ex_jp: "財布を探します。", ex_vi: "Tìm ví - Trợ từ を" },
-            { id: 49, char: "触", hv: "XÚC", nghia: "Chạm, sờ", level: "N3", onkun: "ショク / さわ.る", pr: "虫 (Sâu) + 角 (Sừng).<br>💡 Sa vào Wa Rủ dùng sừng Xúc chạm sâu.", forms: ["さわる", "さわります", "さわらない", "さわって", "さわった", "さわれる", "さわろう", "さわられる", "さわらせる"], ex_jp: "展示品に触らないで。", ex_vi: "Đừng chạm vào đồ trưng bày." },
-            { id: 50, char: "貼", hv: "THIẾP", nghia: "Dán", level: "N3", onkun: "チョウ / は.る", pr: "貝 (Tiền) + 占 (Chiếm).<br>💡 Hả? Rủ dán Thiếp bằng tiền chiếm chỗ.", forms: ["はる", "はります", "はらない", "はって", "はった", "はれる", "はろう", "はられる", "はらせる"], ex_jp: "切手を貼ります。", ex_vi: "Dán tem - Trợ từ を" },
-            { id: 51, char: "撮", hv: "TOÁT", nghia: "Chụp ảnh", level: "N4", onkun: "サツ / と.る", pr: "扌 (Tay) + 最 (Nhất).<br>💡 Tô son rủ nhau chụp góc toát thần thái nhất.", forms: ["とる", "とります", "とらない", "とって", "とった", "とれる", "とろう", "とられる", "とらせる"], ex_jp: "写真を撮ります。", ex_vi: "Chụp ảnh - Trợ từ を" },
-            { id: 52, char: "投", hv: "ĐẦU", nghia: "Ném", level: "N3", onkun: "トウ / な.げる", pr: "扌 (Tay) + 殳 (Gậy).<br>💡 Ná Ghê rủ nhau cầm gậy Ném đi Đầu cơ.", forms: ["なげる", "なげます", "|なげない", "なげて", "なげた", "なげられる", "なげよう", "|なげられる", "なげさせる"], ex_jp: "ボールを投げます。", ex_vi: "Ném bóng - Trợ từ を" },
-            { id: 53, char: "盗", hv: "ĐẠO", nghia: "Trộm", level: "N3", onkun: "トウ / ぬす.む", pr: "次 (Lần tiếp) + 皿 (Đĩa).<br>💡 Nuôi Sư Mù trộm cái đĩa lần tiếp theo là Đạo chích.", forms: ["ぬすむ", "|ぬすみます", "ぬすまない", "ぬすんで", "ぬすんだ", "ぬすめる", "ぬすもう", "ぬすまれる", "ぬすませる"], ex_jp: "財布を盗まれました。", ex_vi: "Bị trộm ví - Trợ từ を" },
-            { id: 54, char: "見つかる", hv: "KIẾN", nghia: "Được tìm thấy", level: "N4", onkun: "ケン / みつかる", pr: "目 (Mắt) + 付 (Dính).<br>💡 Mi tsu ka ru, mắt dính chặt vào vật được thấy.", forms: ["みつかる", "みつかります", "みつからない", "みつかって", "みつかった", "-", "-", "-", "-"], ex_jp: "鍵が見つかりました。", ex_vi: "Chìa khóa được thấy - Trợ từ が" },
-            { id: 55, char: "見つける", hv: "KIẾN", nghia: "Tìm thấy", level: "N4", onkun: "ケン / みつける", pr: "目 + Kiến tạo.<br>💡 Mi tsu ke ru, chủ động mắt kiến tạo tìm vật.", forms: ["みつける", "みつけます", "みつけない", "みつけて", "みつけた", "みつけられる", "みつけよう", "みつけられる", "みつけさせる"], ex_jp: "鍵を見つけました。", ex_vi: "Tìm thấy chìa khóa - Trợ từ を" },
-            { id: 56, char: "働", hv: "ĐỘNG", nghia: "Làm việc", level: "N4", onkun: "ドウ / はたら.く", pr: "亻 (Người) + 動 (Động).<br>💡 Hà Ta Ra Cũng phải lao Động làm việc.", forms: ["はたらく", "はたらきます", "はたらかない", "はたらいて", "はたらいた", "はたらける", "はたらこう", "はたらかれる", "はたらかせる"], ex_jp: "9時から働きます。", ex_vi: "Làm từ 9h - Trợ từ から" },
-            { id: 57, char: "勤", hv: "CẦN", nghia: "Làm (cty)", level: "N3", onkun: "キン / つと.める", pr: "堇 (Đất sét) + 力 (Lực).<br>💡 Xu Tô Mê rủ nhau nặn đất Chuyên Cần.", forms: ["つとめる", "つとめます", "つとめない", "つとめて", "つとめた", "つとめられる", "つとめよう", "つとめられる", "つとめさせる"], ex_jp: "会社に勤めます。", ex_vi: "Làm cho công ty - Trợ từ に" },
-            { id: 58, char: "教", hv: "GIÁO", nghia: "Dạy", level: "N4", onkun: "キョウ / おし.える", pr: "孝 (Hiếu) + 攵 (Đánh).<br>💡 Ô! Si Ê Rủ dạy chữ Hiếu bằng cách uốn nắn.", forms: ["おしえる", "おしえます", "|おしえない", "おしえて", "|おしえた", "おしえられる", "|おしえよう", "おしえられる", "おhiえさせる"], ex_jp: "日本語を教えます。", ex_vi: "Dạy tiếng Nhật - Trợ từ を" },
-            { id: 59, char: "習", hv: "TẬP", nghia: "Học", level: "N4", onkun: "シュウ / なら.u", pr: "羽 (Cánh) + 白 (Trắng).<br>💡 Na Ra Uống nước sau khi chim non Tập bay.", forms: ["ならう", "|ならいます", "|ならわない", "ならって", "ならった", "ならえる", "|ならおう", "ならわれる", "|ならわせる"], ex_jp: "ピアノを習います。", ex_vi: "Học piano - Trợ từ を" },
-            { id: 60, char: "学", hv: "HỌC", nghia: "Học tập", level: "N5", onkun: "ガク / まな.ぶ", pr: "⺍ (Trí) + 冖 + 子.<br>💡 Má! Na Bự thế, trẻ Học dưới mái nhà sao nổi.", forms: ["まなぶ", "まなびます", "まなばない", "まなんで", "まなんだ", "まなべる", "まなぼう", "まなばれる", "まなばせる"], ex_jp: "大学で学びます。", ex_vi: "Học ở đại học - Trợ từ で" },
-            { id: 61, char: "覚", hv: "GIÁC", nghia: "Nhớ, tỉnh", level: "N4", onkun: "カク / おぼ.える", pr: "⺍ (Trí) + 冖 + 見 (Nhìn).<br>💡 Ô! Bố Ê Rủ nhìn tri thức để Giác ngộ Nhớ ra.", forms: ["おぼえる", "おぼえます", "おぼえない", "おぼえて", "おぼえた", "おぼえられる", "おぼえよう", "おぼえられる", "おぼえさせる"], ex_jp: "漢字を覚えます。", ex_vi: "Nhớ Kanji - Trợ từ を" },
-            { id: 62, char: "忘", hv: "VONG", nghia: "Quên", level: "N4", onkun: "ボウ / わす.れる", pr: "亡 (Mất) + 心 (Tim).<br>💡 Wa! Sư Rể Rủ tim chết mất ký ức là Vong tình Quên lãng.", forms: ["わすれる", "わすれます", "わすれない", "わすれて", "わすれた", "わすれられる", "わすれよう", "わすれられる", "わすれさせる"], ex_jp: "宿題を忘れました。", ex_vi: "Quên bài tập - Trợ từ を" },
-            { id: 63, char: "考", hv: "KHẢO", nghia: "Suy nghĩ", level: "N4", onkun: "コウ / かんが.える", pr: "耂 (Lão) + 丂 (Gậy).<br>💡 Cán Gà Ê Rủ ông già gậy suy nghĩ Khảo sát.", forms: ["かんがえる", "かんがえます", "|かんがえない", "かんがえて", "かんがえた", "|かんがえられる", "かんがえよう", "かんがえられる", "かんがえさせる"], ex_jp: "将来について考える。", ex_vi: "Nghĩ về tương lai - Trợ từ について" },
-            { id: 64, char: "知", nghia: "Biết", level: "N4", onkun: "チ / し.る", pr: "矢 (Tên) + 口 (Miệng).<br>💡 Si Rủ nhau dùng mũi tên bắn trúng tri thức để Biết.", forms: ["|しる", "しります", "しらない", "しって", "しった", "しられる", "しろう", "しられる", "しらせる"], ex_jp: "ニュースを知っています。", ex_vi: "Tôi biết tin - Trợ từ を" },
-            { id: 65, char: "分", hv: "PHÂN", nghia: "Hiểu, chia", level: "N5", onkun: "ブン / わ.かる", pr: "八 (Tám) + 刀 (Dao).<br>💡 Wa! Cá Rủ dùng dao chia tám phần để Hiểu.", forms: ["|わかる", "わかります", "わからない", "わかって", "わかった", "-", "-", "-", "-"], ex_jp: "意味が分かります。", ex_vi: "Hiểu ý nghĩa - Trợ từ が" },
-            { id: 66, char: "調", hv: "ĐIỀU", nghia: "Điều tra", level: "N3", onkun: "チョウ / しら.べる", pr: "言 (Lời) + 周 (Chu vi).<br>💡 Si Ra Bê rủ dùng lời Điều tra chu vi.", forms: ["しらべる", "しらべます", "しらべない", "しらべて", "しらべた", "しらべられる", "しらべよう", "しらべられる", "しらべさせる"], ex_jp: "ネットで調べます。", ex_vi: "Điều tra trên mạng - Trợ từ で" },
-            { id: 67, char: "書", hv: "THƯ", nghia: "Viết", level: "N5", onkun: "ショ / か.く", pr: "聿 (Bút) + 日 (Ngày).<br>💡 Ca Cứ hát khi tay cầm bút Viết chuyện hàng ngày.", forms: ["かく", "かきます", "かかない", "かいて", "かいた", "かける", "かこう", "かかれる", "かかせる"], ex_jp: "日記を書きます。", ex_vi: "Viết nhật ký - Trợ từ を" },
-            { id: 68, char: "言", hv: "NGÔN", nghia: "Nói", level: "N5", onkun: "ゲン / い.u", pr: "口 (Miệng) + vạch Ngôn.<br>💡 I U (Yêu) dùng miệng nói ra Ngôn từ.", forms: ["いう", "いいます", "いわない", "いって", "いった", "いえる", "いおう", "いわれる", "いわせる"], ex_jp: "本当のことを言います。", ex_vi: "Nói sự thật - Trợ từ を" },
-            { id: 69, char: "話", hv: "THOẠI", nghia: "Nói chuyện", level: "N5", onkun: "ワ / はな.す", pr: "言 (Lời) + 舌 (Lưỡi).<br>💡 Hả? Na Sù dùng lưỡi uốn nén lời Thoại.", forms: ["はなす", "|はなします", "はなさない", "はなして", "はなした", "はなせる", "はなそう", "はなされる", "はなさせる"], ex_jp: "日本語を話します。", ex_vi: "Nói tiếng Nhật - Trợ từ を" },
-            { id: 70, char: "聞", hv: "VĂN", nghia: "Nghe", level: "N5", onkun: "ブン / き.く", pr: "門 (Cửa) + 耳 (Tai).<br>💡 Ki Cụ ghé tai vào cổng Nghe tin Văn.", forms: ["きく", "ききます", "|きかない", "きいて", "きいた", "きける", "|きこう", "きかれる", "|きかせる"], ex_jp: "音楽を聞きます。", ex_vi: "Nghe nhạc - Trợ từ を" },
-            { id: 71, char: "答", hv: "ĐÁP", nghia: "Trả lời", level: "N4", onkun: "トウ / こた.える", pr: "竹 (Trúc) + 合 (Hợp).<br>💡 Cô Ta Ê Rủ hợp ý giải Đáp dưới tán trúc.", forms: ["こたえる", "こたえます", "こたえない", "こたえて", "こたえた", "こたえられる", "こたeよう", "こたえられる", "こたえさせる"], ex_jp: "質問に答えます。", ex_vi: "Trả lời câu hỏi - Trợ từ に" },
-            { id: 72, char: "呼", hv: "HÔ", nghia: "Gọi", level: "N4", onkun: "コ / よ.bu", pr: "口 (Miệng) + 手 (Tay).<br>💡 Dô Bự rủ nhau dùng miệng tay Hô hoán gọi nhậu.", forms: ["よぶ", "よびます", "よばない", "よんで", "よんだ", "よべる", "よぼう", "よばれる", "よbaせる"], ex_jp: "タクシーを呼ぶ。", ex_vi: "Gọi taxi - Trợ từ を" },
-            { id: 73, char: "笑", hv: "TIẾU", nghia: "Cười", level: "N4", onkun: "ショウ / わら.u", pr: "竹 (Tre) + 夭 (Trẻ).<br>💡 Wa! Rau cười tươi như người trẻ múa tre Tiếu lâm.", forms: ["わらう", "|わらいます", "|わらわない", "わらって", "|わらった", "わらえる", "|わらおう", "わらわれる", "|わらわせる"], ex_jp: "みんなと笑います。", ex_vi: "Cười với mọi người - Trợ từ と" },
-            { id: 74, char: "泣", hv: "KHẤP", nghia: "Khóc", level: "N4", onkun: "キュウ / な.く", pr: "氵 (Nước) + 立 (Đứng).<br>💡 Na Cụ đứng rớt nước mắt là Khóc Khập khễnh.", forms: ["なく", "なきます", "|なかない", "ないて", "ないた", "なける", "なこう", "なかれる", "|なかせる"], ex_jp: "一人で泣きます。", ex_vi: "Khóc một mình - Trợ từ で" },
-            { id: 75, char: "怒", hv: "NỘ", nghia: "Giận", level: "N3", onkun: "ド / おこ.る", pr: "奴 (Nô lệ) + 心 (Tim).<br>💡 Ô! Cô Rủ nhau chứa đầy phẫn Nộ trong tim nô lệ.", forms: ["おこる", "おこります", "おこらない", "おこって", "おこった", "おこれる", "おころう", "おこられる", "おこらせる"], ex_jp: "彼に対して怒ります。", ex_vi: "Giận đối với anh ấy - Trợ từ にたいして" },
-            { id: 76, char: "喜", hv: "HỶ", nghia: "Vui mừng", level: "N3", onkun: "キ / よろこ.bu", pr: "吉 (Tốt) + 灬 (Lửa).<br>💡 Dô Rồ Cô Bự, Hỷ hả tin tốt lan rạng rỡ.", forms: ["よろこぶ", "よろこびます", "|よろこばない", "よろこんで", "よろこんだ", "よろこべる", "よろこぼう", "よろこばれる", "よろこばせる"], ex_jp: " kết quảを喜びます。", ex_vi: "Vui vì kết quả - Trợ từ を" },
-            { id: 77, char: "困", hv: "KHỐN", nghia: "Khó khăn", level: "N4", onkun: "コン / こま.る", pr: "囗 (Vây) + 木 (Cây).<br>💡 Cô Ma rủ nhau làm khó khi cây bị nhốt Khốn đốn.", forms: ["こまる", "こまます", "こまらない", "こまって", "こまった", "こまれる", "こまろう", "こまられる", "こまらせる"], ex_jp: "お金がなくて困っています。", ex_vi: "Khốn khổ vì thiếu tiền." },
-            { id: 78, char: "疲", hv: "BÌ", nghia: "Mệt", level: "N4", onkun: "ヒ / つか.れる", pr: "疒 (Bệnh) + 皮 (Da).<br>💡 Xu Cà Rể Rủ mệt khi Da bệnh bọc xương.", forms: ["つかれる", "つかれます", "つかれない", "つかれて", "つかれた", "-", "つかれよう", "-", "つかれさせる"], ex_jp: "死ぬほど疲れました。", ex_vi: "Mệt muốn chết - Trợ từ ほど" },
-            { id: 79, char: "見せる", hv: "KIẾN", nghia: "Cho xem", level: "N5", onkun: "ケン / みせる", pr: "目 + 儿.<br>💡 Mi Sê Rủ chủ động cho người khác Kiến tập.", forms: ["みせる", "みせます", "みせない", "みせて", "みせた", "みせられる", "みせよう", "みseられる", "みせさせる"], ex_jp: "写真を見せます。", ex_vi: "Cho xem ảnh - Trợ từ を" },
-            { id: 80, char: "着", hv: "TRƯỚC", nghia: "Mặc (áo)", level: "N5", onkun: "チャク / き.る", pr: "⺶ (Dê) + 目 (Mắt).<br>💡 Ki rủ nhau mặc áo đôi, chọn đồ bằng mắt Trước.", forms: ["きる", "きます", "きない", "きて", "きた", "きられる", "きよう", "きられる", "kiさせる"], ex_jp: "コートを着ます。", ex_vi: "Mặc áo khoác - Trợ từ を" },
-            { id: 81, char: "履", hv: "LÝ", nghia: "Mặc (giày)", level: "N4", onkun: "リ / は.く", pr: "尸 (Thân) + 復 (Phục).<br>💡 Hà Cụ đi giày vào cho thân thể Phục hồi lý trí.", forms: ["はく", "はきます", "|はかない", "はいて", "はいた", "はける", "はこう", "はかれる", "はかせる"], ex_jp: "靴を履きます。", ex_vi: "Đi giày - Trợ từ を" },
-            { id: 82, char: "脱", hv: "THOÁT", nghia: "Cởi", level: "N4", onkun: "ダツ / ぬ.gu", pr: "月 (Thân) + 兑 (Vui).<br>💡 Nụ cười Gu mặn khi vui vẻ cởi đồ Thoát xác.", forms: ["ぬぐ", "ぬぎます", "|ぬかない", "ぬいで", "ぬいd", "ぬげる", "ぬごう", "ぬ가れる", "ぬがせる"], ex_jp: "靴を脱ぎます。", ex_vi: "Cởi giày - Trợ từ を" },
-            { id: 83, char: "上", hv: "THƯỢNG", nghia: "Tặng/Cho", level: "N5", onkun: "ジョウ / あ.げる", pr: "Đưa lên trên.<br>💡 A! Ghê Rủ nhau tặng quà cho bề Thượng.", forms: ["あげる", "あげます", "|あげない", "あげて", "あげた", "あげられる", "あげよう", "あげられる", "あげさせる"], ex_jp: "友達にプレゼントを上げます。", ex_vi: "Tặng quà bạn - Trợ từ に" },
-            { id: 84, char: "くれる", hv: "CHO", nghia: "Cho mình", level: "N5", onkun: "- / くれる", pr: "(Dùng Kana).<br>💡 Cu Rê rủ ai đó tặng quà cho mình.", forms: ["くれる", "くれます", "|くれない", "|くれて", "|くれた", "-", "-", "-", "-"], ex_jp: "彼女がくれました。", ex_vi: "Cô ấy tặng tôi - Trợ từ が" },
-            { id: 85, char: "手伝", hv: "THỦ TRUYỀN", nghia: "Giúp đỡ", level: "N4", onkun: "- / てつだ.う", pr: "扌 (Tay) + 伝 (Truyền).<br>💡 Tết Tự Đâu giúp tay Truyền lực Giúp đỡ.", forms: ["|てつだう", "てつだいます", "|てつだわない", "てつだって", "てつだった", "てつだえる", "てつだおう", "てつだわれる", "|てつだわせる"], ex_jp: "仕事を手伝います。", ex_vi: "Giúp làm việc - Trợ từ を" },
-            { id: 86, char: "助", hv: "TRỢ", nghia: "Cứu giúp", level: "N3", onkun: "ジョ / たす.ける", pr: "且 (Hơn) + 力 (Lực).<br>💡 Ta Sư Kệ rủ dùng thêm Lực hỗ Trợ cứu giúp.", forms: ["たすける", "たすけます", "たすけない", "たすけて", "たすけた", "たすけられる", "たすけよう", "たすけられる", "たすけさせる"], ex_jp: "互いに助けます。", ex_vi: "Giúp lẫn nhau - Trợ từ に" },
-            { id: 87, char: "頼", hv: "LẠI", nghia: "Nhờ vả", level: "N3", onkun: "ライ / たの.む", pr: "束 (Bó) + 頁 (Đầu).<br>💡 Ta Nô Mũ nhờ cầm đồ đội đầu Ỷ Lại.", forms: ["たのむ", "たのみます", "|たのまない", "たのんで", "たのんだ", "たのめる", "たのmおう", "たのまれる", "たのませる"], ex_jp: "手伝いを頼みます。", ex_vi: "Nhờ giúp một tay - Trợ từ を" },
-            { id: 88, char: "誘", hv: "DỤ", nghia: "Mời", level: "N3", onkun: "ユウ / さそ.う", pr: "言 (Lời) + 秀 (Ưu).<br>💡 Xa xôi u mời mọc dụ dỗ người ưu tú.", forms: ["さそう", "さそいます", "|さそわない", "さそって", "|さそった", "|さそえる", "さそう", "さそわれる", "|さそわせる"], ex_jp: "友達を誘います。", ex_vi: "Mời bạn bè - Trợ từ を" },
-            { id: 89, char: "迎", hv: "NGHÊNH", nghia: "Đón", level: "N4", onkun: "ゲイ / むか.える", pr: "辶 (Đi) + 卬 (Ngẩng).<br>💡 Mụ Cá Ê rủ ngẩng cao đầu Nghênh đón khách.", forms: ["むかえる", "むかえます", "|むかえない", "むかえて", "|むかえた", "むかえられる", "むかeよう", "|むakaえられる", "むakaえさせる"], ex_jp: "駅に迎えに行きます。", ex_vi: "Đi đón ở nhà ga - Trợ từ に" },
-            { id: 90, char: "会", hv: "HỘI", nghia: "Gặp", level: "N5", onkun: "カイ / あ.う", pr: "人 (Người) + 云 (Mây).<br>💡 A U gặp nhau tụ Hội nói chuyện như mây.", forms: ["あう", "あいます", "あわない", "あって", "あった", "あえる", "あおう", "あわれる", "あわせる"], ex_jp: "友達に会います。", ex_vi: "Gặp bạn - Trợ từ に" },
-            { id: 91, char: "死", hv: "TỬ", nghia: "Chết", level: "N4", onkun: "シ / し.ぬ", pr: "歹 (Xương) + 匕 (Dao).<br>💡 Si Nữ chết vì tình, xương gặp dao là Tử.", forms: ["しぬ", "しにます", "|し나ない", "|しんで", "しんだ", "しねる", "しのう", "し나れる", "|し나せる"], ex_jp: "死ぬほど疲れました。", ex_vi: "Mệt muốn chết - Trợ từ ほど" },
-            { id: 92, char: "生", hv: "SINH", nghia: "Sinh ra", level: "N3", onkun: "セイ / うま.れる", pr: "Mầm xanh trồi lên.<br>💡 U Má Rể rủ mầm xanh Sinh sôi.", forms: ["うまれる", "うまれます", "うまれない", "うまれて", "うまれた", "うまれられる", "うまれよう", "-", "-"], ex_jp: "日本で生まれました。", ex_vi: "Sinh ra ở Nhật - Trợ từ で" },
-            { id: 93, char: "始", hv: "THỦY", nghia: "Bắt đầu", level: "N4", onkun: "シ / はじ.める", pr: "女 (Nữ) + 台 (Bục).<br>💡 Hả? Chi Mê phụ nữ lên bục Bắt đầu yêu.", forms: ["はじめる", "はじめます", "はじめた", "はじまる", "|はじまります", "|はじまった", "-", "-", "-"], ex_jp: "会議は始まります。", ex_vi: "Hội nghị bắt đầu - Trợ từ は" },
-            { id: 94, char: "終", hv: "CHUNG", nghia: "Kết thúc", level: "N4", onkun: "シュウ / お.わる", pr: "糸 (Tơ) + 冬 (Mùa đông).<br>💡 Ô! Wa rủ dệt xong tơ mùa đông là Chung kết.", forms: ["おわる", "おわります", "|おわった", "おえる", "おえます", "|おえた", "-", "-", "-"], ex_jp: "仕事が終わりました。", ex_vi: "Việc đã xong - Trợ từ が" },
-            { id: 95, char: "決", hv: "QUYẾT", nghia: "Quyết định", level: "N3", onkun: "ケツ / き.める", pr: "氵 (Nước) + 夬 (Khoét).<br>💡 Kì Mê rủ khoét sâu dòng nước Quyết liệt.", forms: ["きめる", "きめます", "きめた", "きまる", "きまります", "きまった", "-", "-", "-"], ex_jp: "行くことに決めました。", ex_vi: "Đã quyết sẽ đi - Trợ từ に" }
+            // --- Nhóm 1: Di Chuyển (01-19) ---
+            { id: 1, char: "行", hv: "HÀNH", nghia: "Đi", level: "N5", group: 1, onkun: "コウ / い.く", pr: "彳 (Bước ngắn) + 亍 (Bước dài).<br>💡 Bước đi trái phải là hành động đi.", forms: ["行く", "行きます", "行かない", "行って", "行った", "行ける", "行こう", "行かれる", "行かせる"], ex_jp: "日本へ行きます。", ex_vi: "Đi về phía Nhật Bản - Trợ từ へ" },
+            { id: 2, char: "来", hv: "LAI", nghia: "Đến", level: "N5", group: 3, onkun: "ライ / く.る", pr: "木 (Cây) + 丷 (Mầm).<br>💡 Mầm cây tương lai đang đến.", forms: ["来る", "来ます", "来ない", "来て", "来た", "来られる", "来よう", "来られる", "来させる"], ex_jp: "友達が遊びに来ます。", ex_vi: "Bạn đến chơi - Trợ từ が" },
+            { id: 3, char: "帰", hv: "QUY", nghia: "Về", level: "N5", group: 1, onkun: "キ / かえ.る", pr: "⻏ (Gò) + 帚 (Chổi).<br>💡 Cầm chổi quét dọn đón chồng về nhà.", forms: ["帰る", "帰ります", "帰らない", "帰って", "帰った", "帰れる", "帰ろう", "帰られる", "帰らせる"], ex_jp: "5時までに帰ります。", ex_vi: "Về trước 5 giờ - Trợ từ までに" },
+            { id: 4, char: "入", hv: "NHẬP", nghia: "Vào", level: "N5", group: 1, onkun: "ニュウ / はい.る", pr: "Hình cái lều.<br>💡 Người hãi quá chui vào (Nhập) lều.", forms: ["入る", "入ります", "入らない", "入って", "入った", "入れる", "入ろう", "入られる", "入らせる"], ex_jp: "部屋に入ります。", ex_vi: "Vào phòng - Trợ từ に" },
+            { id: 5, char: "出", hv: "XUẤT", nghia: "Ra ngoài", level: "N5", group: 2, onkun: "シュツ / で.る", pr: "山 (Núi) + 山 (Núi).<br>💡 Hai ngọn núi chồng lên nhau xuất hiện.", forms: ["出る", "出ます", "出ない", "出て", "出た", "出られる", "出よう", "出られる", "出させる"], ex_jp: "家を出ます。", ex_vi: "Ra khỏi nhà - Trợ từ を" },
+            { id: 6, char: "入", hv: "NHẬP", nghia: "Cho vào", level: "N5", group: 2, onkun: "ニュウ / い.れる", pr: "人 (Người) + 入 (Vào).<br>💡 Cho đồ vật vào bên trong.", forms: ["入れる", "入れます", "入れない", "入れて", "入れた", "入れられる", "入れよう", "入れられる", "入れさせる"], ex_jp: "かばんに財布を入れます。", ex_vi: "Cho ví vào cặp - Trợ từ に" },
+            { id: 7, char: "出", hv: "XUẤT", nghia: "Lấy ra", level: "N5", group: 1, onkun: "シュツ / だ.す", pr: "Đá sù lông lấy đồ từ núi ra.", forms: ["出す", "出します", "出さない", "出して", "出した", "出せる", "出そう", "出される", "出させる"], ex_jp: "荷物を出します。", ex_vi: "Lấy hành lý ra - Trợ từ を" },
+            { id: 8, char: "歩", hv: "BỘ", nghia: "Đi bộ", level: "N5", group: 1, onkun: "ホ / ある.く", pr: "止 (Dừng) + 少 (Ít).<br>💡 Dừng lại một chút rồi đi bộ tiếp.", forms: ["歩く", "歩きます", "歩かない", "歩いて", "歩いた", "歩ける", "歩こう", "歩かれる", "歩かせる"], ex_jp: "道に沿って歩きます。", ex_vi: "Đi bộ dọc theo đường - Trợ từ にそって" },
+            { id: 9, char: "走", hv: "TẨU", nghia: "Chạy", level: "N5", group: 1, onkun: "ソウ / はし.る", pr: "土 (Đất) + 疋 (Chân).<br>💡 Há xì một cái rồi chạy phăm phăm trên đất.", forms: ["走る", "走ります", "走らない", "走って", "走った", "走れる", "走ろう", "走られる", "走らせる"], ex_jp: "公園を走ります。", ex_vi: "Chạy trong công viên - Trợ từ を" },
+            { id: 10, char: "乗", hv: "THỪA", nghia: "Lên xe", level: "N5", group: 1, onkun: "ジョウ / の.る", pr: "禾 (Lúa) + 千 (Ngàn).<br>💡 Nô đùa chất lúa lên ngàn chiếc xe thừa kế.", forms: ["乗る", "乗ります", "乗らない", "乗って", "乗った", "乗れる", "乗ろう", "乗られる", "乗らせる"], ex_jp: "電車に乗ります。", ex_vi: "Lên tàu điện - Trợ từ に" },
+            { id: 11, char: "降", hv: "GIÁNG", nghia: "Xuống xe", level: "N5", group: 2, onkun: "コウ / お.りる", pr: "阝 (Gò) + 夅 (Chân).<br>💡 Xuống núi/gò giáng trần.", forms: ["降りる", "降ります", "降りない", "降りて", "降りた", "降りられる", "降りよう", "降りられる", "降りさせる"], ex_jp: "バスを降ります。", ex_vi: "Xuống xe buýt - Trợ từ を" },
+            { id: 12, char: "登", hv: "ĐĂNG", nghia: "Leo núi", level: "N5", group: 1, onkun: "トウ / のぼ.る", pr: "癶 (Chân) + 豆 (Đậu).<br>💡 Nô bộc dẫm lên hạt đậu leo núi.", forms: ["登る", "登ります", "登らない", "登って", "登った", "登れる", "登ろう", "登られる", "登らせる"], ex_jp: "高い山を登ります。", ex_vi: "Leo lên ngọn núi cao." },
+            { id: 13, char: "渡", hv: "ĐỘ", nghia: "Băng qua", level: "N5", group: 1, onkun: "ト / わた.る", pr: "氵 (Nước) + 度 (Độ).<br>💡 Vượt sông nóng 30 độ.", forms: ["渡る", "渡ります", "渡らない", "渡って", "渡った", "渡れる", "渡ろう", "渡られる", "渡らせる"], ex_jp: "道を渡ります。", ex_vi: "Băng qua đường - Trợ từ を" },
+            { id: 14, char: "曲", hv: "KHÚC", nghia: "Rẽ, quẹo", level: "N5", group: 1, onkun: "キョク / まが.る", pr: "田 (Ruộng) + 凵 (Vùng).<br>💡 Rẽ qua cánh đồng tạo khúc quanh.", forms: ["曲がる", "曲がります", "曲がらない", "曲がって", "曲がった", "曲がれる", "曲がろう", "曲がられる", "曲がらせる"], ex_jp: "角を右に曲がります。", ex_vi: "Rẽ phải ở góc đường - Trợ từ を/に" },
+            { id: 15, char: "着", hv: "TRƯỚC", nghia: "Đến nơi", level: "N5", group: 1, onkun: "チャク / つ.く", pr: "⺶ (Dê) + 目 (Mắt).<br>💡 Xù lông khi dê mở mắt đã đến đích.", forms: ["着く", "着きます", "着かない", "着いて", "着いた", "着ける", "着こう", "着かれる", "着かせる"], ex_jp: "駅に着きます。", ex_vi: "Đến nhà ga - Trợ từ に" },
+            { id: 16, char: "急", hv: "CẤP", nghia: "Vội, gấp", level: "N5", group: 1, onkun: "キュウ / いそ.ぐ", pr: "Bó cỏ + Tim.<br>💡 I như sô cô la tan vì tim vội vã.", forms: ["急ぐ", "急ぎます", "急がない", "急いで", "急いだ", "急げる", "急ごう", "急がれる", "急がせる"], ex_jp: "急いで帰ります。", ex_vi: "Vội vàng trở về." },
+            { id: 17, char: "止", hv: "CHỈ", nghia: "Tạnh", level: "N5", group: 1, onkun: "シ / や.む", pr: "Hình bàn chân.<br>💡 Dừng chân khi tạnh mưa.", forms: ["止む", "止みます", "止まない", "止んで", "止んだ", "-", "-", "-", "-"], ex_jp: "雨が止みました。", ex_vi: "Mưa đã tạnh - Trợ từ が" },
+            { id: 18, char: "動", hv: "ĐỘNG", nghia: "Di chuyển", level: "N5", group: 1, onkun: "ドウ / うご.く", pr: "重 (Nặng) + 力 (Lực).<br>💡 U Gồ ghề dùng lực dời vật nặng.", forms: ["動く", "動きます", "動かない", "動いて", "動いた", "動ける", "動こう", "動かれる", "動かせる"], ex_jp: "機械が動いています。", ex_vi: "Máy đang chạy - Trợ từ が" },
+            { id: 19, char: "待", hv: "ĐÃI", nghia: "Đợi", level: "N5", group: 1, onkun: "タイ / ま.つ", pr: "彳 (Đi) + 寺 (Chùa).<br>💡 Má Tự đợi con đi lễ chùa về.", forms: ["待つ", "待ちます", "待たない", "待って", "待った", "待てる", "待とう", "待たれる", "待たせる"], ex_jp: "駅で友達を待ちます。", ex_vi: "Đợi bạn ở nhà ga - Trợ từ で" },
+
+            // --- Nhóm 2: Sinh Hoạt (20-33) ---
+            { id: 20, char: "食", hv: "THỰC", nghia: "Ăn", level: "N5", group: 2, onkun: "ショク / た.べる", pr: "人 (Người) + 良 (Tốt).<br>💡 Ăn thức ăn tốt cho người.", forms: ["食べる", "食べます", "食べない", "食べて", "食べた", "食べられる", "食べよう", "食べられる", "食べさせる"], ex_jp: "肉ばかり食べます。", ex_vi: "Toàn ăn thịt thôi - Trợ từ ばかり" },
+            { id: 21, char: "飲", hv: "ẨM", nghia: "Uống", level: "N5", group: 1, onkun: "イン / の.む", pr: "食 (Ăn) + 欠 (Thiếu).<br>💡 Thiếu nước nên phải uống.", forms: ["飲む", "飲みます", "飲まない", "飲んで", "飲んだ", "飲める", "飲もう", "飲まれる", "飲ませる"], ex_jp: "お茶を飲みます。", ex_vi: "Uống trà - Trợ từ を" },
+            { id: 22, char: "吸", hv: "HẤP", nghia: "Hút", level: "N5", group: 1, onkun: "キュウ / す.う", pr: "口 (Miệng) + 及 (Kịp).<br>💡 Hút vào miệng kịp thời.", forms: ["吸う", "吸います", "吸わない", "吸って", "吸った", "吸える", "吸おう", "吸われる", "吸わせる"], ex_jp: "タバコを吸います。", ex_vi: "Hút thuốc - Trợ từ を" },
+            { id: 23, char: "立", hv: "LẬP", nghia: "Đứng", level: "N5", group: 1, onkun: "リツ / た.つ", pr: "Người đứng trên đất.<br>💡 Đứng thẳng để tự lập.", forms: ["立つ", "立ちます", "立たない", "立って", "立った", "立てる", "立とう", "立たれる", "立たせる"], ex_jp: "ドアの前に立ちます。", ex_vi: "Đứng trước cửa - Trợ từ に" },
+            { id: 24, char: "座", hv: "TỌA", nghia: "Ngồi", level: "N5", group: 1, onkun: "ザ / すわ.る", pr: "广 (Nhà) + 土 (Đất).<br>💡 Ngồi trên đất tọa đàm trong nhà.", forms: ["座る", "座ります", "座らない", "座って", "座った", "座れる", "座ろう", "座られる", "座らせる"], ex_jp: "椅子に座ります。", ex_vi: "Ngồi vào ghế - Trợ từ に" },
+            { id: 25, char: "寝", hv: "TẨM", nghia: "Ngủ", level: "N5", group: 2, onkun: "シン / ね.る", pr: "宀 (Mái) + Giường.<br>💡 Leo lên giường nằm ngủ.", forms: ["寝る", "寝ます", "寝ない", "寝て", "寝た", "寝られる", "寝よう", "寝られる", "寝させる"], ex_jp: "10時に寝ます。", ex_vi: "Ngủ lúc 10h - Trợ từ に" },
+            { id: 26, char: "起", hv: "KHỞI", nghia: "Dậy", level: "N5", group: 2, onkun: "キ / お.きる", pr: "走 (Chạy) + 己 (Thân).<br>💡 Chạy khỏi giường khởi động.", forms: ["起きる", "起きます", "起きない", "起きて", "起きた", "起きられる", "起きよう", "起きられる", "起きさせる"], ex_jp: "7時に起きます。", ex_vi: "Thức dậy lúc 7h - Trợ từ に" },
+            { id: 27, char: "浴", hv: "DỤC", nghia: "Tắm", level: "N5", group: 2, onkun: "ヨク / あび.る", pr: "氵 (Nước) + 谷 (Thung lũng).<br>💡 Tắm ở khe suối thung lũng.", forms: ["浴びる", "浴びます", "浴びない", "浴びて", "浴びた", "浴びられる", "浴びよう", "浴びられる", "浴びさせる"], ex_jp: "シャワーを浴びます。", ex_vi: "Tắm vòi sen - Trợ từ を" },
+            { id: 28, char: "磨", hv: "MA", nghia: "Mài, đánh", level: "N5", group: 1, onkun: "マ / みが.く", pr: "广 (Nhà) + 石 (Đá).<br>💡 Dùng đá mài trong nhà.", forms: ["磨く", "磨きます", "磨かない", "磨いて", "磨いた", "磨ける", "磨こう", "磨かれる", "磨かせる"], ex_jp: "歯を磨きます。", ex_vi: "Đánh răng - Trợ từ を" },
+            { id: 29, char: "洗", hv: "TẨY", nghia: "Rửa", level: "N5", group: 1, onkun: "セン / あら.う", pr: "氵 (Nước) + 先 (Trước).<br>💡 Rửa bằng nước trước khi ăn.", forms: ["洗う", "洗います", "洗わない", "洗って", "洗った", "洗える", "洗おう", "洗われる", "洗わせる"], ex_jp: "手を洗います。", ex_vi: "Rửa tay - Trợ từ を" },
+            { id: 30, char: "切", hv: "THIẾT", nghia: "Cắt", level: "N5", group: 1, onkun: "セツ / き.る", pr: "七 + 刀 (Dao).<br>💡 7 con dao dùng để cắt.", forms: ["切る", "切ります", "切らない", "切って", "切った", "切れる", "切ろう", "切られる", "切らせる"], ex_jp: "紙を切ります。", ex_vi: "Cắt giấy - Trợ từ を" },
+            { id: 31, char: "焼", hv: "THIÊU", nghia: "Nướng", level: "N5", group: 1, onkun: "ショウ / や.く", pr: "火 (Lửa) + 尭.<br>💡 Dùng lửa thiêu nướng đồ ăn.", forms: ["焼く", "焼きます", "焼かない", "焼いて", "焼いた", "焼ける", "焼こう", "焼かれる", "やかせる"], ex_jp: "魚を焼きます。", ex_vi: "Nướng cá - Trợ từ を" },
+            { id: 32, char: "泊", hv: "BẠC", nghia: "Trọ lại", level: "N5", group: 1, onkun: "ハク / とま.る", pr: "氵 (Nước) + 白 (Trắng).<br>💡 Trọ lại bến nước trắng.", forms: ["泊まる", "泊まります", "泊まらない", "泊まって", "泊まった", "泊まれる", "泊まろう", "泊まられる", "泊まらせる"], ex_jp: "ホテルに泊まります。", ex_vi: "Trọ khách sạn - Trợ từ に" },
+            { id: 33, char: "休", hv: "HƯU", nghia: "Nghỉ", level: "N5", group: 1, onkun: "キュウ / やす.む", pr: "亻 (Người) + 木 (Cây).<br>💡 Người dựa gốc cây nghỉ hưu.", forms: ["休む", "休みます", "休まない", "休んで", "休んだ", "休める", "休もう", "休まれる", "休ませる"], ex_jp: "30分ぐらい休みます。", ex_vi: "Nghỉ 30p - Trợ từ ぐらい" },
+
+            // --- Nhóm 3: Mua Bán (34-39) ---
+            { id: 34, char: "買", hv: "MÃI", nghia: "Mua", level: "N5", group: 1, onkun: "バイ / か.う", pr: "罒 (Lưới) + 貝 (Tiền).<br>💡 Dùng lưới bắt tiền đi mua đồ.", forms: ["買う", "買います", "買わない", "買って", "買った", "買える", "買おう", "買われる", "買わせる"], ex_jp: "パンを買います。", ex_vi: "Mua bánh mì - Trợ từ を" },
+            { id: 35, char: "売", hv: "MẠI", nghia: "Bán", level: "N5", group: 1, onkun: "バイ / う.る", pr: "士 + 冖 + 儿.<br>💡 Kẻ sĩ đi bán đồ trang trải.", forms: ["売る", "売ります", "売らない", "売って", "売った", "売れる", "売ろう", "売られる", "売らせる"], ex_jp: "車を売ります。", ex_vi: "Bán xe - Trợ từ を" },
+            { id: 36, char: "払", hv: "PHẤT", nghia: "Trả tiền", level: "N3", group: 1, onkun: "フツ / はら.う", pr: "扌 (Tay) + ム (Riêng).<br>💡 Móc túi riêng trả tiền xong phất đi.", forms: ["払う", "払います", "払わない", "払って", "払った", "払える", "払おう", "払われる", "払わせる"], ex_jp: "代金を払います。", ex_vi: "Trả tiền hàng - Trợ từ を" },
+            { id: 37, char: "貸", hv: "THẢI", nghia: "Cho mượn", level: "N4", group: 1, onkun: "タイ / か.す", pr: "代 (Thay) + 貝 (Tiền).<br>💡 Đổi tiền cho mượn.", forms: ["貸す", "貸します", "貸さない", "貸して", "貸した", "貸せる", "貸そう", "貸される", "貸させる"], ex_jp: "お金を貸します。", ex_vi: "Cho vay - Trợ từ を" },
+            { id: 38, char: "借", hv: "TÁ", nghia: "Mượn", level: "N4", group: 2, onkun: "シャク / か.りる", pr: "亻 (Người) + 昔 (Xưa).<br>💡 Người xưa đi mượn đồ.", forms: ["借りる", "借ります", "借りない", "借りて", "借りた", "借りられる", "借りよう", "借りられる", "借りさせる"], ex_jp: "本を借ります。", ex_vi: "Mượn sách - Trợ từ を" },
+            { id: 39, char: "返", hv: "PHẢN", nghia: "Trả lại", level: "N4", group: 1, onkun: "ヘン / かえ.す", pr: "反 (Ngược) + 辶 (Đường).<br>💡 Đi ngược đường trả đồ.", forms: ["返す", "返します", "返さない", "返して", "返した", "返せる", "返そう", "返される", "返させる"], ex_jp: "本を返します。", ex_vi: "Trả lại sách - Trợ từ を" },
+
+            // --- Nhóm 4: Tác Động Vật (40-55) ---
+            { id: 40, char: "見", hv: "KIẾN", nghia: "Xem", level: "N5", group: 2, onkun: "ケン / み.る", pr: "目 (Mắt) + 儿 (Chân).<br>💡 Đôi mắt đi xem thế giới.", forms: ["見る", "見ます", "見ない", "見て", "見た", "見られる", "見よう", "見られる", "見させる"], ex_jp: "テレビを見ます。", ex_vi: "Xem tivi - Trợ từ を" },
+            { id: 41, char: "開", hv: "KHAI", nghia: "Mở (tha)", level: "N4", group: 2, onkun: "カイ / あ.ける", pr: "門 (Cửa) + 开 (Hai tay).<br>💡 Dùng tay mở toang cửa.", forms: ["開ける", "開けます", "開けない", "開けて", "開けた", "開けられる", "開けよう", "開けられる", "開けさせる"], ex_jp: "窓を開けます。", ex_vi: "Mở cửa sổ - Trợ từ を" },
+            { id: 42, char: "閉", hv: "BẾ", nghia: "Đóng (tha)", level: "N4", group: 2, onkun: "ヘイ / し.める", pr: "門 (Cửa) + 才 (Tài).<br>💡 Đóng cửa phòng để làm việc.", forms: ["閉める", "閉めます", "閉めない", "閉めて", "閉めた", "閉められる", "閉めよう", "閉められる", "閉めさせる"], ex_jp: "ドアを閉めます。", ex_vi: "Đóng cửa - Trợ từ を" },
+            { id: 43, char: "押", hv: "ÁP", nghia: "Ấn", level: "N4", group: 1, onkun: "オウ / お.す", pr: "扌 (Tay) + 甲 (Giáp).<br>💡 Dùng tay ấn lên vỏ cứng.", forms: ["押す", "押します", "押さない", "押して", "押した", "押せる", "押そう", "押される", "押させる"], ex_jp: "ボタンを押します。", ex_vi: "Ấn nút - Trợ từ を" },
+            { id: 44, char: "引", hv: "DẪN", nghia: "Kéo", level: "N4", group: 1, onkun: "イン / ひ.く", pr: "弓 (Cung) + 丨 (Vạch).<br>💡 Dùng vạch thẳng kéo cung.", forms: ["引く", "引きます", "引かない", "引いて", "引いた", "引ける", "引こう", "引かれる", "引かせる"], ex_jp: "風邪を引きました。", ex_vi: "Bị cảm - Trợ từ を" },
+            { id: 45, char: "作", hv: "TÁC", nghia: "Làm", level: "N4", group: 1, onkun: "サク / つく.る", pr: "亻 (Người) + 乍 (Dừng).<br>💡 Người dừng lại chế tác.", forms: ["作る", "作ります", "作らない", "作って", "作った", "作れる", "作ろう", "作られる", "作らせる"], ex_jp: "料理を作ります。", ex_vi: "Nấu ăn - Trợ từ を" },
+            { id: 46, char: "使", hv: "SỬ", nghia: "Sử dụng", level: "N4", group: 1, onkun: "シ / つか.う", pr: "亻 (Người) + 吏 (Quan).<br>💡 Sai khiến sử dụng quyền lực.", forms: ["使う", "使います", "使わない", "使って", "使った", "使える", "使おう", "使われる", "使わせる"], ex_jp: "ペンを使います。", ex_vi: "Sử dụng bút - Trợ từ を" },
+            { id: 47, char: "直", hv: "TRỰC", nghia: "Sửa", level: "N3", group: 1, onkun: "チョク / なお.す", pr: "十 + 目 (Mắt).<br>💡 Mắt nhìn thẳng để sửa chữa.", forms: ["直す", "直します", "直さない", "直して", "直した", "直せる", "直そう", "直される", "直させる"], ex_jp: "間違いを直します。", ex_vi: "Sửa lỗi sai - Trợ từ を" },
+            { id: 48, char: "探", hv: "THÁM", nghia: "Tìm kiếm", level: "N3", group: 1, onkun: "タン / さが.す", pr: "扌 (Tay) + 罙 (Hang).<br>💡 Dùng tay thám hiểm tìm trong hang.", forms: ["探す", "探します", "探さない", "探して", "探した", "探せる", "探そう", "探される", "探させる"], ex_jp: "財布を探します。", ex_vi: "Tìm ví - Trợ từ を" },
+            { id: 49, char: "触", hv: "XÚC", nghia: "Chạm", level: "N3", group: 1, onkun: "ショク / さわ.る", pr: "虫 (Sâu) + 角 (Sừng).<br>💡 Dùng sừng chạm vào sâu bọ.", forms: ["触る", "触ります", "触らない", "触って", "触った", "触れる", "触ろう", "触られる", "触らせる"], ex_jp: "展示品に触らないで。", ex_vi: "Đừng chạm vào đồ trưng bày." },
+            { id: 50, char: "貼", hv: "THIẾP", nghia: "Dán", level: "N3", group: 1, onkun: "チョウ / は.る", pr: "貝 (Tiền) + 占 (Chiếm).<br>💡 Dán tem chiếm chỗ.", forms: ["貼る", "貼ります", "貼らない", "貼って", "貼った", "貼れる", "貼ろう", "貼られる", "貼らせる"], ex_jp: "切手を貼ります。", ex_vi: "Dán tem - Trợ từ を" },
+            { id: 51, char: "撮", hv: "TOÁT", nghia: "Chụp ảnh", level: "N4", group: 1, onkun: "サツ / と.る", pr: "扌 (Tay) + 最 (Nhất).<br>💡 Chụp lấy khoảnh khắc đẹp nhất.", forms: ["撮る", "撮ります", "撮らない", "撮って", "撮った", "撮れる", "撮ろう", "撮られる", "撮らせる"], ex_jp: "写真を撮ります。", ex_vi: "Chụp ảnh - Trợ từ を" },
+            { id: 52, char: "投", hv: "ĐẦU", nghia: "Ném", level: "N3", group: 1, onkun: "トウ / な.げる", pr: "扌 (Tay) + 殳 (Gậy).<br>💡 Ném cây gậy đi xa.", forms: ["投げる", "投げます", "投げない", "投げて", "投げた", "投げられる", "投げよう", "投げられる", "投げさせる"], ex_jp: "ボールを投げます。", ex_vi: "Ném bóng - Trợ từ を" },
+            { id: 53, char: "盗", hv: "ĐẠO", nghia: "Trộm", level: "N3", group: 1, onkun: "トウ / ぬす.む", pr: "次 + 皿 (Đĩa).<br>💡 Lén lút trộm đĩa cơm.", forms: ["盗む", "盗みます", "盗まない", "盗んで", "盗んだ", "盗める", "盗もう", "盗まれる", "盗ませる"], ex_jp: "財布を盗まれました。", ex_vi: "Bị trộm ví - Trợ từ を" },
+            { id: 54, char: "見つかる", hv: "KIẾN", nghia: "Được tìm thấy", level: "N4", group: 1, onkun: "ケン / みつかる", pr: "Mắt thấy đồ dính chặt (Tự động từ).", forms: ["見つかる", "見つかります", "見つからない", "見つかって", "見つかった", "-", "-", "-", "-"], ex_jp: "鍵が見つかりました。", ex_vi: "Chìa khóa được thấy - Trợ từ が" },
+            { id: 55, char: "見つける", hv: "KIẾN", nghia: "Tìm thấy", level: "N4", group: 2, onkun: "ケン / みつける", pr: "Chủ động mắt tìm đồ (Tha động từ).", forms: ["見つける", "見つけます", "見つけない", "見つけて", "見つけた", "見つけられる", "見つけよう", "見つけられる", "見つけさせる"], ex_jp: "鍵を見つけました。", ex_vi: "Tìm thấy chìa khóa - Trợ từ を" },
+
+            // --- Nhóm 5: Học Tập & Tư Duy (56-67) ---
+            { id: 56, char: "働", hv: "ĐỘNG", nghia: "Làm việc", level: "N4", group: 1, onkun: "ドウ / はたら.く", pr: "亻 (Người) + 動 (Động).<br>💡 Lao động tạo chuyển động.", forms: ["働く", "働きます", "働かない", "働いて", "働いた", "働ける", "働こう", "働かれる", "働かせる"], ex_jp: "9時から働きます。", ex_vi: "Làm từ 9h - Trợ từ から" },
+            { id: 57, char: "勤", hv: "CẦN", nghia: "Làm (cty)", level: "N3", group: 2, onkun: "キン / つと.める", pr: "堇 (Đất) + 力 (Lực).<br>💡 Chuyên cần nặn đất.", forms: ["勤める", "勤めます", "勤めない", "勤めて", "勤めた", "勤められる", "勤めよう", "勤められる", "勤めさせる"], ex_jp: "会社に勤めます。", ex_vi: "Làm cho công ty - Trợ từ に" },
+            { id: 58, char: "教", hv: "GIÁO", nghia: "Dạy", level: "N4", group: 2, onkun: "キョウ / おし.える", pr: "孝 (Hiếu) + 攵 (Đánh).<br>💡 Dạy chữ hiếu bằng uốn nắn.", forms: ["教える", "教えます", "教えない", "教えて", "教えた", "教えられる", "教えよう", "教えられる", "教えさせる"], ex_jp: "日本語を教えます。", ex_vi: "Dạy tiếng Nhật - Trợ từ を" },
+            { id: 59, char: "習", hv: "TẬP", nghia: "Học", level: "N4", group: 1, onkun: "シュウ / なら.う", pr: "羽 (Cánh) + 白 (Trắng).<br>💡 Chim non tập bay.", forms: ["習う", "習います", "習わない", "習って", "習った", "習える", "習おう", "習われる", "習わせる"], ex_jp: "ピアノを習います。", ex_vi: "Học piano - Trợ từ を" },
+            { id: 60, char: "学", hv: "HỌC", nghia: "Học tập", level: "N5", group: 1, onkun: "ガク / まな.ぶ", pr: "⺍ (Trí) + 冖 + 子.<br>💡 Trẻ học dưới mái nhà.", forms: ["学ぶ", "学びます", "学ばない", "学んで", "学んだ", "学べる", "学ぼう", "学ばれる", "学ばせる"], ex_jp: "大学で学びます。", ex_vi: "Học ở đại học - Trợ từ で" },
+            { id: 61, char: "覚", hv: "GIÁC", nghia: "Nhớ", level: "N4", group: 2, onkun: "カク / おぼ.える", pr: "⺍ (Trí) + 見 (Nhìn).<br>💡 Giác ngộ qua cái nhìn.", forms: ["覚える", "覚えます", "覚えない", "覚えて", "覚えた", "覚えられる", "覚えよう", "覚えられる", "覚えさせる"], ex_jp: "漢字を覚えます。", ex_vi: "Nhớ Kanji - Trợ từ を" },
+            { id: 62, char: "忘", hv: "VONG", nghia: "Quên", level: "N4", group: 2, onkun: "ボウ / わす.れる", pr: "亡 (Mất) + 心 (Tim).<br>💡 Tim mất trí nhớ là quên.", forms: ["忘れる", "忘れます", "忘れない", "忘れて", "忘れた", "忘れられる", "忘れよう", "忘れられる", "忘れさせる"], ex_jp: "宿題を忘れました。", ex_vi: "Quên bài tập - Trợ từ を" },
+            { id: 63, char: "考", hv: "KHẢO", nghia: "Suy nghĩ", level: "N4", group: 2, onkun: "コウ / かんが.える", pr: "耂 (Lão) + 丂 (Gậy).<br>💡 Ông già chống gậy suy khảo.", forms: ["考える", "考えます", "考えない", "考えて", "考えた", "考えられる", "考えよう", "考えられる", "考えさせる"], ex_jp: "将来 về việc 考える。", ex_vi: "Nghĩ về tương lai - Trợ từ について" },
+            { id: 64, char: "知", hv: "TRI", nghia: "Biết", level: "N4", group: 1, onkun: "チ / し.る", pr: "矢 (Tên) + 口 (Miệng).<br>💡 Lời nói nhanh như tên bắn tri thức.", forms: ["知る", "知ります", "知らない", "知って", "知った", "知られる", "知ろう", "知られる", "知らせる"], ex_jp: "ニュースを知っています。", ex_vi: "Tôi biết tin - Trợ từ を" },
+            { id: 65, char: "分", hv: "PHÂN", nghia: "Hiểu", level: "N5", group: 1, onkun: "ブン / わ.かる", pr: "八 (Tám) + 刀 (Dao).<br>💡 Chia nhỏ để hiểu rõ.", forms: ["わかる", "わかります", "わからない", "わかって", "わかった", "-", "-", "-", "-"], ex_jp: "意味が分かります。", ex_vi: "Hiểu ý nghĩa - Trợ từ が" },
+            { id: 66, char: "調", hv: "ĐIỀU", nghia: "Điều tra", level: "N3", group: 2, onkun: "チョウ / しら.べる", pr: "言 (Lời) + 周 (Chu vi).<br>💡 Dùng lời hỏi điều tra chu vi.", forms: ["調べる", "調べます", "調べない", "調べて", "調べた", "調べられる", "調べよう", "調べられる", "調べさせる"], ex_jp: "ネットで調べます。", ex_vi: "Điều tra trên mạng - Trợ từ で" },
+            { id: 67, char: "書", hv: "THƯ", nghia: "Viết", level: "N5", group: 1, onkun: "ショ / か.く", pr: "聿 (Bút) + 日 (Ngày).<br>💡 Tay cầm bút viết chuyện ngày.", forms: ["書く", "書きます", "書かない", "書いて", "書いた", "書ける", "書こう", "書かれる", "書かせる"], ex_jp: "日記を書きます。", ex_vi: "Viết nhật ký - Trợ từ を" },
+
+            // --- Nhóm 6-9: (68-95) ---
+            { id: 68, char: "言", hv: "NGÔN", nghia: "Nói", level: "N5", group: 1, onkun: "ゲン / い.う", pr: "Miệng nói ra lời.", forms: ["言う", "言います", "言わない", "言って", "言った", "言える", "言おう", "言われる", "言わせる"], ex_jp: "本当のことを言います。", ex_vi: "Nói sự thật - Trợ từ を" },
+            { id: 69, char: "話", hv: "THOẠI", nghia: "Nói chuyện", level: "N5", group: 1, onkun: "ワ / はな.す", pr: "Dùng lưỡi nói lời thoại.", forms: ["話す", "話します", "話さない", "話して", "話した", "話せる", "話そう", "話される", "話させる"], ex_jp: "日本語を話します。", ex_vi: "Nói tiếng Nhật - Trợ từ を" },
+            { id: 70, char: "聞", hv: "VĂN", nghia: "Nghe", level: "N5", group: 1, onkun: "ブン / き.く", pr: "Ghé tai vào cửa nghe văn.", forms: ["聞く", "聞きます", "聞かない", "聞いて", "聞いた", "聞ける", "聞こう", "聞かれる", "聞かせる"], ex_jp: "音楽を聞きます。", ex_vi: "Nghe nhạc - Trợ từ を" },
+            { id: 71, char: "答", hv: "ĐÁP", nghia: "Trả lời", level: "N4", group: 2, onkun: "トウ / こた.える", pr: "Trả lời dưới tán trúc.", forms: ["答える", "答えます", "答えない", "答えて", "答えた", "答えられる", "答えよう", "答えられる", "答えさせる"], ex_jp: "質問に答えます。", ex_vi: "Trả lời câu hỏi - Trợ từ に" },
+            { id: 72, char: "呼", hv: "HÔ", nghia: "Gọi", level: "N4", group: 1, onkun: "コ / よ.ぶ", pr: "Dùng miệng và tay hô hoán.", forms: ["呼ぶ", "呼びます", "呼ばない", "呼んで", "呼んだ", "呼べる", "呼ぼう", "呼ばれる", "呼ばせる"], ex_jp: "タクシーを呼ぶ。", ex_vi: "Gọi taxi - Trợ từ を" },
+            { id: 73, char: "笑", hv: "TIẾU", nghia: "Cười", level: "N4", group: 1, onkun: "ショウ / わら.う", pr: "Người trẻ múa tre cười tươi.", forms: ["笑う", "笑います", "笑わない", "笑って", "笑った", "笑える", "笑おう", "笑われる", "笑わせる"], ex_jp: "みんなと笑います。", ex_vi: "Cười với mọi người - Trợ từ と" },
+            { id: 74, char: "泣", hv: "KHẤP", nghia: "Khóc", level: "N4", group: 1, onkun: "キュウ / な.く", pr: "Đứng rớt nước mắt là khóc.", forms: ["泣く", "泣きます", "泣かない", "泣いて", "泣いた", "泣ける", "泣こう", "泣かれる", "泣かせる"], ex_jp: "一人で泣きます。", ex_vi: "Khóc một mình - Trợ từ で" },
+            { id: 75, char: "怒", hv: "NỘ", nghia: "Giận", level: "N3", group: 1, onkun: "ド / おこ.る", pr: "Chứa phẫn nộ trong tim nô lệ.", forms: ["怒る", "怒ります", "怒らない", "怒って", "怒った", "怒れる", "怒ろう", "怒られる", "怒らせる"], ex_jp: "彼に対して怒ります。", ex_vi: "Giận đối với anh ấy - Trợ từ にたいして" },
+            { id: 76, char: "喜", hv: "HỶ", nghia: "Vui mừng", level: "N3", group: 1, onkun: "キ / よろこ.ぶ", pr: "Hỷ hả tin tốt lan như lửa.", forms: ["喜ぶ", "喜びます", "喜ばない", "喜んで", "喜んだ", "喜べる", "喜ぼう", "喜ばれる", "喜ばせる"], ex_jp: "結果を喜びます。", ex_vi: "Vui vì kết quả - Trợ từ を" },
+            { id: 77, char: "困", hv: "KHỐN", nghia: "Khó khăn", level: "N4", group: 1, onkun: "コン / こま.る", pr: "Cây bị nhốt là khốn đốn.", forms: ["困る", "困ります", "困らない", "困って", "困った", "困れる", "困ろう", "困られる", "困らせる"], ex_jp: "お金がなくて困っています。", ex_vi: "Khốn khổ vì thiếu tiền." },
+            { id: 78, char: "疲", hv: "BÌ", nghia: "Mệt", level: "N4", group: 2, onkun: "ヒ / つか.れる", pr: "Da bệnh bọc xương là mệt mỏi.", forms: ["疲れる", "疲れます", "疲れない", "疲れて", "疲れた", "-", "疲れよう", "-", "疲れさせる"], ex_jp: "死ぬほど疲れました。", ex_vi: "Mệt muốn chết - Trợ từ ほど" },
+            { id: 79, char: "見せる", hv: "KIẾN", nghia: "Cho xem", level: "N5", group: 2, onkun: "ケン / みせる", pr: "Chủ động đưa mắt cho xem.", forms: ["見せる", "見せます", "見せない", "見せて", "見せた", "見せられる", "見せよう", "見せられる", "見せさせる"], ex_jp: "写真を見せます。", ex_vi: "Cho xem ảnh - Trợ từ を" },
+            { id: 80, char: "着", hv: "TRƯỚC", nghia: "Mặc áo", level: "N5", group: 2, onkun: "チャク / き.る", pr: "Dê + Mắt = Mặc đồ Trước.", forms: ["着る", "着ます", "着ない", "着て", "着た", "着られる", "着よう", "着られる", "着させる"], ex_jp: "コートを着ます。", ex_vi: "Mặc áo khoác - Trợ từ を" },
+            { id: 81, char: "履", hv: "LÝ", nghia: "Mặc giày", level: "N4", group: 1, onkun: "リ / は.く", pr: "Thân thể phục hồi khi đi giày.", forms: ["履く", "履きます", "履かない", "履いて", "履いた", "履ける", "履こう", "履かれる", "履かせる"], ex_jp: "靴を履きます。", ex_vi: "Đi giày - Trợ từ を" },
+            { id: 82, char: "脱", hv: "THOÁT", nghia: "Cởi", level: "N4", group: 1, onkun: "ダツ / ぬ.ぐ", pr: "Da thịt vui vẻ thoát xác cởi đồ.", forms: ["脱ぐ", "脱ぎます", "脱がない", "脱いで", "脱いだ", "脱げる", "脱ごう", "脱がれる", "脱がせる"], ex_jp: "靴を脱ぎます。", ex_vi: "Cởi giày - Trợ từ を" },
+            { id: 83, char: "上", hv: "THƯỢNG", nghia: "Tặng/Cho", level: "N5", group: 2, onkun: "ジョウ / あ.げる", pr: "Đưa vật phẩm lên bề trên.", forms: ["上げる", "上げます", "上げない", "上げて", "上げた", "上げられる", "上げよう", "上げられる", "上げさせる"], ex_jp: "友達にプレゼントを上げます。", ex_vi: "Tặng quà bạn - Trợ từ に" },
+            { id: 84, char: "くれる", hv: "CHO", nghia: "Cho mình", level: "N5", group: 2, onkun: "- / くれる", pr: "Ai đó tặng gì cho mình.", forms: ["くれる", "くれます", "くれない", "くれて", "くれた", "-", "-", "-", "-"], ex_jp: "彼女がくれました。", ex_vi: "Cô ấy tặng tôi - Trợ từ が" },
+            { id: 85, char: "手伝", hv: "THỦ TRUYỀN", nghia: "Giúp đỡ", level: "N4", group: 1, onkun: "- / てつだ.う", pr: "Tay truyền lực giúp đỡ.", forms: ["手伝う", "手伝います", "手伝わない", "手伝って", "手伝った", "手伝いえる", "手伝おう", "手伝われる", "手伝わせる"], ex_jp: "仕事を手伝います。", ex_vi: "Giúp làm việc - Trợ từ を" },
+            { id: 86, char: "助", hv: "TRỢ", nghia: "Cứu giúp", level: "N3", group: 2, onkun: "ジョ / たす.ける", pr: "Hỗ trợ thêm lực cứu giúp.", forms: ["助ける", "助けます", "助けない", "助けて", "助けた", "助けられる", "助けよう", "助けられる", "助けさせる"], ex_jp: "互いに助けます。", ex_vi: "Giúp lẫn nhau - Trợ từ に" },
+            { id: 87, char: "頼", hv: "LẠI", nghia: "Nhờ vả", level: "N3", group: 1, onkun: "ライ / たの.む", pr: "Ỷ lại nhờ cậy cái đầu.", forms: ["頼む", "頼みます", "頼まない", "頼んで", "頼んだ", "頼める", "頼もう", "頼まれる", "頼ませる"], ex_jp: "手伝いを頼みます。", ex_vi: "Nhờ giúp một tay - Trợ từ を" },
+            { id: 88, char: "誘", hv: "DỤ", nghia: "Mời", level: "N3", group: 1, onkun: "ユウ / さそ.う", pr: "Dùng lời mật ngọt dụ dỗ.", forms: ["誘う", "誘います", "誘わない", "誘って", "誘った", "誘える", "誘おう", "誘われる", "誘わせる"], ex_jp: "友達を誘います。", ex_vi: "Mời bạn bè - Trợ từ を" },
+            { id: 89, char: "迎", hv: "NGHÊNH", nghia: "Đón", level: "N4", group: 2, onkun: "ゲイ / むか.える", pr: "Ngẩng đầu nghênh đón khách.", forms: ["迎える", "迎えます", "迎えない", "迎えて", "迎えた", "迎えられる", "迎えよう", "迎えられる", "迎えさせる"], ex_jp: "駅に迎えに行きます。", ex_vi: "Đi đón ở nhà ga - Trợ từ に" },
+            { id: 90, char: "会", hv: "HỘI", nghia: "Gặp", level: "N5", group: 1, onkun: "カイ / あ.う", pr: "Gặp nhau nói chuyện như mây.", forms: ["会う", "会います", "会わない", "会って", "会った", "会える", "会おう", "会われる", "合わせる"], ex_jp: "友達に会います。", ex_vi: "Gặp bạn - Trợ từ に" },
+            { id: 91, char: "死", hv: "TỬ", nghia: "Chết", level: "N4", group: 1, onkun: "シ / し.ぬ", pr: "Xương tàn gặp dao là tử.", forms: ["死ぬ", "死にます", "死なない", "死んで", "死んだ", "死ねる", "死のう", "死なれる", "死なせる"], ex_jp: "死ぬほど疲れました。", ex_vi: "Mệt muốn chết - Trợ từ ほど" },
+            { id: 92, char: "生", hv: "SINH", nghia: "Sinh ra", level: "N3", group: 2, onkun: "セイ / うま.れる", pr: "Mầm xanh sinh sôi nảy nở.", forms: ["生まれる", "生まれます", "生まれない", "生まれて", "生まれた", "生まれられる", "生まれよう", "-", "-"], ex_jp: "日本で生まれました。", ex_vi: "Sinh ra ở Nhật - Trợ từ で" },
+            { id: 93, char: "始", hv: "THỦY", nghia: "Bắt đầu", level: "N4", group: 2, onkun: "シ / はじ.める", pr: "Phụ nữ lên bục bắt đầu.", forms: ["始める", "始めます", "始めた", "始まる", "始まります", "始まった", "-", "-", "-"], ex_jp: "会議は始まります。", ex_vi: "Hội nghị bắt đầu - Trợ từ は" },
+            { id: 94, char: "終", hv: "CHUNG", nghia: "Kết thúc", level: "N4", group: 1, onkun: "シュウ / お.わる", pr: "Sợi tơ mùa đông kết thúc.", forms: ["終わる", "終わります", "終わった", "終える", "終えます", "終えた", "-", "-", "-"], ex_jp: "仕事が終わりました。", ex_vi: "Việc đã xong - Trợ từ が" },
+            { id: 95, char: "決", hv: "QUYẾT", nghia: "Quyết định", level: "N3", group: 2, onkun: "ケツ / き.める", pr: "Khoét sâu dòng nước quyết liệt.", forms: ["決める", "決めます", "きめた", "決まる", "決まります", "決まった", "-", "-", "-"], ex_jp: "行くことに決めました。", ex_vi: "Đã quyết sẽ đi - Trợ từ に" }
         ];
 
         // --- STATE ---
@@ -382,10 +340,17 @@
         function speak(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                const u = new SpeechSynthesisUtterance(text.split('-')[0].trim());
+                const u = new SpeechSynthesisUtterance(text.split('.')[0].trim());
                 u.lang = 'ja-JP'; u.rate = 0.8;
                 window.speechSynthesis.speak(u);
             }
+        }
+
+        function speakType(type) {
+            if(!activeVerb) return;
+            const parts = activeVerb.onkun.split('/');
+            const text = type === 'on' ? parts[0].trim() : parts[1].trim().replace('.', '');
+            speak(text);
         }
 
         function getKanjiHex(kanji) {
@@ -412,44 +377,36 @@
             }).sort((a, b) => a.id - b.id);
             
             grid.innerHTML = filteredData.map(v => `
-                <div class="perspective h-72 group">
-                    <div id="card-${v.id}" class="card-inner h-full w-full" onclick="this.classList.toggle('is-flipped')">
-                        <!-- Front -->
-                        <div class="card-front border-t-8 ${v.level === 'N5' ? 'border-t-emerald-500' : v.level === 'N4' ? 'border-t-blue-500' : 'border-t-orange-500'} p-5 relative overflow-hidden">
-                            <div class="absolute top-2 left-4 text-[10px] font-black text-slate-300">#${v.id.toString().padStart(2, '0')}</div>
-                            <div class="absolute top-2 right-4 text-[10px] font-black px-2 py-0.5 rounded-full ${v.level === 'N5' ? 'bg-emerald-50 text-emerald-600' : v.level === 'N4' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'}">${v.level}</div>
-                            
-                            <div class="flex-grow flex flex-col justify-center items-center">
-                                <div class="text-7xl font-black kanji-font text-slate-800 mb-2">${v.char}</div>
-                                <div class="text-lg font-black text-emerald-700 uppercase tracking-widest leading-none">${v.hv}</div>
+                <div class="card-container group perspective">
+                    <div id="card-${v.id}" class="card-inner" onclick="this.classList.toggle('is-flipped')">
+                        <!-- Front: Minimalistic -->
+                        <div class="card-front p-5 flex flex-col items-center justify-center text-center">
+                            <div class="absolute top-2 left-4 text-[9px] font-black text-slate-300">#${v.id.toString().padStart(2, '0')}</div>
+                            <div class="text-7xl font-black kanji-font text-teal-900 mb-2">${v.char}</div>
+                            <div class="text-lg font-black text-teal-600 uppercase tracking-widest leading-none mb-4">${v.hv}</div>
+                            <div class="bg-orange-50 px-4 py-1.5 rounded-full border border-orange-100">
+                                <p class="text-[11px] font-black text-orange-600 kanji-font italic">${v.onkun.split('/')[1]?.trim() || '-'}</p>
+                            </div>
+                        </div>
+                        <!-- Back: Informative -->
+                        <div class="card-back p-5 flex flex-col justify-between text-center">
+                            <div>
+                                <div class="text-[9px] font-black text-teal-800 uppercase tracking-[0.2em] mb-1">Nhóm ${v.group} • ${v.level}</div>
+                                <div class="text-sm font-black text-slate-800 mb-4 border-b border-teal-100 pb-2 line-clamp-1">${v.nghia}</div>
                                 
-                                <div class="w-full border-t border-slate-100 mt-4 pt-4 text-center">
-                                    <p class="text-sm font-black text-slate-700 mb-2">${v.nghia}</p>
-                                    
-                                    <div class="flex flex-col gap-1 text-[10px]">
-                                        <div><span class="text-slate-400 font-bold uppercase tracking-tighter">On:</span> <span class="font-bold text-emerald-900">${v.onkun.split('/')[0].trim()}</span></div>
-                                        <div><span class="text-slate-400 font-bold uppercase tracking-tighter">Kun:</span> <span class="font-bold text-emerald-900">${v.onkun.split('/')[1]?.trim() || '-'}</span></div>
-                                    </div>
+                                <div class="grid grid-cols-2 gap-x-2 gap-y-2 text-[10px] mb-4">
+                                    <div class="text-right text-slate-400 font-bold uppercase">Masu:</div><div class="text-left font-black text-teal-700">${v.forms[1]}</div>
+                                    <div class="text-right text-slate-400 font-bold uppercase">Te:</div><div class="text-left font-black text-teal-700">${v.forms[3]}</div>
                                 </div>
                             </div>
 
-                            <button onclick="event.stopPropagation(); openDetail(${v.id})" class="absolute bottom-4 right-4 w-10 h-10 bg-emerald-800 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition shadow-lg active:scale-90">
-                                <i class="fas fa-search-plus"></i>
+                            <div class="bg-white/50 p-2 rounded-xl border border-teal-50 mb-3">
+                                <p class="text-[10px] font-black kanji-font text-teal-900 leading-tight line-clamp-2">${v.ex_jp}</p>
+                            </div>
+
+                            <button onclick="event.stopPropagation(); openDetail(${v.id})" class="w-full py-2 bg-teal-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-teal-700 transition">
+                                <i class="fas fa-search-plus mr-1"></i> CHI TIẾT
                             </button>
-                        </div>
-                        <!-- Back -->
-                        <div class="card-back p-6 flex flex-col items-center justify-center text-center">
-                            <div class="text-[10px] font-black text-emerald-800 mb-4 uppercase tracking-[0.2em] border-b border-emerald-200 pb-1">Ma Trận Chia Thể</div>
-                            <div class="grid grid-cols-2 gap-x-4 gap-y-2 w-full text-[10px]">
-                                <div class="text-right text-slate-400 font-bold uppercase">Masu:</div><div class="text-left font-black text-emerald-700">${v.forms[1]}</div>
-                                <div class="text-right text-slate-400 font-bold uppercase">Nai:</div><div class="text-left font-black text-emerald-700">${v.forms[2]}</div>
-                                <div class="text-right text-slate-400 font-bold uppercase">Te:</div><div class="text-left font-black text-emerald-700 font-bold">${v.forms[3]}</div>
-                                <div class="text-right text-slate-400 font-bold uppercase">Ta:</div><div class="text-left font-black text-emerald-700">${v.forms[4]}</div>
-                            </div>
-                            <div class="mt-6 pt-4 border-t border-emerald-200 w-full">
-                                <p class="text-[9px] text-slate-400 uppercase font-black mb-1">Ví dụ</p>
-                                <p class="text-[11px] font-black kanji-font text-slate-800 leading-tight line-clamp-2">${v.ex_jp}</p>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -465,22 +422,23 @@
             document.getElementById('m-char-title').innerText = v.char;
             document.getElementById('m-hanviet').innerText = v.hv;
             document.getElementById('m-level').innerText = v.level;
-            document.getElementById('m-onkun').innerText = v.onkun;
-            document.getElementById('m-nghia-full').innerText = v.nghia;
+            document.getElementById('m-group').innerText = `Nhóm ${v.group}`;
+            document.getElementById('m-onyomi').innerText = v.onkun.split('/')[0].trim();
+            document.getElementById('m-kunyomi').innerText = v.onkun.split('/')[1]?.trim() || '-';
             document.getElementById('m-pr').innerHTML = v.pr;
             document.getElementById('m-example-jp').innerText = v.ex_jp;
             document.getElementById('m-example-vi').innerText = v.ex_vi;
 
             const formNames = ["Từ điển", "Masu", "Nai", "Te", "Ta", "Khả năng", "Ý chí", "Bị động", "Sai khiến"];
             document.getElementById('conjugation-grid').innerHTML = v.forms.map((f, i) => `
-                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 group hover:border-emerald-300 transition">
+                <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm hover:border-teal-400 transition">
                     <span class="block text-[8px] uppercase text-slate-400 font-black mb-1 tracking-widest">${formNames[i]}</span>
-                    <span class="text-xs font-black text-slate-800 kanji-font">${f}</span>
+                    <span class="text-xs font-black text-teal-900 kanji-font">${f}</span>
                 </div>
             `).join('');
 
             const animBox = document.getElementById('stroke-animation');
-            animBox.innerHTML = '<span class="text-xs text-slate-300 font-bold uppercase animate-pulse">Khai mở tri thức...</span>';
+            animBox.innerHTML = '<span class="text-[10px] text-slate-300 font-black uppercase animate-pulse">Khai mở...</span>';
             const hex = getKanjiHex(v.char);
             const svg = await fetchKanjiSvg(hex);
             if(svg) {
@@ -503,7 +461,7 @@
                 p.style.transition = 'none';
                 p.style.strokeDasharray = len;
                 p.style.strokeDashoffset = len;
-                p.style.stroke = "#065f46"; p.style.strokeWidth = "4";
+                p.style.stroke = "#134e4a"; p.style.strokeWidth = "5";
             });
             void currentStrokeSvg.offsetWidth;
             let delay = 0;
@@ -520,9 +478,7 @@
 
         function filterLevel(level) {
             currentFilter = level;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active-filter');
-            });
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active-filter'));
             document.getElementById(`btn-${level}`).classList.add('active-filter');
             renderVerbs();
         }
@@ -535,5 +491,3 @@
     </script>
 </body>
 </html>
-
-     
