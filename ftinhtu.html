@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AzaKanji - Flashcard Tính Từ N3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #22c55e; /* Green-500 */
+            --primary-teal: #14b8a6;  /* Teal-500 */
+            --bg-gradient: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+            --card-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        .kanji-font {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        .glow-aura {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+            z-index: -1;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.5; }
+        }
+
+        .perspective-container {
+            perspective: 2000px;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .is-flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            border: 4px solid white;
+        }
+
+        .card-front {
+            background: white;
+            border: 6px solid var(--primary-green);
+        }
+        
+        /* Level styling */
+        .level-n5n4 .card-front { border-color: #22c55e; } /* Green */
+        .level-n3 .card-front { border-color: #8b5cf6; }   /* Purple */
+
+        .card-back {
+            background: var(--primary-green);
+            transform: rotateY(180deg);
+        }
+        
+        .level-n5n4 .card-back { background: #dcfce7; } /* Light Green */
+        .level-n3 .card-back { background: #f3e8ff; }   /* Light Purple */
+
+        .word-main {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+        }
+        
+        .level-n5n4 .word-main { color: #15803d; }
+        .level-n3 .word-main { color: #7e22ce; }
+
+        .level-tag {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: #22c55e;
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .level-n3 .level-tag { background: #8b5cf6; }
+
+        .meaning-box {
+            background: #dcfce7;
+            padding: 0.8rem 2rem;
+            border-radius: 999px;
+            color: #14532d;
+            font-weight: 700;
+            font-size: 1.1rem;
+            max-width: 90%;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .level-n3 .meaning-box { background: #f3e8ff; color: #581c87; }
+
+        .example-item {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 1.2rem;
+            padding: 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            text-align: left;
+            position: relative;
+            margin-bottom: 0.8rem;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .speaker-btn {
+            position: absolute;
+            right: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            color: #22c55e;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 50;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border: 2px solid #dcfce7;
+            transition: transform 0.2s;
+        }
+
+        .speaker-btn:active {
+            transform: translateY(-50%) scale(0.9);
+            background: #22c55e;
+            color: white;
+        }
+
+        .floating {
+            animation: floating 4s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .scroll-box {
+            overflow-y: auto;
+            max-height: 100%;
+            width: 100%;
+            padding: 0.2rem;
+        }
+        
+        .category-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 99px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .cat-active {
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .shaking {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4 min-h-screen">
+    <div class="glow-aura"></div>
+
+    <!-- Header -->
+    <header class="text-center mb-4 w-full max-w-sm">
+        <h1 class="text-2xl font-bold text-gray-800 tracking-tight flex items-center justify-center gap-2">
+            <span class="text-3xl">🌿</span> Flashcard Tính Từ
+        </h1>
+        <div class="flex flex-wrap justify-center gap-2 mt-4">
+            <button onclick="filterCards('all')" id="btn-all" class="category-btn cat-active text-gray-600 bg-gray-100">Tất cả</button>
+            <button onclick="filterCards('n5n4')" id="btn-n5n4" class="category-btn text-green-600 bg-green-50 border-green-200">N5/N4 Cơ Bản</button>
+            <button onclick="filterCards('n3')" id="btn-n3" class="category-btn text-purple-600 bg-purple-50 border-purple-200">N3 Nâng Cao</button>
+            <button onclick="shuffleCards()" class="category-btn text-teal-600 bg-teal-50 border-teal-200" title="Trộn thẻ (Phím S)"><span class="text-lg">🔀</span></button>
+        </div>
+    </header>
+
+    <!-- Main App -->
+    <main class="w-full max-w-sm flex flex-col items-center">
+        
+        <div id="card-container" class="perspective-container w-full aspect-[4/5] mb-6 level-n5n4" 
+             ontouchstart="handleTouchStart(event)" 
+             ontouchmove="handleTouchMove(event)" 
+             ontouchend="handleTouchEnd(event)">
+             
+            <div class="card-inner" id="card-inner">
+                <!-- Front -->
+                <div class="card-face card-front" onclick="toggleFlip()">
+                    <div class="level-tag" id="ui-level">N5</div>
+                    <div class="flex flex-col items-center justify-center w-full flex-1">
+                        <div class="word-main floating kanji-font" id="ui-word">大きい</div>
+                        <div id="ui-reading" class="text-xl font-bold text-gray-500 mb-6 bg-gray-100 px-4 py-1 rounded-full kanji-font">おおきい</div>
+                        <div class="meaning-box mb-2 text-center" id="ui-meaning">To, lớn</div>
+                    </div>
+                    <p class="text-gray-400 text-[10px] font-medium absolute bottom-6">Chạm để xem ví dụ ✨</p>
+                </div>
+                
+                <!-- Back -->
+                <div class="card-face card-back">
+                    <div class="scroll-box flex flex-col justify-center h-full w-full">
+                        <div class="example-item shadow-sm">
+                            <div class="pr-10">
+                                <p class="text-lg font-bold text-gray-800 leading-snug kanji-font" id="ui-ex1-jp"></p>
+                                <p class="text-xs text-gray-500 font-medium mt-1" id="ui-ex1-hira"></p>
+                                <p class="text-sm text-gray-600 border-t border-gray-200 pt-1 mt-1 font-semibold" id="ui-ex1-vn"></p>
+                            </div>
+                            <button class="speaker-btn" onclick="speakText(1, event)">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                            </button>
+                        </div>
+
+                        <div class="example-item shadow-sm">
+                            <div class="pr-10">
+                                <p class="text-lg font-bold text-gray-800 leading-snug kanji-font" id="ui-ex2-jp"></p>
+                                <p class="text-xs text-gray-500 font-medium mt-1" id="ui-ex2-hira"></p>
+                                <p class="text-sm text-gray-600 border-t border-gray-200 pt-1 mt-1 font-semibold" id="ui-ex2-vn"></p>
+                            </div>
+                            <button class="speaker-btn" onclick="speakText(2, event)">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-gray-500 font-bold text-[10px] cursor-pointer opacity-70 absolute bottom-4 w-full text-center" onclick="toggleFlip()">
+                        ↺ Quay lại
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex items-center space-x-6">
+            <button onclick="changeCard(-1)" class="w-14 h-14 bg-white rounded-2xl shadow-lg flex items-center justify-center text-2xl hover:bg-gray-50 hover:scale-105 transition-all text-gray-700">←</button>
+            <div class="bg-white/90 px-5 py-2 rounded-full shadow-inner border border-gray-200">
+                <span class="text-xl font-bold text-gray-700" id="ui-counter">1 / 60</span>
+            </div>
+            <button onclick="changeCard(1)" class="w-14 h-14 bg-white rounded-2xl shadow-lg flex items-center justify-center text-2xl hover:bg-gray-50 hover:scale-105 transition-all text-gray-700">→</button>
+        </div>
+        <p class="text-gray-400 text-[10px] mt-4 hidden md:block">Gợi ý: Dùng phím ⬅ ➡ để chuyển, Space để lật, S để trộn.</p>
+    </main>
+
+    <footer class="mt-4 text-center max-w-xs px-4 pb-4">
+        <p class="text-gray-400 italic text-[11px] leading-relaxed">"Sửa năng lượng cơ thể, hướng tới mục tiêu N3 tháng 7/2026."</p>
+    </footer>
+
+    <script>
+        const adjectivesData = [
+            // --- N5/N4 CƠ BẢN ---
+            { group: "n5n4", k: "大きい", h: "おおきい", m: "To, lớn", ex1_j: "この靴は大きいです。", ex1_h: "この くつは おおきい です", ex1_v: "Đôi giày này to.", ex2_j: "大きな夢があります。", ex2_h: "おおきな ゆめが あります", ex2_v: "Tôi có một giấc mơ lớn." },
+            { group: "n5n4", k: "小さい", h: "ちいさい", m: "Nhỏ, bé", ex1_j: "字が小さいです。", ex1_h: "じが ちいさい です", ex1_v: "Chữ nhỏ quá.", ex2_j: "小さい声で話す。", ex2_h: "ちいさい こえで はなす", ex2_v: "Nói chuyện bằng giọng nhỏ." },
+            { group: "n5n4", k: "高い", h: "たかい", m: "Cao, đắt", ex1_j: "富士山は高いです。", ex1_h: "ふじさんは たかい です", ex1_v: "Núi Phú Sĩ rất cao.", ex2_j: "値段が高い。", ex2_h: "ねだんが たかい", ex2_v: "Giá cả đắt đỏ." },
+            { group: "n5n4", k: "低い", h: "ひくい", m: "Thấp", ex1_j: "背が低いです。", ex1_h: "せが ひくい です", ex1_v: "Dáng người thấp.", ex2_j: "温度が低い。", ex2_h: "おんどが ひくい", ex2_v: "Nhiệt độ thấp." },
+            { group: "n5n4", k: "長い", h: "ながい", m: "Dài", ex1_j: "髪が長いです。", ex1_h: "かみが ながい です", ex1_v: "Tóc dài.", ex2_j: "話が長い。", ex2_h: "はなしが ながい", ex2_v: "Câu chuyện dài dòng." },
+            { group: "n5n4", k: "短い", h: "みじかい", m: "Ngắn", ex1_j: "スカートが短いです。", ex1_h: "スカートが みじかい です", ex1_v: "Váy ngắn.", ex2_j: "短い時間。", ex2_h: "みじかい じかん", ex2_v: "Thời gian ngắn ngủi." },
+            { group: "n5n4", k: "太い", h: "ふとい", m: "Béo, dày", ex1_j: "足が太いです。", ex1_h: "あしが ふとい です", ex1_v: "Chân to (mập).", ex2_j: "太い線を描く。", ex2_h: "ふとい せんを かく", ex2_v: "Vẽ đường nét đậm/dày." },
+            { group: "n5n4", k: "細い", h: "ほそい", m: "Gầy, mỏng", ex1_j: "指が細いです。", ex1_h: "ゆびが ほそい です", ex1_v: "Ngón tay thon nhỏ.", ex2_j: "道が細い。", ex2_h: "みちが ほそい", ex2_v: "Con đường hẹp/nhỏ." },
+            { group: "n5n4", k: "広い", h: "ひろい", m: "Rộng", ex1_j: "部屋が広いです。", ex1_h: "へやが ひろい です", ex1_v: "Căn phòng rộng rãi.", ex2_j: "心が広い人。", ex2_h: "こころが ひろい ひと", ex2_v: "Người có tấm lòng rộng lượng." },
+            { group: "n5n4", k: "狭い", h: "せまい", m: "Hẹp", ex1_j: "道が狭いです。", ex1_h: "みちが せまい です", ex1_v: "Con đường chật hẹp.", ex2_j: "世間は狭い。", ex2_h: "せけんは せまい", ex2_v: "Thế gian thật nhỏ bé (Trái đất tròn)." },
+            { group: "n5n4", k: "暑い", h: "あつい", m: "Nóng (Thời tiết)", ex1_j: "今日は暑いです。", ex1_h: "きょうは あつい です", ex1_v: "Hôm nay trời nóng.", ex2_j: "蒸し暑い。", ex2_h: "むしあつい", ex2_v: "Nóng oi bức." },
+            { group: "n5n4", k: "寒い", h: "さむい", m: "Lạnh (Thời tiết)", ex1_j: "外は寒いです。", ex1_h: "そとは さむい です", ex1_v: "Bên ngoài trời lạnh.", ex2_j: "寒い冬。", ex2_h: "さむい ふゆ", ex2_v: "Mùa đông lạnh giá." },
+            { group: "n5n4", k: "熱い", h: "あつい", m: "Nóng (Vật/Cảm xúc)", ex1_j: "お茶が熱いです。", ex1_h: "おちゃが あつい です", ex1_v: "Trà nóng.", ex2_j: "熱い心。", ex2_h: "あつい こころ", ex2_v: "Trái tim nhiệt huyết." },
+            { group: "n5n4", k: "冷たい", h: "つめたい", m: "Lạnh (Vật/Thái độ)", ex1_j: "水が冷たいです。", ex1_h: "みずが つめたい です", ex1_v: "Nước lạnh.", ex2_j: "態度が冷たい。", ex2_h: "たいどが つめたい", ex2_v: "Thái độ lạnh lùng." },
+            { group: "n5n4", k: "暖かい", h: "あたたかい", m: "Ấm (Thời tiết)", ex1_j: "春は暖かいです。", ex1_h: "はるは あたたかい です", ex1_v: "Mùa xuân thì ấm áp.", ex2_j: "暖かい日。", ex2_h: "あたたかい ひ", ex2_v: "Một ngày ấm áp." },
+            { group: "n5n4", k: "涼しい", h: "すずしい", m: "Mát mẻ", ex1_j: "風が涼しいです。", ex1_h: "かぜが すずしい です", ex1_v: "Gió mát mẻ.", ex2_j: "涼しい場所。", ex2_h: "すずしい ばしょ", ex2_v: "Nơi mát mẻ." },
+            { group: "n5n4", k: "良い", h: "いい", m: "Tốt", ex1_j: "天気がいいです。", ex1_h: "てんきが いい です", ex1_v: "Thời tiết tốt.", ex2_j: "頭がいい。", ex2_h: "あたまが いい", ex2_v: "Thông minh." },
+            { group: "n5n4", k: "悪い", h: "わるい", m: "Xấu", ex1_j: "目が悪いです。", ex1_h: "めが わるい です", ex1_v: "Mắt kém.", ex2_j: "気分が悪い。", ex2_h: "きぶんが わるい", ex2_v: "Khó chịu / Cảm thấy không khỏe." },
+            { group: "n5n4", k: "新しい", h: "あたらしい", m: "Mới", ex1_j: "新しい車です。", ex1_h: "あたらしい くるま です", ex1_v: "Là chiếc xe mới.", ex2_j: "新しくなる。", ex2_h: "あたらしく なる", ex2_v: "Trở nên mới mẻ." },
+            { group: "n5n4", k: "古い", h: "ふるい", m: "Cũ", ex1_j: "この家は古いです。", ex1_h: "この いえは ふるい です", ex1_v: "Ngôi nhà này cũ rồi.", ex2_j: "古い考え。", ex2_h: "ふるい かんがえ", ex2_v: "Suy nghĩ cổ hủ." },
+            { group: "n5n4", k: "強い", h: "つよい", m: "Mạnh", ex1_j: "風が強いです。", ex1_h: "かぜが つよい です", ex1_v: "Gió mạnh.", ex2_j: "お酒に強い。", ex2_h: "おさけに つよい", ex2_v: "Tửu lượng tốt (uống rượu giỏi)." },
+            { group: "n5n4", k: "弱い", h: "よわい", m: "Yếu", ex1_j: "体が弱いです。", ex1_h: "からだが よわい です", ex1_v: "Cơ thể yếu ớt.", ex2_j: "気が弱い。", ex2_h: "きが よわい", ex2_v: "Nhút nhát / Rụt rè." },
+            { group: "n5n4", k: "難しい", h: "むずかしい", m: "Khó", ex1_j: "日本語は難しいです。", ex1_h: "にほんごは むずかしい です", ex1_v: "Tiếng Nhật khó.", ex2_j: "難しい顔。", ex2_h: "むずかしい かお", ex2_v: "Vẻ mặt đăm chiêu (khó khăn)." },
+            { group: "n5n4", k: "易しい", h: "やさしい", m: "Dễ", ex1_j: "この問題は易しいです。", ex1_h: "この もんだいは やさしい です", ex1_v: "Vấn đề này dễ.", ex2_j: "易しい言葉。", ex2_h: "やさしい ことば", ex2_v: "Từ ngữ đơn giản." },
+            { group: "n5n4", k: "甘い", h: "あまい", m: "Ngọt / Nuông chiều", ex1_j: "ケーキが甘いです。", ex1_h: "ケーキが あまい です", ex1_v: "Bánh ngọt.", ex2_j: "考えが甘い。", ex2_h: "かんがえが あまい", ex2_v: "Suy nghĩ ngây thơ / Đơn giản." },
+            { group: "n5n4", k: "辛い", h: "からい", m: "Cay", ex1_j: "カレーが辛いです。", ex1_h: "カレーが からい です", ex1_v: "Cà ri cay.", ex2_j: "辛い評価。", ex2_h: "からい ひょうか", ex2_v: "Đánh giá khắt khe." },
+            { group: "n5n4", k: "忙しい", h: "いそがしい", m: "Bận rộn", ex1_j: "毎日忙しいです。", ex1_h: "まいにち いそがしい です", ex1_v: "Mỗi ngày đều bận rộn.", ex2_j: "目が回るほど忙しい。", ex2_h: "めが まわる ほど いそがしい", ex2_v: "Bận tối mắt tối mũi." },
+            { group: "n5n4", k: "好き", h: "すき", m: "Thích", ex1_j: "日本が好きです。", ex1_h: "にほんが すき です", ex1_v: "Tôi thích Nhật Bản.", ex2_j: "好きな食べ物。", ex2_h: "すきな たべもの", ex2_v: "Đồ ăn yêu thích." },
+            { group: "n5n4", k: "嫌い", h: "きらい", m: "Ghét", ex1_j: "納豆が嫌いです。", ex1_h: "なっとうが きらい です", ex1_v: "Tôi ghét Natto.", ex2_j: "負けず嫌い。", ex2_h: "まけず ぎらい", ex2_v: "Hiếu thắng (Ghét thua cuộc)." },
+            { group: "n5n4", k: "上手", h: "じょうず", m: "Giỏi", ex1_j: "歌が上手です。", ex1_h: "うたが じょうず です", ex1_v: "Hát hay.", ex2_j: "日本語がお上手ですね。", ex2_h: "にほんごが おじょうず ですね", ex2_v: "Tiếng Nhật của bạn giỏi quá." },
+            { group: "n5n4", k: "下手", h: "へた", m: "Kém", ex1_j: "絵が下手です。", ex1_h: "えが へた です", ex1_v: "Vẽ kém.", ex2_j: "口下手。", ex2_h: "くち べた", ex2_v: "Kém ăn nói." },
+            { group: "n5n4", k: "きれい", h: "きれい", m: "Đẹp / Sạch", ex1_j: "花がきれいです。", ex1_h: "はなが きれい です", ex1_v: "Hoa đẹp.", ex2_j: "部屋をきれいにする。", ex2_h: "へやを きれいに する", ex2_v: "Dọn dẹp phòng sạch sẽ." },
+            { group: "n5n4", k: "静か", h: "しずか", m: "Yên tĩnh", ex1_j: "図書館は静かです。", ex1_h: "としょかんは しずか です", ex1_v: "Thư viện yên tĩnh.", ex2_j: "静かな夜。", ex2_h: "しずかな よる", ex2_v: "Đêm tĩnh lặng." },
+            { group: "n5n4", k: "便利", h: "べんり", m: "Tiện lợi", ex1_j: "スマホは便利です。", ex1_h: "スマホは べんり です", ex1_v: "Điện thoại thông minh rất tiện.", ex2_j: "交通が便利だ。", ex2_h: "こうつうが べんり だ", ex2_v: "Giao thông thuận tiện." },
+            { group: "n5n4", k: "不便", h: "ふべん", m: "Bất tiện", ex1_j: "車がないと不便です。", ex1_h: "くるまが ないと ふべん です", ex1_v: "Không có xe thì bất tiện.", ex2_j: "不便な生活。", ex2_h: "ふべんな せいかつ", ex2_v: "Cuộc sống bất tiện." },
+            { group: "n5n4", k: "暇", h: "ひま", m: "Rảnh rỗi", ex1_j: "明日は暇です。", ex1_h: "あしたは ひま です", ex1_v: "Ngày mai tôi rảnh.", ex2_j: "暇な時間。", ex2_h: "ひまな じかん", ex2_v: "Thời gian rảnh." },
+            { group: "n5n4", k: "親切", h: "しんせつ", m: "Tốt bụng", ex1_j: "彼は親切です。", ex1_h: "かれは しんせつ です", ex1_v: "Anh ấy tốt bụng.", ex2_j: "親切な人。", ex2_h: "しんせつな ひと", ex2_v: "Người thân thiện/tốt bụng." },
+            { group: "n5n4", k: "有名", h: "ゆうめい", m: "Nổi tiếng", ex1_j: "この店は有名です。", ex1_h: "この みせは ゆうめい です", ex1_v: "Cửa hàng này nổi tiếng.", ex2_j: "有名な歌手。", ex2_h: "ゆうめいな かしゅ", ex2_v: "Ca sĩ nổi tiếng." },
+            { group: "n5n4", k: "大切", h: "たいせつ", m: "Quan trọng", ex1_j: "家族が大切です。", ex1_h: "かぞくが たいせつ です", ex1_v: "Gia đình là quan trọng.", ex2_j: "大切な思い出。", ex2_h: "たいせつな おもいで", ex2_v: "Kỷ niệm quý giá." },
+            { group: "n5n4", k: "大丈夫", h: "だいじょうぶ", m: "Ổn / Không sao", ex1_j: "私は大丈夫です。", ex1_h: "わたしは だいじょうぶ です", ex1_v: "Tôi ổn.", ex2_j: "大丈夫な計画。", ex2_h: "だいじょうぶな けいかく", ex2_v: "Kế hoạch ổn thỏa." },
+
+            // --- N3 NÂNG CAO ---
+            { group: "n3", k: "苦しい", h: "くるしい", m: "Đau khổ / Khó thở", ex1_j: "生活が苦しいです。", ex1_h: "せいかつが くるしい です", ex1_v: "Cuộc sống khổ cực.", ex2_j: "胸が苦しい。", ex2_h: "むねが くるしい", ex2_v: "Đau ngực / Khó thở." },
+            { group: "n3", k: "悔しい", h: "くやしい", m: "Tiếc nuối / Cay cú", ex1_j: "負けて悔しいです。", ex1_h: "まけて くやしい です", ex1_v: "Thua nên thấy cay cú/tiếc.", ex2_j: "悔しい涙。", ex2_h: "くやしい なみだ", ex2_v: "Giọt nước mắt tiếc nuối." },
+            { group: "n3", k: "懐かしい", h: "なつかしい", m: "Nhớ nhung (Hoài niệm)", ex1_j: "故郷が懐かしいです。", ex1_h: "ふるさとが なつかしい です", ex1_v: "Nhớ quê hương.", ex2_j: "懐かしい曲。", ex2_h: "なつかしい きょく", ex2_v: "Ca khúc đầy hoài niệm." },
+            { group: "n3", k: "羨ましい", h: "うらやましい", m: "Ghen tị", ex1_j: "彼が羨ましいです。", ex1_h: "かれが うらやましい です", ex1_v: "Ghen tị với anh ấy.", ex2_j: "羨ましい生活。", ex2_h: "うらやましい せいかつ", ex2_v: "Cuộc sống đáng ghen tị." },
+            { group: "n3", k: "恥ずかしい", h: "はずかしい", m: "Xấu hổ", ex1_j: "失敗して恥ずかしい。", ex1_h: "しっぱい して はずかしい", ex1_v: "Thất bại nên xấu hổ.", ex2_j: "恥ずかしい姿。", ex2_h: "はずかしい すがた", ex2_v: "Dáng vẻ đáng xấu hổ." },
+            { group: "n3", k: "正しい", h: "ただしい", m: "Đúng đắn", ex1_j: "答えが正しいです。", ex1_h: "こたえが ただしい です", ex1_v: "Câu trả lời chính xác.", ex2_j: "正しい行い。", ex2_h: "ただしい おこない", ex2_v: "Hành động đúng đắn." },
+            { group: "n3", k: "珍しい", h: "めずらしい", m: "Hiếm / Lạ", ex1_j: "これは珍しい鳥です。", ex1_h: "これは めずらしい とり です", ex1_v: "Đây là loài chim hiếm.", ex2_j: "珍しい切手。", ex2_h: "めずらしい きって", ex2_v: "Con tem quý hiếm." },
+            { group: "n3", k: "激しい", h: "はげしい", m: "Mãnh liệt", ex1_j: "雨が激しいです。", ex1_h: "あめが はげしい です", ex1_v: "Mưa dữ dội.", ex2_j: "激しい運動。", ex2_h: "はげしい うんどう", ex2_v: "Vận động mạnh." },
+            { group: "n3", k: "勇ましい", h: "いさましい", m: "Dũng cảm", ex1_j: "兵士が勇ましい。", ex1_h: "へいしが いさましい", ex1_v: "Người lính dũng cảm.", ex2_j: "勇ましい声。", ex2_h: "いさましい こえ", ex2_v: "Giọng nói hùng dũng." },
+            { group: "n3", k: "怪しい", h: "あやしい", m: "Đáng nghi", ex1_j: "あの人は怪しいです。", ex1_h: "あの ひと は あやしい です", ex1_v: "Người kia trông đáng nghi.", ex2_j: "怪しい雲行き。", ex2_h: "あやしい くもゆき", ex2_v: "Mây đen vần vũ (Điềm báo xấu)." },
+            { group: "n3", k: "恐ろしい", h: "おそろしい", m: "Đáng sợ", ex1_j: "地震は恐ろしいです。", ex1_h: "じしんは おそろしい です", ex1_v: "Động đất thật đáng sợ.", ex2_j: "恐ろしい事件。", ex2_h: "おそろしい じけん", ex2_v: "Vụ án kinh hoàng." },
+            { group: "n3", k: "詳しい", h: "くわしい", m: "Chi tiết / Tường tận", ex1_j: "説明が詳しいです。", ex1_h: "せつめいが くわしい です", ex1_v: "Giải thích chi tiết.", ex2_j: "パソコンに詳しい。", ex2_h: "パソコンに くわしい", ex2_v: "Am hiểu về máy tính." },
+            { group: "n3", k: "険しい", h: "けわしい", m: "Hiểm trở / Nghiêm khắc", ex1_j: "山道が険しいです。", ex1_h: "やまみちが けわしい です", ex1_v: "Đường núi hiểm trở.", ex2_j: "険しい顔。", ex2_h: "けわしい かお", ex2_v: "Vẻ mặt nghiêm nghị." },
+            { group: "n3", k: "等しい", h: "ひとしい", m: "Bằng nhau", ex1_j: "実力は等しいです。", ex1_h: "じつりょくは ひとしい です", ex1_v: "Thực lực ngang nhau.", ex2_j: "死に等しい。", ex2_h: "しに ひとしい", ex2_v: "Chẳng khác gì đã chết." },
+            { group: "n3", k: "虚しい", h: "むなしい", m: "Trống rỗng / Vô ích", ex1_j: "努力が虚しいです。", ex1_h: "どりょくが むなしい です", ex1_v: "Nỗ lực vô ích.", ex2_j: "虚しい気持ち。", ex2_h: "むなしい きもち", ex2_v: "Cảm giác trống rỗng." },
+            { group: "n3", k: "眩しい", h: "まぶしい", m: "Chói chang", ex1_j: "太陽が眩しいです。", ex1_h: "たいようが まぶしい です", ex1_v: "Mặt trời chói chang.", ex2_j: "眩しい笑顔。", ex2_h: "まぶしい えがお", ex2_v: "Nụ cười tỏa nắng." },
+            { group: "n3", k: "鋭い", h: "するどい", m: "Sắc bén", ex1_j: "ナイフが鋭いです。", ex1_h: "ナイフが するどい です", ex1_v: "Con dao sắc.", ex2_j: "鋭い質問。", ex2_h: "するどい しつもん", ex2_v: "Câu hỏi sắc bén." },
+            { group: "n3", k: "鈍い", h: "にぶい", m: "Cùn / Chậm chạp", ex1_j: "動きが鈍いです。", ex1_h: "うごきが にぶい です", ex1_v: "Chuyển động chậm chạp.", ex2_j: "感覚が鈍い。", ex2_h: "かんかくが にぶい", ex2_v: "Cảm giác tê liệt/chậm chạp." },
+            { group: "n3", k: "騒がしい", h: "さわがしい", m: "Ồn ào", ex1_j: "外が騒がしいです。", ex1_h: "そとが さわがしい です", ex1_v: "Bên ngoài ồn ào.", ex2_j: "騒がしい通り。", ex2_h: "さわがしい とおり", ex2_v: "Con phố huyên náo." },
+            { group: "n3", k: "深い", h: "ふかい", m: "Sâu", ex1_j: "川が深いです。", ex1_h: "かわが ふかい です", ex1_v: "Sông sâu.", ex2_j: "意味が深い。", ex2_h: "いみが ふかい", ex2_v: "Ý nghĩa sâu sắc." },
+            { group: "n3", k: "穏やか", h: "おだやか", m: "Ôn hòa / Điềm tĩnh", ex1_j: "性格が穏やかです。", ex1_h: "せいかくが おだやか です", ex1_v: "Tính cách ôn hòa.", ex2_j: "穏やかな海。", ex2_h: "おだやかな うみ", ex2_v: "Biển lặng." },
+            { group: "n3", k: "爽やか", h: "さわやか", m: "Sảng khoái / Dễ chịu", ex1_j: "気分が爽やかです。", ex1_h: "きぶんが さわやか です", ex1_v: "Tâm trạng sảng khoái.", ex2_j: "爽やかな風。", ex2_h: "さわやかな かぜ", ex2_v: "Làn gió mát lành." },
+            { group: "n3", k: "複雑", h: "ふくざつ", m: "Phức tạp", ex1_j: "仕組みが複雑です。", ex1_h: "しくみが ふくざつ です", ex1_v: "Cơ cấu phức tạp.", ex2_j: "複雑な心境。", ex2_h: "ふくざつな しんきょう", ex2_v: "Tâm trạng rối bời." },
+            { group: "n3", k: "貴重", h: "きちょう", m: "Quý giá", ex1_j: "貴重な体験です。", ex1_h: "きちょうな たいけん です", ex1_v: "Trải nghiệm quý giá.", ex2_j: "貴重品。", ex2_h: "きちょうひん", ex2_v: "Đồ quý giá." },
+            { group: "n3", k: "邪魔", h: "じゃま", m: "Cản trở / Phiền", ex1_j: "仕事の邪魔です。", ex1_h: "しごとの じゃま です", ex1_v: "Cản trở công việc.", ex2_j: "お邪魔します。", ex2_h: "おじゃま します", ex2_v: "Xin lỗi đã làm phiền (Khi vào nhà)." },
+            { group: "n3", k: "快適", h: "かいてき", m: "Thoải mái", ex1_j: "快適な部屋です。", ex1_h: "かいてきな へや です", ex1_v: "Căn phòng tiện nghi/thoải mái.", ex2_j: "快適に過ごす。", ex2_h: "かいてきに すごす", ex2_v: "Sống thoải mái." },
+            { group: "n3", k: "深刻", h: "しんこく", m: "Nghiêm trọng", ex1_j: "問題が深刻です。", ex1_h: "もんだいが しんこく です", ex1_v: "Vấn đề nghiêm trọng.", ex2_j: "深刻な顔。", ex2_h: "しんこくな かお", ex2_v: "Vẻ mặt nghiêm trọng." },
+            { group: "n3", k: "適当", h: "てきとう", m: "Thích hợp / Qua loa", ex1_j: "適当な言葉。", ex1_h: "てきとうな ことば", ex1_v: "Từ ngữ thích hợp.", ex2_j: "適当にやる。", ex2_h: "てきとうに やる", ex2_v: "Làm qua loa/đại khái." },
+            { group: "n3", k: "独特", h: "どくとく", m: "Độc đáo", ex1_j: "独特な味です。", ex1_h: "どくとくな あじ です", ex1_v: "Hương vị độc đáo.", ex2_j: "独特な雰囲気。", ex2_h: "どくとくな ふんいき", ex2_v: "Bầu không khí đặc biệt." },
+            { group: "n3", k: "残念", h: "ざんねん", m: "Đáng tiếc", ex1_j: "それは残念です。", ex1_h: "それは ざんねん です", ex1_v: "Điều đó thật đáng tiếc.", ex2_j: "残念な結果。", ex2_h: "ざんねんな けっか", ex2_v: "Kết quả đáng tiếc." },
+            { group: "n3", k: "盛ん", h: "さかん", m: "Thịnh hành / Phát đạt", ex1_j: "スポーツが盛んです。", ex1_h: "スポーツが さかん です", ex1_v: "Thể thao rất thịnh hành.", ex2_j: "盛んな拍手。", ex2_h: "さかんな はくしゅ", ex2_v: "Tràng pháo tay nồng nhiệt." },
+            { group: "n3", k: "夢中", h: "むちゅう", m: "Say mê", ex1_j: "ゲームに夢中です。", ex1_h: "ゲームに むちゅう です", ex1_v: "Say mê chơi game.", ex2_j: "夢中で走る。", ex2_h: "むちゅうで はしる", ex2_v: "Cắm đầu chạy (quên hết xung quanh)." },
+            { group: "n3", k: "丁寧", h: "ていねい", m: "Lịch sự / Cẩn thận", ex1_j: "丁寧な言葉。", ex1_h: "ていねいな ことば", ex1_v: "Lời lẽ lịch sự.", ex2_j: "丁寧に書く。", ex2_h: "ていねいに かく", ex2_v: "Viết nắn nót/cẩn thận." }
+        ];
+
+        let activeCards = [...adjectivesData];
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        function filterCards(group) {
+            // Update buttons
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('cat-active', 'bg-white', 'shadow-md');
+                if (group === 'all' && btn.id === 'btn-all') btn.classList.add('cat-active', 'text-gray-800');
+                if (group === 'n5n4' && btn.id === 'btn-n5n4') btn.classList.add('cat-active');
+                if (group === 'n3' && btn.id === 'btn-n3') btn.classList.add('cat-active');
+            });
+
+            if (group === 'all') activeCards = [...adjectivesData];
+            else activeCards = adjectivesData.filter(item => item.group === group);
+            
+            currentIndex = 0;
+            isFlipped = false;
+            document.getElementById('card-container').classList.remove('is-flipped');
+            updateUI();
+        }
+
+        function shuffleCards() {
+            const container = document.getElementById('card-container');
+            container.classList.add('shaking');
+            setTimeout(() => container.classList.remove('shaking'), 500);
+
+            for (let i = activeCards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [activeCards[i], activeCards[j]] = [activeCards[j], activeCards[i]];
+            }
+            
+            currentIndex = 0;
+            isFlipped = false;
+            container.classList.remove('is-flipped');
+            updateUI();
+        }
+
+        function toggleFlip() {
+            isFlipped = !isFlipped;
+            const card = document.getElementById('card-container');
+            if (isFlipped) card.classList.add('is-flipped');
+            else card.classList.remove('is-flipped');
+        }
+
+        function updateUI() {
+            if (activeCards.length === 0) return;
+            const data = activeCards[currentIndex];
+            const cardContainer = document.getElementById('card-container');
+            const cardInner = document.getElementById('card-inner');
+            
+            cardInner.style.opacity = '0';
+            
+            setTimeout(() => {
+                // Apply theme based on group
+                if(data.group === 'n3') {
+                    cardContainer.classList.remove('level-n5n4');
+                    cardContainer.classList.add('level-n3');
+                    document.getElementById('ui-level').innerText = "N3";
+                } else {
+                    cardContainer.classList.remove('level-n3');
+                    cardContainer.classList.add('level-n5n4');
+                    document.getElementById('ui-level').innerText = "N5/N4";
+                }
+
+                document.getElementById('ui-word').innerText = data.k;
+                document.getElementById('ui-reading').innerText = data.h;
+                document.getElementById('ui-meaning').innerText = data.m;
+                document.getElementById('ui-ex1-jp').innerText = data.ex1_j;
+                document.getElementById('ui-ex1-hira').innerText = data.ex1_h;
+                document.getElementById('ui-ex1-vn').innerText = data.ex1_v;
+                document.getElementById('ui-ex2-jp').innerText = data.ex2_j;
+                document.getElementById('ui-ex2-hira').innerText = data.ex2_h;
+                document.getElementById('ui-ex2-vn').innerText = data.ex2_v;
+                document.getElementById('ui-counter').innerText = `${currentIndex + 1} / ${activeCards.length}`;
+                
+                cardInner.style.opacity = '1';
+            }, 200);
+        }
+
+        function changeCard(dir) {
+            isFlipped = false;
+            document.getElementById('card-container').classList.remove('is-flipped');
+            
+            setTimeout(() => {
+                currentIndex += dir;
+                if (currentIndex >= activeCards.length) currentIndex = 0;
+                if (currentIndex < 0) currentIndex = activeCards.length - 1;
+                updateUI();
+            }, 150);
+        }
+
+        function speakText(exampleNum, event) {
+            event.stopPropagation();
+            const data = activeCards[currentIndex];
+            const text = exampleNum === 1 ? data.ex1_j : data.ex2_j;
+            
+            if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ja-JP';
+            utterance.rate = 0.85;
+
+            const voices = window.speechSynthesis.getVoices();
+            const jaVoice = voices.find(v => v.lang === 'ja-JP' || v.lang.includes('ja'));
+            if (jaVoice) utterance.voice = jaVoice;
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Touch & Keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') changeCard(1);
+            else if (e.key === 'ArrowLeft') changeCard(-1);
+            else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleFlip(); }
+            else if (e.key === 's' || e.key === 'S') shuffleCards();
+        });
+
+        let touchStartX = 0;
+        let touchEndX = 0;
+        function handleTouchStart(e) { touchStartX = e.changedTouches[0].screenX; }
+        function handleTouchMove(e) {}
+        function handleTouchEnd(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchEndX < touchStartX - 50) changeCard(1);
+            if (touchEndX > touchStartX + 50) changeCard(-1);
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
