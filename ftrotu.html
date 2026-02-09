@@ -2,14 +2,15 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flashcard Trợ Từ Tinh Tấn</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AzaKanji - Flashcard Trợ Phó Từ</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-yellow: #FFD93D;
             --primary-red: #FF6B6B;
+            --primary-blue: #4facfe;
             --bg-gradient: linear-gradient(135deg, #FFF9E3 0%, #FFFFFF 100%);
             --card-shadow: 0 20px 40px rgba(0,0,0,0.08);
         }
@@ -19,6 +20,11 @@
             background: var(--bg-gradient);
             min-height: 100vh;
             overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        .kanji-font {
+            font-family: 'Noto Sans JP', sans-serif;
         }
 
         .glow-aura {
@@ -47,7 +53,7 @@
             width: 100%;
             height: 100%;
             text-align: center;
-            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             transform-style: preserve-3d;
             cursor: pointer;
         }
@@ -61,7 +67,7 @@
             width: 100%;
             height: 100%;
             backface-visibility: hidden;
-            border-radius: 2.5rem;
+            border-radius: 2rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -75,19 +81,28 @@
             background: white;
             border: 6px solid var(--primary-yellow);
         }
+        
+        /* Dynamic border color based on type */
+        .type-particle .card-front { border-color: var(--primary-blue); }
+        .type-adverb .card-front { border-color: var(--primary-yellow); }
 
         .card-back {
             background: var(--primary-yellow);
             transform: rotateY(180deg);
         }
+        
+        .type-particle .card-back { background: #e0f2fe; } /* Light Blue */
+        .type-adverb .card-back { background: #fffbeb; } /* Light Yellow */
 
-        .particle-main {
-            font-size: 3.5rem;
-            font-weight: 700;
-            color: var(--primary-red);
+        .word-main {
+            font-size: 3rem;
+            font-weight: 800;
             line-height: 1.2;
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.5rem;
         }
+        
+        .type-particle .word-main { color: #0284c7; }
+        .type-adverb .word-main { color: #d97706; }
 
         .level-tag {
             position: absolute;
@@ -99,27 +114,32 @@
             border-radius: 50px;
             font-size: 0.85rem;
             font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .meaning-box {
             background: #FFF5CC;
-            padding: 0.6rem 1.5rem;
+            padding: 0.8rem 2rem;
             border-radius: 999px;
             color: #856404;
-            font-weight: 600;
-            font-size: 1rem;
+            font-weight: 700;
+            font-size: 1.1rem;
             max-width: 90%;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
+        
+        .type-particle .meaning-box { background: #bae6fd; color: #0369a1; }
 
         .example-item {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 1.5rem;
-            padding: 0.8rem 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 1.2rem;
+            padding: 1rem;
             width: 100%;
             transition: all 0.3s ease;
             text-align: left;
             position: relative;
             margin-bottom: 0.8rem;
+            border: 1px solid rgba(0,0,0,0.05);
         }
 
         .speaker-btn {
@@ -127,36 +147,25 @@
             right: 0.8rem;
             top: 50%;
             transform: translateY(-50%);
-            background: #FF6B6B;
-            color: white;
-            width: 44px;
-            height: 44px;
+            background: white;
+            color: #FF6B6B;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             z-index: 50;
-            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
-            border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border: 2px solid #fee2e2;
             transition: transform 0.2s;
         }
 
         .speaker-btn:active {
             transform: translateY(-50%) scale(0.9);
-        }
-
-        .progress-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: #CBD5E1;
-        }
-
-        .progress-dot.active {
-            width: 15px;
-            background: var(--primary-red);
-            border-radius: 4px;
+            background: #FF6B6B;
+            color: white;
         }
 
         .floating {
@@ -165,14 +174,40 @@
 
         @keyframes floating {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            50% { transform: translateY(-8px); }
         }
 
         .scroll-box {
             overflow-y: auto;
             max-height: 100%;
             width: 100%;
-            padding: 0.5rem;
+            padding: 0.2rem;
+        }
+        
+        /* Category Tabs */
+        .category-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 99px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .cat-active {
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* Shuffle Animation */
+        .shaking {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
         }
     </style>
 </head>
@@ -180,56 +215,70 @@
     <div class="glow-aura"></div>
 
     <!-- Header -->
-    <header class="text-center mb-6">
-        <h1 class="text-3xl font-bold text-orange-600 mb-1 tracking-tight">Flashcard Trợ Từ 🎵</h1>
-        <p class="text-gray-500 text-sm font-medium">Học thuộc lòng các ví dụ nhé!</p>
+    <header class="text-center mb-4 w-full max-w-sm">
+        <h1 class="text-2xl font-bold text-gray-800 tracking-tight flex items-center justify-center gap-2">
+            <span class="text-3xl">🎴</span> Flashcard Trợ Phó Từ
+        </h1>
+        <div class="flex flex-wrap justify-center gap-2 mt-4">
+            <button onclick="filterCards('all')" id="btn-all" class="category-btn cat-active text-gray-600 bg-gray-100">Tất cả</button>
+            <button onclick="filterCards('particle')" id="btn-particle" class="category-btn text-blue-600 bg-blue-50 border-blue-200">Trợ từ</button>
+            <button onclick="filterCards('adverb')" id="btn-adverb" class="category-btn text-orange-600 bg-orange-50 border-orange-200">Phó từ</button>
+            <button onclick="shuffleCards()" class="category-btn text-purple-600 bg-purple-50 border-purple-200" title="Trộn thẻ (Phím S)"><span class="text-lg">🔀</span></button>
+        </div>
     </header>
 
     <!-- Main App -->
     <main class="w-full max-w-sm flex flex-col items-center">
         
-        <div id="dots-container" class="flex flex-wrap justify-center gap-1 mb-6 w-full px-2"></div>
-
-        <div id="card-container" class="perspective-container w-full aspect-[4/5] mb-8">
+        <!-- Card Container with Touch Events -->
+        <div id="card-container" class="perspective-container w-full aspect-[4/5] mb-6 type-particle" 
+             ontouchstart="handleTouchStart(event)" 
+             ontouchmove="handleTouchMove(event)" 
+             ontouchend="handleTouchEnd(event)">
+             
             <div class="card-inner" id="card-inner">
                 <!-- Front -->
                 <div class="card-face card-front" onclick="toggleFlip()">
                     <div class="level-tag" id="ui-level">N5</div>
-                    <div class="particle-main floating" id="ui-particle">は</div>
-                    <div id="ui-reading" class="text-xl font-bold text-orange-500 mb-4 bg-orange-50 px-4 py-1 rounded-full">わ</div>
-                    <div class="meaning-box mb-4 text-center" id="ui-meaning">Chủ đề câu</div>
-                    <p class="text-gray-400 text-[10px] font-medium bg-gray-50 px-3 py-1.5 rounded-full">Chạm nhẹ để lật thẻ ✨</p>
+                    <div class="flex flex-col items-center justify-center w-full flex-1">
+                        <div class="word-main floating kanji-font" id="ui-word">は</div>
+                        <div id="ui-reading" class="text-xl font-bold text-gray-500 mb-6 bg-gray-100 px-4 py-1 rounded-full kanji-font">wa</div>
+                        <div class="meaning-box mb-2 text-center" id="ui-meaning">Chủ đề câu</div>
+                    </div>
+                    <p class="text-gray-400 text-[10px] font-medium absolute bottom-6">Chạm để xem ví dụ ✨</p>
                 </div>
+                
                 <!-- Back -->
                 <div class="card-face card-back">
-                    <div class="scroll-box flex flex-col justify-center">
+                    <div class="scroll-box flex flex-col justify-center h-full w-full">
                         <div class="example-item shadow-sm">
-                            <div class="pr-12">
-                                <p class="text-lg font-bold text-gray-800 leading-tight" id="ui-ex1-jp"></p>
-                                <p class="text-xs text-orange-600 font-bold mt-1" id="ui-ex1-hira"></p>
-                                <p class="text-sm text-gray-600 border-t pt-1 mt-1" id="ui-ex1-vn"></p>
+                            <div class="pr-10">
+                                <p class="text-lg font-bold text-gray-800 leading-snug kanji-font" id="ui-ex1-jp"></p>
+                                <p class="text-xs text-gray-500 font-medium mt-1" id="ui-ex1-hira"></p>
+                                <p class="text-sm text-gray-600 border-t border-gray-200 pt-1 mt-1 font-semibold" id="ui-ex1-vn"></p>
                             </div>
                             <button class="speaker-btn" onclick="speakText(1, event)">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd" />
                                 </svg>
                             </button>
                         </div>
+
                         <div class="example-item shadow-sm">
-                            <div class="pr-12">
-                                <p class="text-lg font-bold text-gray-800 leading-tight" id="ui-ex2-jp"></p>
-                                <p class="text-xs text-orange-600 font-bold mt-1" id="ui-ex2-hira"></p>
-                                <p class="text-sm text-gray-600 border-t pt-1 mt-1" id="ui-ex2-vn"></p>
+                            <div class="pr-10">
+                                <p class="text-lg font-bold text-gray-800 leading-snug kanji-font" id="ui-ex2-jp"></p>
+                                <p class="text-xs text-gray-500 font-medium mt-1" id="ui-ex2-hira"></p>
+                                <p class="text-sm text-gray-600 border-t border-gray-200 pt-1 mt-1 font-semibold" id="ui-ex2-vn"></p>
                             </div>
                             <button class="speaker-btn" onclick="speakText(2, event)">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd" />
                                 </svg>
                             </button>
                         </div>
                     </div>
-                    <div class="mt-2 text-gray-700 font-bold text-[10px] cursor-pointer" onclick="toggleFlip()">
-                        ↺ Lật lại mặt trước
+                    <div class="text-gray-500 font-bold text-[10px] cursor-pointer opacity-70 absolute bottom-4 w-full text-center" onclick="toggleFlip()">
+                        ↺ Quay lại
                     </div>
                 </div>
             </div>
@@ -237,78 +286,148 @@
 
         <!-- Navigation -->
         <div class="flex items-center space-x-6">
-            <button onclick="changeCard(-1)" class="w-12 h-12 bg-white rounded-xl shadow-lg flex items-center justify-center text-xl hover:bg-gray-50 transition-all active:scale-90">
+            <button onclick="changeCard(-1)" class="w-14 h-14 bg-white rounded-2xl shadow-lg flex items-center justify-center text-2xl hover:bg-gray-50 hover:scale-105 transition-all text-gray-700" title="Phím mũi tên trái">
                 ←
             </button>
-            <div class="bg-white/80 px-4 py-2 rounded-full shadow-inner border border-gray-100">
-                <span class="text-lg font-bold text-gray-700" id="ui-counter">1 / 40</span>
+            <div class="bg-white/90 px-5 py-2 rounded-full shadow-inner border border-gray-200">
+                <span class="text-xl font-bold text-gray-700" id="ui-counter">1 / 65</span>
             </div>
-            <button onclick="changeCard(1)" class="w-12 h-12 bg-white rounded-xl shadow-lg flex items-center justify-center text-xl hover:bg-gray-50 transition-all active:scale-90">
+            <button onclick="changeCard(1)" class="w-14 h-14 bg-white rounded-2xl shadow-lg flex items-center justify-center text-2xl hover:bg-gray-50 hover:scale-105 transition-all text-gray-700" title="Phím mũi tên phải">
                 →
             </button>
         </div>
+        <p class="text-gray-400 text-[10px] mt-4 hidden md:block">Gợi ý: Dùng phím ⬅ ➡ để chuyển, Space để lật, S để trộn.</p>
     </main>
 
-    <footer class="mt-8 text-center max-w-xs px-4">
-        <p class="text-gray-400 italic text-[10px] leading-relaxed">"Sự tập trung là khởi nguồn của trí tuệ. Aza!"</p>
+    <footer class="mt-4 text-center max-w-xs px-4 pb-4">
+        <p class="text-gray-400 italic text-[11px] leading-relaxed">"Tôi sẽ học tiếng Nhật mỗi ngày để giao tiếp tốt. Chân Ngã dẫn lối."</p>
     </footer>
 
     <script>
-        const flashcards = [
-            // --- CẤP ĐỘ N5 ---
-            { level: "N5", particle: "は", reading: "わ", meaning: "Thì, là... (Chủ đề)", ex1_jp: "私は学生です。", ex1_hira: "わたしは がくせいです", ex1_vn: "Tôi là sinh viên.", ex2_jp: "俺, 学生だよ。", ex2_hira: "おれ, がくせいだよ", ex2_vn: "Tớ là sinh viên đấy." },
-            { level: "N5", particle: "が", reading: "が", meaning: "Chủ ngữ / Tồn tại", ex1_jp: "教室に学生がいます。", ex1_hira: "きょうしつに がくせいが います", ex1_vn: "Có sinh viên trong lớp học.", ex2_jp: "教室に学生がいる。", ex2_hira: "きょうしつに がくせいが いる", ex2_vn: "Có sinh viên trong lớp kìa." },
-            { level: "N5", particle: "を", reading: "お", meaning: "Tác động hành động", ex1_jp: "コーヒーを飲みます。", ex1_hira: "こーひーを のみます", ex1_vn: "Tôi uống cà phê.", ex2_jp: "コーヒー飲む。", ex2_hira: "こーひー のむ", ex2_vn: "Uống cà phê không?" },
-            { level: "N5", particle: "に", reading: "に", meaning: "Thời gian / Địa điểm", ex1_jp: "7時に起きます。", ex1_hira: "しちじに おきます", ex1_vn: "Tôi thức dậy lúc 7 giờ.", ex2_jp: "7時に起きる。", ex2_hira: "しちじに おきる", ex2_vn: "7 giờ dậy nhé." },
-            { level: "N5", particle: "で", reading: "で", meaning: "Nơi chốn / Phương tiện", ex1_jp: "電車で行きます。", ex1_hira: "でんしゃで いきます", ex1_vn: "Tôi đi bằng tàu điện.", ex2_jp: "電車で行く。", ex2_hira: "でんしゃで いく", ex2_vn: "Đi tàu điện nhé." },
-            { level: "N5", particle: "へ", reading: "え", meaning: "Hướng di chuyển", ex1_jp: "日本へ行きます。", ex1_hira: "にほんへ いきます", ex1_vn: "Tôi đi Nhật Bản.", ex2_jp: "日本行く。", ex2_hira: "にほん いく", ex2_vn: "Đi Nhật đây." },
-            { level: "N5", particle: "と", reading: "と", meaning: "Và / Cùng với", ex1_jp: "友達と遊びます。", ex1_hira: "ともだちと あそびます", ex1_vn: "Tôi chơi với bạn bè.", ex2_jp: "友達と遊ぶ。", ex2_hira: "ともだちと あそぶ", ex2_vn: "Chơi với bạn." },
-            { level: "N5", particle: "も", reading: "も", meaning: "Cũng...", ex1_jp: "私も学生です。", ex1_hira: "わたしも がくせいです", ex1_vn: "Tôi cũng là sinh viên.", ex2_jp: "俺も学生だよ。", ex2_hira: "おれも がくせいだよ", ex2_vn: "Tớ cũng là sinh viên đây." },
-            { level: "N5", particle: "の", reading: "の", meaning: "Của... (Sở hữu)", ex1_jp: "これは私の本です。", ex1_hira: "これは わたしの ほん です", ex1_vn: "Đây là quyển sách của tôi.", ex2_jp: "これ, 俺の本。", ex2_hira: "これ, おれの ほん", ex2_vn: "Đây là sách của tớ." },
-            { level: "N5", particle: "から", reading: "から", meaning: "Từ (Mốc/Nguồn)", ex1_jp: "9時から働きます。", ex1_hira: "くじから はたらきます", ex1_vn: "Tôi làm việc từ 9 giờ.", ex2_jp: "9時からだよ。", ex2_hira: "くじから だよ", ex2_vn: "Từ 9 giờ đấy." },
-            { level: "N5", particle: "まで", reading: "まで", meaning: "Đến (Giới hạn)", ex1_jp: "5時まで勉強します。", ex1_hira: "ごじまで べんきょう します", ex1_vn: "Tôi học đến 5 giờ.", ex2_jp: "5時までやる。", ex2_hira: "ごじまで やる", ex2_vn: "Làm đến 5 giờ thôi." },
-            { level: "N5", particle: "か", reading: "か", meaning: "Hoặc / Câu hỏi", ex1_jp: "お茶を飲みますか。", ex1_hira: "おちゃを のみますか", ex1_vn: "Bạn uống trà không?", ex2_jp: "飲むか？", ex2_hira: "のむか", ex2_vn: "Uống không?" },
-            { level: "N5", particle: "ね", reading: "ね", meaning: "Nhỉ / Nhé", ex1_jp: "いい天気ですね。", ex1_hira: "いい てんき ですね", ex1_vn: "Thời tiết đẹp nhỉ.", ex2_jp: "暑いね。", ex2_hira: "あついね", ex2_vn: "Nóng nhỉ." },
-            { level: "N5", particle: "よ", reading: "よ", meaning: "Đấy / Nhé", ex1_jp: "これ、おいしいですよ。", ex1_hira: "これ おいしいですよ", ex1_vn: "Cái này ngon lắm đấy.", ex2_jp: "行くよ！", ex2_hira: "いくよ", ex2_vn: "Đi đây nhé!" },
+        // --- MASTER DATA ---
+        const masterData = [
+            // === TRỢ TỪ (35) ===
+            { type: "particle", level: "N5", word: "は", reading: "wa", meaning: "Thì, là... (Chủ đề)", ex1_jp: "私は学生です。", ex1_hira: "わたしは がくせいです", ex1_vn: "Tôi là sinh viên.", ex2_jp: "俺、学生だよ。", ex2_hira: "おれ がくせいだよ", ex2_vn: "Tớ là sinh viên đấy." },
+            { type: "particle", level: "N5", word: "が", reading: "ga", meaning: "Chủ ngữ / Tồn tại", ex1_jp: "教室に学生がいます。", ex1_hira: "きょうしつに がくせいが います", ex1_vn: "Có sinh viên trong lớp học.", ex2_jp: "教室に学生がいる。", ex2_hira: "きょうしつに がくせいが いる", ex2_vn: "Có sinh viên trong lớp kìa." },
+            { type: "particle", level: "N5", word: "を", reading: "o", meaning: "Tác động hành động", ex1_jp: "コーヒーを飲みます。", ex1_hira: "こーひーを のみます", ex1_vn: "Tôi uống cà phê.", ex2_jp: "コーヒー飲む？", ex2_hira: "こーひー のむ", ex2_vn: "Uống cà phê không?" },
+            { type: "particle", level: "N5", word: "に", reading: "ni", meaning: "Thời gian / Địa điểm", ex1_jp: "7時に起きます。", ex1_hira: "しちじに おきます", ex1_vn: "Tôi thức dậy lúc 7 giờ.", ex2_jp: "7時に起きる。", ex2_hira: "しちじに おきる", ex2_vn: "7 giờ dậy nhé." },
+            { type: "particle", level: "N5", word: "で", reading: "de", meaning: "Nơi chốn / Phương tiện", ex1_jp: "電車で行きます。", ex1_hira: "でんしゃで いきます", ex1_vn: "Tôi đi bằng tàu điện.", ex2_jp: "電車で行く。", ex2_hira: "でんしゃで いく", ex2_vn: "Đi tàu điện nhé." },
+            { type: "particle", level: "N5", word: "へ", reading: "e", meaning: "Hướng di chuyển", ex1_jp: "日本へ行きます。", ex1_hira: "にほんへ いきます", ex1_vn: "Tôi đi Nhật Bản.", ex2_jp: "日本行く。", ex2_hira: "にほん いく", ex2_vn: "Đi Nhật đây." },
+            { type: "particle", level: "N5", word: "と", reading: "to", meaning: "Và / Cùng với", ex1_jp: "友達と遊びます。", ex1_hira: "ともだちと あそびます", ex1_vn: "Tôi chơi với bạn bè.", ex2_jp: "友達と遊ぶ。", ex2_hira: "ともだちと あそぶ", ex2_vn: "Chơi với bạn." },
+            { type: "particle", level: "N5", word: "も", reading: "mo", meaning: "Cũng...", ex1_jp: "私も学生です。", ex1_hira: "わたしも がくせいです", ex1_vn: "Tôi cũng là sinh viên.", ex2_jp: "俺も学生だよ。", ex2_hira: "おれも がくせいだよ", ex2_vn: "Tớ cũng là sinh viên đây." },
+            { type: "particle", level: "N5", word: "の", reading: "no", meaning: "Của... (Sở hữu)", ex1_jp: "これは私の本です。", ex1_hira: "これは わたしの ほん です", ex1_vn: "Đây là quyển sách của tôi.", ex2_jp: "これ、俺の本。", ex2_hira: "これ おれの ほん", ex2_vn: "Đây là sách của tớ." },
+            { type: "particle", level: "N5", word: "から", reading: "kara", meaning: "Từ (Mốc/Nguồn)", ex1_jp: "9時から働きます。", ex1_hira: "くじから はたらきます", ex1_vn: "Tôi làm việc từ 9 giờ.", ex2_jp: "9時からだよ。", ex2_hira: "くじから だよ", ex2_vn: "Từ 9 giờ đấy." },
+            { type: "particle", level: "N5", word: "まで", reading: "made", meaning: "Đến (Giới hạn)", ex1_jp: "5時まで勉強します。", ex1_hira: "ごじまで べんきょう します", ex1_vn: "Tôi học đến 5 giờ.", ex2_jp: "5時までやる。", ex2_hira: "ごじまで やる", ex2_vn: "Làm đến 5 giờ thôi." },
+            { type: "particle", level: "N5", word: "か", reading: "ka", meaning: "Hoặc / Câu hỏi", ex1_jp: "お茶を飲みますか。", ex1_hira: "おちゃを のみますか", ex1_vn: "Bạn uống trà không?", ex2_jp: "飲むか？", ex2_hira: "のむか", ex2_vn: "Uống không?" },
+            { type: "particle", level: "N5", word: "ね", reading: "ne", meaning: "Nhỉ / Nhé", ex1_jp: "いい天気ですね。", ex1_hira: "いい てんき ですね", ex1_vn: "Thời tiết đẹp nhỉ.", ex2_jp: "暑いね。", ex2_hira: "あついね", ex2_vn: "Nóng nhỉ." },
+            { type: "particle", level: "N5", word: "よ", reading: "yo", meaning: "Đấy / Nhé", ex1_jp: "これ、おいしいですよ。", ex1_hira: "これ おいしいですよ", ex1_vn: "Cái này ngon lắm đấy.", ex2_jp: "行くよ！", ex2_hira: "いくよ", ex2_vn: "Đi đây nhé!" },
+            { type: "particle", level: "N4", word: "より", reading: "yori", meaning: "So sánh hơn", ex1_jp: "これよりあれが安いです。", ex1_hira: "これより あれが やすいです", ex1_vn: "Cái kia rẻ hơn cái này.", ex2_jp: "こっちの方が好き。", ex2_hira: "こっちのほうが すき", ex2_vn: "Tớ thích bên này hơn." },
+            { type: "particle", level: "N4", word: "ほど", reading: "hodo", meaning: "Đến mức / Không bằng", ex1_jp: "昨日ほど暑くないです。", ex1_hira: "きのうほど あつくない です", ex1_vn: "Không nóng bằng hôm qua.", ex2_jp: "死ぬほど疲れた。", ex2_hira: "しぬほど つかれた", ex2_vn: "Mệt muốn chết." },
+            { type: "particle", level: "N4", word: "くらい", reading: "kurai", meaning: "Khoảng / Đến mức", ex1_jp: "30分ぐらい休みます。", ex1_hira: "さんじゅっぷん ぐらい やすみます", ex1_vn: "Nghỉ khoảng 30 phút.", ex2_jp: "これくらい、いいよ。", ex2_hira: "これくらい いいよ", ex2_vn: "Tầm này là được rồi." },
+            { type: "particle", level: "N4", word: "しか", reading: "shika", meaning: "Chỉ (Phủ định)", ex1_jp: "1000円しかありません。", ex1_hira: "せんえんしか ありません", ex1_vn: "Tôi chỉ có 1000 yên.", ex2_jp: "一人しかいない。", ex2_hira: "ひとりしか いない", ex2_vn: "Chỉ có mỗi một người." },
+            { type: "particle", level: "N4", word: "だけ", reading: "dake", meaning: "Chỉ (Khẳng định)", ex1_jp: "私だけが行きます。", ex1_hira: "わたしだけが いきます", ex1_vn: "Chỉ tôi đi thôi.", ex2_jp: "寝るだけだ。", ex2_hira: "ねるだけだ", ex2_vn: "Chỉ ngủ thôi." },
+            { type: "particle", level: "N4", word: "までに", reading: "madeni", meaning: "Trước khi", ex1_jp: "5時までに帰ります。", ex1_hira: "ごじまでに かえります", ex1_vn: "Về trước 5 giờ.", ex2_jp: "明日までにやって。", ex2_hira: "あしたまでに やって", ex2_vn: "Làm xong trước mai nhé." },
+            { type: "particle", level: "N4", word: "ばかり", reading: "bakari", meaning: "Toàn là / Vừa mới", ex1_jp: "肉ばかり食べます。", ex1_hira: "にくばかり たべます", ex1_vn: "Toàn ăn thịt thôi.", ex2_jp: "起きたばかりだ。", ex2_hira: "おきたばかりだ", ex2_vn: "Vừa mới dậy xong." },
+            { type: "particle", level: "N3", word: "には", reading: "ni wa", meaning: "Đối với... thì...", ex1_jp: "私には難しいです。", ex1_hira: "わたしには むずかしいです", ex1_vn: "Đối với tôi thì khó.", ex2_jp: "俺には無理。", ex2_hira: "おれには むり", ex2_vn: "Với tớ thì chịu." },
+            { type: "particle", level: "N3", word: "とは", reading: "to wa", meaning: "Cái gọi là / Nghĩa là", ex1_jp: "自由とは何ですか。", ex1_hira: "じゆうとは なんですか", ex1_vn: "Tự do có nghĩa là gì?", ex2_jp: "自由って何？", ex2_hira: "じゆうって なに", ex2_vn: "Tự do là gì vậy?" },
+            { type: "particle", level: "N3", word: "への", reading: "e no", meaning: "Hướng tới / Đến", ex1_jp: "日本への旅行。", ex1_hira: "にほんへの りょこう", ex1_vn: "Chuyến đi đến Nhật Bản.", ex2_jp: "日本への旅行、楽しみ！", ex2_hira: "にほんへの りょこう たのしみ", ex2_vn: "Đi Nhật thích quá!" },
+            { type: "particle", level: "N3", word: "にも", reading: "ni mo", meaning: "Cũng ở / Cũng cho", ex1_jp: "東京にも雪が降りました。", ex1_hira: "とうきょうにも ゆきが ふりました", ex1_vn: "Ở Tokyo cũng có tuyết.", ex2_jp: "東京にも雪降ったよ。", ex2_hira: "とうきょうにも ゆき ふったよ", ex2_vn: "Tokyo cũng có tuyết rồi." },
+            { type: "particle", level: "N3", word: "とも", reading: "to mo", meaning: "Cùng với cả", ex1_jp: "家族とも相談します。", ex1_hira: "かぞくとも そうだん します", ex1_vn: "Thảo luận với cả gia đình.", ex2_jp: "家族とも話す。", ex2_hira: "かぞくとも はなす", ex2_vn: "Cũng sẽ nói với cả nhà." },
+            { type: "particle", level: "N3", word: "において", reading: "ni oite", meaning: "Tại / Ở (Trang trọng)", ex1_jp: "会議はホールにおいて行われます。", ex1_hira: "かいぎは ほーるに おいて おこなわれます", ex1_vn: "Hội nghị tổ chức tại hội trường.", ex2_jp: "歴史において重要だ。", ex2_hira: "れきしにおいて じゅうようだ", ex2_vn: "Quan trọng trong lịch sử." },
+            { type: "particle", level: "N3", word: "として", reading: "toshite", meaning: "Với tư cách là...", ex1_jp: "留学生として来ました。", ex1_hira: "りゅうがくせいとして きました", ex1_vn: "Đến với tư cách du học sinh.", ex2_jp: "趣味としてやってる。", ex2_hira: "しゅみとして やってる", ex2_vn: "Làm vì sở thích thôi." },
+            { type: "particle", level: "N3", word: "によって", reading: "ni yotte", meaning: "Do / Bởi / Tùy vào", ex1_jp: "台風によって壊れました。", ex1_hira: "たいふうによって こわれました", ex1_vn: "Bị hỏng do bão.", ex2_jp: "人によって違う。", ex2_hira: "ひとによって ちがう", ex2_vn: "Tùy người mà khác." },
+            { type: "particle", level: "N3", word: "に対して", reading: "ni taishite", meaning: "Đối với / Trái với", ex1_jp: "先生に対して失礼です。", ex1_hira: "せんせいに たいして しつれい です", ex1_vn: "Thất lễ đối với giáo viên.", ex2_jp: "客に対して怒るな。", ex2_hira: "きゃくに たいして おこるな", ex2_vn: "Đừng giận với khách." },
+            { type: "particle", level: "N3", word: "について", reading: "ni tsuite", meaning: "Về việc... / Liên quan", ex1_jp: "将来について考えます。", ex1_hira: "しょうらいに ついて かんがえます", ex1_vn: "Suy nghĩ về tương lai.", ex2_jp: "これについて話そう。", ex2_hira: "これについて はなそう", ex2_vn: "Nói về chuyện này đi." },
+            { type: "particle", level: "N3", word: "にわたって", reading: "ni watatte", meaning: "Suốt / Khắp (Phạm vi)", ex1_jp: "20年にわたって研究しました。", ex1_hira: "にじゅうねんに わたって けんきゅう しました", ex1_vn: "Nghiên cứu suốt 20 năm.", ex2_jp: "広範囲にわたる。", ex2_hira: "こうはんいに わたる", ex2_vn: "Trải dài trên phạm vi rộng." },
+            { type: "particle", level: "N3", word: "に沿って", reading: "ni sotte", meaning: "Dọc theo / Men theo", ex1_jp: "川に沿って歩きます。", ex1_hira: "かわに そって あるきます", ex1_vn: "Đi bộ dọc theo con sông.", ex2_jp: "計画に沿ってやる。", ex2_hira: "けいかくに そって やる", ex2_vn: "Làm theo kế hoạch." },
+            { type: "particle", level: "N3", word: "に際して", reading: "ni saishite", meaning: "Nhân dịp / Khi làm gì", ex1_jp: "受験に際して注意すること。", ex1_hira: "じゅけんに さいして ちゅうい すること", ex1_vn: "Điều cần chú ý khi đi thi.", ex2_jp: "帰国に際して挨拶する。", ex2_hira: "きこくに さいして あいさつ する", ex2_vn: "Chào hỏi khi về nước." },
+            { type: "particle", level: "N3", word: "をめぐって", reading: "o megutte", meaning: "Xoay quanh (Tranh luận)", ex1_jp: "その問題をめぐって争います。", ex1_hira: "そのもんだいを めぐって あらそいます", ex1_vn: "Tranh cãi xoay quanh vấn đề đó.", ex2_jp: "噂をめぐって大騒ぎだ。", ex2_hira: "うわさを めぐって おおさわぎだ", ex2_vn: "Lùm xùm xoay quanh lời đồn." },
 
-            // --- CẤP ĐỘ N4 ---
-            { level: "N4", particle: "より", reading: "より", meaning: "So sánh hơn", ex1_jp: "これよりあれが安いです。", ex1_hira: "これより あれが やすいです", ex1_vn: "Cái kia rẻ hơn cái này.", ex2_jp: "こっちの方が好き。", ex2_hira: "こっちのほうが すき", ex2_vn: "Tớ thích bên này hơn." },
-            { level: "N4", particle: "ほど", reading: "ほど", meaning: "Đến mức / Không bằng", ex1_jp: "昨日ほど暑くないです。", ex1_hira: "きのうほど あつくない です", ex1_vn: "Không nóng bằng hôm qua.", ex2_jp: "死ぬほど疲れた。", ex2_hira: "しぬほど つかれた", ex2_vn: "Mệt muốn chết." },
-            { level: "N4", particle: "くらい/ぐらい", reading: "くらい/ぐらい", meaning: "Khoảng / Đến mức", ex1_jp: "30分ぐらい休みます。", ex1_hira: "さんじゅっぷん ぐらい やすみます", ex1_vn: "Nghỉ khoảng 30 phút.", ex2_jp: "これくらい、いいよ。", ex2_hira: "これくらい いいよ", ex2_vn: "Tầm này là được rồi." },
-            { level: "N4", particle: "しか", reading: "しか", meaning: "Chỉ (Phủ định)", ex1_jp: "1000円しかありません。", ex1_hira: "せんえんしか ありません", ex1_vn: "Tôi chỉ có 1000 yên.", ex2_jp: "一人しかいない。", ex2_hira: "ひとりしか いない", ex2_vn: "Chỉ có mỗi một người." },
-            { level: "N4", particle: "だけ", reading: "だけ", meaning: "Chỉ (Khẳng định)", ex1_jp: "私だけが行きます。", ex1_hira: "わたしだけが いきます", ex1_vn: "Chỉ tôi đi thôi.", ex2_jp: "寝るだけだ。", ex2_hira: "ねるだけだ", ex2_vn: "Chỉ ngủ thôi." },
-            { level: "N4", particle: "までに", reading: "までに", meaning: "Trước khi", ex1_jp: "5時までに帰ります。", ex1_hira: "ごじまでに かえります", ex1_vn: "Về trước 5 giờ.", ex2_jp: "明日までにやって。", ex2_hira: "あしたまでに やって", ex2_vn: "Làm xong trước mai nhé." },
-            { level: "N4", particle: "ばかり", reading: "ばかり", meaning: "Toàn là / Vừa mới", ex1_jp: "肉ばかり食べます。", ex1_hira: "にくばかり たべます", ex1_vn: "Toàn ăn thịt thôi.", ex2_jp: "起きたばかりだ。", ex2_hira: "おきたばかりだ", ex2_vn: "Vừa mới dậy xong." },
-
-            // --- TRỢ TỪ GHÉP & N3 ---
-            { level: "N4-N3", particle: "には", reading: "にわ", meaning: "Đối với... thì...", ex1_jp: "私には難しいです。", ex1_hira: "わたしには むずかしいです", ex1_vn: "Đối với tôi thì khó.", ex2_jp: "俺には無理。", ex2_hira: "おれには むり", ex2_vn: "Với tớ thì chịu." },
-            { level: "N4-N3", particle: "とは", reading: "とわ", meaning: "Cái gọi là / Nghĩa là...", ex1_jp: "自由とは何ですか。", ex1_hira: "じゆうとは なんですか", ex1_vn: "Tự do có nghĩa là gì?", ex2_jp: "自由って何？", ex2_hira: "じゆうって なに", ex2_vn: "Tự do là gì vậy?" },
-            { level: "N4-N3", particle: "への", reading: "えの", meaning: "Hướng tới / Đến", ex1_jp: "日本への旅行。", ex1_hira: "にほんへの りょこう", ex1_vn: "Chuyến đi đến Nhật Bản.", ex2_jp: "日本への旅行, 楽しみ！", ex2_hira: "にほんへの りょこう たのしみ", ex2_vn: "Đi Nhật thích quá!" },
-            { level: "N4-N3", particle: "にも", reading: "にも", meaning: "Cũng ở / Cũng cho", ex1_jp: "東京にも雪が降りました。", ex1_hira: "とうきょうにも ゆきが ふりました", ex1_vn: "Ở Tokyo cũng có tuyết.", ex2_jp: "東京にも雪降ったよ。", ex2_hira: "とうきょうにも ゆき ふったよ", ex2_vn: "Tokyo cũng có tuyết rồi." },
-            { level: "N4-N3", particle: "とも", reading: "とも", meaning: "Cùng với cả", ex1_jp: "家族とも相談します。", ex1_hira: "かぞくとも そうだん します", ex1_vn: "Thảo luận với cả gia đình.", ex2_jp: "家族とも話す。", ex2_hira: "かぞくとも はなす", ex2_vn: "Cũng sẽ nói với cả nhà." },
-            
-            { level: "N3", particle: "において", reading: "において", meaning: "Tại / Ở (Trang trọng)", ex1_jp: "会議はホールにおいて行われます。", ex1_hira: "かいぎは ほーるに おいて おこなわれます", ex1_vn: "Hội nghị tổ chức tại hội trường.", ex2_jp: "歴史において重要だ。", ex2_hira: "れきしにおいて じゅうようだ", ex2_vn: "Quan trọng trong lịch sử." },
-            { level: "N3", particle: "として", reading: "として", meaning: "Với tư cách là...", ex1_jp: "留学生として来ました。", ex1_hira: "りゅうがくせいとして きました", ex1_vn: "Đến với tư cách du học sinh.", ex2_jp: "趣味としてやってる。", ex2_hira: "しゅみとして やってる", ex2_vn: "Làm vì sở thích thôi." },
-            { level: "N3", particle: "によって", reading: "によって", meaning: "Do / Bởi / Tùy vào", ex1_jp: "台風によって壊れました。", ex1_hira: "たいふうによって こわれました", ex1_vn: "Bị hỏng do bão.", ex2_jp: "人によって違う。", ex2_hira: "ひとによって ちがう", ex2_vn: "Tùy người mà khác." },
-            { level: "N3", particle: "に対して", reading: "にたいして", meaning: "Đối với / Trái với", ex1_jp: "先生に対して失礼です。", ex1_hira: "せんせいに たいして しつれい です", ex1_vn: "Thất lễ đối với giáo viên.", ex2_jp: "客に対して怒るな。", ex2_hira: "きゃくに たいして おこるな", ex2_vn: "Đừng giận với khách." },
-            { level: "N3", particle: "について", reading: "について", meaning: "Về việc... / Liên quan", ex1_jp: "将来について考えます。", ex1_hira: "しょうらいに ついて かん gえます", ex1_vn: "Suy nghĩ về tương lai.", ex2_jp: "これについて話そう。", ex2_hira: "これについて はなそう", ex2_vn: "Nói về chuyện này đi." },
-            { level: "N3", particle: "にわたって", reading: "にわたって", meaning: "Suốt / Khắp (Phạm vi)", ex1_jp: "20年にわたって研究しました。", ex1_hira: "にじゅうねんに わたって けんきゅう しました", ex1_vn: "Nghiên cứu suốt 20 năm.", ex2_jp: "広範囲にわたる。", ex2_hira: "こうはんいに わたる", ex2_vn: "Trải dài trên phạm vi rộng." },
-            { level: "N3", particle: "に沿って", reading: "にそって", meaning: "Dọc theo / Men theo", ex1_jp: "川に沿って歩きます。", ex1_hira: "かわに そって あるきます", ex1_vn: "Đi bộ dọc theo con sông.", ex2_jp: "計画に沿ってやる。", ex2_hira: "けいかくに そって やる", ex2_vn: "Làm theo kế hoạch." },
-            { level: "N3", particle: "に際して", reading: "にさいして", meaning: "Nhân dịp / Khi làm gì", ex1_jp: "受験に際して注意すること。", ex1_hira: "じゅけんに さいして ちゅうい すること", ex1_vn: "Điều cần chú ý khi đi thi.", ex2_jp: "帰国に際して挨拶する。", ex2_hira: "きこくに さいして あいさつ する", ex2_vn: "Chào hỏi khi về nước." },
-            { level: "N3", particle: "をめぐって", reading: "をめぐって", meaning: "Xoay quanh (Tranh luận)", ex1_jp: "その問題をめぐって争います。", ex1_hira: "そのもんだいを めぐって あらそいます", ex1_vn: "Tranh cãi xoay quanh vấn đề đó.", ex2_jp: "噂をめぐって大騒ぎだ。", ex2_hira: "うわさを めぐって おおさわぎだ", ex2_vn: "Lùm xùm xoay quanh lời đồn." }
+            // === PHÓ TỪ (30) - BỔ SUNG ===
+            // Mức độ
+            { type: "adverb", level: "N3", word: "ずいぶん", reading: "ずいぶん", meaning: "Khá là (Ngạc nhiên)", ex1_jp: "ずいぶん寒くなりましたね。", ex1_hira: "ずいぶん さむく なりましたね", ex1_vn: "Trời đã trở nên khá lạnh nhỉ.", ex2_jp: "ずいぶん待ったよ。", ex2_hira: "ずいぶん まったよ", ex2_vn: "Tôi đã đợi khá lâu đấy." },
+            { type: "adverb", level: "N3", word: "かなり", reading: "かなり", meaning: "Tương đối / Khá", ex1_jp: "かなり上手ですね。", ex1_hira: "かなり じょうず ですね", ex1_vn: "Khá là giỏi đấy nhỉ.", ex2_jp: "かなり難しい。", ex2_hira: "かなり むずかしい", ex2_vn: "Tương đối khó." },
+            { type: "adverb", level: "N3", word: "相当", reading: "そうとう", meaning: "Khá nhiều (Cao độ)", ex1_jp: "相当疲れています。", ex1_hira: "そうとう つかれて います", ex1_vn: "Đang khá là mệt mỏi.", ex2_jp: "相当な金額だ。", ex2_hira: "そうとうな きんがく だ", ex2_vn: "Một số tiền khá lớn đấy." },
+            { type: "adverb", level: "N3", word: "めちゃくちゃ", reading: "めちゃくちゃ", meaning: "Cực kỳ (Văn nói)", ex1_jp: "めちゃくちゃ重いです。", ex1_hira: "めちゃくちゃ おもい です", ex1_vn: "Nặng kinh khủng.", ex2_jp: "部屋がめちゃくちゃだ。", ex2_hira: "へやが めちゃくちゃ だ", ex2_vn: "Phòng bừa bộn quá." },
+            { type: "adverb", level: "N3", word: "めったに", reading: "めったに", meaning: "Hiếm khi (Đi với Nai)", ex1_jp: "めったに怒りません。", ex1_hira: "めったに おこりません", ex1_vn: "Hiếm khi nổi giận.", ex2_jp: "めったに会えない。", ex2_hira: "めったに あえない", ex2_vn: "Hiếm khi gặp được." },
+            { type: "adverb", level: "N3", word: "ほとんど", reading: "ほとんど", meaning: "Hầu hết / Gần như", ex1_jp: "宿題はほとんど終わりました。", ex1_hira: "しゅくだいは ほとんど おわりました", ex1_vn: "Bài tập đã xong hầu hết rồi.", ex2_jp: "ほとんど寝てない。", ex2_hira: "ほとんど ねてない", ex2_vn: "Gần như không ngủ." },
+            { type: "adverb", level: "N3", word: "大分", reading: "だいぶ", meaning: "Khá nhiều / Đỡ hơn", ex1_jp: "風邪は大分良くなりました。", ex1_hira: "かぜは だいぶ よく なりました", ex1_vn: "Cảm cúm đã đỡ hơn nhiều rồi.", ex2_jp: "大分待った。", ex2_hira: "だいぶ まった", ex2_vn: "Đợi khá lâu rồi." },
+            { type: "adverb", level: "N3", word: "たっぷり", reading: "たっぷり", meaning: "Đầy ắp / Dư thừa", ex1_jp: "時間がたっぷりあります。", ex1_hira: "じかんが たっぷり あります", ex1_vn: "Có dư dả thời gian.", ex2_jp: "栄養たっぷり。", ex2_hira: "えいよう たっぷり", ex2_vn: "Đầy đủ dinh dưỡng." },
+            { type: "adverb", level: "N3", word: "多少", reading: "たしょう", meaning: "Một chút / Ít nhiều", ex1_jp: "多少のミスはあります。", ex1_hira: "たしょうの ミスは あります", ex1_vn: "Cũng có một chút lỗi.", ex2_jp: "多少遅れます。", ex2_hira: "たしょう おくれます", ex2_vn: "Sẽ muộn một chút." },
+            { type: "adverb", level: "N3", word: "ぎっしり", reading: "ぎっしり", meaning: "Chật ních", ex1_jp: "予定がぎっしりです。", ex1_hira: "よていが ぎっしり です", ex1_vn: "Lịch trình kín mít.", ex2_jp: "箱にぎっしり。", ex2_hira: "はこに ぎっしり", ex2_vn: "Nhét đầy trong hộp." },
+            { type: "adverb", level: "N3", word: "すっかり", reading: "すっかり", meaning: "Hoàn toàn (Xong xuôi)", ex1_jp: "約束をすっかり忘れました。", ex1_hira: "やくそくを すっかり わすれました", ex1_vn: "Quên sạch sành sanh lời hứa.", ex2_jp: "すっかり春だね。", ex2_hira: "すっかり はる だね", ex2_vn: "Hoàn toàn là mùa xuân rồi." },
+            { type: "adverb", level: "N3", word: "わずか", reading: "わずか", meaning: "Vỏn vẹn / Chỉ", ex1_jp: "残りはわずかです。", ex1_hira: "のこりは わずか です", ex1_vn: "Chỉ còn lại một chút thôi.", ex2_jp: "わずかな希望。", ex2_hira: "わずかな きぼう", ex2_vn: "Hy vọng mong manh." },
+            { type: "adverb", level: "N3", word: "およそ", reading: "およそ", meaning: "Khoảng / Đại khái", ex1_jp: "ここからおよそ1時間です。", ex1_hira: "ここから およそ いちじかん です", ex1_vn: "Từ đây mất khoảng 1 tiếng.", ex2_jp: "およその見当。", ex2_hira: "およその けんとう", ex2_vn: "Dự đoán đại khái." },
+            { type: "adverb", level: "N3", word: "もっと", reading: "もっと", meaning: "Hơn nữa", ex1_jp: "もっと頑張ります。", ex1_hira: "もっと がんばります", ex1_vn: "Tôi sẽ cố gắng hơn nữa.", ex2_jp: "もっと食べたい。", ex2_hira: "もっと たべたい", ex2_vn: "Muốn ăn thêm nữa." },
+            { type: "adverb", level: "N3", word: "一番", reading: "いちばん", meaning: "Nhất / Số 1", ex1_jp: "これが一番大切です。", ex1_hira: "これが いちばん たいせつ です", ex1_vn: "Cái này là quan trọng nhất.", ex2_jp: "一番好き。", ex2_hira: "いちばん すき", ex2_vn: "Thích nhất." },
+            // Cách thức
+            { type: "adverb", level: "N3", word: "うっかり", reading: "うっかり", meaning: "Lơ đễnh / Trót", ex1_jp: "うっかり秘密を言いました。", ex1_hira: "うっかり ひみつを いいました", ex1_vn: "Lỡ miệng nói ra bí mật.", ex2_jp: "うっかり忘れた。", ex2_hira: "うっかり わすれた", ex2_vn: "Trót quên mất." },
+            { type: "adverb", level: "N3", word: "わざと", reading: "わざと", meaning: "Cố tình", ex1_jp: "わざと負けました。", ex1_hira: "わざと まけました", ex1_vn: "Cố tình thua.", ex2_jp: "わざとじゃないよ！", ex2_hira: "わざと じゃないよ", ex2_vn: "Tớ không cố ý đâu!" },
+            { type: "adverb", level: "N3", word: "こっそり", reading: "こっそり", meaning: "Lén lút", ex1_jp: "こっそり逃げました。", ex1_hira: "こっそり にげました", ex1_vn: "Lén lút bỏ trốn.", ex2_jp: "こっそり見る。", ex2_hira: "こっそり みる", ex2_vn: "Nhìn trộm." },
+            { type: "adverb", level: "N3", word: "ぼんやり", reading: "ぼんやり", meaning: "Mờ ảo / Lơ đãng", ex1_jp: "山がぼんやり見えます。", ex1_hira: "やまが ぼんやり みえます", ex1_vn: "Nhìn thấy núi mờ mờ.", ex2_jp: "ぼんやり考える。", ex2_hira: "ぼんやり かんがえる", ex2_vn: "Suy nghĩ vẩn vơ." },
+            { type: "adverb", level: "N3", word: "ぎりぎり", reading: "ぎりぎり", meaning: "Sát nút / Vừa kịp", ex1_jp: "時間ぎりぎりに着きました。", ex1_hira: "じかん ぎりぎりに つきました", ex1_vn: "Đến vừa kịp giờ.", ex2_jp: "ぎりぎり合格だ。", ex2_hira: "ぎりぎり ごうかく だ", ex2_vn: "Vừa đủ điểm đậu." },
+            // Thời gian
+            { type: "adverb", level: "N3", word: "今にも", reading: "いまにも", meaning: "Sắp sửa (xảy ra)", ex1_jp: "今にも雨が降りそうです。", ex1_hira: "いまにも あめが ふりそうです", ex1_vn: "Trời trông như sắp mưa ngay.", ex2_jp: "今にも泣きそう。", ex2_hira: "いまにも なきそう", ex2_vn: "Sắp khóc đến nơi rồi." },
+            { type: "adverb", level: "N3", word: "やがて", reading: "やがて", meaning: "Chẳng mấy chốc", ex1_jp: "やがて夏が来ます。", ex1_hira: "やがて なつが きます", ex1_vn: "Chẳng mấy chốc mùa hè sẽ tới.", ex2_jp: "やがてわかるよ。", ex2_hira: "やがて わかるよ", ex2_vn: "Rồi cậu sẽ hiểu thôi." },
+            { type: "adverb", level: "N3", word: "いつの間にか", reading: "いつのまにか", meaning: "Lúc nào không hay", ex1_jp: "いつの間にか寝ていました。", ex1_hira: "いつのまにか ねていました", ex1_vn: "Ngủ quên lúc nào không biết.", ex2_jp: "いつの間にか夜だ。", ex2_hira: "いつのまにか よるだ", ex2_vn: "Trời tối lúc nào không hay." },
+            { type: "adverb", level: "N3", word: "たまたま", reading: "たまたま", meaning: "Tình cờ / Ngẫu nhiên", ex1_jp: "たまたま駅で会いました。", ex1_hira: "たまたま えきで あいました", ex1_vn: "Tình cờ gặp ở nhà ga.", ex2_jp: "たまたま持っていた。", ex2_hira: "たまたま もっていた", ex2_vn: "Tình cờ mang theo." },
+            { type: "adverb", level: "N3", word: "いきなり", reading: "いきなり", meaning: "Đột nhiên", ex1_jp: "いきなり泣き出しました。", ex1_hira: "いきなり なきだしました", ex1_vn: "Đột nhiên bật khóc.", ex2_jp: "いきなり変えるな。", ex2_hira: "いきなり かえるな", ex2_vn: "Đừng có đổi đột ngột thế." },
+            // Khẳng định / Phỏng đoán
+            { type: "adverb", level: "N3", word: "案外", reading: "あんがい", meaning: "Không ngờ / Bất ngờ", ex1_jp: "案外高かったです。", ex1_hira: "あんがい たかかった です", ex1_vn: "Đắt hơn tôi tưởng.", ex2_jp: "案外簡単だ。", ex2_hira: "あんがい かんたん だ", ex2_vn: "Đơn giản không ngờ." },
+            { type: "adverb", level: "N3", word: "決して", reading: "けっして", meaning: "Tuyệt đối không", ex1_jp: "決して諦めません。", ex1_hira: "けっして あきらめません", ex1_vn: "Tuyệt đối không bỏ cuộc.", ex2_jp: "決して忘れない。", ex2_hira: "けっして わすれない", ex2_vn: "Không bao giờ quên." },
+            { type: "adverb", level: "N3", word: "まさか", reading: "まさか", meaning: "Không lẽ nào", ex1_jp: "まさか失敗するとは。", ex1_hira: "まさか しっぱいするとは", ex1_vn: "Không ngờ lại thất bại.", ex2_jp: "まさか彼が犯人？", ex2_hira: "まさか かれが はんにん", ex2_vn: "Không lẽ anh ta là thủ phạm?" },
+            { type: "adverb", level: "N3", word: "ちっとも", reading: "ちっとも", meaning: "Một chút cũng không", ex1_jp: "ちっとも変わりません。", ex1_hira: "ちっとも かわりません", ex1_vn: "Chẳng thay đổi chút nào.", ex2_jp: "ちっとも面白くない。", ex2_hira: "ちっとも おもしろくない", ex2_vn: "Chẳng thú vị tẹo nào." },
+            { type: "adverb", level: "N3", word: "まるで", reading: "まるで", meaning: "Cứ như là", ex1_jp: "まるで夢のようです。", ex1_hira: "まるで ゆめの ようです", ex1_vn: "Cứ như là mơ vậy.", ex2_jp: "まるで子供だ。", ex2_hira: "まるで こどもだ", ex2_vn: "Cứ như trẻ con vậy." }
         ];
 
+        let activeCards = [...masterData];
         let currentIndex = 0;
         let isFlipped = false;
 
-        function initProgressDots() {
-            const container = document.getElementById('dots-container');
-            container.innerHTML = '';
-            flashcards.forEach((_, idx) => {
-                const dot = document.createElement('div');
-                dot.className = `progress-dot ${idx === currentIndex ? 'active' : ''}`;
-                container.appendChild(dot);
+        function filterCards(type) {
+            // Update buttons
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('cat-active', 'bg-white', 'shadow-md');
+                if (type === 'all' && btn.id === 'btn-all') {
+                    btn.classList.add('cat-active', 'text-gray-800');
+                    btn.classList.remove('text-gray-600', 'bg-gray-100');
+                } else if (type === 'particle' && btn.id === 'btn-particle') {
+                    btn.classList.add('cat-active');
+                } else if (type === 'adverb' && btn.id === 'btn-adverb') {
+                    btn.classList.add('cat-active');
+                }
             });
+
+            // Filter data
+            if (type === 'all') {
+                activeCards = [...masterData];
+            } else {
+                activeCards = masterData.filter(item => item.type === type);
+            }
+            currentIndex = 0;
+            isFlipped = false;
+            document.getElementById('card-container').classList.remove('is-flipped');
+            updateUI();
+        }
+
+        // --- SHUFFLE LOGIC ---
+        function shuffleCards() {
+            // Add visual feedback
+            const container = document.getElementById('card-container');
+            container.classList.add('shaking');
+            setTimeout(() => container.classList.remove('shaking'), 500);
+
+            // Fisher-Yates Shuffle
+            for (let i = activeCards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [activeCards[i], activeCards[j]] = [activeCards[j], activeCards[i]];
+            }
+            
+            // Reset to first card
+            currentIndex = 0;
+            isFlipped = false;
+            container.classList.remove('is-flipped');
+            updateUI();
         }
 
         function toggleFlip() {
@@ -319,13 +438,26 @@
         }
 
         function updateUI() {
-            const data = flashcards[currentIndex];
+            if (activeCards.length === 0) return;
+            const data = activeCards[currentIndex];
+            const cardContainer = document.getElementById('card-container');
             const cardInner = document.getElementById('card-inner');
+            
+            // Animation reset
             cardInner.style.opacity = '0';
             
             setTimeout(() => {
+                // Set Theme based on type
+                if(data.type === 'adverb') {
+                    cardContainer.classList.remove('type-particle');
+                    cardContainer.classList.add('type-adverb');
+                } else {
+                    cardContainer.classList.remove('type-adverb');
+                    cardContainer.classList.add('type-particle');
+                }
+
                 document.getElementById('ui-level').innerText = data.level;
-                document.getElementById('ui-particle').innerText = data.particle;
+                document.getElementById('ui-word').innerText = data.word;
                 document.getElementById('ui-reading').innerText = data.reading;
                 document.getElementById('ui-meaning').innerText = data.meaning;
                 document.getElementById('ui-ex1-jp').innerText = data.ex1_jp;
@@ -334,8 +466,8 @@
                 document.getElementById('ui-ex2-jp').innerText = data.ex2_jp;
                 document.getElementById('ui-ex2-hira').innerText = data.ex2_hira;
                 document.getElementById('ui-ex2-vn').innerText = data.ex2_vn;
-                document.getElementById('ui-counter').innerText = `${currentIndex + 1} / ${flashcards.length}`;
-                initProgressDots();
+                document.getElementById('ui-counter').innerText = `${currentIndex + 1} / ${activeCards.length}`;
+                
                 cardInner.style.opacity = '1';
             }, 200);
         }
@@ -343,15 +475,19 @@
         function changeCard(dir) {
             isFlipped = false;
             document.getElementById('card-container').classList.remove('is-flipped');
-            currentIndex += dir;
-            if (currentIndex >= flashcards.length) currentIndex = 0;
-            if (currentIndex < 0) currentIndex = flashcards.length - 1;
-            updateUI();
+            
+            // Short delay to allow flip back animation
+            setTimeout(() => {
+                currentIndex += dir;
+                if (currentIndex >= activeCards.length) currentIndex = 0;
+                if (currentIndex < 0) currentIndex = activeCards.length - 1;
+                updateUI();
+            }, 150);
         }
 
         function speakText(exampleNum, event) {
             event.stopPropagation();
-            const data = flashcards[currentIndex];
+            const data = activeCards[currentIndex];
             const text = exampleNum === 1 ? data.ex1_jp : data.ex2_jp;
             
             if (window.speechSynthesis.speaking) {
@@ -360,7 +496,7 @@
 
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'ja-JP';
-            utterance.rate = 0.8;
+            utterance.rate = 0.85; // Slightly slower for learning
             utterance.pitch = 1.0;
             utterance.volume = 1.0;
 
@@ -373,6 +509,47 @@
             window.speechSynthesis.speak(utterance);
         }
 
+        // --- KEYBOARD & TOUCH SUPPORT ---
+        
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') changeCard(1);
+            else if (e.key === 'ArrowLeft') changeCard(-1);
+            else if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault(); // Prevent scrolling
+                toggleFlip();
+            } else if (e.key === 's' || e.key === 'S') {
+                shuffleCards();
+            }
+        });
+
+        // Touch Swipe
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        function handleTouchStart(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }
+
+        function handleTouchMove(e) {
+            // Optional: Prevent default if needed
+        }
+
+        function handleTouchEnd(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }
+
+        function handleSwipe() {
+            const threshold = 50; // Minimum distance for swipe
+            if (touchEndX < touchStartX - threshold) {
+                changeCard(1); // Swipe Left -> Next
+            }
+            if (touchEndX > touchStartX + threshold) {
+                changeCard(-1); // Swipe Right -> Prev
+            }
+        }
+
         if ('speechSynthesis' in window) {
             window.speechSynthesis.onvoiceschanged = () => {
                 window.speechSynthesis.getVoices();
@@ -380,7 +557,6 @@
         }
 
         window.onload = () => {
-            initProgressDots();
             updateUI();
         };
     </script>
