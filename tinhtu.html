@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AzaKanji - Tính Từ Ngữ Cảnh N3 (Final with Stroke Order)</title>
+    <title>AzaKanji - Tính Từ Ngữ Cảnh N3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
@@ -14,13 +14,18 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #86efac; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #4ade80; }
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        
+        /* Animations */
+        .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .modal-enter { animation: modalIn 0.3s ease-out forwards; }
         @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
         .correct-anim { animation: bounce 0.5s; }
         @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        .wrong-anim { animation: shake 0.5s; }
+        
+        .wrong-anim { animation: shake 0.4s; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
         /* STROKE ORDER STYLES */
@@ -32,21 +37,24 @@
             stroke-linejoin: round;
         }
         .stroke-grid-box {
-            border: 1px solid #e5e7eb;
             background-color: white;
             position: relative;
+            overflow: hidden;
         }
         /* Dotted lines for kanji grid */
         .stroke-grid-box::after {
             content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%;
             background: repeating-linear-gradient(to bottom, #ddd 0, #ddd 4px, transparent 4px, transparent 8px);
             z-index: 0;
+            transform: translateX(-50%);
         }
         .stroke-grid-box::before {
             content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px;
             background: repeating-linear-gradient(to right, #ddd 0, #ddd 4px, transparent 4px, transparent 8px);
             z-index: 0;
+            transform: translateY(-50%);
         }
+        svg { position: relative; z-index: 10; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -55,14 +63,14 @@
     <header class="bg-green-600 text-white shadow-lg sticky top-0 z-40">
         <div class="container mx-auto px-4 py-3">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div class="flex items-center space-x-3 cursor-pointer" onclick="location.reload()">
-                    <i class="fas fa-leaf text-3xl text-yellow-300"></i>
+                <div class="flex items-center space-x-3 cursor-pointer select-none" onclick="location.reload()">
+                    <i class="fas fa-leaf text-3xl text-yellow-300 animate-pulse"></i>
                     <div>
                         <h1 class="text-xl font-bold uppercase tracking-wider">AzaKanji Adjectives</h1>
-                        <p class="text-xs text-green-100">41 Cặp Tính Từ & Ngữ Pháp N5-N3</p>
+                        <p class="text-xs text-green-100">41+ Cặp Tính Từ & Ngữ Pháp N5-N3</p>
                     </div>
                 </div>
-                <div class="flex bg-green-800 rounded-lg p-1 overflow-x-auto">
+                <div class="flex bg-green-800 rounded-lg p-1 overflow-x-auto shadow-inner">
                     <button onclick="switchTab('learn')" id="tab-learn" class="px-4 py-2 rounded-md text-sm font-bold transition bg-white text-green-800 shadow whitespace-nowrap">
                         <i class="fas fa-book-open mr-2"></i>Học Từ
                     </button>
@@ -131,7 +139,7 @@
             </div>
             <div class="border-t border-gray-700 pt-4 mt-4 text-xs">
                 <p>&copy; 2024 AzaKanji Project. Developed for Kanji Lovers.</p>
-                <p class="mt-1">Dữ liệu bao gồm các cặp tính từ đuôi i và đuôi na thông dụng (N5-N4).</p>
+                <p class="mt-1">Dữ liệu bao gồm các cặp tính từ đuôi i và đuôi na thông dụng (N5-N3).</p>
             </div>
         </div>
     </footer>
@@ -201,7 +209,7 @@
         </div>
     </div>
 
-    <!-- STROKE ORDER MODAL (NEW) -->
+    <!-- STROKE ORDER MODAL -->
     <div id="stroke-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" onclick="closeStrokeModal()"></div>
@@ -213,18 +221,23 @@
                 </div>
                 
                 <div class="p-6 bg-gray-50 max-h-[80vh] overflow-y-auto">
+                    <!-- NEW: Kanji Selector for multiple kanji words -->
+                    <div id="kanji-selector" class="flex justify-center flex-wrap gap-3 mb-6 hidden">
+                        <!-- Buttons will be injected here -->
+                    </div>
+
                     <!-- Animation Area -->
                     <div class="flex flex-col md:flex-row gap-8 items-start justify-center">
-                        <div class="bg-white p-4 rounded-lg shadow border border-gray-200 text-center">
+                        <div class="bg-white p-4 rounded-lg shadow border border-gray-200 text-center mx-auto md:mx-0">
                             <p class="text-sm text-gray-500 mb-2 font-bold uppercase">Mô phỏng nét viết</p>
                             <div id="stroke-animation-container" class="w-40 h-40 mx-auto bg-white border border-gray-300 relative stroke-grid-box"></div>
                             <button onclick="replayStrokeAnimation()" class="mt-3 text-sm bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-green-200 transition"><i class="fas fa-redo mr-1"></i> Viết lại</button>
                         </div>
                         
                         <!-- Grid Breakdown -->
-                        <div class="flex-1">
+                        <div class="flex-1 w-full">
                             <p class="text-sm text-gray-500 mb-3 font-bold uppercase">Thứ tự từng nét</p>
-                            <div id="stroke-grid-container" class="flex flex-wrap gap-2"></div>
+                            <div id="stroke-grid-container" class="flex flex-wrap gap-2 justify-center md:justify-start"></div>
                         </div>
                     </div>
                 </div>
@@ -235,112 +248,141 @@
 
     <script>
         // --- MASTER DATA (ADJECTIVES) ---
-        const adjectives = [
-           { k: "大きい", h: "おおきい", m: "to, lớn", ti: "Bộ ĐẠI (大): Hình ảnh một người dang rộng tay chân hết cỡ là to lớn.", ta: "Ô! Kìa (Ookii) vật gì to thế." },
-        { k: "小さい", h: "ちいさい", m: "nhỏ, bé", ti: "Bộ TIỂU (小): Một vật nhỏ bé bị chia cắt ra làm các phần nhỏ.", ta: "Chi (Chii) tiền sai nên chỉ mua được đồ nhỏ." },
-        { k: "高い", h: "たかい", m: "cao, đắt", ti: "Bộ CAO (高): Hình ảnh tòa tháp nhiều tầng cao vút trên cổng thành.", ta: "Ta cãi (Takai) vì giá này quá đắt." },
-        { k: "低い", h: "ひくい", m: "thấp", ti: "Bộ NHÂN (亻) + ĐÊ (氐): Người cúi mình xuống gốc cây nên gọi là ĐÊ (thấp).", ta: "Hi hóp má cúi (Hikui) mình xuống thấp." },
-        { k: "長い", h: "ながい", m: "dài", ti: "Bộ TRƯỜNG (長): Hình ảnh ông lão có mái tóc và râu dài theo thời gian.", ta: "Na (Naga) đi trên con đường rất dài." },
-        { k: "短い", h: "みじかい", m: "ngắn", ti: "Bộ THỈ (矢 - mũi tên) + ĐẬU (豆): Mũi tên ngắn ngủn chỉ bằng hạt đậu là ĐOẢN.", ta: "Mì gì cai (Mijikai) thế, ngắn tũn à." },
-        { k: "太い", h: "ふとい", m: "béo, dày", ti: "Bộ ĐẠI (大) + dấu chấm: Một người to lớn quá mức đến phát phì là THÁI.", ta: "Phù (Futoi) mỏ vì béo quá mức." },
-        { k: "細い", h: "ほそい", m: "gầy, mỏng", ti: "Bộ MỊCH (糸 - sợi tơ) + ĐIỀN (田): Sợi tơ nhỏ bé dệt trên ruộng lúa rất TẾ.", ta: "Hồ Sơ (Hosoi) mỏng dính như tờ giấy." },
-        { k: "広い", h: "ひろい", m: "rộng", ti: "Bộ NGHIÊM (广 - mái nhà) + KHỨ (ム): Mái nhà che cho cái tôi một không gian QUẢNG.", ta: "Hi Rồ (Hiroi) đi dạo trên đường rộng." },
-        { k: "狭い", h: "せまい", m: "hẹp", ti: "Bộ KHUYỂN (犭) + HIỆP (夹): Con chó bị kẹp giữa hai khe tường chật hẹp là HIỆP.", ta: "Xe Mãi (Semai) mới lách qua được ngõ hẹp." },
-        { k: "暑い", h: "あつい", m: "nóng (thời tiết)", ti: "Bộ NHẬT (日) + GIẢ (者): Mặt trời chiếu trực tiếp vào người là THỬ (nóng).", ta: "A! Tui (Atsui) nóng chảy mồ hôi." },
-        { k: "寒い", h: "さむい", m: "lạnh (thời tiết)", ti: "Bộ MIÊN (宀) + THẢO (艹) + BĂNG (冫): Ở nhà đắp rơm vẫn thấy băng giá vì HÀN.", ta: "Sa Mù (Samui) là khi trời lạnh giá." },
-        { k: "熱い", h: "あつい", m: "nóng (vật/cảm xúc)", ti: "Bộ NHIỆT (熱): Trồng cây (埶) trên ngọn lửa (灬) bùng cháy.", ta: "A! Tui (Atsui) chạm vào vật nóng bị bỏng." },
-        { k: "冷たい", h: "つめたい", m: "lạnh (vật/thái độ)", ti: "Bộ BĂNG (冫) + LỆNH (令): Ra lệnh đóng băng là thái độ LÃNH khốc.", ta: "Tự Mê Tại (Tsumetai) món kem lạnh." },
-        { k: "暖かい", h: "あたたかい", m: "ấm (thời tiết)", ti: "Bộ NHẬT (日) + NOÃN (爰): Tia nắng mặt trời mang đến sự ấm áp (NOÃN).", ta: "A ta ta (Atata) thấy nắng ấm rồi." },
-        { k: "涼しい", h: "すずしい", m: "mát mẻ", ti: "Bộ THỦY (氵) + KINH (京): Dòng nước mát chảy qua kinh đô phồn hoa là LƯƠNG.", ta: "Su su (Suzu) ăn vào thấy mát lòng." },
-        { k: "良い", h: "いい", m: "tốt", ti: "Bộ LƯƠNG (良): Hình ảnh người con gái ăn ở hiền lành, lương thiện.", ta: "I (Ii) như vậy là tốt nhất rồi." },
-        { k: "悪い", h: "わるい", m: "xấu", ti: "Bộ ÁC (亜) + TÂM (心): Trái tim chất chứa những điều độc ác là ÁC (xấu).", ta: "Wa! Rùi (Warui) xong, gặp chuyện xấu rồi." },
-        { k: "新しい", h: "あたらしい", m: "mới", ti: "Bộ LẬP (立) + MỘC (木) + CÂN (斤): Đứng trên cây cầm rìu làm đồ TÂN (mới).", ta: "A ta ra (Atara) mua bộ đồ mới." },
-        { k: "古い", h: "ふるい", m: "cũ", ti: "Bộ THẬP (十) + KHẨU (口): Mười cái miệng cùng kể lại chuyện xưa cũ là CỔ.", ta: "Phù Rùi (Furui) bụi bặm vì đồ quá cũ." },
-        { k: "強い", h: "つよい", m: "mạnh", ti: "Bộ CUNG (弓) + TRÙNG (虫): Sức mạnh của loài trùng kéo căng dây cung là CƯỜNG.", ta: "Tự Do (Tsuyo) giúp ta mạnh mẽ hơn." },
-        { k: "弱い", h: "よわい", m: "yếu", ti: "Bộ CUNG (弓) + SAM (彡): Cánh cung bị gãy lông yếu ớt gọi là NHƯỢC.", ta: "Gió Wai (Yowai) thổi bay người yếu đuối." },
-        { k: "難しい", h: "むずかしい", m: "khó", ti: "Bộ TRUY (隹 - chim) + CẬN (堇 - đất sét): Con chim bị dính vào đất sét gặp NAN.", ta: "Mù Dư Cả (Muzuka) đống bài tập khó." },
-        { k: "易しい", h: "やさしい", m: "dễ", ti: "Bộ NHẬT (日) + VẬT (勿): Mặt trời chiếu sáng xuyên thấu vạn vật là DỊ (dễ).", ta: "Ya! Xa (Yasa) thế mà đi lại dễ dàng." },
-        { k: "甘い", h: "あまい", m: "ngọt", ti: "Bộ CAM (甘): Ngậm một miếng đồ ăn trong miệng để cảm nhận vị CAM (ngọt).", ta: "A! Mai (Amai) được ăn kẹo ngọt." },
-        { k: "辛い", h: "からい", m: "cay", ti: "Bộ LẬP (立) + THẬP (十): Đứng mười lần chịu đựng đau đớn là TÂN (cay đắng).", ta: "Cà Ra (Kara) ăn vào thấy cay xè." },
-        { k: "忙しい", h: "いそがしい", m: "bận rộn", ti: "Bộ TÂM (忄) + VONG (亡): Tim chết lặng vì bận rộn quá mức là MANG.", ta: "I Sô Gà (Isoga) bận rộn cả ngày." },
-
-        // N3 Trọng tâm (Dòng 84 - 106 yêu cầu)
-        { k: "苦しい", h: "くるしい", m: "đau khổ, khó thở", ti: "Bộ THẢO (艹) + CỔ (古): Ăn phải cỏ cũ héo đắng ngắt nên thấy rất KHỔ.", ta: "Cứ rủ si (Kurushii) làm chi cho khổ." },
-        { k: "悔しい", h: "くやしい", m: "tiếc nuối, cay cú", ti: "Bộ TÂM (忄) + MỖI (毎): Mỗi lần làm sai trái tim lại thấy HỐI tiếc, cay cú.", ta: "Cứ dã si (Kuyashii) vì cay cú quá." },
-        { k: "懐かしい", h: "なつかしい", m: "nhớ nhung", ti: "Bộ TÂM (忄) + HOÀI (褱): Trái tim luôn ôm ấp kỷ niệm cũ gọi là HOÀI niệm.", ta: "Nạ tự ca si (Natsukashii) nhớ quê xưa." },
-        { k: "羨ましい", h: "うらやましい", m: "ghen tị", ti: "Bộ DƯƠNG (羊 - dê) + KHIẾM (欠): Thấy dê người khác mà mình thiếu nên ghen tị.", ta: "U ra da mả si (Urayamashii) ghen tị." },
-        { k: "恥ずかしい", h: "はずかしい", m: "xấu hổ", ti: "Bộ NHĨ (耳) + TÂM (心): Tai nghe lời xấu làm tim đập loạn xạ là SỈ (xấu hổ).", ta: "Hà dự ca si (Hazukashii) thấy xấu hổ." },
-        { k: "正しい", h: "ただしい", m: "đúng đắn", ti: "Bộ NHẤT (一) + CHỈ (止): Dừng lại đúng vạch số 1 là hành động CHÍNH xác.", ta: "Ta đã si (Tadashii) vào điều đúng." },
-        { k: "珍しい", h: "めずらしい", m: "hiếm, lạ", ti: "Bộ VƯƠNG (王) + TRÂN (㐱): Vật vua quý trọng là đồ TRÂN quý, cực kỳ hiếm.", ta: "Mê dự ra si (Mezurashii) món đồ hiếm." },
-        { k: "激しい", h: "はげしい", m: "mãnh liệt", ti: "Bộ THỦY (氵) + PHÓNG (放): Dòng nước bắn ra mạnh mẽ gọi là KÍCH liệt.", ta: "Hà ghê si (Hageshii) mãnh liệt quá chừng." },
-        { k: "勇ましい", h: "いさましい", m: "dũng cảm", ti: "Bộ DŨNG (勇): Hình ảnh nam nhi dùng sức lực làm việc nghĩa gọi là DŨNG.", ta: "Y xa mà si (Isamashii) dũng cảm lên." },
-        { k: "怪しい", h: "あやしい", m: "đáng nghi", ti: "Bộ TÂM (忄) + THÁNH (圣): Tâm linh cảm nhận được điều QUÁI dị, đáng nghi.", ta: "A ya si (Ayashii) người này đáng nghi quá." },
-        { k: "恐ろしい", h: "おそろしい", m: "đáng sợ", ti: "Bộ TÂM (忄) + KHỦNG (恐): Trái tim cảm thấy sự khủng khiếp là KHỦNG bố.", ta: "Ô xô rô si (Osoroshii) chuyện đáng sợ." },
-        { k: "詳しい", h: "くわしい", m: "chi tiết, tường tận", ti: "Bộ NGÔN (言) + DƯƠNG (羊): Lời nói chi tiết như bóc tách con dê gọi là CHIẾT.", ta: "Cụ wa si (Kuwashii) kể chuyện tường tận." },
-        { k: "険しい", h: "けわしい", m: "hiểm trở", ti: "Bộ PHỤ (阝) + HIỂM (佥): Gò đất dựng đứng gây ra sự nguy HIỂM hiểm trở.", ta: "Kê wa si (Kewashii) con đường hiểm trở." },
-        { k: "等しい", h: "ひとしい", m: "bằng nhau", ti: "Bộ TRÚC (竹) + TỰ (寺): Thanh tre trong chùa được mài ĐẲNG (bằng nhau).", ta: "Hi tô si (Hitoshii) hai bên bằng nhau." },
-        { k: "虚しい", h: "むなしい", m: "trống rỗng", ti: "Bộ HỔ (虍) + KHÂU (丘): Con hổ đứng một mình giữa đồi hoang thấy HƯ vô.", ta: "Mụ nạ si (Munashii) trống rỗng tâm hồn." },
-        { k: "眩しい", h: "まぶしい", m: "chói chang", ti: "Bộ MỤC (目) + HUYỄN (玄): Ánh sáng huyền ảo chiếu vào mắt làm chói lòa.", ta: "Má bu si (Mabushii) nắng chói chang." },
-        { k: "だらしない", h: "だらしない", m: "luộm thuộm", ti: "Từ thuần Nhật: Diễn tả trạng thái không có kỷ luật, bừa bãi.", ta: "Đã ra si nại (Darashinai) sống luộm thuộm." },
-        { k: "申し訳ない", h: "もうしわけない", m: "thật xin lỗi", ti: "Bộ THÂN (申) + DỊCH (訳): Nói ra lý do mà vẫn thấy không thể tạ lỗi.", ta: "Môi si wa kệ nại (Moushiwakenai)." },
-        { k: "勿体ない", h: "もったいない", m: "lãng phí", ti: "Bộ VẬT (勿) + THỂ (体): Đồ vật không giữ đúng hình thể nên thật lãng phí.", ta: "Một tai nại (Mottainai) lãng phí quá." },
-        { k: "仕方がない", h: "しかたがない", m: "chịu thôi, bó tay", ti: "Bộ SĨ (仕) + PHƯƠNG (方): Không còn phương cách nào để thực hiện nữa.", ta: "Si ca ta ga nại (Shikataganai)." },
-        { k: "鋭い", h: "するどい", m: "sắc bén", ti: "Bộ KIM (金) + ĐOÀI (兑): Kim loại được mài nhọn hoắt là NHUỆ (sắc bén).", ta: "Sư rủ đôi (Surudoi) con mắt sắc bén." },
-        { k: "鈍い", h: "にぶい", m: "cùn, chậm chạp", ti: "Bộ KIM (金) + ĐÔN (屯): Kim loại bị đè nén nên trở nên ĐỘN (cùn).", ta: "Ni bu i (Nibui) phản ứng chậm chạp." },
-        { k: "騒がしい", h: "さわがしい", m: "ồn ào", ti: "Bộ MÃ (馬) + TAO: Ngựa chạy náo loạn gây nên sự TAO động ồn ào.", ta: "Sa wa gà si (Sawagashii) nơi này ồn quá." },
-        { k: "深い", h: "ふかい", m: "sâu", ti: "Bộ THỦY (氵) + THÂM (罙): Dòng nước chảy sâu trong hang tối là THÂM.", ta: "Phù ca i (Fukai) nước sâu thăm thẳm." },
-        { k: "痒い", h: "かゆい", m: "ngứa", ti: "Bộ NẠCH (疒 - bệnh) + DƯƠNG (羊): Căn bệnh gây ra sự ngứa ngáy (DƯƠNG).", ta: "Cà yu i (Kayui) thấy ngứa ngáy." },
-{ k: "好き", h: "すき", m: "thích", ti: "Bộ NỮ (女) + TỬ (子): Người phụ nữ yêu thương con mình là HẢO (thích).", ta: "Su Ki (Suki) thích ăn su kem." },
-        { k: "嫌い", h: "きらい", m: "ghét", ti: "Bộ NỮ (女) + KIÊM (兼): Phụ nữ kiêm quá nhiều việc nên nảy sinh HIỀM ghét.", ta: "Kì Lạ (Kirai) sao ai cũng ghét." },
-        { k: "上手", h: "じょうず", m: "giỏi", ti: "Bộ THƯỢNG (上) + THỦ (手): Tay đưa lên cao thể hiện sự giỏi giang.", ta: "Dô Dự (Jouzu) đi thi vì mình giỏi." },
-        { k: "下手", h: "へた", m: "kém", ti: "Bộ HẠ (下) + THỦ (手): Tay đặt phía dưới là kỹ năng yếu kém.", ta: "Hét Ta (Heta) vì làm quá kém." },
-        { k: "きれい", h: "きれい", m: "đẹp, sạch", ti: "Bộ KỲ (奇) + LỆ (麗): Sự kỳ lạ diễm lệ của con hươu tạo nên vẻ đẹp.", ta: "Kì Rê (Kirei) nhìn đẹp quá." },
-        { k: "賑やか", h: "にぎやか", m: "náo nhiệt", ti: "Bộ PHỤ (貝) + THẦN (辰): Có tiền vào ngày rồng thì chợ rất náo nhiệt.", ta: "Nghi Gì (Nigi) mà ồn ào náo nhiệt thế." },
-        { k: "静か", h: "しずか", m: "yên tĩnh", ti: "Bộ THANH (青) + TRANH (争): Sau khi tranh đấu xong là sự TĨNH lặng.", ta: "Si Dư Cả (Shizuka) không gian yên tĩnh." },
-        { k: "便利", h: "べんり", m: "tiện lợi", ti: "Bộ NHÂN (亻) + TIỆN (更) + LỢI (利): Người dùng dao gặt lúa rất TIỆN LỢI.", ta: "Bền Bỉ (Benri) và tiện lợi." },
-        { k: "不便", h: "ふべん", m: "bất tiện", ti: "Bộ BẤT (不) + TIỆN (便): Không có sự tiện lợi chính là bất tiện.", ta: "Phù Bền (Fuben) dùng thật bất tiện." },
-        { k: "暇", h: "ひま", m: "rảnh rỗi", ti: "Bộ NHẬT (日) + HẠ (叺): Mượn thời gian trong ngày để nghỉ ngơi rảnh rỗi.", ta: "Hi Ma (Hima) rảnh đi chơi với ma." },
-        { k: "親切", h: "しんせつ", m: "tốt bụng", ti: "Bộ THÂN (親) + THIẾT (切): Thân thiết đến mức sẵn lòng chia cắt vì nhau.", ta: "Xin Sếp (Shinsetsu) cho người tốt bụng." },
-        { k: "有名", h: "ゆうめい", m: "nổi tiếng", ti: "Bộ HỮU (有) + DANH (名): Có cái danh tiếng được muôn nơi biết đến.", ta: "Yu Mê (Yuumei) theo người nổi tiếng." },
-        { k: "大切", h: "たいせつ", m: "quan trọng", ti: "Bộ ĐẠI (大) + THIẾT (切): Việc cắt một miếng lớn thể hiện sự ĐẠI THIẾT.", ta: "Tai Sét (Taisetsu) đánh vào vật quan trọng." },
-        { k: "大丈夫", h: "だいじょうぶ", m: "ổn, không sao", ti: "ĐẠI TRƯỢNG PHU (丈夫): Người quân tử luôn giữ được trạng thái ổn.", ta: "Đai Dô Bự (Daijoubu) mọi việc đều ổn." },
-
-        // N3 Trọng tâm
-        { k: "穏やか", h: "おだやか", m: "ôn hòa, điềm tĩnh", ti: "Bộ HÒA (禾) + ẨN (隠): Cây lúa ẩn mình trong gió nhẹ là ỔN định.", ta: "Ô đã ya ca (Odayaka) người ôn hòa." },
-        { k: "爽やか", h: "さわやか", m: "sảng khoái", ti: "Bộ HÀO (爻) + ĐẠI (大): Người dang tay đón những nét gió đan xen sảng khoái.", ta: "Sa wa ya ca (Sawayaka) trời sảng khoái." },
-        { k: "複雑", h: "ふくざつ", m: "phức tạp", ti: "Bộ PHỨC (複) + TẠP (雑): Áo nhiều lớp kết hợp pha trộn nhiều thành phần.", ta: "Phù cư da tự (Fukuzatsu) thật phức tạp." },
-        { k: "貴重", h: "きちょう", m: "quý giá", ti: "Bộ QUÝ (貝) + TRỌNG (重): Tiền bạc mang sức nặng là vật QUÝ TRỌNG.", ta: "Kì chô (Kichou) món đồ quý giá." },
-        { k: "邪魔", h: "じゃま", m: "cản trở, phiền hà", ti: "Bộ TÀ (邪) + MA (魔): Sự tà ác của con ma đi cản trở người khác.", ta: "Dà mà (Jama) thôi cản trở đi." },
-        { k: "快適", h: "かいてき", m: "thoải mái", ti: "Bộ KHOÁI (快) + THÍCH (適): Tâm hồn vui vẻ gặp được điều vừa ý.", ta: "Cải tê kì (Kaiteki) sống thoải mái." },
-        { k: "幸福", h: "こうふく", m: "hạnh phúc", ti: "Bộ HẠNH (幸) + PHÚC (福): Gặp may mắn và những điều tốt lành (PHÚC).", ta: "Cô phù cư (Koufuku) đời hạnh phúc." },
-        { k: "深刻", h: "しんこく", m: "nghiêm trọng", ti: "Bộ THÂM (深) + KHẮC (刻): Vết khắc sâu vào sự việc là điều nghiêm trọng.", ta: "Sin cô cư (Shinkoku) vấn đề nghiêm trọng." },
-        { k: "豊富", h: "ほうふ", m: "phong phú", ti: "Bộ PHONG (豊) + PHÚ (富): Sự dồi dào và giàu có về mọi mặt.", ta: "Hô phù (Houfu) tài liệu phong phú." },
-        { k: "適当", h: "てきとう", m: "qua loa, phù hợp", ti: "Bộ THÍCH (適) + ĐƯƠNG (当): Làm cho vừa đúng lúc rồi bỏ mặc qua loa.", ta: "Tê ki tô (Tekitou) làm việc qua loa." },
-        { k: "独特", h: "どくとく", m: "độc đáo", ti: "Bộ ĐỘC (独) + ĐẶC (特): Chỉ có duy nhất một đặc điểm riêng biệt độc đáo.", ta: "Độc tô cư (Dokutoku) phong cách độc đáo." },
-        { k: "残念", h: "ざんねん", m: "đáng tiếc", ti: "Bộ TÀN (残) + NIỆM (念): Suy nghĩ về những gì còn sót lại mà chưa làm được.", ta: "Dan nèn (Zannen) thật là đáng tiếc." },
-        { k: "気軽", h: "きがる", m: "thoải mái, đừng ngại", ti: "Bộ KHÍ (気) + KHINH (軽): Luồng hơi trong người thấy nhẹ nhàng không vướng bận.", ta: "Kì ga rư (Kigaru) cứ thoải mái nhé." },
-        { k: "盛ん", h: "さかん", m: "thịnh hành", ti: "Bộ THÀNH (成) + MÃNH (皿): Thành quả đầy ắp trên đĩa là THỊNH hành.", ta: "Sa can (Sakan) trào lưu thịnh hành." },
-        { k: "見事", h: "みごと", m: "tuyệt vời, đẹp mắt", ti: "Bộ KIẾN (見) + SỰ (事): Một sự việc đáng để nhìn ngắm và ngưỡng mộ.", ta: "Mi gô tô (Migoto) cảnh sắc tuyệt vời." },
-        { k: "意地悪", h: "いじわる", m: "xấu tính", ti: "Bộ Ý (意) + ĐỊA (地) + ÁC: Tâm địa chất chứa những ý định xấu xa.", ta: "Y di wa rư (Ijiwaru) đứa trẻ xấu tính." },
-        { k: "上品", h: "じょうひん", m: "quý phái", ti: "Bộ THƯỢNG (上) + PHẨM (品): Đồ vật hoặc phong thái ở đẳng cấp cao.", ta: "Dô hin (Jouhin) dáng vẻ quý phái." },
-        { k: "下品", h: "げひん", m: "thô tục", ti: "Bộ HẠ (下) + PHẨM (品): Đồ vật hoặc phong thái ở đẳng cấp thấp hèn.", ta: "Gê hin (Gehin) lời lẽ thô tục." },
-        { k: "不思議", h: "ふしぎ", m: "kỳ lạ", ti: "Bộ BẤT (不) + TƯ (思) + NGHỊ (議): Không thể dùng tư duy bình thường để bàn luận.", ta: "Phù si ghi (Fushigi) hiện tượng kỳ lạ." },
-        { k: "不安", h: "ふあん", m: "lo lắng", ti: "Bộ BẤT (不) + AN (安): Không tìm thấy sự an tâm, bình an trong lòng.", ta: "Phù an (Fuan) thấy lo lắng quá." },
-        { k: "夢中", h: "むちゅう", m: "say mê", ti: "Bộ MỘNG (夢) + TRUNG (中): Đang chìm đắm ở trong cơn mơ say đắm.", ta: "Mụ chù (Muchuu) say mê đọc sách." },
-        { k: "得意", h: "とくい", m: "giỏi, sở trường", ti: "Bộ ĐẮC (得) + Ý (意): Đạt được ý nguyện và sự tự tin trong lĩnh vực đó.", ta: "Tô cư i (Tokui) sở trường của tôi." },
-        { k: "苦手", h: "にがて", m: "kém, sở đoản", ti: "Bộ KHỔ (苦) + THỦ (手): Cái tay làm việc thấy đắng cay khổ sở vì kém cỏi.", ta: "Ni ga tê (Nigate) môn toán là sở đoản." },
-        { k: "退屈", h: "たいくつ", m: "chán ngắt", ti: "Bộ THOÁI (退) + KHUẤT (屈): Muốn lùi bước và co rúm người lại vì chán nản.", ta: "Tai cư tự (Taikutsu) công việc chán ngắt." },
-        { k: "丁寧", h: "ていねい", m: "lịch sự", ti: "Bộ ĐINH (丁) + NINH (寧): Cẩn thận và yên ổn trong từng hành động nhỏ nhất.", ta: "Tê nê i (Teinei) cách nói lịch sự." }
-
+        // Note: Added missing 't' (type) property dynamically in init
+        const rawAdjectives = [
+            { k: "大きい", h: "おおきい", m: "to, lớn", ti: "Bộ ĐẠI (大): Hình ảnh một người dang rộng tay chân hết cỡ là to lớn.", ta: "Ô! Kìa (Ookii) vật gì to thế." },
+            { k: "小さい", h: "ちいさい", m: "nhỏ, bé", ti: "Bộ TIỂU (小): Một vật nhỏ bé bị chia cắt ra làm các phần nhỏ.", ta: "Chi (Chii) tiền sai nên chỉ mua được đồ nhỏ." },
+            { k: "高い", h: "たかい", m: "cao, đắt", ti: "Bộ CAO (高): Hình ảnh tòa tháp nhiều tầng cao vút trên cổng thành.", ta: "Ta cãi (Takai) vì giá này quá đắt." },
+            { k: "低い", h: "ひくい", m: "thấp", ti: "Bộ NHÂN (亻) + ĐÊ (氐): Người cúi mình xuống gốc cây nên gọi là ĐÊ (thấp).", ta: "Hi hóp má cúi (Hikui) mình xuống thấp." },
+            { k: "長い", h: "ながい", m: "dài", ti: "Bộ TRƯỜNG (長): Hình ảnh ông lão có mái tóc và râu dài theo thời gian.", ta: "Na (Naga) đi trên con đường rất dài." },
+            { k: "短い", h: "みじかい", m: "ngắn", ti: "Bộ THỈ (矢 - mũi tên) + ĐẬU (豆): Mũi tên ngắn ngủn chỉ bằng hạt đậu là ĐOẢN.", ta: "Mì gì cai (Mijikai) thế, ngắn tũn à." },
+            { k: "太い", h: "ふとい", m: "béo, dày", ti: "Bộ ĐẠI (大) + dấu chấm: Một người to lớn quá mức đến phát phì là THÁI.", ta: "Phù (Futoi) mỏ vì béo quá mức." },
+            { k: "細い", h: "ほそい", m: "gầy, mỏng", ti: "Bộ MỊCH (糸 - sợi tơ) + ĐIỀN (田): Sợi tơ nhỏ bé dệt trên ruộng lúa rất TẾ.", ta: "Hồ Sơ (Hosoi) mỏng dính như tờ giấy." },
+            { k: "広い", h: "ひろい", m: "rộng", ti: "Bộ NGHIÊM (广 - mái nhà) + KHỨ (ム): Mái nhà che cho cái tôi một không gian QUẢNG.", ta: "Hi Rồ (Hiroi) đi dạo trên đường rộng." },
+            { k: "狭い", h: "せまい", m: "hẹp", ti: "Bộ KHUYỂN (犭) + HIỆP (夹): Con chó bị kẹp giữa hai khe tường chật hẹp là HIỆP.", ta: "Xe Mãi (Semai) mới lách qua được ngõ hẹp." },
+            { k: "暑い", h: "あつい", m: "nóng (thời tiết)", ti: "Bộ NHẬT (日) + GIẢ (者): Mặt trời chiếu trực tiếp vào người là THỬ (nóng).", ta: "A! Tui (Atsui) nóng chảy mồ hôi." },
+            { k: "寒い", h: "さむい", m: "lạnh (thời tiết)", ti: "Bộ MIÊN (宀) + THẢO (艹) + BĂNG (冫): Ở nhà đắp rơm vẫn thấy băng giá vì HÀN.", ta: "Sa Mù (Samui) là khi trời lạnh giá." },
+            { k: "熱い", h: "あつい", m: "nóng (vật/cảm xúc)", ti: "Bộ NHIỆT (熱): Trồng cây (埶) trên ngọn lửa (灬) bùng cháy.", ta: "A! Tui (Atsui) chạm vào vật nóng bị bỏng." },
+            { k: "冷たい", h: "つめたい", m: "lạnh (vật/thái độ)", ti: "Bộ BĂNG (冫) + LỆNH (令): Ra lệnh đóng băng là thái độ LÃNH khốc.", ta: "Tự Mê Tại (Tsumetai) món kem lạnh." },
+            { k: "暖かい", h: "あたたかい", m: "ấm (thời tiết)", ti: "Bộ NHẬT (日) + NOÃN (爰): Tia nắng mặt trời mang đến sự ấm áp (NOÃN).", ta: "A ta ta (Atata) thấy nắng ấm rồi." },
+            { k: "涼しい", h: "すずしい", m: "mát mẻ", ti: "Bộ THỦY (氵) + KINH (京): Dòng nước mát chảy qua kinh đô phồn hoa là LƯƠNG.", ta: "Su su (Suzu) ăn vào thấy mát lòng." },
+            { k: "良い", h: "いい", m: "tốt", ti: "Bộ LƯƠNG (良): Hình ảnh người con gái ăn ở hiền lành, lương thiện.", ta: "I (Ii) như vậy là tốt nhất rồi." },
+            { k: "悪い", h: "わるい", m: "xấu", ti: "Bộ ÁC (亜) + TÂM (心): Trái tim chất chứa những điều độc ác là ÁC (xấu).", ta: "Wa! Rùi (Warui) xong, gặp chuyện xấu rồi." },
+            { k: "新しい", h: "あたらしい", m: "mới", ti: "Bộ LẬP (立) + MỘC (木) + CÂN (斤): Đứng trên cây cầm rìu làm đồ TÂN (mới).", ta: "A ta ra (Atara) mua bộ đồ mới." },
+            { k: "古い", h: "ふるい", m: "cũ", ti: "Bộ THẬP (十) + KHẨU (口): Mười cái miệng cùng kể lại chuyện xưa cũ là CỔ.", ta: "Phù Rùi (Furui) bụi bặm vì đồ quá cũ." },
+            { k: "強い", h: "つよい", m: "mạnh", ti: "Bộ CUNG (弓) + TRÙNG (虫): Sức mạnh của loài trùng kéo căng dây cung là CƯỜNG.", ta: "Tự Do (Tsuyo) giúp ta mạnh mẽ hơn." },
+            { k: "弱い", h: "よわい", m: "yếu", ti: "Bộ CUNG (弓) + SAM (彡): Cánh cung bị gãy lông yếu ớt gọi là NHƯỢC.", ta: "Gió Wai (Yowai) thổi bay người yếu đuối." },
+            { k: "難しい", h: "むずかしい", m: "khó", ti: "Bộ TRUY (隹 - chim) + CẬN (堇 - đất sét): Con chim bị dính vào đất sét gặp NAN.", ta: "Mù Dư Cả (Muzuka) đống bài tập khó." },
+            { k: "易しい", h: "やさしい", m: "dễ", ti: "Bộ NHẬT (日) + VẬT (勿): Mặt trời chiếu sáng xuyên thấu vạn vật là DỊ (dễ).", ta: "Ya! Xa (Yasa) thế mà đi lại dễ dàng." },
+            { k: "甘い", h: "あまい", m: "ngọt", ti: "Bộ CAM (甘): Ngậm một miếng đồ ăn trong miệng để cảm nhận vị CAM (ngọt).", ta: "A! Mai (Amai) được ăn kẹo ngọt." },
+            { k: "辛い", h: "からい", m: "cay", ti: "Bộ LẬP (立) + THẬP (十): Đứng mười lần chịu đựng đau đớn là TÂN (cay đắng).", ta: "Cà Ra (Kara) ăn vào thấy cay xè." },
+            { k: "忙しい", h: "いそがしい", m: "bận rộn", ti: "Bộ TÂM (忄) + VONG (亡): Tim chết lặng vì bận rộn quá mức là MANG.", ta: "I Sô Gà (Isoga) bận rộn cả ngày." },
+            { k: "苦しい", h: "くるしい", m: "đau khổ, khó thở", ti: "Bộ THẢO (艹) + CỔ (古): Ăn phải cỏ cũ héo đắng ngắt nên thấy rất KHỔ.", ta: "Cứ rủ si (Kurushii) làm chi cho khổ." },
+            { k: "悔しい", h: "くやしい", m: "tiếc nuối, cay cú", ti: "Bộ TÂM (忄) + MỖI (毎): Mỗi lần làm sai trái tim lại thấy HỐI tiếc, cay cú.", ta: "Cứ dã si (Kuyashii) vì cay cú quá." },
+            { k: "懐かしい", h: "なつかしい", m: "nhớ nhung", ti: "Bộ TÂM (忄) + HOÀI (褱): Trái tim luôn ôm ấp kỷ niệm cũ gọi là HOÀI niệm.", ta: "Nạ tự ca si (Natsukashii) nhớ quê xưa." },
+            { k: "羨ましい", h: "うらやましい", m: "ghen tị", ti: "Bộ DƯƠNG (羊 - dê) + KHIẾM (欠): Thấy dê người khác mà mình thiếu nên ghen tị.", ta: "U ra da mả si (Urayamashii) ghen tị." },
+            { k: "恥ずかしい", h: "はずかしい", m: "xấu hổ", ti: "Bộ NHĨ (耳) + TÂM (心): Tai nghe lời xấu làm tim đập loạn xạ là SỈ (xấu hổ).", ta: "Hà dự ca si (Hazukashii) thấy xấu hổ." },
+            { k: "正しい", h: "ただしい", m: "đúng đắn", ti: "Bộ NHẤT (一) + CHỈ (止): Dừng lại đúng vạch số 1 là hành động CHÍNH xác.", ta: "Ta đã si (Tadashii) vào điều đúng." },
+            { k: "珍しい", h: "めずらしい", m: "hiếm, lạ", ti: "Bộ VƯƠNG (王) + TRÂN (㐱): Vật vua quý trọng là đồ TRÂN quý, cực kỳ hiếm.", ta: "Mê dự ra si (Mezurashii) món đồ hiếm." },
+            { k: "激しい", h: "はげしい", m: "mãnh liệt", ti: "Bộ THỦY (氵) + PHÓNG (放): Dòng nước bắn ra mạnh mẽ gọi là KÍCH liệt.", ta: "Hà ghê si (Hageshii) mãnh liệt quá chừng." },
+            { k: "勇ましい", h: "いさましい", m: "dũng cảm", ti: "Bộ DŨNG (勇): Hình ảnh nam nhi dùng sức lực làm việc nghĩa gọi là DŨNG.", ta: "Y xa mà si (Isamashii) dũng cảm lên." },
+            { k: "怪しい", h: "あやしい", m: "đáng nghi", ti: "Bộ TÂM (忄) + THÁNH (圣): Tâm linh cảm nhận được điều QUÁI dị, đáng nghi.", ta: "A ya si (Ayashii) người này đáng nghi quá." },
+            { k: "恐ろしい", h: "おそろしい", m: "đáng sợ", ti: "Bộ TÂM (忄) + KHỦNG (恐): Trái tim cảm thấy sự khủng khiếp là KHỦNG bố.", ta: "Ô xô rô si (Osoroshii) chuyện đáng sợ." },
+            { k: "詳しい", h: "くわしい", m: "chi tiết, tường tận", ti: "Bộ NGÔN (言) + DƯƠNG (羊): Lời nói chi tiết như bóc tách con dê gọi là CHIẾT.", ta: "Cụ wa si (Kuwashii) kể chuyện tường tận." },
+            { k: "険しい", h: "けわしい", m: "hiểm trở", ti: "Bộ PHỤ (阝) + HIỂM (佥): Gò đất dựng đứng gây ra sự nguy HIỂM hiểm trở.", ta: "Kê wa si (Kewashii) con đường hiểm trở." },
+            { k: "等しい", h: "ひとしい", m: "bằng nhau", ti: "Bộ TRÚC (竹) + TỰ (寺): Thanh tre trong chùa được mài ĐẲNG (bằng nhau).", ta: "Hi tô si (Hitoshii) hai bên bằng nhau." },
+            { k: "虚しい", h: "むなしい", m: "trống rỗng", ti: "Bộ HỔ (虍) + KHÂU (丘): Con hổ đứng một mình giữa đồi hoang thấy HƯ vô.", ta: "Mụ nạ si (Munashii) trống rỗng tâm hồn." },
+            { k: "眩しい", h: "まぶしい", m: "chói chang", ti: "Bộ MỤC (目) + HUYỄN (玄): Ánh sáng huyền ảo chiếu vào mắt làm chói lòa.", ta: "Má bu si (Mabushii) nắng chói chang." },
+            { k: "だらしない", h: "だらしない", m: "luộm thuộm", ti: "Từ thuần Nhật: Diễn tả trạng thái không có kỷ luật, bừa bãi.", ta: "Đã ra si nại (Darashinai) sống luộm thuộm." },
+            { k: "申し訳ない", h: "もうしわけない", m: "thật xin lỗi", ti: "Bộ THÂN (申) + DỊCH (訳): Nói ra lý do mà vẫn thấy không thể tạ lỗi.", ta: "Môi si wa kệ nại (Moushiwakenai)." },
+            { k: "勿体ない", h: "もったいない", m: "lãng phí", ti: "Bộ VẬT (勿) + THỂ (体): Đồ vật không giữ đúng hình thể nên thật lãng phí.", ta: "Một tai nại (Mottainai) lãng phí quá." },
+            { k: "仕方がない", h: "しかたがない", m: "chịu thôi, bó tay", ti: "Bộ SĨ (仕) + PHƯƠNG (方): Không còn phương cách nào để thực hiện nữa.", ta: "Si ca ta ga nại (Shikataganai)." },
+            { k: "鋭い", h: "するどい", m: "sắc bén", ti: "Bộ KIM (金) + ĐOÀI (兑): Kim loại được mài nhọn hoắt là NHUỆ (sắc bén).", ta: "Sư rủ đôi (Surudoi) con mắt sắc bén." },
+            { k: "鈍い", h: "にぶい", m: "cùn, chậm chạp", ti: "Bộ KIM (金) + ĐÔN (屯): Kim loại bị đè nén nên trở nên ĐỘN (cùn).", ta: "Ni bu i (Nibui) phản ứng chậm chạp." },
+            { k: "騒がしい", h: "さわがしい", m: "ồn ào", ti: "Bộ MÃ (馬) + TAO: Ngựa chạy náo loạn gây nên sự TAO động ồn ào.", ta: "Sa wa gà si (Sawagashii) nơi này ồn quá." },
+            { k: "深い", h: "ふかい", m: "sâu", ti: "Bộ THỦY (氵) + THÂM (罙): Dòng nước chảy sâu trong hang tối là THÂM.", ta: "Phù ca i (Fukai) nước sâu thăm thẳm." },
+            { k: "痒い", h: "かゆい", m: "ngứa", ti: "Bộ NẠCH (疒 - bệnh) + DƯƠNG (羊): Căn bệnh gây ra sự ngứa ngáy (DƯƠNG).", ta: "Cà yu i (Kayui) thấy ngứa ngáy." },
+            { k: "好き", h: "すき", m: "thích", ti: "Bộ NỮ (女) + TỬ (子): Người phụ nữ yêu thương con mình là HẢO (thích).", ta: "Su Ki (Suki) thích ăn su kem." },
+            { k: "嫌い", h: "きらい", m: "ghét", ti: "Bộ NỮ (女) + KIÊM (兼): Phụ nữ kiêm quá nhiều việc nên nảy sinh HIỀM ghét.", ta: "Kì Lạ (Kirai) sao ai cũng ghét." },
+            { k: "上手", h: "じょうず", m: "giỏi", ti: "Bộ THƯỢNG (上) + THỦ (手): Tay đưa lên cao thể hiện sự giỏi giang.", ta: "Dô Dự (Jouzu) đi thi vì mình giỏi." },
+            { k: "下手", h: "へた", m: "kém", ti: "Bộ HẠ (下) + THỦ (手): Tay đặt phía dưới là kỹ năng yếu kém.", ta: "Hét Ta (Heta) vì làm quá kém." },
+            { k: "きれい", h: "きれい", m: "đẹp, sạch", ti: "Bộ KỲ (奇) + LỆ (麗): Sự kỳ lạ diễm lệ của con hươu tạo nên vẻ đẹp.", ta: "Kì Rê (Kirei) nhìn đẹp quá." },
+            { k: "賑やか", h: "にぎやか", m: "náo nhiệt", ti: "Bộ PHỤ (貝) + THẦN (辰): Có tiền vào ngày rồng thì chợ rất náo nhiệt.", ta: "Nghi Gì (Nigi) mà ồn ào náo nhiệt thế." },
+            { k: "静か", h: "しずか", m: "yên tĩnh", ti: "Bộ THANH (青) + TRANH (争): Sau khi tranh đấu xong là sự TĨNH lặng.", ta: "Si Dư Cả (Shizuka) không gian yên tĩnh." },
+            { k: "便利", h: "べんり", m: "tiện lợi", ti: "Bộ NHÂN (亻) + TIỆN (更) + LỢI (利): Người dùng dao gặt lúa rất TIỆN LỢI.", ta: "Bền Bỉ (Benri) và tiện lợi." },
+            { k: "不便", h: "ふべん", m: "bất tiện", ti: "Bộ BẤT (不) + TIỆN (便): Không có sự tiện lợi chính là bất tiện.", ta: "Phù Bền (Fuben) dùng thật bất tiện." },
+            { k: "暇", h: "ひま", m: "rảnh rỗi", ti: "Bộ NHẬT (日) + HẠ (叺): Mượn thời gian trong ngày để nghỉ ngơi rảnh rỗi.", ta: "Hi Ma (Hima) rảnh đi chơi với ma." },
+            { k: "親切", h: "しんせつ", m: "tốt bụng", ti: "Bộ THÂN (親) + THIẾT (切): Thân thiết đến mức sẵn lòng chia cắt vì nhau.", ta: "Xin Sếp (Shinsetsu) cho người tốt bụng." },
+            { k: "有名", h: "ゆうめい", m: "nổi tiếng", ti: "Bộ HỮU (有) + DANH (名): Có cái danh tiếng được muôn nơi biết đến.", ta: "Yu Mê (Yuumei) theo người nổi tiếng." },
+            { k: "大切", h: "たいせつ", m: "quan trọng", ti: "Bộ ĐẠI (大) + THIẾT (切): Việc cắt một miếng lớn thể hiện sự ĐẠI THIẾT.", ta: "Tai Sét (Taisetsu) đánh vào vật quan trọng." },
+            { k: "大丈夫", h: "だいじょうぶ", m: "ổn, không sao", ti: "ĐẠI TRƯỢNG PHU (丈夫): Người quân tử luôn giữ được trạng thái ổn.", ta: "Đai Dô Bự (Daijoubu) mọi việc đều ổn." },
+            { k: "穏やか", h: "おだやか", m: "ôn hòa, điềm tĩnh", ti: "Bộ HÒA (禾) + ẨN (隠): Cây lúa ẩn mình trong gió nhẹ là ỔN định.", ta: "Ô đã ya ca (Odayaka) người ôn hòa." },
+            { k: "爽やか", h: "さわやか", m: "sảng khoái", ti: "Bộ HÀO (爻) + ĐẠI (大): Người dang tay đón những nét gió đan xen sảng khoái.", ta: "Sa wa ya ca (Sawayaka) trời sảng khoái." },
+            { k: "複雑", h: "ふくざつ", m: "phức tạp", ti: "Bộ PHỨC (複) + TẠP (雑): Áo nhiều lớp kết hợp pha trộn nhiều thành phần.", ta: "Phù cư da tự (Fukuzatsu) thật phức tạp." },
+            { k: "貴重", h: "きちょう", m: "quý giá", ti: "Bộ QUÝ (貝) + TRỌNG (重): Tiền bạc mang sức nặng là vật QUÝ TRỌNG.", ta: "Kì chô (Kichou) món đồ quý giá." },
+            { k: "邪魔", h: "じゃま", m: "cản trở, phiền hà", ti: "Bộ TÀ (邪) + MA (魔): Sự tà ác của con ma đi cản trở người khác.", ta: "Dà mà (Jama) thôi cản trở đi." },
+            { k: "快適", h: "かいてき", m: "thoải mái", ti: "Bộ KHOÁI (快) + THÍCH (適): Tâm hồn vui vẻ gặp được điều vừa ý.", ta: "Cải tê kì (Kaiteki) sống thoải mái." },
+            { k: "幸福", h: "こうふく", m: "hạnh phúc", ti: "Bộ HẠNH (幸) + PHÚC (福): Gặp may mắn và những điều tốt lành (PHÚC).", ta: "Cô phù cư (Koufuku) đời hạnh phúc." },
+            { k: "深刻", h: "しんこく", m: "nghiêm trọng", ti: "Bộ THÂM (深) + KHẮC (刻): Vết khắc sâu vào sự việc là điều nghiêm trọng.", ta: "Sin cô cư (Shinkoku) vấn đề nghiêm trọng." },
+            { k: "豊富", h: "ほうふ", m: "phong phú", ti: "Bộ PHONG (豊) + PHÚ (富): Sự dồi dào và giàu có về mọi mặt.", ta: "Hô phù (Houfu) tài liệu phong phú." },
+            { k: "適当", h: "てきとう", m: "qua loa, phù hợp", ti: "Bộ THÍCH (適) + ĐƯƠNG (当): Làm cho vừa đúng lúc rồi bỏ mặc qua loa.", ta: "Tê ki tô (Tekitou) làm việc qua loa." },
+            { k: "独特", h: "どくとく", m: "độc đáo", ti: "Bộ ĐỘC (独) + ĐẶC (特): Chỉ có duy nhất một đặc điểm riêng biệt độc đáo.", ta: "Độc tô cư (Dokutoku) phong cách độc đáo." },
+            { k: "残念", h: "ざんねん", m: "đáng tiếc", ti: "Bộ TÀN (残) + NIỆM (念): Suy nghĩ về những gì còn sót lại mà chưa làm được.", ta: "Dan nèn (Zannen) thật là đáng tiếc." },
+            { k: "気軽", h: "きがる", m: "thoải mái, đừng ngại", ti: "Bộ KHÍ (気) + KHINH (軽): Luồng hơi trong người thấy nhẹ nhàng không vướng bận.", ta: "Kì ga rư (Kigaru) cứ thoải mái nhé." },
+            { k: "盛ん", h: "さかん", m: "thịnh hành", ti: "Bộ THÀNH (成) + MÃNH (皿): Thành quả đầy ắp trên đĩa là THỊNH hành.", ta: "Sa can (Sakan) trào lưu thịnh hành." },
+            { k: "見事", h: "みごと", m: "tuyệt vời, đẹp mắt", ti: "Bộ KIẾN (見) + SỰ (事): Một sự việc đáng để nhìn ngắm và ngưỡng mộ.", ta: "Mi gô tô (Migoto) cảnh sắc tuyệt vời." },
+            { k: "意地悪", h: "いじわる", m: "xấu tính", ti: "Bộ Ý (意) + ĐỊA (地) + ÁC: Tâm địa chất chứa những ý định xấu xa.", ta: "Y di wa rư (Ijiwaru) đứa trẻ xấu tính." },
+            { k: "上品", h: "じょうひん", m: "quý phái", ti: "Bộ THƯỢNG (上) + PHẨM (品): Đồ vật hoặc phong thái ở đẳng cấp cao.", ta: "Dô hin (Jouhin) dáng vẻ quý phái." },
+            { k: "下品", h: "げひん", m: "thô tục", ti: "Bộ HẠ (下) + PHẨM (品): Đồ vật hoặc phong thái ở đẳng cấp thấp hèn.", ta: "Gê hin (Gehin) lời lẽ thô tục." },
+            { k: "不思議", h: "ふしぎ", m: "kỳ lạ", ti: "Bộ BẤT (不) + TƯ (思) + NGHỊ (議): Không thể dùng tư duy bình thường để bàn luận.", ta: "Phù si ghi (Fushigi) hiện tượng kỳ lạ." },
+            { k: "不安", h: "ふあん", m: "lo lắng", ti: "Bộ BẤT (不) + AN (安): Không tìm thấy sự an tâm, bình an trong lòng.", ta: "Phù an (Fuan) thấy lo lắng quá." },
+            { k: "夢中", h: "むちゅう", m: "say mê", ti: "Bộ MỘNG (夢) + TRUNG (中): Đang chìm đắm ở trong cơn mơ say đắm.", ta: "Mụ chù (Muchuu) say mê đọc sách." },
+            { k: "得意", h: "とくい", m: "giỏi, sở trường", ti: "Bộ ĐẮC (得) + Ý (意): Đạt được ý nguyện và sự tự tin trong lĩnh vực đó.", ta: "Tô cư i (Tokui) sở trường của tôi." },
+            { k: "苦手", h: "にがて", m: "kém, sở đoản", ti: "Bộ KHỔ (苦) + THỦ (手): Cái tay làm việc thấy đắng cay khổ sở vì kém cỏi.", ta: "Ni ga tê (Nigate) môn toán là sở đoản." },
+            { k: "退屈", h: "たいくつ", m: "chán ngắt", ti: "Bộ THOÁI (退) + KHUẤT (屈): Muốn lùi bước và co rúm người lại vì chán nản.", ta: "Tai cư tự (Taikutsu) công việc chán ngắt." },
+            { k: "丁寧", h: "ていねい", m: "lịch sự", ti: "Bộ ĐINH (丁) + NINH (寧): Cẩn thận và yên ổn trong từng hành động nhỏ nhất.", ta: "Tê nê i (Teinei) cách nói lịch sự." }
         ];
 
-    
+        // Process data to add types (i-adj vs na-adj) automatically
+        const adjectives = rawAdjectives.map(w => {
+            let type = 'na';
+            const naExceptions = ['きれい', '嫌い', '有名', '丁寧', '得意', '不便', '楽'];
+            
+            if (w.h.endsWith('い') && !naExceptions.includes(w.k) && !naExceptions.includes(w.h)) {
+                type = (w.k === '良い' || w.h === 'いい') ? 'ii' : 'i';
+            }
+            return { ...w, t: type };
+        });
+
         const specificAdjExamples = {
             "大きい": { dict: { ex: "彼は大きな夢を持っている。", romaji: "Kare wa ookina yume o motte iru.", mean: "Anh ấy mang một giấc mơ lớn." }, polite: { ex: "この靴は少し大きいです。", romaji: "Kono kutsu wa sukoshi ookii desu.", mean: "Đôi giày này hơi rộng (to)." }, neg: { ex: "それほど大きくないです。", romaji: "Sorehodo ookikunai desu.", mean: "Nó không to đến mức đó đâu." }, past: { ex: "昔、この木はもっと大きかった。", romaji: "Mukashi, kono ki wa motto ookikatta.", mean: "Ngày xưa cái cây này to hơn nhiều." }, te: { ex: "音が大きくて、眠れない。", romaji: "Oto ga ookikute, nemurenai.", mean: "Tiếng ồn lớn quá không ngủ được." }, adv: { ex: "子供が大きく育った。", romaji: "Kodomo ga ookiku sodatta.", mean: "Đứa trẻ đã lớn khôn." }, noun: { ex: "大きいミスをした。", romaji: "Ookii misu o shita.", mean: "Tôi đã mắc một lỗi lớn." } },
             "高い": { dict: { ex: "富士山は日本で一番高い。", romaji: "Fuji-san wa Nihon de ichiban takai.", mean: "Núi Phú Sĩ cao nhất Nhật Bản." }, polite: { ex: "物価が高いですね。", romaji: "Bukka ga takai desu ne.", mean: "Vật giá đắt đỏ nhỉ." }, neg: { ex: "給料はそんなに高くない。", romaji: "Kyūryō wa sonnani takakunai.", mean: "Lương không cao đến thế." }, past: { ex: "先週の野菜は高かった。", romaji: "Senshū no yasai wa takakatta.", mean: "Rau tuần trước đắt lắm." }, te: { ex: "値段が高くて、買えません。", romaji: "Nedan ga takakute, kaemasen.", mean: "Giá đắt quá, tôi không thể mua." }, adv: { ex: "もっと高く飛びたい。", romaji: "Motto takaku tobitai.", mean: "Tôi muốn bay cao hơn nữa." }, noun: { ex: "高いビルが並んでいる。", romaji: "Takai biru ga narande iru.", mean: "Những tòa nhà cao tầng xếp hàng san sát." } },
-            // ... (Includes all examples from previous version) ...
             "忙しい": { dict: { ex: "猫の手も借りたいほど忙しい。", romaji: "Neko no te mo karitai hodo isogashii.", mean: "Bận tối mắt tối mũi." }, polite: { ex: "最近、仕事が忙しいです。", romaji: "Saikin, shigoto ga isogashii desu.", mean: "Dạo này công việc bận rộn." }, neg: { ex: "明日は忙しくないよ。", romaji: "Ashita wa isogashikunai yo.", mean: "Mai tôi không bận đâu." }, past: { ex: "先月は目が回るほど忙しかった。", romaji: "Sengetsu wa me ga mawaru hodo isogashikatta.", mean: "Tháng trước bận chóng cả mặt." }, te: { ex: "忙しくて、昼ごはんを食べる時間もない。", romaji: "Isogashikute, hirugohan o taberu jikan mo nai.", mean: "Bận quá đến mức không có thời gian ăn trưa." }, adv: { ex: "毎日忙しく働いている。", romaji: "Mainichi isogashiku hataraite iru.", mean: "Ngày nào cũng làm việc bận rộn." }, noun: { ex: "忙しい生活を送る。", romaji: "Isogashii seikatsu o okuru.", mean: "Sống một cuộc sống bận rộn." } }
         };
+
+        // --- GROUP CONFIGURATION (Was missing in original source) ---
+        const groupsConfig = [
+            { 
+                title: "N5/N4: Cơ Bản (Kích thước & Cảm giác)", 
+                color: "green", 
+                ids: ["大きい", "小さい", "高い", "低い", "長い", "短い", "太い", "細い", "広い", "狭い", "暑い", "寒い", "熱い", "冷たい", "暖かい", "涼しい"] 
+            },
+            { 
+                title: "N5/N4: Đánh giá & Trạng thái", 
+                color: "blue", 
+                ids: ["良い", "悪い", "新しい", "古い", "強い", "弱い", "難しい", "易しい", "甘い", "辛い", "忙しい", "好き", "嫌い", "上手", "下手", "きれい", "賑やか", "静か", "便利", "不便", "暇", "親切", "有名", "大切", "大丈夫"] 
+            },
+            { 
+                title: "N3: Cảm xúc & Tính cách", 
+                color: "purple", 
+                ids: ["苦しい", "悔しい", "懐かしい", "羨ましい", "恥ずかしい", "正しい", "珍しい", "激しい", "勇ましい", "怪しい", "恐ろしい", "詳しい", "険しい", "等しい", "虚しい", "眩しい", "だらしない", "申し訳ない", "勿体ない", "仕方がない"] 
+            },
+            { 
+                title: "N3: Trạng thái phức tạp", 
+                color: "teal", 
+                ids: ["鋭い", "鈍い", "騒がしい", "深い", "痒い", "穏やか", "爽やか", "複雑", "貴重", "邪魔", "快適", "幸福", "深刻", "豊富", "適当", "独特", "残念", "気軽", "盛ん", "見事", "意地悪", "上品", "下品", "不思議", "不安", "夢中", "得意", "苦手", "退屈", "丁寧"] 
+            }
+        ];
 
         // --- CONJUGATION ENGINE ---
         function conjugate(word) {
@@ -349,11 +391,22 @@
             
             if (type === "i" || type === "ii") {
                 let stem = h.slice(0, -1);
-                if (type === "ii") stem = "よ";
-                f.polite = h + "です"; f.neg = stem + "くないです"; f.past = stem + "かったです"; f.te = stem + "くて"; f.adv = stem + "く"; f.noun = h + " + N";
+                if (type === "ii") stem = "よ"; // Handle 'ii' (yoi)
+                
+                f.polite = h + "です"; 
+                f.neg = stem + "くないです"; 
+                f.past = stem + "かったです"; 
+                f.te = stem + "くて"; 
+                f.adv = stem + "く"; 
+                f.noun = h + " + N";
                 if (type === "ii") f.dict = "いい (よい)";
             } else if (type === "na") {
-                f.polite = h + "です"; f.neg = h + "じゃないです"; f.past = h + "でした"; f.te = h + "で"; f.adv = h + "に"; f.noun = h + "な + N";
+                f.polite = h + "です"; 
+                f.neg = h + "じゃないです"; 
+                f.past = h + "でした"; 
+                f.te = h + "で"; 
+                f.adv = h + "に"; 
+                f.noun = h + "な + N";
             }
             return f;
         }
@@ -396,7 +449,7 @@
             groupsConfig.forEach(group => {
                 const groupDiv = document.createElement("div");
                 groupDiv.className = "bg-white rounded-lg shadow-md overflow-hidden mb-8";
-                groupDiv.innerHTML = `<div class="${colorMap[group.color]} px-6 py-4 border-l-8 font-bold text-xl flex justify-between items-center"><span>${group.title}</span></div>`;
+                groupDiv.innerHTML = `<div class="${colorMap[group.color] || colorMap.green} px-6 py-4 border-l-8 font-bold text-xl flex justify-between items-center"><span>${group.title}</span></div>`;
                 const grid = document.createElement("div");
                 grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6";
                 group.ids.forEach(kanji => {
@@ -416,7 +469,7 @@
                             </div>
                             <div class="flex space-x-2">
                                 <button onclick="openModal('${wordStr}')" class="bg-gray-100 hover:bg-green-100 text-green-600 p-2 rounded-full w-10 h-10 flex items-center justify-center shadow-sm transition"><i class="fas fa-list-ul"></i></button>
-                                <button onclick="speak('${word.k}', '${word.h}')" class="${btnColorMap[group.color]} text-white p-2 rounded-full w-10 h-10 flex items-center justify-center shadow-md focus:outline-none transform active:scale-95 transition"><i class="fas fa-volume-up"></i></button>
+                                <button onclick="speak('${word.k}', '${word.h}')" class="${btnColorMap[group.color] || 'bg-green-500'} text-white p-2 rounded-full w-10 h-10 flex items-center justify-center shadow-md focus:outline-none transform active:scale-95 transition"><i class="fas fa-volume-up"></i></button>
                             </div>
                         </div>
                         <div class="mb-2 flex items-center">${typeBadge}<span class="font-bold text-green-700 text-lg">${word.m}</span></div>
@@ -449,51 +502,50 @@
             }
         }
 
-        async function showStrokeOrder(kanji) {
-            const hex = getKanjiHex(kanji);
-            const svgContent = await fetchKanjiSvg(hex);
+        async function showStrokeOrder(word) {
+            // Updated logic: Find ALL Kanji characters in the word
+            const kanjis = word.match(/[\u4e00-\u9faf]/g) || [word[0]];
             
-            // Create modal if it doesn't exist (reusing structure from previous examples)
             let modal = document.getElementById('stroke-modal');
-            if (!modal) {
-                // Create modal dynamically if not present in HTML body
-                const modalHtml = `
-                <div id="stroke-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
-                    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" onclick="closeStrokeModal()"></div>
-                        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full modal-enter relative">
-                            <div class="bg-green-600 px-4 py-3 flex justify-between items-center text-white">
-                                <h3 class="font-bold text-lg"><i class="fas fa-pen-nib mr-2"></i>Tập Viết Kanji: <span id="stroke-modal-char" class="text-2xl ml-2"></span></h3>
-                                <button onclick="closeStrokeModal()" class="hover:text-gray-200"><i class="fas fa-times text-xl"></i></button>
-                            </div>
-                            <div class="p-6 bg-gray-50 max-h-[80vh] overflow-y-auto">
-                                <div class="flex flex-col md:flex-row gap-8 items-start justify-center">
-                                    <div class="bg-white p-4 rounded-lg shadow border border-gray-200 text-center">
-                                        <p class="text-sm text-gray-500 mb-2 font-bold uppercase">Mô phỏng nét viết</p>
-                                        <div id="stroke-animation-container" class="w-40 h-40 mx-auto bg-white border border-gray-300 relative stroke-grid-box"></div>
-                                        <button onclick="replayStrokeAnimation()" class="mt-3 text-sm bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-green-200 transition"><i class="fas fa-redo mr-1"></i> Viết lại</button>
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="text-sm text-gray-500 mb-3 font-bold uppercase">Thứ tự từng nét</p>
-                                        <div id="stroke-grid-container" class="flex flex-wrap gap-2"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-                document.body.insertAdjacentHTML('beforeend', modalHtml);
-                modal = document.getElementById('stroke-modal');
-            }
+            modal.classList.remove('hidden');
             
-            document.getElementById('stroke-modal').classList.remove('hidden');
-            document.getElementById('stroke-modal-char').innerText = kanji;
+            // Selector Setup
+            const selector = document.getElementById('kanji-selector');
+            selector.innerHTML = '';
+            
+            if (kanjis.length > 1) {
+                selector.classList.remove('hidden');
+                kanjis.forEach((char, index) => {
+                    const btn = document.createElement('button');
+                    btn.innerText = char;
+                    btn.className = `w-12 h-12 text-xl font-bold rounded-lg shadow transition flex items-center justify-center kanji-font ${index === 0 ? 'bg-green-600 text-white border-2 border-green-700' : 'bg-white text-gray-700 border border-gray-300 hover:bg-green-50'}`;
+                    btn.onclick = () => {
+                        // Update active state visual
+                        Array.from(selector.children).forEach(b => b.className = 'w-12 h-12 text-xl font-bold rounded-lg shadow transition flex items-center justify-center kanji-font bg-white text-gray-700 border border-gray-300 hover:bg-green-50');
+                        btn.className = 'w-12 h-12 text-xl font-bold rounded-lg shadow transition flex items-center justify-center kanji-font bg-green-600 text-white border-2 border-green-700';
+                        loadKanji(char);
+                    };
+                    selector.appendChild(btn);
+                });
+            } else {
+                selector.classList.add('hidden');
+            }
+
+            // Load first kanji by default
+            loadKanji(kanjis[0]);
+        }
+
+        async function loadKanji(char) {
+            document.getElementById('stroke-modal-char').innerText = char;
+            
+            const hex = getKanjiHex(char);
+            const svgContent = await fetchKanjiSvg(hex);
             
             const animContainer = document.getElementById('stroke-animation-container');
             const gridContainer = document.getElementById('stroke-grid-container');
             
             if (!svgContent) {
-                animContainer.innerHTML = "<p class='p-4 text-red-500'>Không tìm thấy dữ liệu.</p>";
+                animContainer.innerHTML = "<div class='flex items-center justify-center h-full text-red-500 p-2 text-center text-sm'>Không tìm thấy dữ liệu.</div>";
                 gridContainer.innerHTML = "";
                 return;
             }
@@ -525,7 +577,7 @@
             
             for (let i = 0; i < numStrokes; i++) {
                 const stepBox = document.createElement('div');
-                stepBox.className = "w-20 h-20 bg-white border border-gray-200 relative stroke-grid-box flex items-center justify-center";
+                stepBox.className = "w-16 h-16 md:w-20 md:h-20 bg-white border border-gray-200 relative stroke-grid-box flex items-center justify-center rounded shadow-sm";
                 
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(svgContent, "image/svg+xml");
@@ -533,10 +585,10 @@
                 svgClone.setAttribute('width', '100%');
                 svgClone.setAttribute('height', '100%');
                 
-                // Hide numbers in grid view if preferred, or keep them. Jisho keeps them.
-                // KanjiVG numbers are in <g id="kvg:StrokeNumbers_...">
-                // We'll keep them for clarity but make them subtle.
-                
+                // Remove numbers/groups for cleaner grid
+                svgClone.querySelectorAll('text').forEach(n => n.remove());
+                svgClone.querySelectorAll('g').forEach(g => { if(g.id && g.id.includes('StrokeNumbers')) g.remove(); });
+
                 const clonePaths = svgClone.querySelectorAll('path');
                 clonePaths.forEach((p, pIdx) => {
                     p.style.fill = "none";
@@ -547,8 +599,8 @@
                         p.style.stroke = "#9ca3af"; // Past strokes gray
                         p.style.strokeWidth = "3";
                     } else if (pIdx === i) {
-                        p.style.stroke = "#000"; // Current stroke black/bold
-                        p.style.strokeWidth = "4";
+                        p.style.stroke = "#d97706"; // Current stroke orange/bold
+                        p.style.strokeWidth = "5";
                     } else {
                         p.style.display = "none"; // Future strokes hidden
                     }
@@ -565,19 +617,34 @@
             if(!currentStrokeSvg) return;
             const paths = currentStrokeSvg.querySelectorAll('path');
             
+            // Reset
             paths.forEach(p => {
                 p.style.transition = 'none';
                 p.style.strokeDashoffset = p.getTotalLength();
+                p.style.stroke = "#333";
             });
 
-            void currentStrokeSvg.offsetWidth; // Trigger reflow
+            // Trigger reflow
+            void currentStrokeSvg.offsetWidth;
 
             let delay = 0;
-            const duration = 0.5;
+            const duration = 0.6; 
             
-            paths.forEach((p) => {
+            paths.forEach((p, index) => {
+                // Animate stroke
                 p.style.transition = `stroke-dashoffset ${duration}s ease-in-out ${delay}s`;
                 p.style.strokeDashoffset = '0';
+                
+                // Color highlight while drawing
+                setTimeout(() => {
+                    p.style.stroke = "#16a34a"; // Green while drawing
+                }, delay * 1000);
+
+                 // Revert to black after drawing
+                 setTimeout(() => {
+                    p.style.stroke = "#333"; 
+                }, (delay + duration) * 1000);
+
                 delay += duration;
             });
         }
@@ -643,6 +710,7 @@
             document.getElementById("quiz-input").disabled = false;
             document.getElementById("quiz-input").focus();
             
+            // Filter unique words to avoid duplicates in random selection if any
             const uniqueWords = Array.from(new Set(allWords.map(a => a.k))).map(k => allWords.find(a => a.k === k));
             currentQ = uniqueWords[Math.floor(Math.random() * uniqueWords.length)];
             
@@ -661,6 +729,9 @@
                 score+=10; k.className = "text-6xl kanji-font font-bold text-green-600 mb-4 transition-all correct-anim";
                 document.getElementById("feedback-title").innerHTML = '<i class="fas fa-check-circle text-green-600 mr-2"></i> Chính xác!';
                 document.getElementById("feedback-title").className = "font-bold text-lg mb-2 flex items-center text-green-700";
+                
+                // Play sound automatically on correct answer
+                speak(currentQ.k, currentQ.h);
             } else {
                 score=Math.max(0, score-5); k.className = "text-6xl kanji-font font-bold text-red-600 mb-4 transition-all wrong-anim";
                 document.getElementById("feedback-title").innerHTML = '<i class="fas fa-times-circle text-red-600 mr-2"></i> Sai rồi!';
@@ -678,14 +749,19 @@
         }
 
         function playCurrentAudio() { if(currentQ) speak(currentQ.k, currentQ.h); }
+        
         function speak(t, h) {
             if('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
+                // Prefer Google Japanese or standard Japanese voice
+                // The browser will pick the best available voice for ja-JP
                 const u = new SpeechSynthesisUtterance(t);
-                u.lang = 'ja-JP'; u.rate = 0.9;
+                u.lang = 'ja-JP'; 
+                u.rate = 0.9;
                 window.speechSynthesis.speak(u);
             }
         }
+        
         document.getElementById("quiz-input").addEventListener("keypress", function(e) { if(e.key==="Enter") checkAnswer(); });
         document.addEventListener('DOMContentLoaded', renderContent);
     </script>
