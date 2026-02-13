@@ -2,382 +2,537 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sổ tay Ngữ pháp theo Tình huống</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AzaGrammar Master - Ngữ pháp Tình huống</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals -->
-    <!-- Application Structure Plan: A two-column single-page application (SPA) focused on situational Japanese grammar. The left column is a fixed navigation sidebar listing common communication scenarios (e.g., Asking Favors, Giving Advice). The right column details each scenario, listing relevant grammar patterns with explanations and multiple example sentences. The core interaction is a "Listen" button next to each example, using the Web Speech API. This structure organizes grammar by practical use-case, making it highly applicable for learners wanting to improve conversational skills. -->
-    <!-- Visualization & Content Choices: Report Info: Japanese grammar patterns categorized by communication situation. Goal: Help users learn which grammar to use in specific contexts and practice pronunciation. Viz/Presentation Method: Structured HTML with Tailwind. Key Interaction: A <button> with a Unicode speaker icon (🔊) next to each example sentence. Interaction: On click, JavaScript triggers the browser's SpeechSynthesis API. Justification: This is a direct and effective method for creating an interactive, context-based study guide that is more intuitive than a traditional list-based grammar book. Library/Method: Vanilla JS, Tailwind CSS. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        html {
-            scroll-behavior: smooth;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #FDFBF8;
-            color: #4A4A4A;
-        }
-        .situation-section h3 {
-            border-bottom: 2px solid #D6CDBF;
-            padding-bottom: 8px;
-            margin-bottom: 16px;
-            scroll-margin-top: 20px;
-        }
-        .grammar-pattern h4 {
-            font-weight: 600;
-            color: #8C7B6C;
-        }
-        .listen-btn {
-            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
-        }
-        .listen-btn:hover {
-            background-color: #EAEAEA;
-        }
-        .listen-btn:active {
-            transform: scale(0.95);
-        }
-        .nav-link.active {
-            background-color: #D6CDBF;
-            color: #FFFFFF;
-        }
-        .romaji {
-            color: #8C7B6C;
-            font-style: italic;
-            font-size: 0.9em;
-            margin-left: 8px;
-        }
+        body { font-family: 'Nunito', sans-serif; background-color: #f0f2f5; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+        .ja-text { font-family: 'Noto Sans JP', sans-serif; }
+        
+        /* Custom Scrollbar */
+        .scroller::-webkit-scrollbar { width: 6px; }
+        .scroller::-webkit-scrollbar-track { background: transparent; }
+        .scroller::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        
+        /* Sidebar Item */
+        .sit-header { transition: all 0.2s; }
+        .sit-header:hover { background-color: #e0e7ff; }
+        .sit-header.active { background-color: #4f46e5; color: white; }
+        .sit-header.active i { color: white; }
+        
+        /* Situation Box */
+        .sit-box { transition: transform 0.2s; }
+        .sit-box:hover { transform: translateY(-2px); }
+        
+        /* Animation */
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slide-in { animation: slideIn 0.3s ease-out forwards; }
+        
+        /* Mobile Drawer */
+        #mobileDrawer { transition: transform 0.3s ease-in-out; }
+        #mobileDrawer.open { transform: translateX(0); }
+        #mobileDrawer.closed { transform: translateX(-100%); }
     </style>
 </head>
-<body class="antialiased">
+<body class="text-slate-800">
 
-    <div class="flex min-h-screen">
-        <!-- Sidebar Navigation -->
-        <nav id="sidebar" class="w-1/3 lg:w-1/4 bg-[#F4F1ED] p-6 fixed top-0 left-0 h-full overflow-y-auto hidden md:block">
-            <h2 class="text-xl font-bold mb-6 text-[#8C7B6C]">Ngữ pháp Tình huống</h2>
-            <ul id="nav-links" class="space-y-2">
-                <!-- Nav links will be dynamically inserted here -->
-            </ul>
-        </nav>
+    <!-- HEADER -->
+    <header class="bg-white border-b border-gray-200 flex-none z-30 h-14 md:h-16 flex items-center justify-between px-4 shadow-sm">
+        <div class="flex items-center gap-3">
+            <button class="md:hidden text-gray-500 text-xl" onclick="toggleMobileDrawer()"><i class="fas fa-bars"></i></button>
+            <div class="flex items-center gap-2 text-indigo-600">
+                <i class="fas fa-comments text-2xl"></i>
+                <h1 class="font-extrabold text-lg md:text-xl tracking-tight">AzaGrammar <span class="text-xs bg-green-100 px-2 py-0.5 rounded-full text-green-700 ml-1">Situational N3</span></h1>
+            </div>
+        </div>
+        <div class="flex gap-2">
+             <button onclick="switchMode('study')" id="btn-study" class="px-4 py-1.5 rounded-lg text-sm font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition">Học Tập</button>
+             <button onclick="switchMode('practice')" id="btn-practice" class="px-4 py-1.5 rounded-lg text-sm font-bold text-gray-500 hover:bg-gray-100 transition">Luyện Tập</button>
+        </div>
+    </header>
 
-        <!-- Main Content -->
-        <main class="w-full md:w-2/3 lg:w-3/4 ml-auto p-6 md:p-10">
-            <div class="max-w-4xl mx-auto">
-                <header class="mb-10">
-                    <h1 class="text-4xl font-bold text-[#8C7B6C] mb-2">Sổ tay Ngữ pháp theo Tình huống</h1>
-                    <p class="text-lg text-gray-600">Học ngữ pháp theo mục đích giao tiếp. Nhấn nút 🔊 để nghe phát âm.</p>
-                </header>
+    <div class="flex flex-1 overflow-hidden relative">
+        
+        <!-- SIDEBAR (Situation List) -->
+        <aside id="sidebar" class="hidden md:flex w-80 bg-white border-r border-gray-200 flex-col overflow-hidden z-20">
+            <div class="p-4 border-b border-gray-100 bg-gray-50">
+                <h2 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-2">Tình huống giao tiếp</h2>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <input type="text" id="searchInput" placeholder="Tìm tình huống..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                </div>
+            </div>
+            <div id="categoryList" class="flex-1 scroller overflow-y-auto pb-20 p-2 space-y-1">
+                <!-- Categories will be injected here -->
+            </div>
+        </aside>
 
-                <div id="grammar-content" class="space-y-16">
-                    
-                    <section id="sit-request-permission" class="situation-section">
-                        <h3 class="text-2xl font-bold">1. Nhờ vả & Xin phép</h3>
-                        <div class="space-y-8">
-                            <div class="grammar-pattern">
-                                <h4 class="text-lg">〜てください (Hãy...)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Cách nói trực tiếp và phổ biến nhất để yêu cầu ai đó làm gì.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>ちょっと待ってください。<span class="romaji">(Chotto matte kudasai.)</span><button class="listen-btn p-1 rounded-full" data-text="ちょっと待ってください。"><span role="img" aria-label="Nghe">🔊</span></button> - *Xin hãy đợi một chút.*</li>
-                                    <li>ここに名前を書いてください。<span class="romaji">(Koko ni namae o kaite kudasai.)</span><button class="listen-btn p-1 rounded-full" data-text="ここに名前を書いてください。"><span role="img" aria-label="Nghe">🔊</span></button> - *Vui lòng viết tên vào đây.*</li>
-                                    <li>これを読んでください。<span class="romaji">(Kore o yonde kudasai.)</span><button class="listen-btn p-1 rounded-full" data-text="これを読んでください。"><span role="img" aria-label="Nghe">🔊</span></button> - *Hãy đọc cái này.*</li>
-                                    <li>静かにしてください。<span class="romaji">(Shizuka ni shite kudasai.)</span><button class="listen-btn p-1 rounded-full" data-text="静かにしてください。"><span role="img" aria-label="Nghe">🔊</span></button> - *Xin hãy giữ yên lặng.*</li>
-                                    <li>まっすぐ行ってください。<span class="romaji">(Massugu itte kudasai.)</span><button class="listen-btn p-1 rounded-full" data-text="まっすぐ行ってください。"><span role="img" aria-label="Nghe">🔊</span></button> - *Xin hãy đi thẳng.*</li>
-                                </ul>
-                            </div>
-                            <div class="grammar-pattern">
-                                <h4 class="text-lg">〜てもいいですか (Làm... có được không?)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Mẫu câu lịch sự để xin phép làm một việc gì đó.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>写真を撮ってもいいですか。<span class="romaji">(Shashin o totte mo ii desu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="写真を撮ってもいいですか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi chụp ảnh có được không?*</li>
-                                    <li>このペンを使ってもいいですか。<span class="romaji">(Kono pen o tsukatte mo ii desu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="このペンを使ってもいいですか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi dùng cái bút này có được không ạ?*</li>
-                                    <li>ここに入ってもいいですか。<span class="romaji">(Koko ni haitte mo ii desu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="ここに入ってもいいですか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi vào đây có được không?*</li>
-                                    <li>明日休んでもいいですか。<span class="romaji">(Ashita yasunde mo ii desu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="明日休んでもいいですか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Ngày mai tôi nghỉ có được không ạ?*</li>
-                                    <li>質問してもいいですか。<span class="romaji">(Shitsumon shite mo ii desu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="質問してもいいですか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi hỏi một câu có được không?*</li>
-                                </ul>
-                            </div>
-                            <div class="grammar-pattern">
-                                <h4 class="text-lg">〜ていただけませんか (Có thể làm... giúp tôi được không?)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Cách nhờ vả cực kỳ lịch sự, thể hiện sự khiêm tốn của người nói.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>荷物を持っていただけませんか。<span class="romaji">(Nimotsu o motte itadakemasen ka.)</span><button class="listen-btn p-1 rounded-full" data-text="荷物を持っていただけませんか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Bạn có thể cầm hành lý giúp tôi được không ạ?*</li>
-                                    <li>日本語を教えていただけませんか。<span class="romaji">(Nihongo o oshiete itadakemasen ka.)</span><button class="listen-btn p-1 rounded-full" data-text="日本語を教えていただけませんか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Bạn có thể dạy tiếng Nhật cho tôi được không ạ?*</li>
-                                     <li>この漢字の読み方を教えていただけませんか。<span class="romaji">(Kono kanji no yomikata o oshiete itadakemasen ka.)</span><button class="listen-btn p-1 rounded-full" data-text="この漢字の読み方を教えていただけませんか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Bạn có thể chỉ cho tôi cách đọc chữ Hán này được không ạ?*</li>
-                                     <li>駅までの行き方を説明していただけませんか。<span class="romaji">(Eki made no ikikata o setsumei shite itadakemasen ka.)</span><button class="listen-btn p-1 rounded-full" data-text="駅までの行き方を説明していただけませんか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Bạn có thể giải thích đường đến nhà ga giúp tôi được không?*</li>
-                                     <li>もう少しゆっくり話していただけませんか。<span class="romaji">(Mou sukoshi yukkuri hanashite itadakemasen ka.)</span><button class="listen-btn p-1 rounded-full" data-text="もう少しゆっくり話していただけませんか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Bạn có thể nói chậm lại một chút được không ạ?*</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </section>
+        <!-- MOBILE DRAWER -->
+        <div id="mobileDrawer" class="fixed inset-y-0 left-0 w-3/4 max-w-xs bg-white shadow-2xl z-50 md:hidden closed flex flex-col">
+            <div class="p-4 bg-indigo-600 text-white flex justify-between items-center">
+                <h2 class="font-bold text-lg">Danh sách tình huống</h2>
+                <button onclick="toggleMobileDrawer()"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="mobileCategoryList" class="flex-1 scroller overflow-y-auto p-2"></div>
+        </div>
+        <div id="drawerBackdrop" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden glass" onclick="toggleMobileDrawer()"></div>
 
-                    <section id="sit-advice-suggestion" class="situation-section">
-                        <h3 class="text-2xl font-bold">2. Đưa ra Lời khuyên & Gợi ý</h3>
-                        <div class="space-y-8">
-                            <div class="grammar-pattern">
-                                <h4 class="text-lg">〜たらどうですか (Nếu... thì sao?)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Cách đưa ra gợi ý nhẹ nhàng, hỏi ý kiến của đối phương.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>もっと野菜を食べたらどうですか。<span class="romaji">(Motto yasai o tabetara dou desu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="もっと野菜を食べたらどうですか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Bạn thử ăn nhiều rau hơn thì sao?*</li>
-                                    <li>疲れたら、少し休んだらどうですか。<span class="romaji">(Tsukaretara, sukoshi yasundara dou desu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="疲れたら、少し休んだらどうですか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Nếu mệt, bạn nghỉ một chút thì sao?*</li>
-                                    <li>先生に相談したらどうですか。<span class="romaji">(Sensei ni soudan shitara dou desu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="先生に相談したらどうですか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Hay là bạn thử trao đổi với giáo viên xem sao?*</li>
-                                    <li>一度病院へ行ったらどうですか。<span class="romaji">(Ichido byouin e ittara dou desu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="一度病院へ行ったらどうですか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Bạn thử đến bệnh viện một lần xem sao?*</li>
-                                    <li>彼に直接聞いてみたらどうですか。<span class="romaji">(Kare ni chokusetsu kiite mitara dou desu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="彼に直接聞いてみたらどうですか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Sao bạn không thử hỏi trực tiếp anh ấy?*</li>
-                                </ul>
-                            </div>
-                            <div class="grammar-pattern">
-                                <h4 class="text-lg">〜ほうがいいです (Nên...)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Dùng để đưa ra lời khuyên trực tiếp, mạnh mẽ hơn so với 「〜たらどうですか」.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>毎日運動したほうがいいです。<span class="romaji">(Mainichi undou shita hou ga ii desu.)</span><button class="listen-btn p-1 rounded-full" data-text="毎日運動したほうがいいです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Bạn nên tập thể dục hằng ngày.*</li>
-                                    <li>タバコはやめたほうがいいですよ。<span class="romaji">(Tabako wa yameta hou ga ii desu yo.)</span><button class="listen-btn p-1 rounded-full" data-text="タバコはやめたほうがいいですよ。"><span role="img" aria-label="Nghe">🔊</span></button> - *Anh nên bỏ thuốc lá đi đấy.*</li>
-                                    <li>薬を飲んだほうがいいです。<span class="romaji">(Kusuri o nonda hou ga ii desu.)</span><button class="listen-btn p-1 rounded-full" data-text="薬を飲んだほうがいいです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Bạn nên uống thuốc đi.*</li>
-                                    <li>そんなにたくさん食べないほうがいいです。<span class="romaji">(Sonna ni takusan tabenai hou ga ii desu.)</span><button class="listen-btn p-1 rounded-full" data-text="そんなにたくさん食べないほうがいいです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Bạn không nên ăn nhiều như thế.*</li>
-                                    <li>早く寝たほうがいいですよ。<span class="romaji">(Hayaku neta hou ga ii desu yo.)</span><button class="listen-btn p-1 rounded-full" data-text="早く寝たほうがいいですよ。"><span role="img" aria-label="Nghe">🔊</span></button> - *Bạn nên đi ngủ sớm đi.*</li>
-                                </ul>
-                            </div>
-                             <div class="grammar-pattern">
-                                <h4 class="text-lg">〜ましょうか (Để tôi... giúp bạn nhé?)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Đề nghị giúp đỡ người khác một cách lịch sự.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>荷物を持ちましょうか。<span class="romaji">(Nimotsu o mochimashou ka.)</span><button class="listen-btn p-1 rounded-full" data-text="荷物を持ちましょうか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Để tôi mang hành lý giúp bạn nhé?*</li>
-                                    <li>何か手伝いましょうか。<span class="romaji">(Nani ka tetsudaimashou ka.)</span><button class="listen-btn p-1 rounded-full" data-text="何か手伝いましょうか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Để tôi giúp gì cho bạn nhé?*</li>
-                                    <li>窓を閉めましょうか。<span class="romaji">(Mado o shimemashou ka.)</span><button class="listen-btn p-1 rounded-full" data-text="窓を閉めましょうか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi đóng cửa sổ giúp bạn nhé?*</li>
-                                    <li>地図を書きましょうか。<span class="romaji">(Chizu o kakimashou ka.)</span><button class="listen-btn p-1 rounded-full" data-text="地図を書きましょうか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Để tôi vẽ bản đồ cho bạn nhé?*</li>
-                                    <li>写真を撮りましょうか。<span class="romaji">(Shashin o torimashou ka.)</span><button class="listen-btn p-1 rounded-full" data-text="写真を撮りましょうか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi chụp ảnh giúp bạn nhé?*</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </section>
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 relative bg-[#f3f4f6] overflow-hidden flex flex-col">
+            
+            <!-- STUDY MODE -->
+            <div id="study-view" class="flex-1 flex flex-col h-full overflow-y-auto scroller p-4 md:p-8">
+                <div class="max-w-5xl mx-auto w-full pb-20 animate-slide-in">
                     
-                    <section id="sit-reason-cause" class="situation-section">
-                        <h3 class="text-2xl font-bold">3. Nêu Nguyên nhân & Lý do</h3>
-                        <div class="space-y-8">
-                            <div class="grammar-pattern">
-                                <h4 class="text-lg">〜から (Bởi vì...)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Cách nói phổ biến nhất để chỉ nguyên nhân, lý do mang tính chủ quan.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>時間がないですから、タクシーで行きましょう。<span class="romaji">(Jikan ga nai desu kara, takushii de ikimashou.)</span><button class="listen-btn p-1 rounded-full" data-text="時間がないですから、タクシーで行きましょう。"><span role="img" aria-label="Nghe">🔊</span></button> - *Vì không có thời gian nên chúng ta đi taxi thôi.*</li>
-                                    <li>危ないですから、触らないでください。<span class="romaji">(Abunai desu kara, sawaranaide kudasai.)</span><button class="listen-btn p-1 rounded-full" data-text="危ないですから、触らないでください。"><span role="img" aria-label="Nghe">🔊</span></button> - *Vì nguy hiểm nên xin đừng chạm vào.*</li>
-                                    <li>頭が痛いですから、学校を休みます。<span class="romaji">(Atama ga itai desu kara, gakkou o yasumimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="頭が痛いですから、学校を休みます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Vì đau đầu nên tôi nghỉ học.*</li>
-                                    <li>アニメが好きだから、日本語を勉強しています。<span class="romaji">(Anime ga suki da kara, nihongo o benkyou shite imasu.)</span><button class="listen-btn p-1 rounded-full" data-text="アニメが好きだから、日本語を勉強しています。"><span role="img" aria-label="Nghe">🔊</span></button> - *Vì thích anime nên tôi đang học tiếng Nhật.*</li>
-                                    <li>今日は日曜日ですから、デパートは混んでいます。<span class="romaji">(Kyou wa nichiyoubi desu kara, depaato wa konde imasu.)</span><button class="listen-btn p-1 rounded-full" data-text="今日は日曜日ですから、デパートは混んでいます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Vì hôm nay là Chủ nhật nên trung tâm thương mại rất đông.*</li>
-                                </ul>
-                            </div>
-                            <div class="grammar-pattern">
-                                <h4 class="text-lg">〜ので (Bởi vì...)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Chỉ nguyên nhân, lý do một cách khách quan, nhẹ nhàng và lịch sự hơn 「から」.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>日本語が分からないので、英語で話していただけませんか。<span class="romaji">(Nihongo ga wakaranai node, eigo de hanashite itadakemasen ka.)</span><button class="listen-btn p-1 rounded-full" data-text="日本語が分からないので、英語で話していただけませんか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Vì tôi không hiểu tiếng Nhật, bạn có thể nói chuyện bằng tiếng Anh được không?*</li>
-                                    <li>今日は日曜日なので、銀行は休みです。<span class="romaji">(Kyou wa nichiyoubi na node, ginkou wa yasumi desu.)</span><button class="listen-btn p-1 rounded-full" data-text="今日は日曜日なので、銀行は休みです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Vì hôm nay là Chủ nhật nên ngân hàng nghỉ.*</li>
-                                    <li>雨が降っているので、試合は中止です。<span class="romaji">(Ame ga futte iru node, shiai wa chuushi desu.)</span><button class="listen-btn p-1 rounded-full" data-text="雨が降っているので、試合は中止です。"><span role="img" aria-label="Nghe">🔊</span></button> - *Vì trời đang mưa nên trận đấu bị hủy.*</li>
-                                    <li>気分が悪いので、早退してもいいですか。<span class="romaji">(Kibun ga warui node, soutai shite mo ii desu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="気分が悪いので、早退してもいいですか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Vì trong người không khỏe, tôi có thể về sớm được không ạ?*</li>
-                                    <li>道が渋滞しているので、遅れるかもしれません。<span class="romaji">(Michi ga juutai shite iru node, okureru kamo shiremasen.)</span><button class="listen-btn p-1 rounded-full" data-text="道が渋滞しているので、遅れるかもしれません。"><span role="img" aria-label="Nghe">🔊</span></button> - *Vì đường đang tắc nên có lẽ tôi sẽ đến muộn.*</li>
-                                </ul>
-                            </div>
+                    <!-- Title Card -->
+                    <div class="mb-8 text-center">
+                        <div class="inline-flex items-center gap-2 bg-white px-4 py-1.5 rounded-full shadow-sm mb-3">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider" id="c-cat-name">Situation</span>
                         </div>
-                    </section>
+                        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2" id="c-title">Title</h2>
+                        <p class="text-gray-500 max-w-2xl mx-auto" id="c-desc">Description</p>
+                    </div>
 
-                    <section id="sit-intention-plan" class="situation-section">
-                        <h3 class="text-2xl font-bold">4. Bày tỏ Ý định & Kế hoạch</h3>
-                        <div class="space-y-8">
-                            <div class="grammar-pattern">
-                                <h4 class="text-lg">〜たいです (Muốn làm...)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Thể hiện mong muốn trực tiếp của bản thân.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>日本へ行きたいです。<span class="romaji">(Nihon e ikitai desu.)</span><button class="listen-btn p-1 rounded-full" data-text="日本へ行きたいです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi muốn đi Nhật.*</li>
-                                    <li>将来、医者になりたいです。<span class="romaji">(Shourai, isha ni naritai desu.)</span><button class="listen-btn p-1 rounded-full" data-text="将来、医者になりたいです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Trong tương lai, tôi muốn trở thành bác sĩ.*</li>
-                                    <li>もっと日本語が上手になりたいです。<span class="romaji">(Motto nihongo ga jouzu ni naritai desu.)</span><button class="listen-btn p-1 rounded-full" data-text="もっと日本語が上手になりたいです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi muốn giỏi tiếng Nhật hơn nữa.*</li>
-                                    <li>おいしいラーメンが食べたいです。<span class="romaji">(Oishii raamen ga tabetai desu.)</span><button class="listen-btn p-1 rounded-full" data-text="おいしいラーメンが食べたいです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi muốn ăn mỳ ramen ngon.*</li>
-                                    <li>今日は何もしたくないです。<span class="romaji">(Kyou wa nani mo shitakunai desu.)</span><button class="listen-btn p-1 rounded-full" data-text="今日は何もしたくないです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Hôm nay tôi không muốn làm gì cả.*</li>
-                                </ul>
-                            </div>
-                            <div class="grammar-pattern">
-                                <h4 class="text-lg">〜つもりです (Dự định...)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Bày tỏ một ý định, quyết định đã có từ trước và khá chắc chắn.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>来年、日本に留学するつもりです。<span class="romaji">(Rainen, nihon ni ryuugaku suru tsumori desu.)</span><button class="listen-btn p-1 rounded-full" data-text="来年、日本に留学するつもりです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi dự định sẽ đi du học Nhật vào năm sau.*</li>
-                                    <li>タバコはもう吸わないつもりです。<span class="romaji">(Tabako wa mou suwanai tsumori desu.)</span><button class="listen-btn p-1 rounded-full" data-text="タバコはもう吸わないつもりです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi dự định sẽ không hút thuốc nữa.*</li>
-                                    <li>大学を卒業したら、国へ帰るつもりです。<span class="romaji">(Daigaku o sotsugyou shitara, kuni e kaeru tsumori desu.)</span><button class="listen-btn p-1 rounded-full" data-text="大学を卒業したら、国へ帰るつもりです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Sau khi tốt nghiệp đại học, tôi dự định sẽ về nước.*</li>
-                                    <li>この仕事はずっと続けるつもりはありません。<span class="romaji">(Kono shigoto wa zutto tsuzukeru tsumori wa arimasen.)</span><button class="listen-btn p-1 rounded-full" data-text="この仕事はずっと続けるつもりはありません。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi không có ý định tiếp tục công việc này mãi mãi.*</li>
-                                    <li>彼とは結婚するつもりです。<span class="romaji">(Kare to wa kekkon suru tsumori desu.)</span><button class="listen-btn p-1 rounded-full" data-text="彼とは結婚するつもりです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi dự định sẽ kết hôn với anh ấy.*</li>
-                                </ul>
-                            </div>
-                             <div class="grammar-pattern">
-                                <h4 class="text-lg">〜(よ)うと思っています (Tôi đang định...)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Nói về một ý định vừa nảy ra hoặc chưa chắc chắn bằng 「つもり」.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>週末、買い物に行こうと思っています。<span class="romaji">(Shuumatsu, kaimono ni ikou to omotte imasu.)</span><button class="listen-btn p-1 rounded-full" data-text="週末、買い物に行こうと思っています。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi đang định đi mua sắm vào cuối tuần.*</li>
-                                    <li>大学で経済を勉強しようと思っています。<span class="romaji">(Daigaku de keizai o benkyou shiyou to omotte imasu.)</span><button class="listen-btn p-1 rounded-full" data-text="大学で経済を勉強しようと思っています。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi đang định học ngành kinh tế ở đại học.*</li>
-                                    <li>新しいパソコンを買おうと思っています。<span class="romaji">(Atarashii pasokon o kaou to omotte imasu.)</span><button class="listen-btn p-1 rounded-full" data-text="新しいパソコンを買おうと思っています。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi đang định mua một cái máy tính mới.*</li>
-                                    <li>明日、彼に電話しようと思っています。<span class="romaji">(Ashita, kare ni denwa shiyou to omotte imasu.)</span><button class="listen-btn p-1 rounded-full" data-text="明日、彼に電話しようと思っています。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi đang định gọi điện cho anh ấy vào ngày mai.*</li>
-                                    <li>髪を切ろうと思っています。<span class="romaji">(Kami o kirou to omotte imasu.)</span><button class="listen-btn p-1 rounded-full" data-text="髪を切ろうと思っています。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi đang định đi cắt tóc.*</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </section>
-                    
-                    <section id="sit-praise-criticism" class="situation-section">
-                        <h3 class="text-2xl font-bold">5. Khen & Chê</h3>
-                        <div class="space-y-8">
-                            <div class="grammar-pattern">
-                                <h4 class="text-lg">〜は上手ですね (Giỏi về...)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Một lời khen trực tiếp và phổ biến về một kỹ năng nào đó.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>日本語が上手ですね。<span class="romaji">(Nihongo ga jouzu desu ne.)</span><button class="listen-btn p-1 rounded-full" data-text="日本語が上手ですね。"><span role="img" aria-label="Nghe">🔊</span></button> - *Bạn giỏi tiếng Nhật thật đấy.*</li>
-                                    <li>料理が上手ですね。<span class="romaji">(Ryouri ga jouzu desu ne.)</span><button class="listen-btn p-1 rounded-full" data-text="料理が上手ですね。"><span role="img" aria-label="Nghe">🔊</span></button> - *Bạn nấu ăn giỏi thật.*</li>
-                                    <li>絵が本当に上手ですね。<span class="romaji">(E ga hontou ni jouzu desu ne.)</span><button class="listen-btn p-1 rounded-full" data-text="絵が本当に上手ですね。"><span role="img" aria-label="Nghe">🔊</span></button> - *Bạn vẽ thực sự giỏi đó.*</li>
-                                    <li>歌が上手になるたいです。<span class="romaji">(Uta ga jouzu ni naritai desu.)</span><button class="listen-btn p-1 rounded-full" data-text="歌が上手になるたいです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi muốn hát hay hơn.*</li>
-                                    <li>田中さんはピアノを弾くのが上手です。<span class="romaji">(Tanaka-san wa piano o hiku no ga jouzu desu.)</span><button class="listen-btn p-1 rounded-full" data-text="田中さんはピアノを弾くのが上手です。"><span role="img" aria-label="Nghe">🔊</span></button> - *Anh Tanaka chơi piano rất giỏi.*</li>
-                                </ul>
-                            </div>
-                            <div class="grammar-pattern">
-                                <h4 class="text-lg">〜すぎる (Quá...)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Có thể dùng để khen (quá đẹp, quá giỏi) hoặc chê (quá ồn, quá khó).</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>この問題は難しすぎます。<span class="romaji">(Kono mondai wa muzukashisugimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="この問題は難しすぎます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Vấn đề này khó quá.*</li>
-                                    <li>彼は優しすぎます。<span class="romaji">(Kare wa yasashisugimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="彼は優しすぎます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Anh ấy hiền quá.*</li>
-                                    <li>昨日はお酒を飲みすぎました。<span class="romaji">(Kinou wa osake o nomisugimashita.)</span><button class="listen-btn p-1 rounded-full" data-text="昨日はお酒を飲みすぎました。"><span role="img" aria-label="Nghe">🔊</span></button> - *Hôm qua tôi đã uống quá nhiều rượu.*</li>
-                                    <li>彼女はきれいすぎます。<span class="romaji">(Kanojo wa kireisugimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="彼女はきれいすぎます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Cô ấy đẹp quá đi mất.*</li>
-                                    <li>テレビの音が大きすぎます。<span class="romaji">(Terebi no oto ga ookisugimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="テレビの音が大きすぎます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tiếng TV to quá.*</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </section>
-                    
-                    <section id="sit-thanks-apology" class="situation-section">
-                        <h3 class="text-2xl font-bold">6. Cảm ơn & Xin lỗi</h3>
-                        <div class="space-y-8">
-                            <div class="grammar-pattern">
-                                <h4 class="text-lg">〜てくれてありがとう (Cảm ơn vì đã...)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Dùng để cảm ơn khi ai đó (bằng hoặc dưới vai vế) làm gì cho mình.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>手伝ってくれてありがとう。<span class="romaji">(Tetsudatte kurete arigatou.)</span><button class="listen-btn p-1 rounded-full" data-text="手伝ってくれてありがとう。"><span role="img" aria-label="Nghe">🔊</span></button> - *Cảm ơn vì đã giúp đỡ mình.*</li>
-                                    <li>来てくれてありがとう。<span class="romaji">(Kite kurete arigatou.)</span><button class="listen-btn p-1 rounded-full" data-text="来てくれてありがとう。"><span role="img" aria-label="Nghe">🔊</span></button> - *Cảm ơn vì bạn đã đến.*</li>
-                                    <li>プレゼントをくれてありがとう。<span class="romaji">(Purezento o kurete arigatou.)</span><button class="listen-btn p-1 rounded-full" data-text="プレゼントをくれてありがとう。"><span role="img" aria-label="Nghe">🔊</span></button> - *Cảm ơn vì món quà.*</li>
-                                    <li>日本語を教えてくれてありがとうございます。<span class="romaji">(Nihongo o oshiete kurete arigatou gozaimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="日本語を教えてくれてありがとうございます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Cảm ơn vì đã dạy tiếng Nhật cho tôi.*</li>
-                                    <li>心配してくれてありがとう。<span class="romaji">(Shinpai shite kurete arigatou.)</span><button class="listen-btn p-1 rounded-full" data-text="心配してくれてありがとう。"><span role="img" aria-label="Nghe">🔊</span></button> - *Cảm ơn vì đã lo lắng cho mình.*</li>
-                                </ul>
-                            </div>
-                            <div class="grammar-pattern">
-                                <h4 class="text-lg">〜てすみませんでした (Xin lỗi vì đã...)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Dùng để xin lỗi về một hành động cụ thể đã làm trong quá khứ.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>遅れてすみませんでした。<span class="romaji">(Okurete sumimasen deshita.)</span><button class="listen-btn p-1 rounded-full" data-text="遅れてすみませんでした。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi xin lỗi vì đã đến muộn.*</li>
-                                    <li>迷惑をかけてすみませんでした。<span class="romaji">(Meiwaku o kakete sumimasen deshita.)</span><button class="listen-btn p-1 rounded-full" data-text="迷惑をかけてすみませんでした。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi xin lỗi vì đã làm phiền.*</li>
-                                    <li>忘れてしまって、すみませんでした。<span class="romaji">(Wasurete shimatte, sumimasen deshita.)</span><button class="listen-btn p-1 rounded-full" data-text="忘れてしまって、すみませんでした。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi xin lỗi vì đã lỡ quên mất.*</li>
-                                    <li>昨日電話しなくてすみませんでした。<span class="romaji">(Kinou denwa shinakute sumimasen deshita.)</span><button class="listen-btn p-1 rounded-full" data-text="昨日電話しなくてすみませんでした。"><span role="img" aria-label="Nghe">🔊</span></button> - *Xin lỗi vì hôm qua đã không gọi điện.*</li>
-                                    <li>大きい声を出してすみませんでした。<span class="romaji">(Ookii koe o dashite sumimasen deshita.)</span><button class="listen-btn p-1 rounded-full" data-text="大きい声を出してすみませんでした。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi xin lỗi vì đã nói to tiếng.*</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </section>
-                    
-                    <section id="sit-agree-disagree" class="situation-section">
-                        <h3 class="text-2xl font-bold">7. Đồng ý & Phản đối</h3>
-                        <div class="space-y-8">
-                            <div class="grammar-pattern">
-                                <h4 class="text-lg">私もそう思います (Tôi cũng nghĩ vậy)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Cách nói trực tiếp để thể hiện sự đồng tình với ý kiến của người khác.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>A: この映画は面白いですね。 B: ええ、私もそう思います。<span class="romaji">(A: Kono eiga wa omoshiroi desu ne. B: Ee, watashi mo sou omoimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="この映画は面白いですね。ええ、私もそう思います。"><span role="img" aria-label="Nghe">🔊</span></button> - *A: Phim này hay nhỉ. B: Vâng, tôi cũng nghĩ vậy.*</li>
-                                    <li>A: 日本語は難しいです。 B: 私もそう思います。<span class="romaji">(A: Nihongo wa muzukashii desu. B: Watashi mo sou omoimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="日本語は難しいです。私もそう思います。"><span role="img" aria-label="Nghe">🔊</span></button> - *A: Tiếng Nhật khó. B: Tôi cũng nghĩ vậy.*</li>
-                                    <li>彼の意見は正しいです。私もそう思います。<span class="romaji">(Kare no iken wa tadashii desu. Watashi mo sou omoimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="彼の意見は正しいです。私もそう思います。"><span role="img" aria-label="Nghe">🔊</span></button> - *Ý kiến của anh ấy là đúng. Tôi cũng nghĩ vậy.*</li>
-                                    <li>この計画はいいですね。私もそう思います。<span class="romaji">(Kono keikaku wa ii desu ne. Watashi mo sou omoimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="この計画はいいですね。私もそう思います。"><span role="img" aria-label="Nghe">🔊</span></button> - *Kế hoạch này hay đấy. Tôi cũng nghĩ vậy.*</li>
-                                    <li>A: あのレストランは高いですね。 B: 本当に。私もそう思います。<span class="romaji">(A: Ano resutoran wa takai desu ne. B: Hontou ni. Watashi mo sou omoimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="あのレストランは高いですね。本当に。私もそう思います。"><span role="img" aria-label="Nghe">🔊</span></button> - *A: Nhà hàng kia đắt nhỉ. B: Thật sự. Tôi cũng nghĩ vậy.*</li>
-                                </ul>
-                            </div>
-                            <div class="grammar-pattern">
-                                <h4 class="text-lg">それはちょっと… (Cái đó thì hơi...)</h4>
-                                <p class="text-gray-600 mt-1 mb-3">Cách từ chối hoặc phản đối một cách mềm mỏng, gián tiếp.</p>
-                                <ul class="list-disc list-inside space-y-2">
-                                    <li>A: 明日、一緒に飲みに行きませんか。 B: すみません、明日はちょっと…<span class="romaji">(A: Ashita, issho ni nomi ni ikimasen ka. B: Sumimasen, ashita wa chotto...)</span><button class="listen-btn p-1 rounded-full" data-text="明日、一緒に飲みに行きませんか。すみません、明日はちょっと…"><span role="img" aria-label="Nghe">🔊</span></button> - *A: Mai đi uống với nhau không? B: Xin lỗi, ngày mai thì hơi...*</li>
-                                    <li>A: このデザインはどうですか。 B: うーん、それはちょっと派手すぎませんか。<span class="romaji">(A: Kono dezain wa dou desu ka. B: Uun, sore wa chotto hadesugimasen ka.)</span><button class="listen-btn p-1 rounded-full" data-text="このデザインはどうですか。うーん、それはちょっと派手すぎませんか。"><span role="img" aria-label="Nghe">🔊</span></button> - *A: Thiết kế này thế nào? B: Ừm, cái đó có hơi sặc sỡ quá không?*</li>
-                                    <li>A: これ、借りてもいいですか。 B: あ、それはちょっと…<span class="romaji">(A: Kore, karite mo ii desu ka. B: A, sore wa chotto...)</span><button class="listen-btn p-1 rounded-full" data-text="これ、借りてもいいですか。あ、それはちょっと…"><span role="img" aria-label="Nghe">🔊</span></button> - *A: Tôi mượn cái này được không? B: À, cái đó thì hơi...*</li>
-                                    <li>A: 彼に全部話しましょう。 B: それはちょっと待ってください。<span class="romaji">(A: Kare ni zenbu hanashimashou. B: Sore wa chotto matte kudasai.)</span><button class="listen-btn p-1 rounded-full" data-text="彼に全部話しましょう。それはちょっと待ってください。"><span role="img" aria-label="Nghe">🔊</span></button> - *A: Hãy nói hết cho anh ta đi. B: Cái đó thì xin hãy đợi một chút.*</li>
-                                    <li>その考えには、ちょっと賛成できません。<span class="romaji">(Sono kangae ni wa, chotto sansei dekimasen.)</span><button class="listen-btn p-1 rounded-full" data-text="その考えには、ちょっと賛成できません。"><span role="img" aria-label="Nghe">🔊</span></button> - *Với suy nghĩ đó thì tôi hơi khó đồng tình.*</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </section>
+                    <!-- Content Container -->
+                    <div id="content-container" class="space-y-8">
+                        <!-- Grammar Blocks will be injected here -->
+                    </div>
 
                 </div>
             </div>
+
+            <!-- PRACTICE MODE (Quiz) -->
+            <div id="practice-view" class="hidden flex-1 flex-col h-full bg-white relative">
+                <div class="absolute inset-0 flex flex-col max-w-2xl mx-auto p-6 justify-center">
+                    <div class="mb-8 text-center">
+                        <div class="inline-block bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold mb-2" id="quiz-progress">Câu 1/10</div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-2">Sắp xếp câu hoàn chỉnh</h2>
+                        <p class="text-gray-500 text-sm">Chọn các từ bên dưới theo đúng thứ tự</p>
+                    </div>
+
+                    <!-- Quiz Display -->
+                    <div class="bg-gray-50 rounded-2xl p-6 border-2 border-dashed border-gray-200 mb-6 min-h-[120px] flex flex-wrap items-center gap-2 justify-center" id="quiz-answer-zone"></div>
+
+                    <div class="mb-8">
+                         <p class="text-center text-gray-600 text-sm mb-4" id="quiz-question-vi">...</p>
+                         <div class="flex flex-wrap justify-center gap-3" id="quiz-options-zone"></div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button onclick="resetQuizQuestion()" class="flex-1 py-3 rounded-xl border border-gray-300 text-gray-600 font-bold hover:bg-gray-50 transition"><i class="fas fa-undo"></i> Làm lại</button>
+                        <button onclick="checkQuizAnswer()" class="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg transition shadow-indigo-200" id="btn-submit-quiz">Kiểm tra</button>
+                    </div>
+                    
+                    <!-- Feedback Overlay -->
+                    <div id="quiz-feedback" class="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 hidden flex-col items-center justify-center text-center p-6 rounded-2xl">
+                        <div class="text-6xl mb-4" id="fb-icon"></div>
+                        <h3 class="text-2xl font-bold mb-2" id="fb-text"></h3>
+                        <p class="text-gray-500 mb-6" id="fb-subtext"></p>
+                        <button onclick="nextQuizQuestion()" class="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition">Tiếp tục <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const grammarSections = document.querySelectorAll('.situation-section');
-            const navLinksContainer = document.getElementById('nav-links');
+    <!-- MODAL: GRAMMAR DETAIL -->
+    <div id="detailGrammarModal" class="fixed inset-0 z-[90] hidden flex items-center justify-center px-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity opacity-0" id="detailGrammarBackdrop" onclick="closeModal('detailGrammarModal')"></div>
+        <div class="bg-white rounded-2xl w-full max-w-md relative z-10 shadow-2xl transform transition-all scale-95 opacity-0 flex flex-col" id="detailGrammarPanel">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-2xl">
+                <div class="flex items-center gap-2">
+                    <div class="bg-indigo-100 p-1.5 rounded-lg text-indigo-600"><i class="fas fa-info-circle"></i></div>
+                    <h3 class="text-lg font-bold text-gray-800">Giải thích Ngữ pháp</h3>
+                </div>
+                <button onclick="closeModal('detailGrammarModal')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6">
+                <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-center mb-4 shadow-sm">
+                    <code class="text-lg font-bold text-indigo-700 font-mono" id="dgFormula"></code>
+                </div>
+                <div id="dgExplanation" class="text-gray-600 text-sm mb-4 space-y-3 leading-relaxed"></div>
+            </div>
+        </div>
+    </div>
 
-            grammarSections.forEach(section => {
-                const sectionId = section.id;
-                const sectionTitle = section.querySelector('h3').textContent;
-                const listItem = document.createElement('li');
-                const link = document.createElement('a');
-                link.href = `#${sectionId}`;
-                link.textContent = sectionTitle;
-                link.className = 'nav-link block px-4 py-2 rounded-md hover:bg-[#D6CDBF] hover:text-white transition-colors duration-200';
-                listItem.appendChild(link);
-                navLinksContainer.appendChild(listItem);
+    <script>
+        // --- 1. GRAMMAR REPO (Day 35) ---
+        const grammarRepo = {
+            "hou_ga_ii": { title: "Nên / Không nên", formula: "Vた/Vない + ほうがいい", desc: "Lời khuyên trực tiếp, cho rằng làm (hoặc không làm) là tốt hơn.", ex: "早く寝たほうがいい。" },
+            "tara_dou": { title: "Thử... xem sao?", formula: "Vたら + どうですか", desc: "Lời khuyên nhẹ nhàng, gợi ý, đề xuất.", ex: "医者に診てもらったらどうですか。" },
+            "beki": { title: "Phải / Nên (Đạo đức)", formula: "Vる + べきだ", desc: "Lời khuyên mang tính nghĩa vụ, đạo đức, lẽ thường.", ex: "約束は守るべきだ。" },
+            "noni": { title: "Thế mà (Bất mãn)", formula: "Thể thường + のに", desc: "Diễn tả sự ngạc nhiên, bất mãn vì kết quả trái ngược mong đợi.", ex: "一生懸命勉強したのに、不合格だった。" },
+            "kuse_ni": { title: "Mặc dù... (Trách móc)", formula: "Thể thường + くせに", desc: "Giống 'noni' nhưng mang sắc thái khinh miệt, chỉ trích mạnh hơn.", ex: "知っているくせに、教えてくれない。" },
+            "bakari": { title: "Toàn là / Chỉ toàn", formula: "N/Vて + ばかり", desc: "Chỉ toàn làm một việc gì đó (thường là tiêu cực).", ex: "遊んでばかりいる。" },
+            "mitai": { title: "Hình như / Giống như", formula: "Thể thường + みたい", desc: "Phỏng đoán dựa trên cảm nhận, hoặc so sánh ví von.", ex: "雨が降るみたいだ。" },
+            "rashii": { title: "Nghe nói / Đúng chất", formula: "Thể thường + らしい", desc: "Phỏng đoán có căn cứ (nghe nói), hoặc mang tính chất điển hình.", ex: "彼は来ないらしい。" },
+            "ppoi": { title: "Có vẻ / Hay / Đầy", formula: "N/Vmas + っぽい", desc: "Cảm thấy như là (thường tiêu cực), hoặc tính chất (nhiều, hay).", ex: "安っぽい (trông rẻ tiền), 怒りっぽい (hay cáu)." },
+            "okage": { title: "Nhờ có (Biết ơn)", formula: "Thể thường + おかげで", desc: "Nguyên nhân dẫn đến kết quả tốt.", ex: "先生のおかげです。" },
+            "sei": { title: "Tại vì (Đổ lỗi)", formula: "Thể thường + せいで", desc: "Nguyên nhân dẫn đến kết quả xấu.", ex: "雨のせいで遅れた。" },
+            "wake": { title: "Thảo nào / Hèn chi", formula: "Thể thường + わけだ", desc: "Hiểu ra lý do, kết luận logic.", ex: "暑いわけだ。エアコンが壊れている。" },
+            "tokoro": { title: "Đúng lúc / Vừa mới", formula: "Vる/Vている/Vた + ところ", desc: "Nhấn mạnh thời điểm của hành động.", ex: "今帰ったところだ。" },
+            "aida": { title: "Trong suốt", formula: "Vている/Nの + 間", desc: "Hành động diễn ra liên tục trong một khoảng thời gian.", ex: "待っている間、本を読んでいた。" },
+            "uchi_ni": { title: "Nhân lúc / Trong lúc", formula: "Vる/Vない/A/Nの + うちに", desc: "Tranh thủ làm gì trước khi biến đổi, hoặc biến đổi tự nhiên trong khi...", ex: "温かいうちに食べて。" }
+        };
+
+        // --- DATA: Situational Grammar ---
+        const situationData = {
+            "advice": {
+                name: "1. Khuyên bảo & Đề nghị",
+                icon: "comment-medical",
+                color: "blue",
+                desc: "Các mẫu câu dùng để đưa ra lời khuyên, gợi ý cho người khác.",
+                items: [
+                    { 
+                        title: "Nên làm gì...", 
+                        patterns: [
+                            { gId: "hou_ga_ii", name: "〜ほうがいい", usage: "Khuyên nên/không nên (khá mạnh)" },
+                            { gId: "tara_dou", name: "〜たらどう", usage: "Gợi ý nhẹ nhàng, thử xem sao" },
+                            { gId: "beki", name: "〜べき", usage: "Nên làm (đạo đức, nghĩa vụ)" }
+                        ],
+                        examples: [
+                            {ja:"熱があるなら、早く寝たほうがいいですよ。", vi:"Nếu bị sốt thì nên ngủ sớm đi.", gIds:["hou_ga_ii"]},
+                            {ja:"嫌いなことはしないほうがいい。", vi:"Không nên làm việc mình ghét.", gIds:["hou_ga_ii"]},
+                            {ja:"もっと野菜を食べたらどうですか。", vi:"Bạn thử ăn nhiều rau hơn xem sao?", gIds:["tara_dou"]},
+                            {ja:"先生に相談してみたらどうですか。", vi:"Thử thảo luận với thầy giáo xem sao?", gIds:["tara_dou"]},
+                            {ja:"約束は守るべきだ。", vi:"Đã hứa thì phải giữ lời.", gIds:["beki"]},
+                            {ja:"学生はもっと勉強するべきだ。", vi:"Học sinh thì nên học nhiều hơn.", gIds:["beki"]}
+                        ]
+                    }
+                ]
+            },
+            "complaint": {
+                name: "2. Phàn nàn & Tiếc nuối",
+                icon: "tired",
+                color: "red",
+                desc: "Diễn tả sự bất mãn, kết quả không như ý hoặc phê phán.",
+                items: [
+                    { 
+                        title: "Sự trái ngược, bất mãn", 
+                        patterns: [
+                            { gId: "noni", name: "〜のに", usage: "Thế mà... (Bất mãn, ngạc nhiên)" },
+                            { gId: "kuse_ni", name: "〜くせに", usage: "Mặc dù... (Khinh miệt, trách móc)" },
+                            { gId: "bakari", name: "〜ばかり", usage: "Toàn là... (Phê phán số lượng nhiều)" }
+                        ],
+                        examples: [
+                            {ja:"一生懸命勉強したのに、テストが悪かった。", vi:"Đã học chăm chỉ thế mà bài kiểm tra lại kém.", gIds:["noni"]},
+                            {ja:"日曜日なのに、働かなければなりません。", vi:"Chủ nhật mà vẫn phải làm việc.", gIds:["noni"]},
+                            {ja:"知っているくせに、教えてくれない。", vi:"Biết mà không thèm chỉ cho tôi.", gIds:["kuse_ni"]},
+                            {ja:"男のくせに、めめしい。", vi:"Đàn ông mà ủy mị quá.", gIds:["kuse_ni"]},
+                            {ja:"弟は遊んでばかりいる。", vi:"Em trai tôi toàn chơi thôi.", gIds:["bakari"]},
+                            {ja:"文句ばかり言わないでください。", vi:"Đừng có toàn phàn nàn như thế.", gIds:["bakari"]}
+                        ]
+                    }
+                ]
+            },
+            "conjecture": {
+                name: "3. Phán đoán & Cảm nhận",
+                icon: "magic",
+                color: "purple",
+                desc: "Các cách diễn đạt sự suy đoán dựa trên các căn cứ khác nhau.",
+                items: [
+                    { 
+                        title: "Hình như, Có vẻ...", 
+                        patterns: [
+                            { gId: "mitai", name: "〜みたい", usage: "Giống như, hình như (trực quan/ví von)" },
+                            { gId: "rashii", name: "〜らしい", usage: "Nghe nói, đúng chất (khách quan)" },
+                            { gId: "ppoi", name: "〜っぽい", usage: "Có vẻ, hay, đậm chất (cảm giác)" }
+                        ],
+                        examples: [
+                            {ja:"彼は疲れているみたいだ。", vi:"Trông anh ấy có vẻ mệt (nhìn dáng vẻ).", gIds:["mitai"]},
+                            {ja:"夢みたいだ。", vi:"Cứ như là mơ vậy.", gIds:["mitai"]},
+                            {ja:"噂によると、彼は辞めるらしい。", vi:"Theo tin đồn thì hình như anh ấy sẽ nghỉ.", gIds:["rashii"]},
+                            {ja:"今日は春らしい天気だ。", vi:"Hôm nay thời tiết đúng chất mùa xuân.", gIds:["rashii"]},
+                            {ja:"あの人は子供っぽい。", vi:"Người đó tính trẻ con.", gIds:["ppoi"]},
+                            {ja:"この服は安っぽい。", vi:"Bộ đồ này trông rẻ tiền.", gIds:["ppoi"]},
+                            {ja:"彼は怒りっぽい。", vi:"Anh ta hay cáu gắt.", gIds:["ppoi"]}
+                        ]
+                    }
+                ]
+            },
+            "reasoning": {
+                name: "4. Nguyên nhân & Lý do",
+                icon: "link",
+                color: "green",
+                desc: "Giải thích lý do dẫn đến kết quả tốt hoặc xấu, hoặc hiểu ra vấn đề.",
+                items: [
+                    { 
+                        title: "Tại sao lại như vậy?", 
+                        patterns: [
+                            { gId: "okage", name: "〜おかげで", usage: "Nhờ có (Biết ơn)" },
+                            { gId: "sei", name: "〜せいで", usage: "Tại vì (Đổ lỗi)" },
+                            { gId: "wake", name: "〜わけだ", usage: "Thảo nào / Hèn chi (Kết luận logic)" }
+                        ],
+                        examples: [
+                            {ja:"先生のおかげで、合格しました。", vi:"Nhờ có thầy mà em đã đỗ.", gIds:["okage"]},
+                            {ja:"天気がいいおかげで、旅行が楽しかった。", vi:"Nhờ thời tiết đẹp mà chuyến đi vui.", gIds:["okage"]},
+                            {ja:"バスが遅れたせいで、遅刻した。", vi:"Tại xe buýt trễ mà tôi đến muộn.", gIds:["sei"]},
+                            {ja:"君のせいじゃないよ。", vi:"Không phải tại cậu đâu.", gIds:["sei"]},
+                            {ja:"暑いわけだ。気温が38度もある。", vi:"Hèn chi nóng thế. Nhiệt độ tận 38 độ.", gIds:["wake"]},
+                            {ja:"道理でできないわけだ。", vi:"Thảo nào mà không làm được.", gIds:["wake"]}
+                        ]
+                    }
+                ]
+            },
+            "time_aspect": {
+                name: "5. Thời điểm & Quá trình",
+                icon: "history",
+                color: "yellow",
+                desc: "Diễn tả hành động trong mối tương quan với thời gian.",
+                items: [
+                    { 
+                        title: "Khi nào?", 
+                        patterns: [
+                            { gId: "tokoro", name: "〜ところ", usage: "Đúng lúc (sắp/đang/vừa)" },
+                            { gId: "uchi_ni", name: "〜うちに", usage: "Tranh thủ / Trong lúc (biến đổi)" },
+                            { gId: "aida", name: "〜間・間に", usage: "Trong suốt / Trong khi (xen vào)" }
+                        ],
+                        examples: [
+                            {ja:"今、出かけるところです。", vi:"Giờ tôi sắp ra ngoài.", gIds:["tokoro"]},
+                            {ja:"ちょうどご飯を食べたところです。", vi:"Tôi vừa mới ăn cơm xong.", gIds:["tokoro"]},
+                            {ja:"温かいうちに食べてください。", vi:"Hãy ăn khi còn nóng.", gIds:["uchi_ni"]},
+                            {ja:"日本にいるうちに、富士山に登りたい。", vi:"Tranh thủ lúc ở Nhật muốn leo núi Phú Sĩ.", gIds:["uchi_ni"]},
+                            {ja:"留守の間に友達が来た。", vi:"Bạn đến chơi lúc tôi vắng nhà.", gIds:["aida"]}
+                        ]
+                    }
+                ]
+            }
+        };
+
+        let currentSituation = 'advice';
+        let currentQuizData = null;
+
+        function init() {
+            renderSidebar();
+            selectSituation('advice');
+            setupMobileDrawer();
+        }
+
+        function renderSidebar() {
+            const list = document.getElementById('categoryList');
+            const mobileList = document.getElementById('mobileCategoryList');
+            let html = '';
+            
+            Object.keys(situationData).forEach(key => {
+                const sit = situationData[key];
+                html += `
+                    <div onclick="selectSituation('${key}')" class="sit-header p-3 rounded-lg cursor-pointer flex items-center gap-3 font-bold text-gray-700 hover:bg-gray-100 mb-2" data-sit="${key}">
+                        <div class="w-8 h-8 rounded-full bg-${sit.color}-100 text-${sit.color}-600 flex items-center justify-center"><i class="fas fa-${sit.icon}"></i></div>
+                        <span>${sit.name}</span>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+            mobileList.innerHTML = html;
+        }
+
+        function selectSituation(key) {
+            currentSituation = key;
+            document.querySelectorAll('.sit-header').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll(`.sit-header[data-sit="${key}"]`).forEach(el => el.classList.add('active'));
+
+            const data = situationData[key];
+            
+            // Render Main Content
+            document.getElementById('c-cat-name').innerText = data.name;
+            document.getElementById('c-title').innerText = "Các Mẫu Ngữ Pháp";
+            document.getElementById('c-desc').innerText = data.desc;
+
+            const container = document.getElementById('content-container');
+            container.innerHTML = data.items.map(group => `
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden sit-box">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-bold text-xl text-gray-800">${group.title}</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            ${group.patterns.map(p => `
+                                <span class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-sm font-bold border border-indigo-100 cursor-pointer hover:bg-indigo-100" onclick="openExplan('${p.gId}')">
+                                    ${p.name}
+                                </span>
+                            `).join('')}
+                        </div>
+                        <div class="space-y-4">
+                            ${group.examples.map(ex => `
+                                <div class="flex items-start gap-3 group">
+                                    <button onclick="speakText('${ex.ja.replace(/'/g, "\\'")}')" class="mt-1 w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-indigo-500 hover:text-white transition flex-shrink-0">
+                                        <i class="fas fa-volume-up text-sm"></i>
+                                    </button>
+                                    <div>
+                                        <p class="text-lg font-bold text-gray-800 ja-text">${ex.ja}</p>
+                                        <p class="text-gray-500 text-sm">${ex.vi}</p>
+                                        <div class="mt-1">
+                                            ${ex.gIds ? ex.gIds.map(gid => `<span onclick="openExplan('${gid}')" class="text-[10px] text-gray-400 border border-gray-200 px-1.5 py-0.5 rounded cursor-pointer hover:text-indigo-600 hover:border-indigo-300 mr-1">GT</span>`).join('') : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            toggleMobileDrawer(false);
+        }
+
+        // --- GRAMMAR MODAL LOGIC ---
+        function openExplan(idsStr) {
+             const ids = idsStr.split(','); 
+             const f = document.getElementById('dgFormula'); 
+             const e = document.getElementById('dgExplanation');
+             
+             f.innerHTML = '';
+             e.innerHTML = ids.map(id => {
+                 const g = grammarRepo[id];
+                 if (!g) return `<div class="text-red-400 text-xs">Mã ngữ pháp: ${id}</div>`;
+                 return `
+                 <div class="mb-4 last:mb-0">
+                     <h4 class="font-bold text-indigo-700 flex items-center gap-2"><i class="fas fa-bookmark text-sm"></i> ${g.title}</h4>
+                     <code class="block bg-gray-100 p-2 rounded text-sm font-mono my-2 text-gray-700">${g.formula}</code>
+                     <p class="text-sm text-gray-600">${g.desc}</p>
+                 </div>`;
+             }).join('<hr class="my-4 border-gray-100">');
+             
+             document.getElementById('detailGrammarModal').classList.remove('hidden');
+             setTimeout(() => {
+                 document.getElementById('detailGrammarBackdrop').classList.remove('opacity-0');
+                 document.getElementById('detailGrammarPanel').classList.remove('opacity-0', 'scale-95');
+             }, 10);
+        }
+
+        function closeModal(id) {
+            const b = document.getElementById('detailGrammarBackdrop');
+            const p = document.getElementById('detailGrammarPanel');
+            b.classList.add('opacity-0');
+            p.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => document.getElementById(id).classList.add('hidden'), 200);
+        }
+
+        // --- QUIZ LOGIC ---
+        function switchMode(mode) {
+            document.getElementById('study-view').classList.toggle('hidden', mode !== 'study');
+            document.getElementById('practice-view').classList.toggle('hidden', mode !== 'practice');
+            
+            const btnStudy = document.getElementById('btn-study');
+            const btnPractice = document.getElementById('btn-practice');
+            
+            if(mode === 'study') {
+                btnStudy.className = "px-4 py-1.5 rounded-lg text-sm font-bold bg-indigo-50 text-indigo-600 shadow-sm";
+                btnPractice.className = "px-4 py-1.5 rounded-lg text-sm font-bold text-gray-500 hover:bg-gray-100";
+            } else {
+                btnPractice.className = "px-4 py-1.5 rounded-lg text-sm font-bold bg-green-50 text-green-600 shadow-sm";
+                btnStudy.className = "px-4 py-1.5 rounded-lg text-sm font-bold text-gray-500 hover:bg-gray-100";
+                generateQuiz();
+            }
+        }
+        
+        function generateQuiz() {
+            // Pick random situation & item
+            const sitKeys = Object.keys(situationData);
+            const randSit = situationData[sitKeys[Math.floor(Math.random() * sitKeys.length)]];
+            const randGroup = randSit.items[Math.floor(Math.random() * randSit.items.length)];
+            const targetEx = randGroup.examples[Math.floor(Math.random() * randGroup.examples.length)];
+            
+            // Segment
+            const segments = targetEx.ja.split(/(?=[をにがはの。て、])|(?<=[をにがはの。て、])/g).filter(s => s.trim().length > 0);
+            
+            currentQuizData = {
+                original: targetEx.ja,
+                vi: targetEx.vi,
+                segments: shuffleArray([...segments])
+            };
+
+            document.getElementById('quiz-question-vi').innerText = `"${currentQuizData.vi}"`;
+            document.getElementById('quiz-answer-zone').innerHTML = '<span class="text-gray-400 italic text-sm pointer-events-none">Kéo từ vào đây</span>';
+            
+            const optionsZone = document.getElementById('quiz-options-zone');
+            optionsZone.innerHTML = '';
+            currentQuizData.segments.forEach((seg) => {
+                const btn = document.createElement('button');
+                btn.className = "bg-white border-2 border-indigo-100 text-indigo-700 font-bold py-2 px-4 rounded-lg shadow-sm hover:bg-indigo-50 active:scale-95 transition ja-text text-lg";
+                btn.innerText = seg;
+                btn.onclick = () => addToAnswer(seg, btn);
+                optionsZone.appendChild(btn);
             });
 
-            const listenButtons = document.querySelectorAll('.listen-btn');
-            const synth = window.speechSynthesis;
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            document.getElementById('btn-submit-quiz').disabled = false;
+        }
 
-            if (synth) {
-                let voices = [];
-                const loadVoices = () => {
-                    voices = synth.getVoices().filter(voice => voice.lang === 'ja-JP');
-                };
-                loadVoices();
-                if (speechSynthesis.onvoiceschanged !== undefined) {
-                    speechSynthesis.onvoiceschanged = loadVoices;
-                }
-                
-                listenButtons.forEach(button => {
-                    button.addEventListener('click', function() {
-                        synth.cancel();
-                        const textToSpeak = this.getAttribute('data-text');
-                        if (textToSpeak) {
-                            const utterance = new SpeechSynthesisUtterance(textToSpeak);
-                            utterance.lang = 'ja-JP';
-                            if (voices.length > 0) {
-                                utterance.voice = voices[0];
-                            }
-                            utterance.rate = 0.85;
-                            utterance.pitch = 1.1;
-                            synth.speak(utterance);
-                        }
-                    });
-                });
+        function addToAnswer(text, btnElement) {
+            const zone = document.getElementById('quiz-answer-zone');
+            if (zone.children.length === 1 && zone.children[0].tagName === 'SPAN') zone.innerHTML = '';
+            
+            const chip = document.createElement('div');
+            chip.className = "bg-indigo-600 text-white px-3 py-1 rounded-lg font-bold shadow-md cursor-pointer hover:bg-red-500 transition ja-text flex items-center gap-2 animate-slide-in";
+            chip.innerHTML = `${text}`;
+            chip.onclick = () => {
+                chip.remove();
+                btnElement.classList.remove('opacity-0', 'pointer-events-none');
+                if(zone.children.length === 0) zone.innerHTML = '<span class="text-gray-400 italic text-sm pointer-events-none">Kéo từ vào đây</span>';
+            };
+            
+            zone.appendChild(chip);
+            btnElement.classList.add('opacity-0', 'pointer-events-none');
+        }
+        
+        function resetQuizQuestion() { generateQuiz(); }
+
+        function checkQuizAnswer() {
+            const zone = document.getElementById('quiz-answer-zone');
+            const userAnswer = Array.from(zone.children).map(c => c.innerText).join('');
+            const isCorrect = userAnswer === currentQuizData.original.replace(/\s/g, '');
+            
+            const fb = document.getElementById('quiz-feedback');
+            const icon = document.getElementById('fb-icon');
+            const text = document.getElementById('fb-text');
+            const sub = document.getElementById('fb-subtext');
+            
+            fb.classList.remove('hidden', 'flex');
+            fb.classList.add('flex');
+            
+            if (isCorrect) {
+                icon.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
+                text.innerText = "Chính xác!";
+                text.className = "text-2xl font-bold mb-2 text-green-600";
+                sub.innerText = currentQuizData.original;
+                speakText(currentQuizData.original);
             } else {
-                console.warn('Trình duyệt của bạn không hỗ trợ Text-to-Speech.');
-                listenButtons.forEach(button => button.style.display = 'none');
+                icon.innerHTML = '<i class="fas fa-times-circle text-red-500"></i>';
+                text.innerText = "Tiếc quá!";
+                text.className = "text-2xl font-bold mb-2 text-red-600";
+                sub.innerText = `Đáp án đúng: ${currentQuizData.original}`;
             }
+        }
+        
+        function nextQuizQuestion() { generateQuiz(); }
 
-            const navLinks = navLinksContainer.querySelectorAll('.nav-link');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const targetId = entry.target.id;
-                        navLinks.forEach(link => {
-                            link.classList.remove('active');
-                            if (link.getAttribute('href') === `#${targetId}`) {
-                                link.classList.add('active');
-                            }
-                        });
-                    }
-                });
-            }, { rootMargin: "-40% 0px -60% 0px", threshold: 0 });
+        // --- UTILS ---
+        function toggleMobileDrawer(forceState) {
+            const drawer = document.getElementById('mobileDrawer');
+            const backdrop = document.getElementById('drawerBackdrop');
+            const isOpen = forceState !== undefined ? forceState : !drawer.classList.contains('closed');
+            if (!isOpen) { drawer.classList.remove('open'); drawer.classList.add('closed'); backdrop.classList.add('hidden'); }
+            else { drawer.classList.remove('closed'); drawer.classList.add('open'); backdrop.classList.remove('hidden'); }
+        }
+        function setupMobileDrawer() { toggleMobileDrawer(false); }
+        function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
+        function speakText(text) { if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(text); u.lang = 'ja-JP'; u.rate = 0.9; speechSynthesis.speak(u); } }
 
-            grammarSections.forEach(section => {
-                observer.observe(section);
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+             // Simple search: filter headers
+             document.querySelectorAll('.sit-header').forEach(item => {
+                if(item.innerText.toLowerCase().includes(term)) item.style.display = 'flex';
+                else item.style.display = 'none';
             });
         });
-    </script>
 
+        init();
+    </script>
 </body>
 </html>
