@@ -2,209 +2,484 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sổ tay Kính ngữ Tương tác</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AzaGrammar Master - Kính ngữ N3</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals -->
-    <!-- Application Structure Plan: A two-column single-page application (SPA) focused on Japanese Keigo (Honorifics). The left column is a fixed navigation sidebar listing the three main Keigo categories for quick access. The right column details each category, listing verb transformations with three example sentences each. The core interaction is a "Listen" button next to each example, using the Web Speech API for pronunciation practice. This structure provides a targeted, easy-to-navigate, and interactive learning tool for a complex grammar topic. -->
-    <!-- Visualization & Content Choices: Report Info: Japanese Honorific Verbs (Sonkeigo, Kenjougo). Goal: Allow users to learn and listen to the correct usage of honorific verbs. Viz/Presentation Method: Structured HTML with Tailwind. Key Interaction: A <button> with a Unicode speaker icon (🔊) next to each of the 3 example sentences per verb. Interaction: On click, JavaScript triggers the browser's SpeechSynthesis API to pronounce the Japanese text. Justification: This is a direct, lightweight, and effective way to create an interactive study guide for pronunciation and usage context, fulfilling the user's specific request. Library/Method: Vanilla JS, Tailwind CSS. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        html {
-            scroll-behavior: smooth;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #FDFBF8;
-            color: #4A4A4A;
-        }
-        .grammar-section h3, .grammar-section h4 {
-            border-bottom: 2px solid #EAEAEA;
-            padding-bottom: 8px;
-            margin-bottom: 16px;
-            scroll-margin-top: 20px;
-        }
-        .listen-btn {
-            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
-        }
-        .listen-btn:hover {
-            background-color: #EAEAEA;
-        }
-        .listen-btn:active {
-            transform: scale(0.95);
-        }
-        .nav-link.active {
-            background-color: #D6CDBF;
-            color: #FFFFFF;
-        }
-        .romaji {
-            color: #8C7B6C;
-            font-style: italic;
-            font-size: 0.9em;
-            margin-left: 8px;
-        }
+        body { font-family: 'Nunito', sans-serif; background-color: #f0f2f5; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+        .ja-text { font-family: 'Noto Sans JP', sans-serif; }
+        
+        /* Custom Scrollbar */
+        .scroller::-webkit-scrollbar { width: 6px; }
+        .scroller::-webkit-scrollbar-track { background: transparent; }
+        .scroller::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        
+        /* Category Item */
+        .cat-header { transition: all 0.2s; }
+        .cat-header:hover { background-color: #e0e7ff; }
+        .cat-header.active { background-color: #4f46e5; color: white; }
+        .cat-header.active i { color: white; }
+        
+        /* Grammar Item in List */
+        .g-item { transition: all 0.2s; border-left: 3px solid transparent; }
+        .g-item:hover { background-color: #f8fafc; padding-left: 1rem; }
+        .g-item.active { background-color: #eff6ff; border-left-color: #4f46e5; color: #4338ca; padding-left: 1rem; font-weight: 700; }
+
+        /* Formula Box */
+        .formula-box { background-image: radial-gradient(#e0e7ff 1px, transparent 1px); background-size: 20px 20px; }
+        
+        /* Animation */
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slide-in { animation: slideIn 0.3s ease-out forwards; }
+        
+        .tab-btn.active { border-bottom: 2px solid #4f46e5; color: #4f46e5; font-weight: bold; }
+        
+        /* Mobile Drawer */
+        #mobileDrawer { transition: transform 0.3s ease-in-out; }
+        #mobileDrawer.open { transform: translateX(0); }
+        #mobileDrawer.closed { transform: translateX(-100%); }
     </style>
 </head>
-<body class="antialiased">
+<body class="text-slate-800">
 
-    <div class="flex min-h-screen">
-        <!-- Sidebar Navigation -->
-        <nav id="sidebar" class="w-1/3 lg:w-1/4 bg-[#F4F1ED] p-6 fixed top-0 left-0 h-full overflow-y-auto hidden md:block">
-            <h2 class="text-xl font-bold mb-6 text-[#8C7B6C]">Kính ngữ</h2>
-            <ul id="nav-links" class="space-y-2">
-                <!-- Nav links will be dynamically inserted here -->
-            </ul>
-        </nav>
+    <!-- HEADER -->
+    <header class="bg-white border-b border-gray-200 flex-none z-30 h-14 md:h-16 flex items-center justify-between px-4 shadow-sm">
+        <div class="flex items-center gap-3">
+            <button class="md:hidden text-gray-500 text-xl" onclick="toggleMobileDrawer()"><i class="fas fa-bars"></i></button>
+            <div class="flex items-center gap-2 text-indigo-600">
+                <i class="fas fa-layer-group text-2xl"></i>
+                <h1 class="font-extrabold text-lg md:text-xl tracking-tight">AzaGrammar <span class="text-xs bg-indigo-100 px-2 py-0.5 rounded-full text-indigo-700 ml-1">Kính ngữ N3</span></h1>
+            </div>
+        </div>
+        <div class="flex gap-2">
+             <button onclick="switchMode('study')" id="btn-study" class="px-4 py-1.5 rounded-lg text-sm font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition">Học Tập</button>
+             <button onclick="switchMode('practice')" id="btn-practice" class="px-4 py-1.5 rounded-lg text-sm font-bold text-gray-500 hover:bg-gray-100 transition">Luyện Tập</button>
+        </div>
+    </header>
 
-        <!-- Main Content -->
-        <main class="w-full md:w-2/3 lg:w-3/4 ml-auto p-6 md:p-10">
-            <div class="max-w-4xl mx-auto">
-                <header class="mb-10">
-                    <h1 class="text-4xl font-bold text-[#8C7B6C] mb-2">Sổ tay Kính ngữ Tương tác</h1>
-                    <p class="text-lg text-gray-600">Học Tôn kính ngữ và Khiêm nhường ngữ. Nhấn nút 🔊 để nghe phát âm.</p>
-                </header>
-
-                <div id="grammar-content" class="space-y-12">
-                    
-                    <section id="g-giving-receiving" class="grammar-section">
-                        <h3 class="text-2xl font-bold">Động từ cho - nhận (Kính ngữ)</h3>
-                        <div class="space-y-8">
-                            <div>
-                                <h4 class="text-xl font-semibold text-gray-700">もらう → いただく (nhận - khiêm nhường)</h4>
-                                <ul class="list-disc list-inside mt-4 space-y-2">
-                                    <li>社長にお土産をいただきました。<span class="romaji">(Shachou ni omiyage o itadakimashita.)</span><button class="listen-btn p-1 rounded-full" data-text="社長にお土産をいただきました。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi đã nhận được quà từ giám đốc.*</li>
-                                    <li>先生に日本語を教えていただきました。<span class="romaji">(Sensei ni nihongo o oshiete itadakimashita.)</span><button class="listen-btn p-1 rounded-full" data-text="先生に日本語を教えていただきました。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi đã được cô giáo dạy tiếng Nhật.*</li>
-                                    <li>部長にごちそうしていただきました。<span class="romaji">(Buchou ni gochisou shite itadakimashita.)</span><button class="listen-btn p-1 rounded-full" data-text="部長にごちそうしていただきました。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi đã được trưởng phòng chiêu đãi bữa ăn.*</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 class="text-xl font-semibold text-gray-700">あげる → さしあげる (cho, tặng - khiêm nhường)</h4>
-                                <ul class="list-disc list-inside mt-4 space-y-2">
-                                    <li>私は社長にお茶をさしあげました。<span class="romaji">(Watashi wa shachou ni ocha o sashiagemashita.)</span><button class="listen-btn p-1 rounded-full" data-text="私は社長にお茶をさしあげました。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi đã dâng trà cho giám đốc.*</li>
-                                    <li>先生にお花をさしあげたいです。<span class="romaji">(Sensei ni ohana o sashiagetai desu.)</span><button class="listen-btn p-1 rounded-full" data-text="先生にお花をさしあげたいです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi muốn tặng hoa cho cô giáo.*</li>
-                                    <li>お客様に資料をさしあげます。<span class="romaji">(Okyakusama ni shiryou o sashiagemasu.)</span><button class="listen-btn p-1 rounded-full" data-text="お客様に資料をさしあげます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi xin gửi tài liệu cho quý khách.*</li>
-                                </ul>
-                            </div>
-                             <div>
-                                <h4 class="text-xl font-semibold text-gray-700">くれる → くださる (cho, tặng - tôn kính)</h4>
-                                <ul class="list-disc list-inside mt-4 space-y-2">
-                                    <li>社長が私にお土産をくださいました。<span class="romaji">(Shachou ga watashi ni omiyage o kudasaimashita.)</span><button class="listen-btn p-1 rounded-full" data-text="社長が私にお土産をくださいました。"><span role="img" aria-label="Nghe">🔊</span></button> - *Giám đốc đã tặng quà cho tôi.*</li>
-                                    <li>先生がこの本をくださいました。<span class="romaji">(Sensei ga kono hon o kudasaimashita.)</span><button class="listen-btn p-1 rounded-full" data-text="先生がこの本をくださいました。"><span role="img" aria-label="Nghe">🔊</span></button> - *Thầy giáo đã cho tôi cuốn sách này.*</li>
-                                    <li>部長が新しいパソコンを買ってくださいました。<span class="romaji">(Buchou ga atarashii pasokon o katte kudasaimashita.)</span><button class="listen-btn p-1 rounded-full" data-text="部長が新しいパソコンを買ってくださいました。"><span role="img" aria-label="Nghe">🔊</span></button> - *Trưởng phòng đã mua cho tôi một cái máy tính mới.*</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="g-sonkeigo" class="grammar-section">
-                        <h3 class="text-2xl font-bold">Tôn kính ngữ (尊敬語)</h3>
-                        <div class="space-y-8">
-                            <div><h4 class="text-xl font-semibold text-gray-700">いる・行く・来る → いらっしゃる・おいでになる</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>社長は会議室にいらっしゃいます。<span class="romaji">(Shachou wa kaigishitsu ni irasshaimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="社長は会議室にいらっしゃいます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Giám đốc đang ở trong phòng họp.*</li><li>先生は明日、学校にいらっしゃいますか。<span class="romaji">(Sensei wa ashita, gakkou ni irasshaimasu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="先生は明日、学校にいらっしゃいますか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Thưa cô, ngày mai cô có đến trường không ạ?*</li><li>お客様が本社からおいでになりました。<span class="romaji">(Okyakusama ga honsha kara oide ni narimashita.)</span><button class="listen-btn p-1 rounded-full" data-text="お客様が本社からおいでになりました。"><span role="img" aria-label="Nghe">🔊</span></button> - *Vị khách đã đến từ trụ sở chính.*</li></ul></div>
-                            <div><h4 class="text-xl font-semibold text-gray-700">する → なさる</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>社長はゴルフをなさいますか。<span class="romaji">(Shachou wa gorufu o nasaimasu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="社長はゴルフをなさいますか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Thưa giám đốc, ngài có chơi golf không ạ?*</li><li>先生、ご心配なさらないでください。<span class="romaji">(Sensei, go-shinpai nasaranaide kudasai.)</span><button class="listen-btn p-1 rounded-full" data-text="先生、ご心配なさらないでください。"><span role="img" aria-label="Nghe">🔊</span></button> - *Thưa cô, cô đừng lo lắng ạ.*</li><li>部長は明日、出張なさいます。<span class="romaji">(Buchou wa ashita, shucchou nasaimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="部長は明日、出張なさいます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Trưởng phòng ngày mai sẽ đi công tác.*</li></ul></div>
-                            <div><h4 class="text-xl font-semibold text-gray-700">言う → おっしゃる</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>社長がおっしゃったとおりです。<span class="romaji">(Shachou ga osshatta toori desu.)</span><button class="listen-btn p-1 rounded-full" data-text="社長がおっしゃったとおりです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Đúng như những gì giám đốc đã nói.*</li><li>先生が何とおっしゃったか、覚えていません。<span class="romaji">(Sensei ga nan to osshatta ka, oboete imasen.)</span><button class="listen-btn p-1 rounded-full" data-text="先生が何とおっしゃったか、覚えていません。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi không nhớ cô giáo đã nói gì.*</li><li>お客様のお名前をおっしゃってください。<span class="romaji">(Okyakusama no o-namae o osshatte kudasai.)</span><button class="listen-btn p-1 rounded-full" data-text="お客様のお名前をおっしゃってください。"><span role="img" aria-label="Nghe">🔊</span></button> - *Xin quý khách vui lòng cho biết tên ạ.*</li></ul></div>
-                            <div><h4 class="text-xl font-semibold text-gray-700">食べる・飲む → 召し上がる</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>どうぞ、こちらを召し上がってください。<span class="romaji">(Douzo, kochira o meshiagatte kudasai.)</span><button class="listen-btn p-1 rounded-full" data-text="どうぞ、こちらを召し上がってください。"><span role="img" aria-label="Nghe">🔊</span></button> - *Xin mời ngài dùng món này ạ.*</li><li>社長はもう昼食を召し上がりましたか。<span class="romaji">(Shachou wa mou chuushoku o meshiagarimashita ka.)</span><button class="listen-btn p-1 rounded-full" data-text="社長はもう昼食を召し上がりましたか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Thưa giám đốc, ngài đã dùng bữa trưa chưa ạ?*</li><li>お客様はコーヒーを召し上がりますか。<span class="romaji">(Okyakusama wa koohii o meshiagarimasu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="お客様はコーヒーを召し上がりますか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Thưa quý khách, ngài có dùng cà phê không ạ?*</li></ul></div>
-                            <div><h4 class="text-xl font-semibold text-gray-700">見る → ご覧になる</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>社長、こちらの資料をご覧ください。<span class="romaji">(Shachou, kochira no shiryou o goran kudasai.)</span><button class="listen-btn p-1 rounded-full" data-text="社長、こちらの資料をご覧ください。"><span role="img" aria-label="Nghe">🔊</span></button> - *Thưa giám đốc, xin mời ngài xem tài liệu này.*</li><li>先生はもうその映画をご覧になりましたか。<span class="romaji">(Sensei wa mou sono eiga o goran ni narimashita ka.)</span><button class="listen-btn p-1 rounded-full" data-text="先生はもうその映画をご覧になりましたか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Thưa cô, cô đã xem bộ phim đó chưa ạ?*</li><li>お客様、あちらの景色をご覧ください。<span class="romaji">(Okyakusama, achira no keshiki o goran kudasai.)</span><button class="listen-btn p-1 rounded-full" data-text="お客様、あちらの景色をご覧ください。"><span role="img" aria-label="Nghe">🔊</span></button> - *Thưa quý khách, xin mời ngài ngắm phong cảnh đằng kia.*</li></ul></div>
-                            <div><h4 class="text-xl font-semibold text-gray-700">知っている → ご存じだ</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>この件について、何かご存じですか。<span class="romaji">(Kono ken ni tsuite, nani ka gozonji desu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="この件について、何かご存じですか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Về việc này, ngài có biết gì không ạ?*</li><li>社長は田中さんのことをご存じです。<span class="romaji">(Shachou wa Tanaka-san no koto o gozonji desu.)</span><button class="listen-btn p-1 rounded-full" data-text="社長は田中さんのことをご存じです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Giám đốc có biết về anh Tanaka.*</li><li>先生はそのニュースをご存じないようでした。<span class="romaji">(Sensei wa sono nyuusu o gozonji nai you deshita.)</span><button class="listen-btn p-1 rounded-full" data-text="先生はそのニュースをご存じないようでした。"><span role="img" aria-label="Nghe">🔊</span></button> - *Có vẻ như cô giáo không biết tin tức đó.*</li></ul></div>
-                            <div><h4 class="text-xl font-semibold text-gray-700">死ぬ → お亡くなりになる</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>昨日、有名な作家がお亡くなりになりました。<span class="romaji">(Kinou, yuumei na sakka ga o-naku nari ni narimashita.)</span><button class="listen-btn p-1 rounded-full" data-text="昨日、有名な作家がお亡くなりになりました。"><span role="img" aria-label="Nghe">🔊</span></button> - *Hôm qua, một nhà văn nổi tiếng đã qua đời.*</li><li>会長は３年前にお亡くなりになりました。<span class="romaji">(Kaichou wa san-nen mae ni o-naku nari ni narimashita.)</span><button class="listen-btn p-1 rounded-full" data-text="会長は３年前にお亡くなりになりました。"><span role="img" aria-label="Nghe">🔊</span></button> - *Chủ tịch đã mất vào 3 năm trước.*</li><li>私の祖父は、昨年お亡くなりになりました。<span class="romaji">(Watashi no sofu wa, sakunen o-naku nari ni narimashita.)</span><button class="listen-btn p-1 rounded-full" data-text="私の祖父は、昨年お亡くなりになりました。"><span role="img" aria-label="Nghe">🔊</span></button> - *Ông của tôi đã qua đời vào năm ngoái.*</li></ul></div>
-                             <div><h4 class="text-xl font-semibold text-gray-700">いい → よろしい</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>これでよろしいでしょうか。<span class="romaji">(Kore de yoroshii deshou ka.)</span><button class="listen-btn p-1 rounded-full" data-text="これでよろしいでしょうか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Như thế này đã được chưa ạ?*</li><li>お時間は何時がよろしいですか。<span class="romaji">(O-jikan wa nanji ga yoroshii desu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="お時間は何時がよろしいですか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Mấy giờ thì tiện cho ngài ạ?*</li><li>よろしければ、お名前を教えてください。<span class="romaji">(Yoroshikereba, o-namae o oshiete kudasai.)</span><button class="listen-btn p-1 rounded-full" data-text="よろしければ、お名前を教えてください。"><span role="img" aria-label="Nghe">🔊</span></button> - *Nếu được, xin vui lòng cho tôi biết tên của ngài.*</li></ul></div>
-                        </div>
-                    </section>
-                    
-                    <section id="g-kenjougo" class="grammar-section">
-                        <h3 class="text-2xl font-bold">Khiêm nhường ngữ (謙譲語)</h3>
-                        <div class="space-y-8">
-                            <div><h4 class="text-xl font-semibold text-gray-700">〜です → 〜でございます</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>こちらは山田様でございます。<span class="romaji">(Kochira wa Yamada-sama de gozaimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="こちらは山田様でございます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Đây là ngài Yamada ạ.*</li><li>お電話、ありがとうございます。ABC会社でございます。<span class="romaji">(O-denwa, arigatou gozaimasu. ABC-gaisha de gozaimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="お電話、ありがとうございます。ABC会社でございます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Cảm ơn đã gọi điện. Công ty ABC xin nghe.*</li><li>はい、そうでございます。<span class="romaji">(Hai, sou de gozaimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="はい、そうでございます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Vâng, đúng là như vậy ạ.*</li></ul></div>
-                            <div><h4 class="text-xl font-semibold text-gray-700">ある → ござる</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>お手洗いは二階にございます。<span class="romaji">(O-tearai wa ni-kai ni gozaimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="お手洗いは二階にございます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Nhà vệ sinh ở trên tầng 2 ạ.*</li><li>ご予約の確認でございますか。<span class="romaji">(Go-yoyaku no kakunin de gozaimasu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="ご予約の確認でございますか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Ngài muốn xác nhận đặt chỗ phải không ạ?*</li><li>何か質問はございますか。<span class="romaji">(Nani ka shitsumon wa gozaimasu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="何か質問はございますか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Ngài có câu hỏi nào không ạ?*</li></ul></div>
-                            <div><h4 class="text-xl font-semibold text-gray-700">行く・来る → 参る・伺う</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>明日、そちらへ参ります。<span class="romaji">(Ashita, sochira e mairimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="明日、そちらへ参ります。"><span role="img" aria-label="Nghe">🔊</span></button> - *Ngày mai tôi sẽ đến chỗ của ngài.*</li><li>ただいま、担当者が参ります。<span class="romaji">(Tadaima, tantousha ga mairimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="ただいま、担当者が参ります。"><span role="img" aria-label="Nghe">🔊</span></button> - *Người phụ trách sẽ đến ngay bây giờ ạ.*</li><li>後ほど、お宅へ伺います。<span class="romaji">(Nochihodo, o-taku e ukagaimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="後ほど、お宅へ伺います。"><span role="img" aria-label="Nghe">🔊</span></button> - *Lát nữa tôi sẽ đến nhà của ngài.*</li></ul></div>
-                            <div><h4 class="text-xl font-semibold text-gray-700">いる → おる</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>私は事務所におります。<span class="romaji">(Watashi wa jimusho ni orimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="私は事務所におります。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi đang ở văn phòng ạ.*</li><li>父は今、国におります。<span class="romaji">(Chichi wa ima, kuni ni orimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="父は今、国におります。"><span role="img" aria-label="Nghe">🔊</span></button> - *Bố tôi hiện đang ở quê ạ.*</li><li>担当の田中は、ただ今席におりません。<span class="romaji">(Tantou no Tanaka wa, tadaima seki ni orimasen.)</span><button class="listen-btn p-1 rounded-full" data-text="担当の田中は、ただ今席におりません。"><span role="img" aria-label="Nghe">🔊</span></button> - *Anh Tanaka phụ trách hiện không có ở chỗ ngồi ạ.*</li></ul></div>
-                            <div><h4 class="text-xl font-semibold text-gray-700">する → いたす</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>私がご案内いたします。<span class="romaji">(Watashi ga go-annai itashimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="私がご案内いたします。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi xin phép được hướng dẫn ngài.*</li><li>すぐにお調べいたします。<span class="romaji">(Sugu ni o-shirabe itashimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="すぐにお調べいたします。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi sẽ tra cứu ngay bây giờ ạ.*</li><li>失礼いたしました。<span class="romaji">(Shitsurei itashimashita.)</span><button class="listen-btn p-1 rounded-full" data-text="失礼いたしました。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi đã thất lễ ạ. (Xin lỗi)*</li></ul></div>
-                            <div><h4 class="text-xl font-semibold text-gray-700">言う → 申す・申し上げる</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>私は田中と申します。<span class="romaji">(Watashi wa Tanaka to moushimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="私は田中と申します。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tên tôi là Tanaka ạ.*</li><li>社長にスケジュールを申し上げます。<span class="romaji">(Shachou ni sukejuuru o moushiagemasu.)</span><button class="listen-btn p-1 rounded-full" data-text="社長にスケジュールを申し上げます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi xin trình bày lịch trình với giám đốc.*</li><li>恐れ入りますが、一言申し上げます。<span class="romaji">(Osoreirimasu ga, hitokoto moushiagemasu.)</span><button class="listen-btn p-1 rounded-full" data-text="恐れ入りますが、一言申し上げます。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi xin phép có đôi lời phát biểu ạ.*</li></ul></div>
-                             <div><h4 class="text-xl font-semibold text-gray-700">聞く・訪ねる → 伺う</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>明日、先生のお宅へ伺ってもよろしいでしょうか。<span class="romaji">(Ashita, sensei no o-taku e ukagatte mo yoroshii deshou ka.)</span><button class="listen-btn p-1 rounded-full" data-text="明日、先生のお宅へ伺ってもよろしいでしょうか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Ngày mai, tôi đến thăm nhà cô giáo có được không ạ?*</li><li>ちょっと伺いたいことがあります。<span class="romaji">(Chotto ukagaitai koto ga arimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="ちょっと伺いたいことがあります。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi có việc muốn hỏi ngài một chút ạ.*</li><li>詳しい話を伺いましょう。<span class="romaji">(Kuwashii hanashi o ukagaimashou.)</span><button class="listen-btn p-1 rounded-full" data-text="詳しい話を伺いましょう。"><span role="img" aria-label="Nghe">🔊</span></button> - *Chúng ta hãy nghe câu chuyện chi tiết nào.*</li></ul></div>
-                            <div><h4 class="text-xl font-semibold text-gray-700">見る → 拝見する</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>資料を拝見します。<span class="romaji">(Shiryou o haiken shimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="資料を拝見します。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi xin phép xem tài liệu ạ.*</li><li>メールを拝見しました。<span class="romaji">(Meeru o haiken shimashita.)</span><button class="listen-btn p-1 rounded-full" data-text="メールを拝見しました。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi đã đọc email của ngài rồi ạ.*</li><li>先生の作品を拝見したいです。<span class="romaji">(Sensei no sakuhin o haiken shitai desu.)</span><button class="listen-btn p-1 rounded-full" data-text="先生の作品を拝見したいです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi muốn được xem tác phẩm của thầy ạ.*</li></ul></div>
-                            <div><h4 class="text-xl font-semibold text-gray-700">知っている → 存じている・存じ上げる</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>はい、存じております。<span class="romaji">(Hai, zonjite orimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="はい、存じております。"><span role="img" aria-label="Nghe">🔊</span></button> - *Vâng, tôi có biết ạ.*</li><li>田中様のことはよく存じ上げております。<span class="romaji">(Tanaka-sama no koto wa yoku zonjiagete orimasu.)</span><button class="listen-btn p-1 rounded-full" data-text="田中様のことはよく存じ上げております。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi biết rất rõ về ngài Tanaka ạ.*</li><li>申し訳ありません、存じません。<span class="romaji">(Moushiwake arimasen, zonjimasen.)</span><button class="listen-btn p-1 rounded-full" data-text="申し訳ありません、存じません。"><span role="img" aria-label="Nghe">🔊</span></button> - *Thành thật xin lỗi, tôi không biết ạ.*</li></ul></div>
-                            <div><h4 class="text-xl font-semibold text-gray-700">会う → お目にかかる</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>社長にお目にかかりたいのですが。<span class="romaji">(Shachou ni o-me ni kakaritai no desu ga.)</span><button class="listen-btn p-1 rounded-full" data-text="社長にお目にかかりたいのですが。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi muốn được gặp giám đốc ạ.*</li><li>先生にお目にかかれて、うれしいです。<span class="romaji">(Sensei ni o-me ni kakarete, ureshii desu.)</span><button class="listen-btn p-1 rounded-full" data-text="先生にお目にかかれて、うれしいです。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi rất vui vì được gặp cô giáo.*</li><li>いつお目にかかれますか。<span class="romaji">(Itsu o-me ni kakaremasu ka.)</span><button class="listen-btn p-1 rounded-full" data-text="いつお目にかかれますか。"><span role="img" aria-label="Nghe">🔊</span></button> - *Khi nào tôi có thể gặp được ngài ạ?*</li></ul></div>
-                             <div><h4 class="text-xl font-semibold text-gray-700">いい → 結構です</h4><ul class="list-disc list-inside mt-4 space-y-2"><li>A: お茶のおかわりはいかがですか。B: いいえ、結構です。<span class="romaji">(A: Ocha no okawari wa ikaga desu ka. B: Iie, kekkou desu.)</span><button class="listen-btn p-1 rounded-full" data-text="お茶のおかわりはいかがですか。いいえ、結構です。"><span role="img" aria-label="Nghe">🔊</span></button> - *A: Ngài có muốn dùng thêm trà không ạ? B: Không, tôi đủ rồi.*</li><li>お気持ちだけで結構です。<span class="romaji">(O-kimochi dake de kekkou desu.)</span><button class="listen-btn p-1 rounded-full" data-text="お気持ちだけで結構です。"><span role="img" aria-label="Nghe">🔊</span></button> - *Tôi xin nhận tấm lòng của ngài là đủ rồi ạ.*</li><li>A: こちらでよろしいですか。B: はい、結構です。<span class="romaji">(A: Kochira de yoroshii desu ka. B: Hai, kekkou desu.)</span><button class="listen-btn p-1 rounded-full" data-text="こちらでよろしいですか。はい、結構です。"><span role="img" aria-label="Nghe">🔊</span></button> - *A: Chỗ này được chưa ạ? B: Vâng, được rồi.*</li></ul></div>
-                        </div>
-                    </section>
+    <div class="flex flex-1 overflow-hidden relative">
+        
+        <!-- SIDEBAR (Grammar List) -->
+        <aside id="sidebar" class="hidden md:flex w-80 bg-white border-r border-gray-200 flex-col overflow-hidden z-20">
+            <div class="p-3 border-b border-gray-100">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm (vd: itadaku, nasaru...)" class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
                 </div>
             </div>
+            <div id="categoryList" class="flex-1 scroller overflow-y-auto pb-20">
+                <!-- Categories will be injected here -->
+            </div>
+        </aside>
+
+        <!-- MOBILE DRAWER -->
+        <div id="mobileDrawer" class="fixed inset-y-0 left-0 w-3/4 max-w-xs bg-white shadow-2xl z-50 md:hidden closed flex flex-col">
+            <div class="p-4 bg-indigo-600 text-white flex justify-between items-center">
+                <h2 class="font-bold text-lg">Danh sách ngữ pháp</h2>
+                <button onclick="toggleMobileDrawer()"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="mobileCategoryList" class="flex-1 scroller overflow-y-auto"></div>
+        </div>
+        <div id="drawerBackdrop" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden glass" onclick="toggleMobileDrawer()"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 relative bg-[#f3f4f6] overflow-hidden flex flex-col">
+            
+            <!-- STUDY MODE -->
+            <div id="study-view" class="flex-1 flex flex-col h-full overflow-y-auto scroller p-4 md:p-8">
+                <div class="max-w-3xl mx-auto w-full pb-20 animate-slide-in">
+                    
+                    <!-- Grammar Card -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+                        <!-- Header -->
+                        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white relative">
+                            <div class="absolute top-0 right-0 p-4 opacity-20"><i class="fas fa-book-open text-6xl"></i></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-xs font-bold bg-white/20 px-2 py-0.5 rounded uppercase tracking-wider" id="g-category">Category</span>
+                                    <span class="text-xs font-bold bg-white/20 px-2 py-0.5 rounded font-mono" id="g-id">#01</span>
+                                </div>
+                                <h2 class="text-3xl md:text-4xl font-bold ja-text mb-2" id="g-title">...</h2>
+                                <p class="text-indigo-100 text-lg font-medium" id="g-meaning">...</p>
+                            </div>
+                        </div>
+
+                        <!-- Formula -->
+                        <div class="p-6 border-b border-gray-100 formula-box bg-indigo-50/30">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"><i class="fas fa-flask mr-1"></i> Cấu trúc kết hợp</h3>
+                            <div class="text-lg md:text-xl font-bold text-gray-700 font-mono bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-center" id="g-formula">
+                                ...
+                            </div>
+                            <p class="text-sm text-gray-500 mt-3 leading-relaxed" id="g-desc">...</p>
+                        </div>
+
+                        <!-- Examples -->
+                        <div class="p-6">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4"><i class="fas fa-comments mr-1"></i> Ví dụ minh họa</h3>
+                            <div class="space-y-4" id="g-examples">
+                                <!-- Examples injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mini Quiz Trigger -->
+                    <div class="text-center">
+                        <button onclick="startMiniQuiz()" class="bg-white border-2 border-indigo-100 hover:border-indigo-300 text-indigo-600 font-bold py-3 px-8 rounded-xl shadow-sm transition active:scale-95 flex items-center gap-2 mx-auto">
+                            <i class="fas fa-bolt text-yellow-500"></i> Kiểm tra nhanh mẫu này
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- PRACTICE MODE (Construction Quiz) -->
+            <div id="practice-view" class="hidden flex-1 flex-col h-full bg-white relative">
+                <div class="absolute inset-0 flex flex-col max-w-2xl mx-auto p-6 justify-center">
+                    <div class="mb-8 text-center">
+                        <div class="inline-block bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold mb-2" id="quiz-progress">Câu 1/10</div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-2">Sắp xếp câu hoàn chỉnh</h2>
+                        <p class="text-gray-500 text-sm">Chọn các từ bên dưới theo đúng thứ tự</p>
+                    </div>
+
+                    <!-- Quiz Display -->
+                    <div class="bg-gray-50 rounded-2xl p-6 border-2 border-dashed border-gray-200 mb-6 min-h-[120px] flex flex-wrap items-center gap-2 justify-center" id="quiz-answer-zone">
+                        <!-- Dropped items go here -->
+                    </div>
+
+                    <div class="mb-8">
+                         <p class="text-center text-gray-600 text-sm mb-4" id="quiz-question-vi">...</p>
+                         <div class="flex flex-wrap justify-center gap-3" id="quiz-options-zone">
+                             <!-- Option buttons -->
+                         </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button onclick="resetQuizQuestion()" class="flex-1 py-3 rounded-xl border border-gray-300 text-gray-600 font-bold hover:bg-gray-50 transition"><i class="fas fa-undo"></i> Làm lại</button>
+                        <button onclick="checkQuizAnswer()" class="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg transition shadow-indigo-200" id="btn-submit-quiz">Kiểm tra</button>
+                    </div>
+                    
+                    <!-- Feedback Overlay -->
+                    <div id="quiz-feedback" class="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 hidden flex-col items-center justify-center text-center p-6 rounded-2xl">
+                        <div class="text-6xl mb-4" id="fb-icon"></div>
+                        <h3 class="text-2xl font-bold mb-2" id="fb-text"></h3>
+                        <p class="text-gray-500 mb-6" id="fb-subtext"></p>
+                        <button onclick="nextQuizQuestion()" class="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition">Tiếp tục <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const grammarSections = document.querySelectorAll('.grammar-section');
-            const navLinksContainer = document.getElementById('nav-links');
+        // --- DATA: Categorized Grammar N3 (Keigo Focused) ---
+        const grammarData = {
+            "give_receive": {
+                name: "1. Cho & Nhận (Kính ngữ)",
+                icon: "gift",
+                color: "pink",
+                items: [
+                    { id: "k_01", title: "いただく (Nhận - Khiêm nhường)", formula: "もらう → いただく", desc: "Khiêm nhường ngữ của 'morau'. Dùng khi mình nhận từ người bề trên.", ex: [{ja:"社長にお土産をいただきました。", vi:"Tôi đã nhận được quà từ giám đốc."}, {ja:"先生に教えていただきました。", vi:"Tôi đã được cô giáo dạy bảo."}] },
+                    { id: "k_02", title: "くださる (Cho - Tôn kính)", formula: "くれる → くださる", desc: "Tôn kính ngữ của 'kureru'. Dùng khi người bề trên cho mình.", ex: [{ja:"先生が本をくださいました。", vi:"Thầy giáo đã cho tôi cuốn sách."}, {ja:"部長が褒めてくださいました。", vi:"Trưởng phòng đã khen ngợi tôi."}] },
+                    { id: "k_03", title: "さしあげる (Tặng - Khiêm nhường)", formula: "あげる → さしあげる", desc: "Khiêm nhường ngữ của 'ageru'. Dùng khi mình tặng cho người bề trên.", ex: [{ja:"先生にお花をさしあげました。", vi:"Tôi đã biếu hoa cho cô giáo."}, {ja:"お客様に粗品をさしあげます。", vi:"Tôi xin tặng quý khách món quà nhỏ."}] }
+                ]
+            },
+            "sonkeigo": {
+                name: "2. Tôn kính ngữ (Sonkeigo)",
+                icon: "user-tie",
+                color: "blue",
+                items: [
+                    { id: "k_04", title: "いらっしゃる (Ở/Đi/Đến)", formula: "いる・行く・来る → いらっしゃる", desc: "Tôn kính ngữ dùng cho người bề trên đang ở đâu, đi đâu hoặc đến đâu.", ex: [{ja:"社長は会議室にいらっしゃいます。", vi:"Giám đốc đang ở phòng họp."}, {ja:"先生はいついらっしゃいますか。", vi:"Khi nào thầy đến ạ?"}] },
+                    { id: "k_05", title: "召し上がる (Ăn/Uống)", formula: "食べる・飲む → 召し上がる", desc: "Tôn kính ngữ dùng cho hành động ăn/uống của người bề trên.", ex: [{ja:"どうぞ、召し上がってください。", vi:"Xin mời ngài dùng bữa."}, {ja:"お酒を召し上がりますか。", vi:"Ngài có dùng rượu không ạ?"}] },
+                    { id: "k_06", title: "おっしゃる (Nói)", formula: "言う → おっしゃる", desc: "Tôn kính ngữ dùng cho hành động nói của người bề trên.", ex: [{ja:"先生がおっしゃったとおりです。", vi:"Đúng như lời thầy nói."}, {ja:"お名前をおっしゃってください。", vi:"Xin ngài vui lòng cho biết tên."}] },
+                    { id: "k_07", title: "なさる (Làm)", formula: "する → なさる", desc: "Tôn kính ngữ dùng cho hành động làm của người bề trên.", ex: [{ja:"週末は何をなさいますか。", vi:"Cuối tuần ngài sẽ làm gì ạ?"}, {ja:"ご心配なさらないでください。", vi:"Xin ngài đừng lo lắng."}] },
+                    { id: "k_08", title: "ご覧になる (Nhìn/Xem)", formula: "見る → ご覧になる", desc: "Tôn kính ngữ dùng cho hành động nhìn/xem của người bề trên.", ex: [{ja:"こちらの資料をご覧ください。", vi:"Xin mời ngài xem tài liệu này."}, {ja:"テレビをご覧になりますか。", vi:"Ngài có xem TV không ạ?"}] },
+                    { id: "k_09", title: "ご存じだ (Biết)", formula: "知っている → ご存じだ", desc: "Tôn kính ngữ dùng khi hỏi người bề trên có biết không.", ex: [{ja:"田中さんをご存じですか。", vi:"Ngài có biết anh Tanaka không ạ?"}, {ja:"その件はご存じですか。", vi:"Ngài có biết về việc đó không ạ?"}] }
+                ]
+            },
+            "kenjougo": {
+                name: "3. Khiêm nhường ngữ (Kenjougo)",
+                icon: "hand-holding-heart",
+                color: "green",
+                items: [
+                    { id: "k_10", title: "参る (Đi/Đến)", formula: "行く・来る → 参る", desc: "Khiêm nhường ngữ của 'iku/kuru'. Dùng cho bản thân.", ex: [{ja:"明日、そちらへ参ります。", vi:"Ngày mai tôi sẽ đến chỗ ngài."}, {ja:"ただいま参ります。", vi:"Tôi sẽ đến ngay đây."}] },
+                    { id: "k_11", title: "おる (Ở)", formula: "いる → おる", desc: "Khiêm nhường ngữ của 'iru'. Dùng cho bản thân.", ex: [{ja:"私はロビーにおります。", vi:"Tôi đang ở sảnh ạ."}, {ja:"父は家に居ります。", vi:"Bố tôi đang ở nhà ạ."}] },
+                    { id: "k_12", title: "申す (Nói/Tên là)", formula: "言う → 申す", desc: "Khiêm nhường ngữ của 'iu'. Dùng để xưng tên hoặc nói với người trên.", ex: [{ja:"私は田中と申します。", vi:"Tên tôi là Tanaka ạ."}, {ja:"よろしくお願い申し上げます。", vi:"Rất mong được giúp đỡ ạ."}] },
+                    { id: "k_13", title: "致す (Làm)", formula: "する → 致す", desc: "Khiêm nhường ngữ của 'suru'.", ex: [{ja:"私がご案内いたします。", vi:"Tôi xin phép được hướng dẫn ngài."}, {ja:"失礼いたします。", vi:"Tôi xin thất lễ (xin lỗi/tạm biệt)."}] },
+                    { id: "k_14", title: "拝見する (Nhìn/Xem)", formula: "見る → 拝見する", desc: "Khiêm nhường ngữ của 'miru'. Dùng khi mình xem cái gì của người trên.", ex: [{ja:"メールを拝見しました。", vi:"Tôi đã xem email rồi ạ."}, {ja:"切符を拝見します。", vi:"Tôi xin phép xem vé."}] },
+                    { id: "k_15", title: "伺う (Hỏi/Nghe/Đến thăm)", formula: "聞く・訪ねる → 伺う", desc: "Khiêm nhường ngữ đa năng. Dùng khi hỏi, nghe hoặc đến thăm người trên.", ex: [{ja:"お宅へ伺ってもよろしいですか。", vi:"Tôi đến thăm nhà ngài có được không ạ?"}, {ja:"ご意見を伺いたいです。", vi:"Tôi muốn nghe ý kiến của ngài."}] },
+                    { id: "k_16", title: "お目にかかる (Gặp)", formula: "会う → お目にかかる", desc: "Khiêm nhường ngữ của 'au'. Dùng khi mình gặp người trên.", ex: [{ja:"お目にかかれて光栄です。", vi:"Rất vinh hạnh được gặp ngài."}, {ja:"いつお目にかかれますか。", vi:"Khi nào tôi có thể gặp ngài ạ?"}] }
+                ]
+            }
+        };
 
-            grammarSections.forEach(section => {
-                const sectionId = section.id;
-                const sectionTitle = section.querySelector('h3').textContent;
-                const listItem = document.createElement('li');
-                const link = document.createElement('a');
-                link.href = `#${sectionId}`;
-                link.textContent = sectionTitle;
-                link.className = 'nav-link block px-4 py-2 rounded-md hover:bg-[#D6CDBF] hover:text-white transition-colors duration-200';
-                listItem.appendChild(link);
-                navLinksContainer.appendChild(listItem);
+        let currentCategory = 'give_receive';
+        let currentGrammarId = 'k_01';
+        let currentQuizData = null;
+
+        function init() {
+            renderCategories();
+            selectCategory('give_receive'); // Default load
+            setupMobileDrawer();
+        }
+
+        function renderCategories() {
+            const list = document.getElementById('categoryList');
+            const mobileList = document.getElementById('mobileCategoryList');
+            let html = '';
+            
+            Object.keys(grammarData).forEach(key => {
+                const cat = grammarData[key];
+                html += `
+                    <div class="mb-2">
+                        <div onclick="selectCategory('${key}')" class="cat-header p-3 rounded-lg cursor-pointer flex items-center justify-between font-bold text-gray-700 hover:bg-gray-100" data-cat="${key}">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-${cat.color}-100 text-${cat.color}-600 flex items-center justify-center"><i class="fas fa-${cat.icon}"></i></div>
+                                <span>${cat.name}</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform" id="chevron-${key}"></i>
+                        </div>
+                        <div id="list-${key}" class="hidden pl-11 pr-2 space-y-1 mt-1">
+                            ${cat.items.map((g, idx) => `
+                                <div onclick="loadGrammar('${key}', '${g.id}')" class="g-item p-2 rounded text-sm cursor-pointer text-gray-600" id="item-${g.id}">
+                                    ${g.title.split('(')[0]}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+            mobileList.innerHTML = html;
+        }
+
+        function selectCategory(key) {
+            Object.keys(grammarData).forEach(k => {
+                document.getElementById(`list-${k}`)?.classList.add('hidden');
+                document.getElementById(`chevron-${k}`)?.classList.remove('rotate-180');
+                document.querySelectorAll(`.cat-header[data-cat="${k}"]`).forEach(el => el.classList.remove('active'));
             });
 
-            const listenButtons = document.querySelectorAll('.listen-btn');
-            const synth = window.speechSynthesis;
+            document.querySelectorAll(`[id^="list-${key}"]`).forEach(el => el.classList.remove('hidden'));
+            document.querySelectorAll(`[id^="chevron-${key}"]`).forEach(el => el.classList.add('rotate-180'));
+            document.querySelectorAll(`.cat-header[data-cat="${key}"]`).forEach(el => el.classList.add('active'));
+            
+            const firstItem = grammarData[key].items[0];
+            loadGrammar(key, firstItem.id);
+        }
 
-            if (synth) {
-                let voices = [];
-                const loadVoices = () => {
-                    voices = synth.getVoices().filter(voice => voice.lang === 'ja-JP');
-                };
-                loadVoices();
-                if (speechSynthesis.onvoiceschanged !== undefined) {
-                    speechSynthesis.onvoiceschanged = loadVoices;
-                }
-                
-                listenButtons.forEach(button => {
-                    button.addEventListener('click', function() {
-                        synth.cancel();
-                        const textToSpeak = this.getAttribute('data-text');
-                        if (textToSpeak) {
-                            const utterance = new SpeechSynthesisUtterance(textToSpeak);
-                            utterance.lang = 'ja-JP';
-                            if (voices.length > 0) {
-                                utterance.voice = voices[0];
-                            }
-                            utterance.rate = 0.85;
-                            utterance.pitch = 1.1;
-                            synth.speak(utterance);
-                        }
-                    });
-                });
+        function loadGrammar(catKey, gId) {
+            currentGrammarId = gId;
+            currentCategory = catKey;
+            
+            document.querySelectorAll('.g-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll(`[id^="item-${gId}"]`).forEach(el => el.classList.add('active'));
+
+            const data = grammarData[catKey].items.find(i => i.id === gId);
+            if(!data) return;
+
+            document.getElementById('g-category').innerText = grammarData[catKey].name;
+            document.getElementById('g-id').innerText = '#' + gId.replace('k_', '');
+            document.getElementById('g-title').innerText = data.title;
+            // Extract content inside parenthesis for meaning
+            const meaningMatch = data.title.match(/\((.*?)\)/);
+            document.getElementById('g-meaning').innerText = meaningMatch ? meaningMatch[1] : "";
+            
+            // Format formula with icons
+            document.getElementById('g-formula').innerHTML = data.formula
+                .replace(/→/g, ' <i class="fas fa-arrow-right text-indigo-400 mx-2"></i> ')
+                .replace(/\+/g, ' <i class="fas fa-plus text-xs text-gray-400"></i> ');
+            
+            document.getElementById('g-desc').innerText = data.desc;
+
+            const exContainer = document.getElementById('g-examples');
+            exContainer.innerHTML = data.ex.map(e => `
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 hover:border-indigo-200 transition group relative">
+                    <button onclick="speakText('${e.ja.replace(/'/g, "\\'")}')" class="absolute top-4 right-4 text-gray-300 hover:text-indigo-500 transition"><i class="fas fa-volume-up text-xl"></i></button>
+                    <p class="text-lg font-bold text-gray-800 ja-text mb-1 pr-8">${e.ja}</p>
+                    <p class="text-sm text-gray-500">${e.vi}</p>
+                </div>
+            `).join('');
+
+            toggleMobileDrawer(false);
+        }
+
+        function switchMode(mode) {
+            document.getElementById('study-view').classList.toggle('hidden', mode !== 'study');
+            document.getElementById('practice-view').classList.toggle('hidden', mode !== 'practice');
+            
+            const btnStudy = document.getElementById('btn-study');
+            const btnPractice = document.getElementById('btn-practice');
+            
+            if(mode === 'study') {
+                btnStudy.className = "px-4 py-1.5 rounded-lg text-sm font-bold bg-indigo-50 text-indigo-600 shadow-sm";
+                btnPractice.className = "px-4 py-1.5 rounded-lg text-sm font-bold text-gray-500 hover:bg-gray-100";
             } else {
-                console.warn('Trình duyệt của bạn không hỗ trợ Text-to-Speech.');
-                listenButtons.forEach(button => button.style.display = 'none');
+                btnPractice.className = "px-4 py-1.5 rounded-lg text-sm font-bold bg-green-50 text-green-600 shadow-sm";
+                btnStudy.className = "px-4 py-1.5 rounded-lg text-sm font-bold text-gray-500 hover:bg-gray-100";
+                generateQuiz();
             }
+        }
 
-            const navLinks = navLinksContainer.querySelectorAll('.nav-link');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const targetId = entry.target.id;
-                        navLinks.forEach(link => {
-                            link.classList.remove('active');
-                            if (link.getAttribute('href') === `#${targetId}`) {
-                                link.classList.add('active');
-                            }
-                        });
-                    }
-                });
-            }, { rootMargin: "-40% 0px -60% 0px", threshold: 0 });
+        function startMiniQuiz() {
+            switchMode('practice');
+        }
 
-            grammarSections.forEach(section => {
-                observer.observe(section);
+        function generateQuiz() {
+            const cat = grammarData[currentCategory];
+            const item = cat.items.find(i => i.id === currentGrammarId);
+            const targetEx = item.ex[0]; 
+            
+            // Basic segmentation simulation for Japanese sentence
+            // Splitting by particles and major punctuation for a simple ordering game
+            const segments = targetEx.ja.split(/(?=[をにがはの。て、])|(?<=[をにがはの。て、])/g).filter(s => s.trim().length > 0);
+            
+            currentQuizData = {
+                original: targetEx.ja,
+                vi: targetEx.vi,
+                segments: shuffleArray([...segments])
+            };
+
+            document.getElementById('quiz-question-vi').innerText = `"${currentQuizData.vi}"`;
+            document.getElementById('quiz-answer-zone').innerHTML = '<span class="text-gray-400 italic text-sm pointer-events-none">Kéo từ vào đây hoặc bấm chọn</span>';
+            
+            const optionsZone = document.getElementById('quiz-options-zone');
+            optionsZone.innerHTML = '';
+            currentQuizData.segments.forEach((seg, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "bg-white border-2 border-indigo-100 text-indigo-700 font-bold py-2 px-4 rounded-lg shadow-sm hover:bg-indigo-50 active:scale-95 transition ja-text text-lg";
+                btn.innerText = seg;
+                btn.onclick = () => addToAnswer(seg, btn);
+                optionsZone.appendChild(btn);
+            });
+
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            document.getElementById('btn-submit-quiz').disabled = false;
+        }
+
+        function addToAnswer(text, btnElement) {
+            const zone = document.getElementById('quiz-answer-zone');
+            if (zone.children.length === 1 && zone.children[0].tagName === 'SPAN') zone.innerHTML = '';
+            
+            const chip = document.createElement('div');
+            chip.className = "bg-indigo-600 text-white px-3 py-1 rounded-lg font-bold shadow-md cursor-pointer hover:bg-red-500 transition ja-text flex items-center gap-2 animate-slide-in";
+            chip.innerHTML = `${text}`;
+            chip.onclick = () => {
+                chip.remove();
+                btnElement.classList.remove('opacity-0', 'pointer-events-none');
+                if(zone.children.length === 0) zone.innerHTML = '<span class="text-gray-400 italic text-sm pointer-events-none">Kéo từ vào đây hoặc bấm chọn</span>';
+            };
+            
+            zone.appendChild(chip);
+            btnElement.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function resetQuizQuestion() {
+            generateQuiz();
+        }
+
+        function checkQuizAnswer() {
+            const zone = document.getElementById('quiz-answer-zone');
+            const userAnswer = Array.from(zone.children).map(c => c.innerText).join('');
+            // Normalize spaces for comparison
+            const isCorrect = userAnswer === currentQuizData.original.replace(/\s/g, '');
+            
+            const fb = document.getElementById('quiz-feedback');
+            const icon = document.getElementById('fb-icon');
+            const text = document.getElementById('fb-text');
+            const sub = document.getElementById('fb-subtext');
+            
+            fb.classList.remove('hidden', 'flex');
+            fb.classList.add('flex');
+            
+            if (isCorrect) {
+                icon.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
+                text.innerText = "Chính xác!";
+                text.className = "text-2xl font-bold mb-2 text-green-600";
+                sub.innerText = currentQuizData.original;
+                speakText(currentQuizData.original);
+            } else {
+                icon.innerHTML = '<i class="fas fa-times-circle text-red-500"></i>';
+                text.innerText = "Tiếc quá!";
+                text.className = "text-2xl font-bold mb-2 text-red-600";
+                sub.innerText = `Đáp án đúng: ${currentQuizData.original}`;
+            }
+        }
+        
+        function nextQuizQuestion() {
+             const allItems = Object.values(grammarData).flatMap(c => c.items);
+             const currIdx = allItems.findIndex(i => i.id === currentGrammarId);
+             const nextItem = allItems[(currIdx + 1) % allItems.length];
+             
+             let nextCatKey = '';
+             for(const [key, cat] of Object.entries(grammarData)) {
+                 if(cat.items.find(i => i.id === nextItem.id)) {
+                     nextCatKey = key;
+                     break;
+                 }
+             }
+             
+             if(nextCatKey) {
+                 loadGrammar(nextCatKey, nextItem.id);
+                 generateQuiz();
+             }
+             document.getElementById('quiz-feedback').classList.add('hidden');
+        }
+
+        function toggleMobileDrawer(forceState) {
+            const drawer = document.getElementById('mobileDrawer');
+            const backdrop = document.getElementById('drawerBackdrop');
+            const isOpen = forceState !== undefined ? forceState : !drawer.classList.contains('closed');
+            
+            if (!isOpen) {
+                drawer.classList.remove('open');
+                drawer.classList.add('closed');
+                backdrop.classList.add('hidden');
+            } else {
+                drawer.classList.remove('closed');
+                drawer.classList.add('open');
+                backdrop.classList.remove('hidden');
+            }
+        }
+        
+        function setupMobileDrawer() {
+            toggleMobileDrawer(false);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = 'ja-JP';
+                u.rate = 0.9;
+                speechSynthesis.speak(u);
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('.g-item').forEach(item => {
+                const text = item.innerText.toLowerCase();
+                if(text.includes(term)) {
+                    item.classList.remove('hidden');
+                    item.parentElement.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
             });
         });
-    </script>
 
+        init();
+
+    </script>
 </body>
 </html>
