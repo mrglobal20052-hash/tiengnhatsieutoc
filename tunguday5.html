@@ -3,300 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>AzaKanji Tango - Ngày 5: Đếm & Mua sắm</title>
+    <title>AzaKanji Master - Ngày 5 (Đếm & Mua sắm)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Nunito', 'Inter', sans-serif; background-color: #f3f4f6; height: 100dvh; overflow: hidden; }
+        body { font-family: 'Nunito', sans-serif; background-color: #f3f4f6; height: 100dvh; overflow: hidden; }
         .ja-text { font-family: 'Noto Sans JP', sans-serif; }
         .scroller { -webkit-overflow-scrolling: touch; overflow-y: auto; }
-        .scroller::-webkit-scrollbar { width: 5px; height: 5px; }
-        .scroller::-webkit-scrollbar-track { background: transparent; }
+        .scroller::-webkit-scrollbar { width: 6px; height: 6px; }
         .scroller::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
-        
-        .vocab-item { transition: all 0.2s; }
-        .vocab-item.active { background-color: #eef2ff; border-left: 4px solid #4f46e5; color: #4338ca; padding-left: 0.75rem; }
-        
-        .shadow-card { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s; }
-        .shadow-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-        
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-top: 1px solid rgba(255, 255, 255, 0.3); }
-        
-        .tab-btn.active { background-color: white; color: #312e81; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); }
-        .tab-btn { color: #a5b4fc; }
-        
-        /* Animation Classes */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-        .wrong-anim { animation: shake 0.3s ease-in-out; }
-        
-        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        .correct-anim { animation: pop 0.3s ease-in-out; }
-
-        /* Stroke Order Styles */
+        .vocab-item.active { background-color: #eef2ff; border-left: 4px solid #4f46e5; color: #4338ca; }
         .stroke-grid-box { border: 1px solid #e5e7eb; background-color: white; position: relative; }
         .stroke-grid-box::after { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: repeating-linear-gradient(to bottom, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); pointer-events: none; }
         .stroke-grid-box::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: repeating-linear-gradient(to right, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); pointer-events: none; }
-        
-        /* Hide stroke paths initially */
         #strokeAnimContainer svg path { opacity: 0; }
+        .reveal-content { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="flex flex-col text-slate-800">
 
-    <!-- HEADER -->
     <header class="bg-indigo-700 text-white shadow-lg flex-none z-40 relative">
-        <div class="container mx-auto px-4 py-2 md:py-3">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-3">
-                <div class="flex items-center gap-3 cursor-pointer select-none w-full md:w-auto justify-between" onclick="location.reload()">
-                    <div class="flex items-center gap-3">
-                        <i class="fas fa-torii-gate text-3xl text-white"></i>
-                        <div>
-                            <h1 class="text-lg md:text-xl font-bold uppercase tracking-wider">AzaKanji Tango</h1>
-                            <p class="text-[10px] md:text-xs text-indigo-200">Ngày 5: Đếm & Mua sắm</p>
-                        </div>
-                    </div>
-                    <div class="md:hidden text-xs font-semibold bg-indigo-800 px-3 py-1 rounded-full border border-indigo-500/50"><span id="headerProgress">1/87</span></div>
-                </div>
-                <div class="flex items-center gap-3 w-full md:w-auto">
-                    <div class="flex bg-indigo-900/50 rounded-lg p-1 w-full md:w-auto overflow-x-auto no-scrollbar">
-                        <button onclick="switchTab('learn')" id="tab-learn" class="tab-btn active flex-1 md:flex-none px-4 py-1.5 rounded-md text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap"><i class="fas fa-book-open"></i> Học Từ</button>
-                        <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn flex-1 md:flex-none px-4 py-1.5 rounded-md text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap"><i class="fas fa-keyboard"></i> Kiểm Tra</button>
-                        <div class="w-px bg-indigo-600 mx-1"></div>
-                        <button onclick="openGrammarList()" class="tab-btn flex-1 md:flex-none px-4 py-1.5 rounded-md text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap"><i class="fas fa-scroll"></i> Cẩm Nang</button>
+        <div class="container mx-auto px-4 py-2 flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex items-center justify-between w-full md:w-auto gap-3 cursor-pointer" onclick="location.reload()">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-torii-gate text-3xl text-pink-400 drop-shadow-md"></i>
+                    <div>
+                        <h1 class="text-lg font-black uppercase tracking-widest">AzaKanji Master</h1>
+                        <p class="text-[10px] text-indigo-200 font-bold uppercase tracking-wider">Ngày 5: Đếm & Mua sắm (FULL 96 KANJI)</p>
                     </div>
                 </div>
+                <div class="md:hidden bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 shadow-inner" id="mobileProgress">1/87</div>
+            </div>
+            
+            <div class="flex bg-indigo-900/50 rounded-xl p-1 w-full md:w-auto overflow-x-auto no-scrollbar shadow-inner gap-1">
+                <button onclick="switchTab('learn')" id="tab-learn" class="tab-btn flex-1 md:flex-none px-5 py-2 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 active bg-white text-indigo-900 shadow"><i class="fas fa-book-open text-indigo-600"></i> Học Từ</button>
+                <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn flex-1 md:flex-none px-5 py-2 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 text-indigo-100 hover:text-white hover:bg-indigo-800/50"><i class="fas fa-gamepad"></i> Luyện Tập</button>
+                <div class="w-px bg-indigo-600/50 mx-1"></div>
+                <button onclick="showModal('grammarListModal')" class="tab-btn flex-1 md:flex-none px-5 py-2 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 text-indigo-100 hover:text-white hover:bg-indigo-800/50"><i class="fas fa-scroll text-yellow-400"></i> Cẩm Nang</button>
             </div>
         </div>
     </header>
 
     <div class="flex flex-1 overflow-hidden relative w-full">
-        <!-- DESKTOP SIDEBAR -->
-        <aside class="hidden md:flex w-72 bg-white border-r border-gray-200 flex-col z-10">
-            <div class="p-4 border-b border-gray-100 bg-gray-50">
-                <div class="relative">
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                    <input type="text" id="searchInput" placeholder="Tìm kiếm từ..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm outline-none">
-                </div>
+        <aside class="hidden md:flex w-80 bg-white border-r border-gray-200 flex-col z-10 shadow-sm">
+            <div class="p-4 border-b bg-gray-50 flex items-center gap-3">
+                <div class="bg-indigo-100 text-indigo-600 p-2 rounded-lg"><i class="fas fa-search"></i></div>
+                <input type="text" id="searchInput" placeholder="Tìm Kanji, Hiragana, Nghĩa..." class="w-full bg-transparent text-sm outline-none font-bold placeholder:text-gray-400 placeholder:font-medium">
             </div>
-            <div id="vocabList" class="flex-1 scroller p-2 space-y-1"></div>
+            <div id="vocabList" class="flex-1 scroller p-3 space-y-1.5"></div>
         </aside>
 
-        <!-- MAIN CONTENT (LEARN MODE) -->
-        <main id="learn-section" class="flex-1 overflow-y-auto scroller bg-slate-50 p-4 pb-28 w-full scroll-smooth">
-            <div class="max-w-3xl mx-auto flex flex-col items-center animate-fade-in">
-                <!-- Flashcard -->
-                <div class="w-full bg-white rounded-2xl p-6 shadow-sm border border-gray-200 mb-6 relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-50 to-pink-50 rounded-bl-full -mr-8 -mt-8 z-0 opacity-60 transition-transform group-hover:scale-110 duration-700"></div>
-                    <div class="relative z-10 text-center">
-                        <div class="inline-flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-full mb-4 border border-gray-100">
-                            <span id="wordType" class="text-[10px] font-bold uppercase text-indigo-500">WORD</span>
-                            <div class="w-px h-3 bg-gray-300"></div>
-                            <span class="text-[10px] text-gray-400 font-mono" id="wordIndex">#1</span>
-                        </div>
-                        <div class="relative inline-block mb-2">
-                            <h2 id="cardKanji" class="text-5xl md:text-6xl font-bold text-gray-800 ja-text tracking-tight cursor-pointer hover:text-indigo-700 transition-colors" onclick="speakCurrent()">ケーキ</h2>
-                            <button id="strokeBtn" onclick="openStrokeModal()" class="absolute -right-10 top-2 w-8 h-8 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center shadow-sm hover:bg-pink-200 hover:scale-110 transition-all hidden" title="Tập viết">
-                                <i class="fas fa-pen-nib text-sm"></i>
-                            </button>
-                        </div>
-                        <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="speakCurrent()">
-                            <span id="cardFurigana" class="text-xl text-indigo-600 font-medium ja-text">ケーキ</span>
-                            <span id="cardMeaning" class="text-lg text-gray-500 font-medium">Bánh ngọt</span>
-                        </div>
+        <main id="learn-section" class="flex-1 overflow-y-auto scroller bg-slate-50/50 p-4 md:p-8 pb-32">
+            <div class="max-w-3xl mx-auto space-y-8 animate-fade-in">
+                <div class="bg-white rounded-[2rem] p-10 shadow-sm border border-gray-100 text-center relative overflow-hidden group">
+                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-indigo-50 to-pink-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-1000"></div>
+                    <div id="wordIndex" class="absolute top-6 left-6 bg-gray-100 text-gray-500 px-3 py-1 rounded-lg text-xs font-black font-mono tracking-widest shadow-inner">#01</div>
+                    <div class="relative z-10 inline-block mt-4">
+                        <h2 id="cardKanji" class="text-7xl md:text-[6rem] font-black text-gray-800 ja-text mb-6 cursor-pointer transition-transform active:scale-95 drop-shadow-sm hover:text-indigo-600" onclick="speakCurrent()"></h2>
+                        <button id="strokeBtn" onclick="openStrokeModal()" class="absolute -right-16 top-4 w-12 h-12 bg-pink-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-pink-200 hover:bg-pink-600 hover:-translate-y-1 transition-all" title="Phân tích Kanji 5 Bước">
+                            <i class="fas fa-pen-nib text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="relative z-10 space-y-2">
+                        <span id="cardFurigana" class="text-2xl text-indigo-600 font-bold ja-text block"></span>
+                        <span id="cardMeaning" class="text-2xl text-gray-500 font-black uppercase tracking-wide block"></span>
                     </div>
                 </div>
 
-                <!-- Shadowing Sentences -->
-                <div class="w-full">
-                    <div class="flex items-center gap-2 mb-4 px-1">
-                        <div class="bg-pink-100 text-pink-600 p-1.5 rounded-lg text-sm"><i class="fas fa-comments"></i></div>
-                        <h3 class="font-bold text-gray-700 text-lg">Hội thoại đời sống</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3 px-2">
+                        <div class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-2 rounded-xl shadow-md"><i class="fas fa-comments"></i></div>
+                        <h3 class="font-black text-gray-800 text-xl tracking-tight">Ngữ cảnh & Phân tích</h3>
                     </div>
-                    <div id="sentenceList" class="space-y-4"></div>
-                    
-                    <!-- Empty State -->
-                    <div id="emptyState" class="hidden flex-col items-center justify-center p-8 text-center bg-white rounded-2xl border border-dashed border-gray-300 text-gray-400">
-                        <i class="fas fa-comment-dots text-4xl mb-2 text-gray-300"></i>
-                        <p class="text-sm">Chưa có hội thoại mẫu cho từ này.</p>
-                        <p class="text-xs text-gray-300 mt-1">(Dữ liệu đang cập nhật)</p>
-                    </div>
+                    <div id="sentenceList" class="space-y-5"></div>
                 </div>
             </div>
         </main>
 
-        <!-- QUIZ MODE -->
-        <div id="quiz-section" class="hidden flex-1 w-full overflow-y-auto scroller bg-slate-100 p-4 absolute inset-0 z-20">
-            <div class="max-w-2xl mx-auto mt-4 md:mt-10 animate-fade-in">
-                <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
-                    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white flex justify-between items-center relative overflow-hidden">
-                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-                        <div class="relative z-10">
-                            <h2 class="text-2xl font-bold flex items-center gap-2"><i class="fas fa-graduation-cap"></i> Thử Thách</h2>
-                            <p class="text-indigo-100 text-sm">Nhìn Kanji - Đoán Hiragana</p>
-                        </div>
-                        <div class="text-right relative z-10 bg-white/10 p-2 rounded-lg backdrop-blur-sm">
-                            <div class="text-[10px] text-indigo-100 uppercase font-bold tracking-wider">Điểm số</div>
-                            <div class="text-3xl font-bold font-mono" id="score-display">0</div>
+        <div id="quiz-section" class="hidden flex-1 p-4 md:p-8 overflow-y-auto bg-slate-50">
+            <div class="max-w-2xl mx-auto mt-4 md:mt-10 bg-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl text-center border border-gray-100 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+                <div class="flex justify-between items-center mb-10">
+                    <div class="text-sm font-black text-gray-400 uppercase tracking-widest"><i class="fas fa-graduation-cap mr-2"></i>Thử thách</div>
+                    <div class="bg-indigo-50 text-indigo-700 px-4 py-1.5 rounded-xl font-black font-mono shadow-inner" id="score-display">ĐIỂM: 0</div>
+                </div>
+                <div id="quiz-kanji" class="text-7xl md:text-8xl ja-text font-black mb-4 text-gray-800 transition-all"></div>
+                <div id="quiz-meaning" class="text-xl text-indigo-500 mb-10 font-black tracking-wide"></div>
+                <input type="text" id="quiz-input" class="w-full text-center text-3xl p-5 border-2 border-gray-200 rounded-2xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 outline-none transition-all ja-text bg-gray-50 focus:bg-white" placeholder="Gõ Hiragana..." autocomplete="off">
+                <div id="feedback" class="mt-6 p-4 rounded-2xl font-black text-lg hidden animate-fade-in border-2"></div>
+                <button id="btn-check" onclick="checkAnswer()" class="mt-8 w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xl shadow-[0_8px_15px_-3px_rgba(79,70,229,0.3)] hover:bg-indigo-700 active:scale-[0.98] transition-all"><i class="fas fa-check-circle mr-2"></i>KIỂM TRA</button>
+                <button id="btn-next" onclick="nextQuestion()" class="mt-8 w-full bg-slate-800 text-white py-5 rounded-2xl font-black text-xl shadow-[0_8px_15px_-3px_rgba(30,41,59,0.3)] active:scale-[0.98] transition-all hidden">CÂU TIẾP THEO <i class="fas fa-arrow-right ml-2"></i></button>
+            </div>
+        </div>
+
+        <div id="mobileBottomBar" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md px-4 py-3 pb-6 z-30 flex items-center justify-between gap-4 md:hidden shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] border-t border-gray-100">
+            <button onclick="prevWord()" class="w-14 h-14 rounded-2xl bg-white border-2 border-gray-100 text-gray-600 flex items-center justify-center shadow-sm active:bg-gray-50 active:scale-95 transition-all">
+                <i class="fas fa-chevron-left text-xl"></i>
+            </button>
+            <button onclick="toggleDrawer()" class="flex-1 h-14 rounded-2xl bg-indigo-600 text-white font-black flex items-center justify-center shadow-lg shadow-indigo-200 gap-2 active:scale-95 transition-all">
+                <i class="fas fa-list-ul"></i> DANH SÁCH
+            </button>
+            <button onclick="nextWord()" class="w-14 h-14 rounded-2xl bg-white border-2 border-gray-100 text-gray-600 flex items-center justify-center shadow-sm active:bg-gray-50 active:scale-95 transition-all">
+                <i class="fas fa-chevron-right text-xl"></i>
+            </button>
+        </div>
+        
+        <div id="mobileDrawer" class="fixed inset-0 z-50 pointer-events-none md:hidden">
+            <div id="drawerBackdrop" class="absolute inset-0 bg-slate-900/60 opacity-0 transition-opacity duration-300" onclick="toggleDrawer()"></div>
+            <div id="drawerContent" class="absolute inset-y-0 bottom-0 left-0 w-[85%] max-w-sm bg-white shadow-2xl transform -translate-x-full transition-transform duration-300 flex flex-col pointer-events-auto">
+                <div class="p-5 border-b border-gray-100 flex items-center justify-between bg-indigo-50">
+                    <h3 class="font-black text-xl text-indigo-900 flex items-center gap-2"><i class="fas fa-list"></i> Danh Sách Từ</h3>
+                    <button onclick="toggleDrawer()" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-500 shadow-sm active:scale-95 transition-all"><i class="fas fa-times text-lg"></i></button>
+                </div>
+                <div class="p-4 border-b border-gray-100">
+                    <div class="bg-gray-100 rounded-xl flex items-center px-4 py-2 gap-2 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:bg-white transition-all">
+                        <i class="fas fa-search text-gray-400"></i>
+                        <input type="text" id="mobileSearchInput" placeholder="Tìm kiếm nhanh..." class="w-full bg-transparent outline-none text-sm font-bold placeholder:text-gray-400 placeholder:font-medium">
+                    </div>
+                </div>
+                <div id="mobileVocabList" class="flex-1 overflow-y-auto scroller p-3 space-y-2 bg-slate-50"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="grammarListModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center px-4 py-6">
+        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" onclick="closeModal('grammarListModal')"></div>
+        <div class="bg-white rounded-[2rem] w-full max-w-6xl relative z-10 shadow-2xl flex flex-col h-full max-h-[90vh] overflow-hidden">
+            <div class="p-6 border-b flex justify-between items-center bg-gradient-to-r from-indigo-50 to-white">
+                <div class="flex items-center gap-4">
+                    <div class="bg-indigo-600 text-white w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"><i class="fas fa-scroll text-xl"></i></div>
+                    <div>
+                        <h3 class="text-2xl font-black text-indigo-900 tracking-tight">Cẩm Nang Ngữ Pháp Day 5</h3>
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">Trọn bộ các cấu trúc mổ xẻ</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('grammarListModal')" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-red-50 hover:text-red-500 flex items-center justify-center text-gray-500 transition-colors"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto scroller bg-slate-50/50 flex-1">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="grammarGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailGrammarModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center px-4 py-6">
+        <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-md" onclick="closeModal('detailGrammarModal')"></div>
+        <div class="bg-white rounded-[2.5rem] w-full max-w-2xl relative z-10 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-gray-100">
+            <div class="p-6 border-b flex justify-between items-center bg-white relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 text-8xl text-indigo-50 opacity-50"><i class="fas fa-microscope"></i></div>
+                <h3 class="text-xl font-black text-indigo-900 flex items-center gap-3 relative z-10 uppercase tracking-widest">
+                    <div class="w-2 h-8 bg-indigo-500 rounded-full"></div> Phân Tích Cấu Trúc
+                </h3>
+                <button onclick="closeModal('detailGrammarModal')" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors relative z-10"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 md:p-8 overflow-y-auto scroller space-y-8 bg-slate-50" id="dgContent"></div>
+        </div>
+    </div>
+
+    <div id="strokeModal" class="fixed inset-0 z-[80] hidden flex items-center justify-center px-4 py-6">
+        <div class="absolute inset-0 bg-slate-900/95 backdrop-blur-md" onclick="closeModal('strokeModal')"></div>
+        <div class="bg-white rounded-[2.5rem] w-full max-w-6xl relative z-10 shadow-2xl flex flex-col h-full max-h-[95vh] overflow-hidden">
+            <div class="p-5 md:p-6 border-b flex justify-between items-center bg-white">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-pink-200">
+                        <i class="fas fa-layer-group text-xl"></i>
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight uppercase">Phân Tích Kanji 5 Bước</h3>
+                </div>
+                <button onclick="closeModal('strokeModal')" class="text-slate-300 hover:text-red-500 transition-colors"><i class="fas fa-times-circle text-4xl md:text-5xl"></i></button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto scroller p-4 md:p-10 bg-slate-50">
+                <div id="strokeTabs" class="flex justify-center gap-3 mb-8 overflow-x-auto pb-2 no-scrollbar"></div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div class="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-0 h-fit">
+                        <div class="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-gray-100 text-center relative group">
+                            <p class="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-6 border-b border-gray-50 pb-4">Mô phỏng nét viết</p>
+                            <div id="strokeAnimContainer" class="w-48 h-48 md:w-56 md:h-56 mx-auto bg-white border-2 border-gray-50 relative stroke-grid-box flex items-center justify-center rounded-3xl cursor-pointer hover:shadow-lg transition-all" onclick="replayStrokeAnimation()"></div>
+                            <button onclick="replayStrokeAnimation()" class="absolute top-6 right-6 w-10 h-10 bg-pink-50 text-pink-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-sm"><i class="fas fa-redo"></i></button>
+                            <p class="text-xs font-bold text-indigo-400 mt-6"><i class="fas fa-hand-pointer mr-1"></i> Chạm vào ô để xem lại</p>
+                            <div id="strokeGridContainer" class="mt-6 flex flex-wrap gap-2 justify-center hidden md:flex"></div>
                         </div>
                     </div>
                     
-                    <div class="p-6 md:p-10 text-center">
-                        <div class="mb-8 relative">
-                            <div class="text-xs text-gray-400 mb-2 uppercase font-bold tracking-widest">Từ này đọc là gì?</div>
-                            <div id="quiz-kanji" class="text-6xl ja-text font-bold text-gray-800 mb-4 transition-all inline-block"></div>
-                            <div id="quiz-meaning" class="text-lg text-indigo-600 font-bold mb-2"></div>
-                        </div>
-                        
-                        <div class="relative max-w-md mx-auto mb-8">
-                            <input type="text" id="quiz-input" class="w-full text-center text-2xl p-4 border-2 border-gray-300 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all ja-text placeholder:text-gray-300" placeholder="nhập hiragana..." autocomplete="off">
-                        </div>
-                        
-                        <div id="feedback-area" class="hidden rounded-xl p-5 bg-gray-50 border border-gray-200 text-left mb-6 animate-fade-in shadow-inner">
-                            <div id="feedback-title" class="font-bold text-lg mb-2 flex items-center"></div>
-                            <div class="text-gray-700 mb-3 flex items-center flex-wrap gap-2">
-                                Đáp án đúng: <span id="correct-answer" class="font-bold text-xl text-indigo-600 px-3 py-1 bg-white border border-indigo-100 rounded-lg ja-text shadow-sm"></span>
-                                <button onclick="playQuizAudio()" class="text-gray-400 hover:text-indigo-600 transition-colors w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 border border-transparent hover:border-gray-300"><i class="fas fa-volume-up"></i></button>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <button id="btn-check" onclick="checkAnswer()" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-10 rounded-xl shadow-lg transition active:scale-95 text-lg flex items-center justify-center gap-2 mx-auto">
-                                <i class="fas fa-check"></i> Kiểm Tra
-                            </button>
-                            <button id="btn-next" onclick="nextQuestion()" class="hidden w-full md:w-auto bg-gray-800 hover:bg-gray-900 text-white font-bold py-3.5 px-10 rounded-xl shadow-lg transition active:scale-95 text-lg flex items-center justify-center gap-2 mx-auto">
-                                Câu Tiếp Theo <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- MOBILE BOTTOM BAR -->
-        <div class="fixed bottom-0 left-0 right-0 glass px-4 py-3 pb-6 z-30 flex items-center justify-between gap-4 md:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] border-t border-gray-200">
-            <button onclick="prevWord()" class="w-12 h-12 rounded-xl bg-white border border-gray-200 text-gray-600 flex items-center justify-center shadow-sm active:bg-gray-50 active:scale-95 transition">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <button onclick="toggleDrawer()" class="flex-1 h-12 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center shadow-lg gap-2 active:scale-95 transition active:bg-indigo-700">
-                <i class="fas fa-list-ul"></i> Danh Sách
-            </button>
-            <button onclick="nextWord()" class="w-12 h-12 rounded-xl bg-white border border-gray-200 text-gray-600 flex items-center justify-center shadow-sm active:bg-gray-50 active:scale-95 transition">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
-    </div>
-
-    <!-- MODAL: GRAMMAR LIST -->
-    <div id="grammarListModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center px-4">
-        <div class="absolute inset-0 bg-gray-900/70 backdrop-blur-sm transition-opacity opacity-0" id="grammarListBackdrop" onclick="closeModal('grammarListModal')"></div>
-        <div class="bg-white rounded-2xl w-full max-w-4xl relative z-10 shadow-2xl transform transition-all scale-95 opacity-0 flex flex-col max-h-[85vh]" id="grammarListPanel">
-            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-indigo-50 rounded-t-2xl">
-                <div class="flex items-center gap-3">
-                    <div class="bg-indigo-600 text-white p-2 rounded-lg shadow-sm"><i class="fas fa-book"></i></div>
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-800">Cẩm Nang Ngữ Pháp</h3>
-                        <p class="text-xs text-gray-500">Thư viện ngữ pháp Day 5 (N5 - N4)</p>
-                    </div>
-                </div>
-                <button onclick="closeModal('grammarListModal')" class="w-8 h-8 rounded-full hover:bg-white flex items-center justify-center text-gray-500 transition-colors"><i class="fas fa-times text-xl"></i></button>
-            </div>
-            <div class="p-6 overflow-y-auto scroller bg-slate-50">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="grammarGrid"></div>
-            </div>
-            <div class="p-4 border-t border-gray-100 bg-white rounded-b-2xl flex justify-end">
-                <button onclick="closeModal('grammarListModal')" class="px-6 py-2 bg-gray-800 text-white font-bold rounded-full text-sm transition active:scale-95 shadow-lg hover:bg-gray-700">Đã Hiểu</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: GRAMMAR DETAIL -->
-    <div id="detailGrammarModal" class="fixed inset-0 z-[90] hidden flex items-center justify-center px-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity opacity-0" id="detailGrammarBackdrop" onclick="closeModal('detailGrammarModal')"></div>
-        <div class="bg-white rounded-2xl w-full max-w-md relative z-10 shadow-2xl transform transition-all scale-95 opacity-0 flex flex-col" id="detailGrammarPanel">
-            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-2xl">
-                <div class="flex items-center gap-2">
-                    <div class="bg-indigo-100 p-1.5 rounded-lg text-indigo-600"><i class="fas fa-info-circle"></i></div>
-                    <h3 class="text-lg font-bold text-gray-800">Giải thích Ngữ pháp</h3>
-                </div>
-                <button onclick="closeModal('detailGrammarModal')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="p-6">
-                <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-center mb-4 shadow-sm">
-                    <code class="text-lg font-bold text-indigo-700 font-mono" id="dgFormula"></code>
-                </div>
-                <div id="dgExplanation" class="text-gray-600 text-sm mb-4 space-y-3 leading-relaxed"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: KANJI STROKE -->
-    <div id="strokeModal" class="fixed inset-0 z-[80] hidden flex items-center justify-center px-4">
-        <div class="absolute inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity opacity-0" id="strokeBackdrop" onclick="closeModal('strokeModal')"></div>
-        <div class="bg-white rounded-2xl w-full max-w-5xl relative z-10 shadow-2xl transform transition-all scale-95 opacity-0 flex flex-col max-h-[90vh]" id="strokePanel">
-            <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-pink-50 rounded-t-2xl">
-                <h3 class="text-lg font-bold text-pink-700 flex items-center gap-2"><i class="fas fa-pen-nib"></i> Tập Viết & Chi Tiết Kanji</h3>
-                <button onclick="closeModal('strokeModal')" class="w-8 h-8 rounded-full hover:bg-white flex items-center justify-center text-gray-500 transition-colors"><i class="fas fa-times text-lg"></i></button>
-            </div>
-            <div class="p-6 overflow-y-auto scroller bg-slate-50 flex-1">
-                <div id="strokeTabs" class="flex justify-center gap-2 mb-6 flex-wrap"></div>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div class="flex flex-col gap-6 text-center">
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 relative">
-                            <p class="text-xs text-gray-400 mb-2 font-bold uppercase tracking-wider">Mô phỏng nét viết</p>
-                            <div id="strokeAnimContainer" class="w-48 h-48 mx-auto bg-white border border-gray-300 relative stroke-grid-box flex items-center justify-center rounded-lg cursor-pointer" onclick="replayStrokeAnimation()"></div>
-                            <button onclick="replayStrokeAnimation()" class="absolute top-4 right-4 bg-pink-50 text-pink-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-pink-100 transition shadow-sm z-10"><i class="fas fa-redo text-sm"></i></button>
-                            <p class="text-[10px] text-gray-400 mt-2">Nhấn vào ô để chạy lại</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 text-left">
-                            <p class="text-xs text-gray-400 mb-3 font-bold uppercase tracking-wider text-center">Thứ tự từng nét</p>
-                            <div id="strokeGridContainer" class="flex flex-wrap gap-2 justify-center"></div>
-                        </div>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 flex flex-col h-full text-left">
-                        <div id="kanjiDetailContent">
-                            <div class="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
-                                <div><h2 id="detailKanji" class="text-6xl font-bold text-gray-800 ja-text mb-1 leading-none"></h2><div class="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded inline-block mt-2" id="detailHanViet"></div></div>
-                                <div class="text-right"><div class="text-2xl font-bold text-gray-600 capitalize" id="detailMeaning"></div></div>
-                            </div>
-                            <!-- Radicals -->
-                            <div class="mb-4 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
-                                <span class="text-xs font-bold text-indigo-500 uppercase block mb-1"><i class="fas fa-layer-group mr-1"></i> Bộ thủ (Thành phần)</span>
-                                <span class="text-sm font-medium text-indigo-900" id="detailRadicals">...</span>
-                            </div>
-                            <!-- On/Kun -->
-                            <div class="grid grid-cols-2 gap-4 mb-6">
-                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 flex justify-between items-center group cursor-pointer" onclick="document.getElementById('btnPlayOn').click()"><div class="flex flex-col"><span class="text-xs font-bold text-gray-400 uppercase">On</span><span class="text-lg font-bold text-indigo-600 ja-text" id="detailOn"></span></div><button id="btnPlayOn" class="text-indigo-300 group-hover:text-indigo-600"><i class="fas fa-volume-up"></i></button></div>
-                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 flex justify-between items-center group cursor-pointer" onclick="document.getElementById('btnPlayKun').click()"><div class="flex flex-col"><span class="text-xs font-bold text-gray-400 uppercase">Kun</span><span class="text-lg font-bold text-pink-600 ja-text" id="detailKun"></span></div><button id="btnPlayKun" class="text-pink-300 group-hover:text-pink-600"><i class="fas fa-volume-up"></i></button></div>
-                            </div>
-                            <!-- Tips -->
-                            <div class="space-y-4 mb-6">
-                                <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-                                    <h4 class="text-sm font-bold text-green-800 mb-2 flex items-center gap-2"><i class="fas fa-image"></i> Ghi nhớ hình ảnh</h4>
-                                    <p class="text-sm text-green-700 leading-relaxed" id="detailTipImg"></p>
-                                </div>
-                                <div class="bg-orange-50 p-4 rounded-lg border border-orange-100">
-                                    <h4 class="text-sm font-bold text-orange-800 mb-2 flex items-center gap-2"><i class="fas fa-music"></i> Mẹo nhớ âm thanh</h4>
-                                    <div class="space-y-2">
-                                        <p class="text-sm text-orange-700 flex items-start gap-2"><span class="font-bold text-[10px] bg-orange-200 px-1.5 py-0.5 rounded text-orange-800 min-w-[30px] text-center mt-0.5">ON</span> <span id="detailTipSoundOn"></span></p>
-                                        <p class="text-sm text-orange-700 flex items-start gap-2"><span class="font-bold text-[10px] bg-pink-200 px-1.5 py-0.5 rounded text-pink-800 min-w-[30px] text-center mt-0.5">KUN</span> <span id="detailTipSoundKun"></span></p>
+                    <div class="lg:col-span-8">
+                        <div id="kanjiDetailBody" class="bg-white rounded-[2rem] p-6 md:p-10 shadow-sm border border-gray-100 h-full">
+                            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-10 border-b border-gray-100 pb-8">
+                                <div id="detailKanjiBig" class="text-8xl md:text-[8rem] font-black ja-text text-slate-800 leading-none drop-shadow-sm"></div>
+                                <div class="space-y-4 text-center sm:text-left flex-1">
+                                    <div class="inline-block bg-indigo-600 text-white px-4 py-1.5 rounded-xl font-black text-sm uppercase tracking-widest shadow-md">HÁN-VIỆT: <span id="detailHanViet" class="ml-1 text-yellow-300"></span></div>
+                                    <h4 class="text-2xl md:text-3xl font-black text-slate-700 tracking-tight capitalize" id="detailMeaningMain"></h4>
+                                    <div class="flex flex-wrap justify-center sm:justify-start gap-3 mt-2">
+                                        <div class="bg-pink-50 border border-pink-100 px-3 py-2 rounded-xl flex flex-col min-w-[80px]">
+                                            <span class="text-[9px] font-black text-pink-400 uppercase">Kun'yomi</span>
+                                            <span class="font-bold text-pink-600 ja-text" id="detailKun"></span>
+                                        </div>
+                                        <div class="bg-orange-50 border border-orange-100 px-3 py-2 rounded-xl flex flex-col min-w-[80px]">
+                                            <span class="text-[9px] font-black text-orange-400 uppercase">On'yomi</span>
+                                            <span class="font-bold text-orange-600 ja-text" id="detailOn"></span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <!-- Related Words -->
-                            <div>
-                                <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Từ vựng liên quan</h4>
-                                <div class="space-y-2" id="detailWords"></div>
+                            <div class="space-y-10">
+                                <div class="relative pl-6 md:pl-8 border-l-[5px] border-blue-500 group">
+                                    <div class="absolute -left-[14px] top-0 w-6 h-6 bg-blue-500 rounded-full border-[5px] border-white shadow-sm"></div>
+                                    <h4 class="text-sm font-black text-blue-600 uppercase tracking-widest mb-4 flex items-center gap-2">1. Chiết tự <i class="fas fa-cubes text-blue-300 text-lg"></i></h4>
+                                    <div id="detailRadicals" class="text-xs font-black text-blue-800 bg-blue-50 border border-blue-100 px-3 py-2 rounded-lg mb-3 inline-block"></div>
+                                    <p id="detailTipImg" class="text-base md:text-lg text-slate-700 leading-relaxed font-medium bg-gray-50/50 p-4 rounded-2xl"></p>
+                                </div>
+                                <div class="relative pl-6 md:pl-8 border-l-[5px] border-orange-500">
+                                    <div class="absolute -left-[14px] top-0 w-6 h-6 bg-orange-500 rounded-full border-[5px] border-white shadow-sm"></div>
+                                    <h4 class="text-sm font-black text-orange-600 uppercase tracking-widest mb-4 flex items-center gap-2">2. Mẹo Âm Thanh <i class="fas fa-headphones text-orange-300 text-lg"></i></h4>
+                                    <div class="bg-orange-50/50 p-4 md:p-5 rounded-2xl border border-orange-100">
+                                        <p id="detailSoundStory" class="text-base md:text-lg text-orange-900 leading-relaxed font-medium"></p>
+                                    </div>
+                                </div>
+                                <div class="relative pl-6 md:pl-8 border-l-[5px] border-indigo-600">
+                                    <div class="absolute -left-[14px] top-0 w-6 h-6 bg-indigo-600 rounded-full border-[5px] border-white shadow-sm"></div>
+                                    <h4 class="text-sm font-black text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">3. Combo 3-Trong-1 <i class="fas fa-bolt text-yellow-400 text-lg"></i></h4>
+                                    <p id="detailCombo" class="text-lg md:text-xl font-black text-indigo-900 leading-snug bg-gradient-to-r from-indigo-50 to-white p-5 md:p-6 rounded-2xl border border-indigo-100 shadow-sm"></p>
+                                </div>
+                                <div class="relative pl-6 md:pl-8 border-l-[5px] border-emerald-500">
+                                    <div class="absolute -left-[14px] top-0 w-6 h-6 bg-emerald-500 rounded-full border-[5px] border-white shadow-sm"></div>
+                                    <div class="flex justify-between items-end mb-5">
+                                        <h4 class="text-sm font-black text-emerald-600 uppercase tracking-widest flex items-center gap-2">4. Học theo cụm <i class="fas fa-layer-group text-emerald-300 text-lg"></i></h4>
+                                        <span class="text-[10px] font-bold bg-gray-100 text-gray-500 px-2 py-1 rounded hidden md:inline-block animate-pulse">Chạm thẻ để xem</span>
+                                    </div>
+                                    <div id="detailWordsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                                </div>
                             </div>
                         </div>
-                        <div id="kanjiDetailEmpty" class="hidden h-full flex flex-col items-center justify-center text-center p-4 text-gray-400"><i class="fas fa-book-open text-4xl mb-3 opacity-30"></i><p class="text-sm">Chưa có dữ liệu chi tiết cho chữ Hán này.</p></div>
                     </div>
                 </div>
             </div>
@@ -304,73 +247,36 @@
     </div>
 
     <script>
-        // --- 1. GRAMMAR REPO (N5 - N4) ---
+        // ==========================================
+        // 1. DATA: GRAMMAR REPOSITORY FULL (DAY 5)
+        // ==========================================
         const grammarRepo = {
-            "o_kudasai": { title: "Hãy cho tôi...", formula: "N + を + ください", desc: "N5: Yêu cầu người khác đưa/làm gì cho mình (khi mua hàng, gọi món).", ex: "リンゴをください。" },
-            "counter": { title: "Số đếm (Vật)", formula: "N + が + SL + あります", desc: "N5: Cách đếm đồ vật chung (hitotsu, futatsu...).", ex: "みかんが五つあります。" },
-            "counter_mai": { title: "Đếm vật mỏng", formula: "N + が + SL(枚) + あります", desc: "N5: Đếm giấy, áo, đĩa... bằng 'mai'.", ex: "シャツを二枚買いました。" },
-            "counter_dai": { title: "Đếm máy móc", formula: "N + が + SL(台) + あります", desc: "N5: Đếm xe, máy tính... bằng 'dai'.", ex: "自転車が一台あります。" },
-            "counter_kai": { title: "Đếm số lần", formula: "V(từ điển) + ことが + SL(回) + ある", desc: "N5/N4: Đếm tần suất hành động.", ex: "一週間に一回映画を見ます。" },
-            "dono_gurai": { title: "Bao lâu/Bao nhiêu", formula: "どのぐらい + V", desc: "N5: Hỏi về khoảng thời gian hoặc số lượng.", ex: "どのぐらいかかりますか。" },
-            "kakari_masu": { title: "Tốn (Tiền/Thời gian)", formula: "Time/Money + かかります", desc: "N5: Biểu thị sự tiêu tốn thời gian hoặc tiền bạc.", ex: "3時間かかります。" },
-            "period_ni": { title: "Tần suất", formula: "Period + に + SL + 回/個...", desc: "N5: Làm gì bao nhiêu lần trong một khoảng thời gian.", ex: "1ヶ月に2回映画を見ます。" },
-            "dake": { title: "Chỉ", formula: "N + だけ", desc: "N5: Giới hạn phạm vi (chỉ có cái này, không có cái khác).", ex: "休みは日曜日だけです。" },
-            "ga_imasu": { title: "Có (Người/Động vật)", formula: "N + が + います", desc: "N5: Sự tồn tại của vật sống.", ex: "兄弟が二人います。" },
-            "ga_arimasu": { title: "Có (Đồ vật)", formula: "N + が + あります", desc: "N5: Sự tồn tại của vật không sống.", ex: "車があります。" },
-            "ni_iku": { title: "Đi để làm gì", formula: "V(bỏ masu)/N + に行く", desc: "N5: Mục đích của chuyển động.", ex: "日本へ勉強に行きます。" },
-            "mashou": { title: "Cùng làm nhé", formula: "Vましょう", desc: "N5: Rủ rê, đề nghị.", ex: "帰りましょう。" },
-            "te_mo_ii": { title: "Làm...được không", formula: "Vてもいい", desc: "N5: Xin phép làm gì đó.", ex: "ここに入ってもいいですか。" },
-            "te_kudasai": { title: "Hãy...", formula: "Vてください", desc: "N5: Yêu cầu, nhờ vả lịch sự.", ex: "書いてください。" },
-            "ta_form": { title: "Thể quá khứ ngắn", formula: "Vた", desc: "N5: Dùng trong văn nói thân mật để kể lại chuyện quá khứ.", ex: "ご飯食べた？" },
-            "nai_de": { title: "Xin đừng...", formula: "Vないで + ください", desc: "N5: Yêu cầu ai đó không làm gì.", ex: "ここで写真を撮らないでください。" },
-            "volitional": { title: "Thể ý định", formula: "Vよう", desc: "N4: Dùng trong văn nói thân mật để rủ rê.", ex: "行こう！" },
-            "tara_dou": { title: "Thử...xem sao", formula: "Vたらどう", desc: "N4: Đưa ra lời khuyên.", ex: "やってみたらどう？" },
-            "wa_desu": { title: "Cấu trúc định danh", formula: "N1 は N2 です", desc: "N5: Khẳng định N1 là N2.", ex: "これはペンです。" },
-            "yori_hodo": { title: "So sánh hơn/kém", formula: "N1 は N2 より Adj / N1 は N2 ほど Adj(nai)", desc: "N4/N3: So sánh mức độ giữa 2 đối tượng.", ex: "今日は昨日より暑いです。" },
-            "toshite": { title: "Với tư cách là", formula: "N + として", desc: "N3: Biểu thị lập trường, tư cách.", ex: "医者として働いています。" },
-            "zaru_wo_enai": { title: "Đành phải", formula: "Vない + ざるを得ない", desc: "N2: Không muốn nhưng bắt buộc phải làm.", ex: "嫌だが、行かざるを得ない。" },
-            "te_simau": { title: "Hoàn thành/Lỡ làm", formula: "Vてしまう", desc: "N4: Làm xong hết hoặc lỡ làm điều không mong muốn.", ex: "忘れてしまいました。" },
-            "te_form_cause": { title: "Vì...nên...", formula: "Vて / Adj(i)くて", desc: "N4: Chỉ nguyên nhân, lý do.", ex: "風邪を引いて、休みました。" },
-            "you_ni": { title: "Cố gắng làm gì", formula: "Vる + ようにする", desc: "N3: Biểu thị nỗ lực tạo thói quen.", ex: "野菜を食べるようにしています。" },
-            "tara": { title: "Nếu/Sau khi", formula: "Vたら", desc: "N4: Điều kiện giả định hoặc hành động nối tiếp.", ex: "雨が降ったら、行きません。" },
-            "te_iru": { title: "Đang/Trạng thái", formula: "Vている", desc: "N5/N4: Đang diễn ra hoặc kết quả trạng thái.", ex: "帽子をかぶっています。" },
-            "koto_ga_aru": { title: "Đã từng", formula: "Vた + ことが（ある）", desc: "N4: Kinh nghiệm trong quá khứ.", ex: "日本へ行ったことがあります。" },
-            "nagara": { title: "Vừa... vừa...", formula: "V(bỏ masu) + ながら", desc: "N4: Hai hành động diễn ra đồng thời.", ex: "歩きながら話します。" },
-            "tai": { title: "Muốn", formula: "Vたい", desc: "N5: Mong muốn làm gì đó.", ex: "水が飲みたいです。" },
-            "to_omou": { title: "Nghĩ rằng", formula: "～と 思います", desc: "N4: Biểu thị suy nghĩ, phỏng đoán.", ex: "明日雨が降ると思います。" },
-            "ba_yokatta": { title: "Giá mà...", formula: "Vば + よかった", desc: "N3: Hối tiếc về việc đã không làm.", ex: "もっと勉強すればよかった。" },
-            "sou_da_visual": { title: "Trông có vẻ", formula: "Adj(bỏ i/na) + そうです", desc: "N4: Phỏng đoán dựa trên thị giác.", ex: "おいしそうです。" },
-            "sou_da_hearsay": { title: "Nghe nói là", formula: "Vru/Adj + そうです", desc: "N4: Truyền đạt lại thông tin nghe được.", ex: "雨が降るそうです。" },
-            "te_mo": { title: "Cho dù/Cũng được", formula: "Vても", desc: "N4: Nhượng bộ hoặc cho phép.", ex: "高くても買います。" },
-            "shi_shi": { title: "Vừa...vừa... (Liệt kê)", formula: "～し、～し", desc: "N4: Liệt kê lý do, tính chất.", ex: "安いし、おいしいです。" },
-            "koto_ni_suru": { title: "Quyết định (Chủ quan)", formula: "Vる + ことにする", desc: "N3: Tự mình quyết định làm gì.", ex: "明日から走ることにします。" },
-            "v_mashita": { title: "Đã làm (Lịch sự)", formula: "Vました", desc: "N5: Quá khứ lịch sự.", ex: "買いました。" },
-            "v_masu": { title: "Sẽ/Thường làm", formula: "Vます", desc: "N5: Thói quen hoặc tương lai.", ex: "毎日起きます。" },
-            "nakucha": { title: "Phải... (Văn nói)", formula: "Vなくちゃ", desc: "N3: Dạng rút gọn của Vなければなりません.", ex: "もう行かなくちゃ。" },
-            "mono_da": { title: "Hồi tưởng", formula: "Vた + ものだ", desc: "N2: Nhớ lại thói quen trong quá khứ.", ex: "よく遊んだものだ。" },
-            "te_kuru": { title: "Đi rồi về/Thay đổi", formula: "Vてくる", desc: "N4: Đi làm gì đó rồi quay lại.", ex: "行ってくる。" },
-            "te_morau": { title: "Được làm cho", formula: "Vてもらう", desc: "N4: Được ai đó làm gì cho mình (biết ơn).", ex: "教えてもらった。" },
-            "datte": { title: "Nghe nói là...", formula: "～だって", desc: "N3: Văn nói thân mật dùng để trích dẫn lại lời nghe được.", ex: "雨だって。" },
-            "to_iwareru": { title: "Được nói là", formula: "～と言われている", desc: "N4: Bị động, chỉ dư luận chung.", ex: "彼は天才だと言われている。" },
-            "de_method": { title: "Bằng phương tiện/cách thức", formula: "N + で", desc: "N5: Làm bằng cái gì, bằng cách nào.", ex: "バスで行きます。" },
-            "ni_time": { title: "Vào lúc", formula: "Time + に", desc: "N5: Thời điểm diễn ra hành động.", ex: "6時に起きます。" },
-            "o_particle": { title: "Trợ từ O", formula: "N + を + V", desc: "N5: Chỉ đối tượng tác động của hành động.", ex: "ご飯を食べます。" },
-            "de_place": { title: "Tại (Nơi chốn)", formula: "N(địa điểm) + で + V", desc: "N5: Hành động diễn ra tại địa điểm nào đó.", ex: "スーパーで買い物をします。" },
-            "wo_kaimasu": { title: "Mua cái gì", formula: "N + を + 買う", desc: "N5: Hành động mua vật N.", ex: "新しいパソコンを買いました。" },
-            "wa_doko": { title: "Ở đâu", formula: "N + は + どこですか", desc: "N5: Hỏi vị trí.", ex: "トイレはどこですか。" },
-            "adverb": { title: "Phó từ (Tính từ)", formula: "Adj(i)く / Adj(na)に + V", desc: "N5/N4: Biến tính từ thành phó từ bổ nghĩa cho động từ.", ex: "早く起きます。" },
-            "ndesu": { title: "Giải thích/Nhấn mạnh", formula: "V/Adj + んです", desc: "N4: Giải thích lý do, tình huống.", ex: "お腹が痛いんです。" },
-            "nan_de": { title: "Tại sao/Bằng gì", formula: "何で", desc: "N5: Hỏi lý do hoặc phương tiện.", ex: "何で来ましたか。" },
-            "yori": { title: "So sánh hơn", formula: "N1 は N2 より Adj", desc: "N5: N1 tính chất hơn N2.", ex: "車は自転車より速いです。" },
-            "bakari": { title: "Toàn là...", formula: "N + ばかり", desc: "N3: Chỉ toàn là cái đó.", ex: "肉ばかり食べてはいけません。" },
-            "hodo": { title: "Đến mức", formula: "V/N + ほど", desc: "N3: So sánh mức độ.", ex: "死ぬほど疲れた。" },
-            "koto_wa_nai": { title: "Không cần phải", formula: "Vる + ことはない", desc: "N2: Không cần thiết làm V.", ex: "心配することはないよ。" },
-            "yara_yara": { title: "Liệt kê (Nào là... nào là...)", formula: "AやらBやら", desc: "N2: Liệt kê ví dụ (thường hàm ý nhiều, lộn xộn).", ex: "宿題やらバイトやらで忙しい。" },
-            "koto_ni_naru": { title: "Quyết định (Khách quan)", formula: "Vる + ことになる", desc: "N3: Được quyết định là.", ex: "来週、日本へ行くことになりました。" },
-            "te_simau": { title: "Lỡ/Hoàn thành", formula: "Vてしまう", desc: "N4: Hối tiếc vì lỡ làm hoặc làm xong hết.", ex: "食べてしまった。" }
+            "o_kudasai": { title: "Xin hãy cho tôi", formula: "N + を + ください", desc: "N5: Yêu cầu mua hàng hoặc gọi món.", ex: "ケーキを一つください。", p_polite: [{ part: "ケーキを", func: "Đối tượng", mean: "Bánh ngọt" }, { part: "一つ", func: "Số lượng", mean: "1 cái" }, { part: "ください", func: "Yêu cầu", mean: "Hãy cho tôi" }], p_casual: [{ part: "ケーキ", func: "Lược trợ từ", mean: "Bánh ngọt" }, { part: "一つちょうだい", func: "Đòi hỏi thân mật", mean: "Cho 1 cái đi" }], logic: "Dùng để xin người khác cung cấp cho mình vật N." },
+            "counter": { title: "Số đếm đồ vật", formula: "N + が + SL + あります", desc: "N5: Đếm đồ vật chung.", ex: "みかんが五つあります。", p_polite: [{ part: "みかんが", func: "Đồ vật", mean: "Quýt" }, { part: "五つ", func: "Số lượng", mean: "5 quả" }, { part: "あります", func: "Tồn tại", mean: "Có" }], p_casual: [{ part: "みかん", func: "Lược trợ từ", mean: "Quýt" }, { part: "五つある", func: "Ngắn", mean: "Có 5 quả" }], logic: "Số lượng luôn đứng ngay trước động từ." },
+            "counter_mai": { title: "Đếm vật mỏng", formula: "N + を + SL(枚) + V", desc: "N5: Đếm áo, giấy, đĩa...", ex: "シャツを三枚買いました。", p_polite: [{ part: "シャツを", func: "Đồ vật", mean: "Áo sơ mi" }, { part: "三枚", func: "Số lượng", mean: "3 cái" }, { part: "買いました", func: "Hành động", mean: "Đã mua" }], p_casual: [{ part: "シャツ", func: "Đồ vật", mean: "Áo sơ mi" }, { part: "三枚買った", func: "Hành động ngắn", mean: "Mua 3 cái rồi" }], logic: "Dùng 'mai' cho những vật mỏng dẹt." },
+            "counter_dai": { title: "Đếm máy móc", formula: "N + が + SL(台) + あります", desc: "N5: Đếm xe cộ, máy tính.", ex: "車が二台あります。", p_polite: [{ part: "車が", func: "Đồ vật", mean: "Ô tô" }, { part: "二台", func: "Số lượng", mean: "2 chiếc" }, { part: "あります", func: "Tồn tại", mean: "Có" }], p_casual: [{ part: "車", func: "Lược trợ từ", mean: "Ô tô" }, { part: "二台ある", func: "Ngắn", mean: "Có 2 chiếc" }], logic: "Dùng 'dai' cho phương tiện giao thông và thiết bị điện tử lớn." },
+            "dono_gurai": { title: "Hỏi bao lâu", formula: "どのぐらい + かかりますか", desc: "N5: Hỏi thời gian/khoảng cách.", ex: "どのぐらいかかりますか。", p_polite: [{ part: "どのぐらい", func: "Từ hỏi", mean: "Khoảng bao lâu" }, { part: "かかりますか", func: "Tiêu tốn", mean: "Thì mất (tốn)?" }], p_casual: [{ part: "どのくらい", func: "Từ hỏi", mean: "Cỡ bao lâu" }, { part: "かかる？", func: "Ngắn", mean: "Thì mất?" }], logic: "Dono gurai / Doko kurai đều được, hỏi về mức độ xấp xỉ." },
+            "kakari_masu": { title: "Tiêu tốn", formula: "Time/Money + かかります", desc: "N5: Tốn bao nhiêu thời gian/tiền bạc.", ex: "1時間ぐらいかかります。", p_polite: [{ part: "1時間ぐらい", func: "Khoảng thời gian", mean: "Khoảng 1 tiếng" }, { part: "かかります", func: "Động từ", mean: "Tốn/Mất" }], p_casual: [{ part: "1時間くらい", func: "Khoảng thời gian", mean: "Cỡ 1 tiếng" }, { part: "かかる", func: "Ngắn", mean: "Tốn" }], logic: "Động từ kakarimasu không đi với trợ từ O, đứng trực tiếp sau lượng từ." },
+            "period_ni": { title: "Tần suất", formula: "Period + に + SL + 回 + V", desc: "N5: Làm gì bao nhiêu lần trong 1 khoảng thời gian.", ex: "一週間に一回テニスをします。", p_polite: [{ part: "一週間に", func: "Chu kỳ", mean: "Trong 1 tuần" }, { part: "一回", func: "Số lần", mean: "1 lần" }, { part: "テニスをします", func: "Hành động", mean: "Chơi tennis" }], p_casual: [{ part: "週一で", func: "Rút gọn nói lóng", mean: "Tuần 1 lần" }, { part: "テニスする", func: "Ngắn", mean: "Chơi tennis" }], logic: "Trợ từ に dùng để chốt một mốc/khoảng thời gian làm tiêu chuẩn đếm." },
+            "ga_arimasu": { title: "Tồn tại (Vật tĩnh)", formula: "N + が + あります", desc: "N5: Có đồ vật/Sự việc.", ex: "問題が二つあります。", p_polite: [{ part: "問題が", func: "Đối tượng", mean: "Vấn đề" }, { part: "二つ", func: "Số lượng", mean: "2 cái" }, { part: "あります", func: "Tồn tại", mean: "Có" }], p_casual: [{ part: "問題", func: "Lược trợ từ", mean: "Vấn đề" }, { part: "二つある", func: "Ngắn", mean: "Có 2 cái" }], logic: "Dùng cho vật không tự di chuyển hoặc sự việc trừu tượng." },
+            "te_kudasai": { title: "Yêu cầu", formula: "Vてください", desc: "N5: Nhờ vả lịch sự.", ex: "八つに切ってください。", p_polite: [{ part: "八つに", func: "Cách thức", mean: "Làm 8 phần" }, { part: "切って", func: "Hành động", mean: "Cắt" }, { part: "ください", func: "Kính ngữ", mean: "Xin hãy" }], p_casual: [{ part: "八つに", func: "Cách thức", mean: "Làm 8 phần" }, { part: "切って", func: "Ngắn", mean: "Cắt đi" }], logic: "Xin đối phương 'ban cho' mình hành động đó." },
+            "mashou": { title: "Cùng làm", formula: "Vましょう", desc: "N5: Đề nghị.", ex: "とおまで数えましょう。", p_polite: [{ part: "とおまで", func: "Mục tiêu", mean: "Đến 10" }, { part: "数えましょう", func: "Ý chí", mean: "Cùng đếm nhé" }], p_casual: [{ part: "とおまで", func: "Mục tiêu", mean: "Đến 10" }, { part: "数えよう", func: "Ngắn", mean: "Đếm thôi" }], logic: "Rủ rê người khác cùng thực hiện hành động." },
+            "ta_form": { title: "Quá khứ ngắn", formula: "Vた", desc: "N5: Đã làm.", ex: "六つ買いました。", p_polite: [{ part: "六つ", func: "Số lượng", mean: "6 cái" }, { part: "買いました", func: "Quá khứ dài", mean: "Đã mua" }], p_casual: [{ part: "六つ", func: "Số lượng", mean: "6 cái" }, { part: "買った", func: "Quá khứ ngắn", mean: "Đã mua" }], logic: "Kể về việc đã hoàn thành." },
+            "te_iru": { title: "Trạng thái", formula: "Vている", desc: "N4: Đang còn lại.", ex: "四つ残っています。", p_polite: [{ part: "四つ", func: "Số lượng", mean: "4 cái" }, { part: "残って", func: "Động từ", mean: "Thừa lại" }, { part: "います", func: "Tiếp diễn", mean: "Đang" }], p_casual: [{ part: "四つ", func: "Số lượng", mean: "4 cái" }, { part: "残ってる", func: "Rút gọn", mean: "Đang còn" }], logic: "Hành động để lại kết quả và kết quả đó vẫn đang hiển hiện." },
+            "nai_de": { title: "Xin đừng", formula: "Vないでください", desc: "N5: Khuyên không nên làm.", ex: "ごみを捨てないでください。", p_polite: [{ part: "ごみを", func: "Đối tượng", mean: "Rác" }, { part: "捨てないで", func: "Phủ định (te)", mean: "Đừng vứt" }, { part: "ください", func: "Kính ngữ", mean: "Xin hãy" }], p_casual: [{ part: "ごみ", func: "Đối tượng", mean: "Rác" }, { part: "捨てないで", func: "Ngắn", mean: "Đừng vứt nha" }], logic: "Ngăn cản hành động chuẩn bị xảy ra." },
+            "ni_iku": { title: "Đi để...", formula: "V(bỏ masu)/N + に行く", desc: "N5: Mục đích chuyển động.", ex: "郵便局へ荷物を出しに行きます。", p_polite: [{ part: "郵便局へ", func: "Nơi đến", mean: "Đến bưu điện" }, { part: "出しに", func: "Mục đích", mean: "Để gửi" }, { part: "行きます", func: "Chuyển động", mean: "Đi" }], p_casual: [{ part: "郵便局へ", func: "Nơi đến", mean: "Ra bưu điện" }, { part: "出しに", func: "Mục đích", mean: "Để gửi" }, { part: "行く", func: "Ngắn", mean: "Đi" }], logic: "Trợ từ に nối mục tiêu với hành động đi lại." },
+            "tai": { title: "Muốn", formula: "Vたい", desc: "N5: Mong ước của mình.", ex: "世界中を旅行したいです。", p_polite: [{ part: "世界中を", func: "Phạm vi", mean: "Vòng quanh thế giới" }, { part: "旅行し", func: "Hành động", mean: "Du lịch" }, { part: "たいです", func: "Hậu tố", mean: "Muốn" }], p_casual: [{ part: "世界中旅行したい", func: "Ngắn", mean: "Muốn đi du lịch TG" }], logic: "Biến V thành tính từ đuôi i chỉ sự thèm muốn." },
+            "de_method": { title: "Bằng cách nào", formula: "N(phương tiện) + で", desc: "N5: Phương tiện thực hiện.", ex: "じゃがいもで料理を作ります。", p_polite: [{ part: "じゃがいもで", func: "Nguyên liệu", mean: "Bằng khoai tây" }, { part: "作ります", func: "Hành động", mean: "Làm món ăn" }], p_casual: [{ part: "じゃがいもで", func: "Nguyên liệu", mean: "Bằng khoai tây" }, { part: "作る", func: "Ngắn", mean: "Nấu" }], logic: "Trợ từ で chỉ phương tiện, dụng cụ, nguyên liệu." },
+            "wa_doko": { title: "Ở đâu", formula: "N + は + どこですか", desc: "N5: Hỏi nơi chốn.", ex: "夏休みはどこへ行きますか。", p_polite: [{ part: "夏休みは", func: "Chủ đề", mean: "Nghỉ hè thì" }, { part: "どこへ", func: "Câu hỏi", mean: "Đi đâu" }, { part: "行きますか", func: "Hành động", mean: "Thế?" }], p_casual: [{ part: "夏休み", func: "Chủ đề", mean: "Nghỉ hè" }, { part: "どこ行く？", func: "Ngắn", mean: "Đi đâu?" }], logic: "Doko là từ hỏi địa điểm." },
+            "koto_ga_aru": { title: "Đã từng", formula: "Vたことがある", desc: "N4: Có kinh nghiệm làm gì.", ex: "飛行機に乗ったことがありますか。", p_polite: [{ part: "乗った", func: "Quá khứ", mean: "Đã lên" }, { part: "ことがありますか", func: "Kinh nghiệm", mean: "Từng chưa?" }], p_casual: [{ part: "乗ったことある？", func: "Ngắn", mean: "Từng lên chưa?" }], logic: "Koto biến hành động thành danh từ -> 'Có cái việc đó'." },
+            "te_mo_ii": { title: "Làm... có được không?", formula: "Vてもいいですか", desc: "N5: Xin phép.", ex: "電話をかけてもいいですか。", p_polite: [{ part: "かけて", func: "Hành động", mean: "Gọi" }, { part: "もいいですか", func: "Xin phép", mean: "Cũng được chứ?" }], p_casual: [{ part: "かけてもいい？", func: "Ngắn", mean: "Gọi được hông?" }], logic: "Làm việc này CŨNG TỐT chứ?" },
+            "nakucha": { title: "Phải làm", formula: "Vなくちゃ", desc: "N3: Văn nói của 'bắt buộc'.", ex: "レポートを出さなければなりません。", p_polite: [{ part: "出さなければ", func: "Phủ định", mean: "Nếu không nộp" }, { part: "なりません", func: "Khả năng", mean: "Thì không được" }], p_casual: [{ part: "出さなきゃ", func: "Rút gọn", mean: "Phải nộp thôi" }], logic: "Nếu không làm -> Không xong." },
+            "te_miru": { title: "Thử làm", formula: "Vてみる", desc: "N4: Làm thử xem sao.", ex: "ケーキを作ってみます。", p_polite: [{ part: "作って", func: "Hành động", mean: "Làm (bánh)" }, { part: "みます", func: "Thử", mean: "Thử xem sao" }], p_casual: [{ part: "作ってみる", func: "Ngắn", mean: "Thử làm xem" }], logic: "Làm xong rồi NHÌN (miru) xem kết quả thế nào." }
         };
 
-        // --- 2. VOCABULARY DATA (Day 5: Counters & Shopping) ---
+        // ==========================================
+        // 2. VOCABULARY DATA FULL (DAY 5 - 87 ITEMS)
+        // ==========================================
         const vocabData = [
             { "STT": 1, "Kanji": "", "Nghĩa": "Bánh ngọt", "Furigana": "ケーキ", "type": "food", "conv": { "polite": "ケーキを一つください。", "pVi": "Cho tôi một cái bánh ngọt.", "casual": "ケーキ、一つちょうだい。", "cVi": "Cho tớ một cái bánh.", "gIds": ["o_kudasai", "counter"] } },
             { "STT": 2, "Kanji": "", "Nghĩa": "Cả hai", "Furigana": "どちらも", "type": "noun", "conv": { "polite": "どちらも好きです。", "pVi": "Tôi thích cả hai.", "casual": "どっちも好き。", "cVi": "Thích cả hai.", "gIds": [] } },
@@ -382,7 +288,7 @@
             { "STT": 8, "Kanji": "", "Nghĩa": "Tốn (tiền/thời gian)", "Furigana": "かかります", "type": "verb", "conv": { "polite": "時間がかかります。", "pVi": "Tốn thời gian lắm.", "casual": "時間かかるよ。", "cVi": "Mất thời gian đấy.", "gIds": ["kakari_masu"] } },
             { "STT": 9, "Kanji": "", "Nghĩa": "Khoảng", "Furigana": "ぐらい", "type": "noun", "conv": { "polite": "1時間ぐらいかかります。", "pVi": "Mất khoảng 1 tiếng.", "casual": "1時間くらいかかる。", "cVi": "Mất tầm 1 tiếng.", "gIds": ["kakari_masu"] } },
             { "STT": 10, "Kanji": "", "Nghĩa": "Bao lâu", "Furigana": "どのぐらい", "type": "noun", "conv": { "polite": "どのぐらいかかりますか。", "pVi": "Mất bao lâu?", "casual": "どのくらいかかる？", "cVi": "Mất bao lâu thế?", "gIds": ["dono_gurai"] } },
-            { "STT": 11, "Kanji": "一つ", "Nghĩa": "1 cái", "Furigana": "ひとつ", "type": "counter", "conv": { "polite": "みかんを一つ食べました。", "pVi": "Tôi đã ăn 1 quả quýt.", "casual": "みかん、一つ食べた。", "cVi": "Ăn 1 quả quýt rồi.", "gIds": ["counter"] } },
+            { "STT": 11, "Kanji": "一つ", "Nghĩa": "1 cái", "Furigana": "ひとつ", "type": "counter", "conv": { "polite": "みかんを一つ食べました。", "pVi": "Tôi đã ăn 1 quả quýt.", "casual": "みかん、一つ食べた。", "cVi": "Ăn 1 quả quýt rồi.", "gIds": ["counter", "ta_form"] } },
             { "STT": 12, "Kanji": "二つ", "Nghĩa": "2 cái", "Furigana": "ふたつ", "type": "counter", "conv": { "polite": "問題が二つあります。", "pVi": "Có 2 vấn đề.", "casual": "問題が二つある。", "cVi": "Có 2 vấn đề.", "gIds": ["ga_arimasu"] } },
             { "STT": 13, "Kanji": "三つ", "Nghĩa": "3 cái", "Furigana": "みっつ", "type": "counter", "conv": { "polite": "三つください。", "pVi": "Cho tôi 3 cái.", "casual": "三つちょうだい。", "cVi": "Cho 3 cái đi.", "gIds": ["o_kudasai"] } },
             { "STT": 14, "Kanji": "四つ", "Nghĩa": "4 cái", "Furigana": "よっつ", "type": "counter", "conv": { "polite": "四つ残っています。", "pVi": "Còn lại 4 cái.", "casual": "四つ残ってる。", "cVi": "Còn 4 cái.", "gIds": ["te_iru"] } },
@@ -461,403 +367,483 @@
             { "STT": 87, "Kanji": "磨きます", "Nghĩa": "Đánh răng/Mài", "Furigana": "みがきます", "type": "verb", "conv": { "polite": "靴を磨きました。", "pVi": "Tôi đã đánh giày.", "casual": "靴磨いた。", "cVi": "Đánh giày rồi.", "gIds": ["ta_form"] } }
         ];
 
-        // --- 3. KANJI DETAILS (Day 5) ---
+        // ==========================================
+        // 3. KANJI 5-STEP ENGINE FULL (96 KANJI)
+        // Bao gồm toàn bộ số đếm và từ vựng Day 5
+        // ==========================================
         const kanjiDetails = {
-            "掃": { hanviet: "TẢO", mean: "Quét dọn", on: "ソウ", kun: "は.く", radicals: "Thủ (扌) + Trử (帚)", tipImg: "Tay (**扌**) cầm cái chổi (**帚**) quét.", tipSoundOn: "**Sou**ji quét nhà.", tipSoundKun: "**Ha**ku quét.", words: [{w:"掃除 (そうじ)", m:"Dọn dẹp"}, {w:"清掃 (せいそう)", m:"Vệ sinh"}] },
-            "除": { hanviet: "TRỪ", mean: "Loại bỏ", on: "ジョ, ジ", kun: "のぞ.く", radicals: "Phụ (阝) + Dư (余)", tipImg: "Ở gò đất (**阝**) dư (**余**) thừa thì loại bỏ.", tipSoundOn: "**Jo** (Giơ) tay loại bỏ.", tipSoundKun: "**Nozo**ku trừ đi.", words: [{w:"掃除 (そうじ)", m:"Dọn dẹp"}, {w:"削除 (さくじょ)", m:"Xóa bỏ"}] },
-            "働": { hanviet: "ĐỘNG", mean: "Làm việc", on: "ドウ", kun: "はたら.く", radicals: "Nhân (亻) + Động (動)", tipImg: "Người (**亻**) dùng sức (**力**) chuyển động (**重**).", tipSoundOn: "**Dou** động.", tipSoundKun: "**Hataraku** làm việc.", words: [{w:"働きます (はたらきます)", m:"Làm việc"}, {w:"労働 (ろうどう)", m:"Lao động"}] },
-            "選": { hanviet: "TUYỂN", mean: "Chọn", on: "セン", kun: "えら.ぶ", radicals: "Xước (⻌) + Tốn (巽)", tipImg: "Hai con rắn (**己**) cùng đi (**⻌**) thi tuyển.", tipSoundOn: "**Sen** tuyển.", tipSoundKun: "**Erabu** chọn lựa.", words: [{w:"選びます (えらびます)", m:"Chọn"}, {w:"選挙 (せんきょ)", m:"Bầu cử"}] },
-            "回": { hanviet: "HỒI", mean: "Lần/Vòng", on: "カイ", kun: "まわ.る", radicals: "Vi (囗) + Khẩu (口)", tipImg: "Hai cái miệng (**口**) xoay vòng.", tipSoundOn: "**Kai** (cái) lần.", tipSoundKun: "**Mawa**ru xoay.", words: [{w:"〜回 (かい)", m:"Lần"}, {w:"回復 (かいふく)", m:"Hồi phục"}] },
-            "台": { hanviet: "ĐÀI", mean: "Cái (máy)", on: "ダイ, タイ", kun: "", radicals: "Tư (厶) + Khẩu (口)", tipImg: "Cái miệng (**口**) nói chuyện riêng (**ム**) trên đài.", tipSoundOn: "**Dai** đài.", tipSoundKun: "", words: [{w:"〜台 (だい)", m:"Cái (máy)"}, {w:"台所 (だいどころ)", m:"Nhà bếp"}] },
-            "枚": { hanviet: "MAI", mean: "Tờ/Tấm", on: "マイ", kun: "", radicals: "Mộc (木) + Phộc (攵)", tipImg: "Cây (**木**) bị đánh (**攵**) thành từng tấm mỏng.", tipSoundOn: "**Mai** (mái) nhà lợp từng tấm.", tipSoundKun: "", words: [{w:"〜枚 (まい)", m:"Tờ/Tấm"}, {w:"枚数 (まいすう)", m:"Số tờ"}] },
-            "本": { hanviet: "BẢN", mean: "Sách/Cây/Cái", on: "ホン", kun: "もと", radicals: "Mộc (木) + Nhất (一)", tipImg: "Gốc cây (**木**) được đánh dấu.", tipSoundOn: "**Hon** (hôn) vào sách.", tipSoundKun: "**Moto** nguồn gốc.", words: [{w:"〜本 (ほん)", m:"Cái (thon dài)"}, {w:"本 (ほん)", m:"Sách"}] },
-            "手": { hanviet: "THỦ", mean: "Tay", on: "シュ", kun: "て", radicals: "Thủ (手)", tipImg: "Hình bàn tay xòe ra.", tipSoundOn: "**Shu** thủ.", tipSoundKun: "**Te** tay.", words: [{w:"手紙 (てがみ)", m:"Thư"}, {w:"手 (て)", m:"Tay"}] },
-            "紙": { hanviet: "CHỈ", mean: "Giấy", on: "シ", kun: "かみ", radicals: "Mịch (糸) + Thị (氏)", tipImg: "Sợi chỉ (**糸**) dệt thành giấy thị (**氏**).", tipSoundOn: "**Shi** si.", tipSoundKun: "**Kami** giấy.", words: [{w:"手紙 (てがみ)", m:"Thư"}, {w:"紙 (かみ)", m:"Giấy"}] },
-            "寺": { hanviet: "TỰ", mean: "Chùa", on: "ジ", kun: "てら", radicals: "Thổ (土) + Thốn (寸)", tipImg: "Đất (**土**) có thốn (**寸**) cỏ là chùa.", tipSoundOn: "**Ji** tự.", tipSoundKun: "**Tera** chùa.", words: [{w:"お寺 (おてら)", m:"Chùa"}, {w:"寺院 (じいん)", m:"Đền thờ"}] },
-            "郵": { hanviet: "BƯU", mean: "Bưu chính", on: "ユウ", kun: "", radicals: "Thùy (垂) + Phụ (阝)", tipImg: "Vùng đất (**阝**) xa xôi (**垂**) cần gửi thư.", tipSoundOn: "**Yuu** bưu điện.", tipSoundKun: "", words: [{w:"郵便局 (ゆうびんきょく)", m:"Bưu điện"}, {w:"郵送 (ゆうそう)", m:"Gửi thư"}] },
-            "便": { hanviet: "TIỆN", mean: "Tiện/Thư", on: "ベン, ビン", kun: "たよ.り", radicals: "Nhân (亻) + Canh (更)", tipImg: "Người (**亻**) canh (**更**) cửa rất tiện.", tipSoundOn: "**Ben** tiện.", tipSoundKun: "**Tayo**ri tin tức.", words: [{w:"郵便局 (ゆうびんきょく)", m:"Bưu điện"}, {w:"便利 (べんり)", m:"Tiện lợi"}] },
-            "局": { hanviet: "CỤC", mean: "Cục/Phòng", on: "キョク", kun: "", radicals: "Thi (尸) + Bao (勹) + Khẩu (口)", tipImg: "Xác chết (**尸**) trong cái bao (**勹**) ở cục cảnh sát.", tipSoundOn: "**Kyoku** cục.", tipSoundKun: "", words: [{w:"郵便局 (ゆうびんきょく)", m:"Bưu điện"}, {w:"薬局 (やっきょく)", m:"Hiệu thuốc"}] },
-            "買": { hanviet: "MÃI", mean: "Mua", on: "バイ", kun: "か.う", radicals: "Võng (罒) + Bối (貝)", tipImg: "Lưới (**罒**) chụp tiền (**貝**) để mua.", tipSoundOn: "**Bai** mãi mãi.", tipSoundKun: "**Ka**u mua.", words: [{w:"買い物 (かいもの)", m:"Mua sắm"}, {w:"買います (かいます)", m:"Mua"}] },
-            "物": { hanviet: "VẬT", mean: "Đồ vật", on: "ブツ, モツ", kun: "もの", radicals: "Ngưu (牛) + Vật (勿)", tipImg: "Con bò (**牛**) chê không (**勿**) phải đồ vật.", tipSoundOn: "**Butsu** bụt.", tipSoundKun: "**Mono** vật.", words: [{w:"買い物 (かいもの)", m:"Mua sắm"}, {w:"荷物 (にもつ)", m:"Hành lý"}] },
-            "出": { hanviet: "XUẤT", mean: "Ra/Nộp", on: "シュツ", kun: "だ.す", radicals: "Khảm (凵)", tipImg: "Hai ngọn núi chồng lên nhau xuất hiện.", tipSoundOn: "**Shutsu** xuất.", tipSoundKun: "**Da**su đưa ra.", words: [{w:"出します (だします)", m:"Nộp/Đổ (rác)"}, {w:"出口 (でぐち)", m:"Cửa ra"}] },
-            "祈": { hanviet: "KỲ", mean: "Cầu nguyện", on: "キ", kun: "いの.る", radicals: "Kỳ (礻) + Cân (斤)", tipImg: "Thần đất (**礻**) cầm rìu (**斤**) cầu nguyện.", tipSoundOn: "**Ki** kỳ.", tipSoundKun: "**Ino**ru cầu.", words: [{w:"祈ります (いのります)", m:"Cầu nguyện"}, {w:"祈願 (きがん)", m:"Lời cầu nguyện"}] },
-            "見": { hanviet: "KIẾN", mean: "Nhìn", on: "ケン", kun: "み.る", radicals: "Mục (目)", tipImg: "Mắt trên chân đi kiến tập.", tipSoundOn: "**Ken**gaku kiến tập.", tipSoundKun: "**Mi**ru nhìn.", words: [{w:"見学 (けんがく)", m:"Tham quan học tập"}, {w:"見ます (みます)", m:"Nhìn"}] },
-            "学": { hanviet: "HỌC", mean: "Học", on: "ガク", kun: "まな.ぶ", radicals: "Tử (子)", tipImg: "Đứa trẻ đội mũ đi học.", tipSoundOn: "**Gaku** học.", tipSoundKun: "**Mana**bu học.", words: [{w:"見学 (けんがく)", m:"Tham quan học tập"}, {w:"学校 (がっこう)", m:"Trường học"}] },
-            "番": { hanviet: "PHIÊN", mean: "Số/Lượt", on: "バン", kun: "", radicals: "Biện (釆) + Điền (田)", tipImg: "Gạo (**米**) trên ruộng (**田**) được đánh số.", tipSoundOn: "**Ban** số.", tipSoundKun: "", words: [{w:"一番 (いちばん)", m:"Nhất/Số 1"}, {w:"交番 (こうばん)", m:"Đồn cảnh sát"}] },
-            "世": { hanviet: "THẾ", mean: "Thế giới", on: "セイ, セ", kun: "よ", radicals: "Nhất (一)", tipImg: "Ba mươi (**卅**) năm là một thế hệ.", tipSoundOn: "**Se**kai thế giới.", tipSoundKun: "**Yo** thế gian.", words: [{w:"世界 (せかい)", m:"Thế giới"}, {w:"世話 (せわ)", m:"Chăm sóc"}] },
-            "界": { hanviet: "GIỚI", mean: "Giới hạn", on: "カイ", kun: "", radicals: "Điền (田) + Giới (介)", tipImg: "Ruộng (**田**) bị giới (**介**) hạn.", tipSoundOn: "**Kai** giới.", tipSoundKun: "", words: [{w:"世界 (せかい)", m:"Thế giới"}, {w:"限界 (げんかい)", m:"Giới hạn"}] },
-            "季": { hanviet: "QUÝ", mean: "Mùa", on: "キ", kun: "", radicals: "Hòa (禾) + Tử (子)", tipImg: "Cây lúa (**禾**) non trẻ (**子**) theo mùa.", tipSoundOn: "**Ki**setsu mùa.", tipSoundKun: "", words: [{w:"季節 (きせつ)", m:"Mùa"}, {w:"四季 (しき)", m:"Bốn mùa"}] },
-            "節": { hanviet: "TIẾT", mean: "Tiết/Mùa", on: "セツ", kun: "ふし", radicals: "Trúc (竹) + Tức (即)", tipImg: "Tre (**竹**) tức (**即**) khí tiết.", tipSoundOn: "**Setsu** tiết.", tipSoundKun: "**Fushi** đốt tre.", words: [{w:"季節 (きせつ)", m:"Mùa"}, {w:"調節 (ちょうせつ)", m:"Điều tiết"}] },
-            "春": { hanviet: "XUÂN", mean: "Mùa xuân", on: "シュン", kun: "はる", radicals: "Nhật (日)", tipImg: "Ba người (**三**) ngắm mặt trời (**日**) mùa xuân.", tipSoundOn: "**Shun** xuân.", tipSoundKun: "**Haru** xuân.", words: [{w:"春 (はる)", m:"Mùa xuân"}, {w:"青春 (せいしゅん)", m:"Thanh xuân"}] },
-            "夏": { hanviet: "HẠ", mean: "Mùa hè", on: "カ", kun: "なつ", radicals: "Hạ (夂)", tipImg: "Trăm (**百**) người đi lại (**夂**) mùa hè.", tipSoundOn: "**Ka** ca.", tipSoundKun: "**Natsu** hạ.", words: [{w:"夏 (なつ)", m:"Mùa hè"}, {w:"夏休み (なつやすみ)", m:"Nghỉ hè"}] },
-            "秋": { hanviet: "THU", mean: "Mùa thu", on: "シュウ", kun: "あき", radicals: "Hòa (禾) + Hỏa (火)", tipImg: "Cây lúa (**禾**) chín vàng như lửa (**火**) mùa thu.", tipSoundOn: "**Shuu** thu.", tipSoundKun: "**Aki** thu.", words: [{w:"秋 (あき)", m:"Mùa thu"}, {w:"秋分 (しゅうぶん)", m:"Thu phân"}] },
-            "冬": { hanviet: "ĐÔNG", mean: "Mùa đông", on: "トウ", kun: "ふゆ", radicals: "Băng (冫) + Phộc (夂)", tipImg: "Bước đi (**夂**) trên băng (**冫**) mùa đông.", tipSoundOn: "**Tou** đông.", tipSoundKun: "**Fuyu** đông.", words: [{w:"冬 (ふゆ)", m:"Mùa đông"}, {w:"冬休み (ふゆやすみ)", m:"Nghỉ đông"}] },
-            "食": { hanviet: "THỰC", mean: "Ăn", on: "ショク", kun: "た.べる", radicals: "Thực (食)", tipImg: "Người tốt (**良**) che mũ (人) ăn.", tipSoundOn: "**Shoku** thực.", tipSoundKun: "**Ta**beru ăn.", words: [{w:"食べ物 (たべもの)", m:"Đồ ăn"}, {w:"食堂 (しょくどう)", m:"Nhà ăn"}] },
-            "飲": { hanviet: "ẨM", mean: "Uống", on: "イン", kun: "の.む", radicals: "Thực (饣) + Khiếm (欠)", tipImg: "Ăn (**食**) thiếu (**欠**) nước phải uống.", tipSoundOn: "**In** ẩm.", tipSoundKun: "**No**mu uống.", words: [{w:"飲み物 (のみもの)", m:"Đồ uống"}, {w:"飲食店 (いんしょくてん)", m:"Nhà hàng"}] },
-            "乗": { hanviet: "THỪA", mean: "Lên xe", on: "ジョウ", kun: "の.る", radicals: "Thiên (千) + Mộc (木)", tipImg: "Cây lúa (**禾**) trên xe.", tipSoundOn: "**Jou** thừa.", tipSoundKun: "**No**ru lên xe.", words: [{w:"乗り物 (のりもの)", m:"Phương tiện"}, {w:"乗車 (じょうしゃ)", m:"Lên tàu"}] },
-            "変": { hanviet: "BIẾN", mean: "Biến đổi/Vất vả", on: "ヘン", kun: "か.わる", radicals: "Diệc (亦) + Phộc (攵)", tipImg: "Cũng (**亦**) đánh nhẹ (**攵**) để thay đổi.", tipSoundOn: "**Hen** biến.", tipSoundKun: "**Ka**waru thay đổi.", words: [{w:"大変 (たいへん)", m:"Vất vả"}, {w:"変化 (へんか)", m:"Biến hóa"}] },
-            "嬉": { hanviet: "HI", mean: "Vui mừng", on: "キ", kun: "うれ.しい", radicals: "Nữ (女) + Hỉ (喜)", tipImg: "Phụ nữ (**女**) vui mừng (**喜**) rỡ.", tipSoundOn: "**Ki** hỉ.", tipSoundKun: "**Ure**shii vui.", words: [{w:"嬉しい (うれしい)", m:"Vui mừng"}] },
-            "週": { hanviet: "CHU", mean: "Tuần", on: "シュウ", kun: "", radicals: "Xước (⻌) + Chu (周)", tipImg: "Đi vòng quanh (**周**) một tuần.", tipSoundOn: "**Shuu** tuần.", tipSoundKun: "", words: [{w:"週末 (しゅうまつ)", m:"Cuối tuần"}, {w:"来週 (らいしゅう)", m:"Tuần sau"}] },
-            "末": { hanviet: "MẠT", mean: "Cuối", on: "マツ", kun: "すえ", radicals: "Mộc (木)", tipImg: "Cây (**木**) có ngọn dài hơn gốc.", tipSoundOn: "**Matsu** mạt.", tipSoundKun: "**Sue** cuối.", words: [{w:"週末 (しゅうまつ)", m:"Cuối tuần"}, {w:"月末 (げつまつ)", m:"Cuối tháng"}] },
-            "面": { hanviet: "DIỆN", mean: "Mặt", on: "メン", kun: "おも", radicals: "Diện (面)", tipImg: "Mặt trong khung.", tipSoundOn: "**Men** diện.", tipSoundKun: "**Omo** mặt.", words: [{w:"面積 (めんせき)", m:"Diện tích"}, {w:"画面 (がめん)", m:"Màn hình"}] },
-            "積": { hanviet: "TÍCH", mean: "Tích tụ", on: "セキ", kun: "つ.む", radicals: "Hòa (禾) + Trách (責)", tipImg: "Lúa (**禾**) chất trách (**責**) đống tích tụ.", tipSoundOn: "**Seki** tích.", tipSoundKun: "**Tsu**mu chất.", words: [{w:"面積 (めんせき)", m:"Diện tích"}, {w:"積雪 (せきせつ)", m:"Tuyết phủ"}] },
-            "腹": { hanviet: "PHÚC", mean: "Bụng", on: "フク", kun: "はら, おなか", radicals: "Nhục (月) + Phục (复)", tipImg: "Phần cơ thể (**月**) phục (**复**) hồi là bụng.", tipSoundOn: "**Fuku** phúc.", tipSoundKun: "**Onaka** bụng.", words: [{w:"お腹 (おなか)", m:"Bụng"}, {w:"空腹 (くうふく)", m:"Đói bụng"}] },
-            "空": { hanviet: "KHÔNG", mean: "Trống rỗng", on: "クウ", kun: "す.く", radicals: "Huyệt (穴) + Công (工)", tipImg: "Dưới hang (**穴**) thợ (**工**) làm việc không trung.", tipSoundOn: "**Kuu** không.", tipSoundKun: "**Su**ku trống.", words: [{w:"空きます (すきます)", m:"Trống/Đói"}, {w:"空気 (くうき)", m:"Không khí"}] },
-            "電": { hanviet: "ĐIỆN", mean: "Điện", on: "デン", kun: "", radicals: "Vũ (雨)", tipImg: "Mưa (**雨**) có sét.", tipSoundOn: "**Den** điện.", tipSoundKun: "", words: [{w:"電気 (でんき)", m:"Điện/Đèn"}, {w:"電話 (でんわ)", m:"Điện thoại"}] },
-            "気": { hanviet: "KHÍ", mean: "Khí chất", on: "キ", kun: "", radicals: "Khí (气) + Mễ (米)", tipImg: "Hơi nước (**气**) bốc lên từ gạo (**米**).", tipSoundOn: "**Ki** khí.", tipSoundKun: "", words: [{w:"電気 (でんき)", m:"Điện"}, {w:"元気 (げんき)", m:"Khỏe mạnh"}] },
-            "風": { hanviet: "PHONG", mean: "Gió", on: "フウ", kun: "かぜ", radicals: "Phong (風)", tipImg: "Con sâu (**虫**) trong gió.", tipSoundOn: "**Fuu** phong.", tipSoundKun: "**Kaze** gió.", words: [{w:"お風呂 (おふろ)", m:"Bồn tắm"}, {w:"台風 (たいふう)", m:"Bão"}] },
-            "呂": { hanviet: "LỮ", mean: "Xương sống", on: "ロ", kun: "", radicals: "Khẩu (口)", tipImg: "Hai đốt xương sống.", tipSoundOn: "**Ro** lữ.", tipSoundKun: "", words: [{w:"お風呂 (おふろ)", m:"Bồn tắm"}] },
-            "鍵": { hanviet: "KIỆN", mean: "Chìa khóa", on: "ケン", kun: "かぎ", radicals: "Kim (金) + Kiến (建)", tipImg: "Kim loại (**金**) kiến (**建**) thiết chìa khóa.", tipSoundOn: "**Ken** kiện.", tipSoundKun: "**Kagi** khóa.", words: [{w:"鍵 (かぎ)", m:"Chìa khóa"}] },
-            "新": { hanviet: "TÂN", mean: "Mới", on: "シン", kun: "あたら.しい", radicals: "Lập (立) + Mộc (木) + Cân (斤)", tipImg: "Rìu (**斤**) đẽo cây (**木**) đứng (**立**) làm đồ mới.", tipSoundOn: "**Shin** tân.", tipSoundKun: "**Atara**shii mới.", words: [{w:"新聞 (しんぶん)", m:"Báo"}, {w:"新年 (しんねん)", m:"Năm mới"}] },
-            "聞": { hanviet: "VĂN", mean: "Nghe", on: "ブン", kun: "き.く", radicals: "Môn (門) + Nhĩ (耳)", tipImg: "Tai (**耳**) ở cổng (**門**) nghe tin.", tipSoundOn: "**Bun** văn.", tipSoundKun: "**Ki**ku nghe.", words: [{w:"新聞 (しんぶん)", m:"Báo"}, {w:"見聞 (けんぶん)", m:"Kiến thức"}] },
-            "雑": { hanviet: "TẠP", mean: "Tạp nham", on: "ザツ", kun: "", radicals: "Chuy (隹) + Mộc (木)", tipImg: "Chín (**九**) con chim đậu trên cây (**木**) tạp nham.", tipSoundOn: "**Zatsu** tạp.", tipSoundKun: "", words: [{w:"雑誌 (ざっし)", m:"Tạp chí"}, {w:"複雑 (ふくざつ)", m:"Phức tạp"}] },
-            "誌": { hanviet: "CHÍ", mean: "Ghi chép", on: "シ", kun: "", radicals: "Ngôn (言) + Chí (志)", tipImg: "Lời nói (**言**) ghi chép ý chí (**志**).", tipSoundOn: "**Shi** chí.", tipSoundKun: "", words: [{w:"雑誌 (ざっし)", m:"Tạp chí"}, {w:"日誌 (にっし)", m:"Nhật ký"}] },
-            "消": { hanviet: "TIÊU", mean: "Tắt/Xóa", on: "ショウ", kun: "け.す", radicals: "Thủy (氵) + Tiêu (肖)", tipImg: "Nước (**氵**) tiêu (**肖**) tan lửa.", tipSoundOn: "**Shou** tiêu.", tipSoundKun: "**Ke**su tắt.", words: [{w:"消します (けします)", m:"Tắt"}, {w:"消防車 (しょうぼうしゃ)", m:"Xe cứu hỏa"}] },
-            "浴": { hanviet: "DỤC", mean: "Tắm", on: "ヨク", kun: "あ.びる", radicals: "Thủy (氵) + Cốc (谷)", tipImg: "Nước (**氵**) chảy trong thung lũng (**谷**) để tắm.", tipSoundOn: "**Yoku** dục.", tipSoundKun: "**Abi**ru tắm.", words: [{w:"浴びます (あびます)", m:"Tắm (vòi sen)"}, {w:"浴室 (よくしつ)", m:"Phòng tắm"}] },
-            "入": { hanviet: "NHẬP", mean: "Vào", on: "ニュウ", kun: "はい.る", radicals: "Nhập (入)", tipImg: "Người đi vào.", tipSoundOn: "**Nyuu** nhập.", tipSoundKun: "**Hai**ru vào.", words: [{w:"入ります (はいります)", m:"Vào/Tắm bồn"}, {w:"入口 (いりぐち)", m:"Cửa vào"}] },
-            "掛": { hanviet: "QUẢI", mean: "Treo/Khóa", on: "カイ", kun: "か.ける", radicals: "Thủ (扌) + Quải (卦)", tipImg: "Tay (**扌**) cầm quẻ (**卦**) treo lên.", tipSoundOn: "**Kai** quải.", tipSoundKun: "**Ka**keru khóa.", words: [{w:"掛けます (かけます)", m:"Khóa (cửa)"}] },
-            "押": { hanviet: "ÁP", mean: "Ấn/Đẩy", on: "オウ", kun: "お.す", radicals: "Thủ (扌) + Giáp (甲)", tipImg: "Tay (**扌**) ấn cái giáp (**甲**).", tipSoundOn: "**Ou** áp.", tipSoundKun: "**O**su ấn.", words: [{w:"押します (おします)", m:"Ấn/Đẩy"}] },
-            "洗": { hanviet: "TẨY", mean: "Rửa", on: "セン", kun: "あら.う", radicals: "Thủy (氵) + Tiên (先)", tipImg: "Nước (**氵**) tẩy sạch trước (**先**).", tipSoundOn: "**Sen** tẩy.", tipSoundKun: "**Ara**u rửa.", words: [{w:"洗濯 (せんたく)", m:"Giặt giũ"}, {w:"洗います (あらいます)", m:"Rửa"}] },
-            "濯": { hanviet: "TRẠC", mean: "Giặt", on: "タク", kun: "", radicals: "Thủy (氵) + Địch (翟)", tipImg: "Nước (**氵**) giặt lông chim (**翟**).", tipSoundOn: "**Taku** trạc.", tipSoundKun: "", words: [{w:"洗濯機 (せんたくき)", m:"Máy giặt"}] },
-            "機": { hanviet: "CƠ", mean: "Máy", on: "キ", kun: "はた", radicals: "Mộc (木) + Cơ (幾)", tipImg: "Cây (**木**) bên mấy (**幾**) cái máy.", tipSoundOn: "**Ki** cơ.", tipSoundKun: "**Hata** cơ.", words: [{w:"洗濯機 (せんたくき)", m:"Máy giặt"}, {w:"機械 (きかい)", m:"Cơ khí"}] },
-            "独": { hanviet: "ĐỘC", mean: "Một mình", on: "ドク", kun: "ひと.り", radicals: "Khuyển (犭) + Trùng (虫)", tipImg: "Con chó (**犭**) bị con sâu (**虫**) cắn một mình.", tipSoundOn: "**Doku** độc.", tipSoundKun: "**Hito**ri một mình.", words: [{w:"独身 (どくしん)", m:"Độc thân"}, {w:"独特 (どくとく)", m:"Độc đáo"}] },
-            "身": { hanviet: "THÂN", mean: "Thân thể", on: "シン", kun: "み", radicals: "Thân (身)", tipImg: "Thân thể mang bầu.", tipSoundOn: "**Shin** thân.", tipSoundKun: "**Mi** thân.", words: [{w:"独身 (どくしん)", m:"Độc thân"}, {w:"身体 (しんたい)", m:"Cơ thể"}] },
-            "資": { hanviet: "TƯ", mean: "Tư liệu/Vốn", on: "シ", kun: "", radicals: "Thứ (次) + Bối (貝)", tipImg: "Tiền (**貝**) thứ (**次**) yếu là vốn.", tipSoundOn: "**Shi** tư.", tipSoundKun: "", words: [{w:"資料 (しりょう)", m:"Tài liệu"}, {w:"資本 (しほん)", m:"Tư bản"}] },
-            "料": { hanviet: "LIỆU", mean: "Nguyên liệu", on: "リョウ", kun: "", radicals: "Mễ (米) + Đấu (斗)", tipImg: "Gạo (**米**) đong đấu (**斗**) làm nguyên liệu.", tipSoundOn: "**Ryou** liệu.", tipSoundKun: "", words: [{w:"資料 (しりょう)", m:"Tài liệu"}, {w:"料理 (りょうり)", m:"Món ăn"}] },
-            "話": { hanviet: "THOẠI", mean: "Nói chuyện", on: "ワ", kun: "はな.す", radicals: "Ngôn (言) + Thiệt (舌)", tipImg: "Lời nói (**言**) bằng lưỡi (**舌**).", tipSoundOn: "**Wa** thoại.", tipSoundKun: "**Hana**su nói.", words: [{w:"電話 (でんわ)", m:"Điện thoại"}, {w:"会話 (かいわ)", m:"Hội thoại"}] },
-            "予": { hanviet: "DỰ", mean: "Dự báo", on: "ヨ", kun: "", radicals: "Dự (予)", tipImg: "Cái mâu (**矛**) dự báo chiến tranh.", tipSoundOn: "**Yo** dự.", tipSoundKun: "", words: [{w:"予約 (よやく)", m:"Đặt trước"}, {w:"予定 (よてい)", m:"Dự định"}] },
-            "約": { hanviet: "ƯỚC", mean: "Lời hứa", on: "ヤク", kun: "", radicals: "Mịch (糸) + Chước (勺)", tipImg: "Sợi chỉ (**糸**) buộc cái muôi (**勺**) là lời hứa.", tipSoundOn: "**Yaku** ước.", tipSoundKun: "", words: [{w:"予約 (よやく)", m:"Đặt trước"}, {w:"約束 (やくそく)", m:"Lời hứa"}] },
-            "歯": { hanviet: "XỈ", mean: "Răng", on: "シ", kun: "は", radicals: "Xỉ (歯)", tipImg: "Dừng (**止**) lại để nhe răng.", tipSoundOn: "**Shi** xỉ.", tipSoundKun: "**Ha** răng.", words: [{w:"歯 (は)", m:"Răng"}, {w:"歯科 (しか)", m:"Nha khoa"}] },
-            "顔": { hanviet: "NHAN", mean: "Mặt", on: "ガン", kun: "かお", radicals: "Nhan (彦) + Hiệt (頁)", tipImg: "Đầu (**頁**) có nhan sắc (**彦**).", tipSoundOn: "**Gan** nhan.", tipSoundKun: "**Kao** mặt.", words: [{w:"顔 (かお)", m:"Khuôn mặt"}, {w:"洗顔 (せんがん)", m:"Rửa mặt"}] },
-            "試": { hanviet: "THÍ", mean: "Thử", on: "シ", kun: "ため.す", radicals: "Ngôn (言) + Thức (式)", tipImg: "Lời nói (**言**) theo thức (**式**) là thi thử.", tipSoundOn: "**Shi** thí.", tipSoundKun: "**Tame**su thử.", words: [{w:"試合 (しあい)", m:"Trận đấu"}, {w:"試験 (しけん)", m:"Kỳ thi"}] },
-            "合": { hanviet: "HỢP", mean: "Hợp/Gặp", on: "ゴウ", kun: "あ.う", radicals: "Nhân (人) + Nhất (一) + Khẩu (口)", tipImg: "Một (**一**) người (**人**) miệng (**口**) hợp lại.", tipSoundOn: "**Gou** hợp.", tipSoundKun: "**A**u hợp.", words: [{w:"試合 (しあい)", m:"Trận đấu"}, {w:"間に合う (まにあう)", m:"Kịp giờ"}] },
-            "砂": { hanviet: "SA", mean: "Cát", on: "サ", kun: "すな", radicals: "Thạch (石) + Thiểu (少)", tipImg: "Đá (**石**) nhỏ thiếu (**少**) là cát.", tipSoundOn: "**Sa** sa.", tipSoundKun: "**Suna** cát.", words: [{w:"砂糖 (さとう)", m:"Đường"}, {w:"砂漠 (さばく)", m:"Sa mạc"}] },
-            "糖": { hanviet: "ĐƯỜNG", mean: "Đường ăn", on: "トウ", kun: "", radicals: "Mễ (米) + Đường (唐)", tipImg: "Gạo (**米**) nhà đường (**唐**) rất ngọt.", tipSoundOn: "**Tou** đường.", tipSoundKun: "", words: [{w:"砂糖 (さとう)", m:"Đường"}] },
-            "塩": { hanviet: "DIÊM", mean: "Muối", on: "エン", kun: "しお", radicals: "Thổ (土) + Nhân (亻) + Mãnh (皿)", tipImg: "Người nằm (**亻**) trên đất (**土**) ăn muối trong đĩa (**皿**).", tipSoundOn: "**En** diêm.", tipSoundKun: "**Shio** muối.", words: [{w:"塩 (しお)", m:"Muối"}, {w:"食塩 (しょくえん)", m:"Muối ăn"}] },
-            "油": { hanviet: "DU", mean: "Dầu", on: "ユ", kun: "あぶら", radicals: "Thủy (氵) + Do (由)", tipImg: "Nước (**氵**) do (**由**) dầu tạo ra.", tipSoundOn: "**Yu** du.", tipSoundKun: "**Abura** dầu.", words: [{w:"醤油 (しょうゆ)", m:"Nước tương"}, {w:"石油 (せきゆ)", m:"Dầu mỏ"}] },
-            "住": { hanviet: "TRÚ", mean: "Sống", on: "ジュウ", kun: "す.む", radicals: "Nhân (亻) + Chủ (主)", tipImg: "Người (**亻**) làm chủ (**主**) nơi ở.", tipSoundOn: "**Juu** trú.", tipSoundKun: "**Su**mu sống.", words: [{w:"住所 (じゅうしょ)", m:"Địa chỉ"}, {w:"住みます (すみます)", m:"Sống"}] },
-            "所": { hanviet: "SỞ", mean: "Nơi chốn", on: "ショ", kun: "ところ", radicals: "Hộ (戸) + Cân (斤)", tipImg: "Cửa (**戸**) có rìu (**斤**) canh giữ.", tipSoundOn: "**Sho** sở.", tipSoundKun: "**Tokoro** nơi.", words: [{w:"住所 (じゅうしょ)", m:"Địa chỉ"}, {w:"場所 (ばしょ)", m:"Nơi chốn"}] },
-            "差": { hanviet: "SAI", mean: "Khác biệt", on: "サ", kun: "さ.す", radicals: "Dương (⺶) + Công (工)", tipImg: "Dê (**⺶**) làm việc công (**工**) bị sai.", tipSoundOn: "**Sa** sai.", tipSoundKun: "**Sa**su chỉ.", words: [{w:"交差点 (こうさてん)", m:"Ngã tư"}, {w:"差別 (さべつ)", m:"Phân biệt"}] },
-            "点": { hanviet: "ĐIỂM", mean: "Điểm", on: "テン", kun: "", radicals: "Hỏa (灬) + Chiếm (占)", tipImg: "Chiếm (**占**) lấy lửa (**灬**) là điểm nóng.", tipSoundOn: "**Ten** điểm.", tipSoundKun: "", words: [{w:"交差点 (こうさてん)", m:"Ngã tư"}, {w:"点数 (てんすう)", m:"Điểm số"}] },
-            "信": { hanviet: "TÍN", mean: "Tin tưởng", on: "シン", kun: "", radicals: "Nhân (亻) + Ngôn (言)", tipImg: "Lời nói (**言**) của người (**亻**) có uy tín.", tipSoundOn: "**Shin** tín.", tipSoundKun: "", words: [{w:"信号 (しんごう)", m:"Đèn giao thông"}, {w:"信用 (しんよう)", m:"Tin dùng"}] },
-            "号": { hanviet: "HIỆU", mean: "Số hiệu", on: "ゴウ", kun: "", radicals: "Khẩu (口) + Khuy (丂)", tipImg: "Miệng (**口**) kêu gào số 5.", tipSoundOn: "**Gou** hiệu.", tipSoundKun: "", words: [{w:"信号 (しんごう)", m:"Đèn giao thông"}, {w:"番号 (ばんごう)", m:"Số hiệu"}] },
-            "曲": { hanviet: "KHÚC", mean: "Cong/Rẽ", on: "キョク", kun: "ま.がる", radicals: "Điền (田)", tipImg: "Ruộng (**田**) bị uốn cong.", tipSoundOn: "**Kyoku** khúc.", tipSoundKun: "**Ma**garu rẽ.", words: [{w:"曲がります (まがります)", m:"Rẽ/Quẹo"}, {w:"曲 (きょく)", m:"Ca khúc"}] },
-            "付": { hanviet: "PHÓ", mean: "Gắn vào", on: "フ", kun: "つ.ける", radicals: "Nhân (亻) + Thốn (寸)", tipImg: "Người (**亻**) trao tấc (**寸**) lòng.", tipSoundOn: "**Fu** phó.", tipSoundKun: "**Tsu**keru gắn.", words: [{w:"気を付けます (きをつけます)", m:"Chú ý"}, {w:"受付 (うけつけ)", m:"Lễ tân"}] },
-            "急": { hanviet: "CẤP", mean: "Vội", on: "キュウ", kun: "いそ.ぐ", radicals: "Tâm (心) + Trừ (刍)", tipImg: "Tim (**心**) bị đè nén (**刍**) rất gấp.", tipSoundOn: "**Kyuu** cấp.", tipSoundKun: "**Iso**gu vội.", words: [{w:"急ぎます (いそぎます)", m:"Vội/Gấp"}, {w:"急行 (きゅうこう)", m:"Tàu tốc hành"}] },
-            "止": { hanviet: "CHỈ", mean: "Dừng", on: "シ", kun: "と.める", radicals: "Chỉ (止)", tipImg: "Dấu chân dừng lại.", tipSoundOn: "**Shi** chỉ.", tipSoundKun: "**To**meru dừng.", words: [{w:"止めます (とめます)", m:"Dừng xe"}, {w:"中止 (ちゅうし)", m:"Hủy bỏ"}] },
-            "雨": { hanviet: "VŨ", mean: "Mưa", on: "ウ", kun: "あめ", radicals: "Vũ (雨)", tipImg: "Những hạt mưa rơi.", tipSoundOn: "**U** vũ.", tipSoundKun: "**Ame** mưa.", words: [{w:"雨 (あめ)", m:"Mưa"}, {w:"雨季 (うき)", m:"Mùa mưa"}] },
-            "磨": { hanviet: "MA", mean: "Mài", on: "マ", kun: "みが.く", radicals: "Thạch (石) + Ma (麻)", tipImg: "Cây gai (**麻**) mài lên đá (**石**).", tipSoundOn: "**Ma** ma.", tipSoundKun: "**Miga**ku đánh răng.", words: [{w:"磨きます (みがきます)", m:"Đánh răng/Mài"}, {w:"研磨 (けんま)", m:"Mài giũa"}] }
+            "一": { hanviet:"NHẤT", meanMain:"Một", kun:"hito.tsu", on:"ICHI / ITSU", radicals:"Nhất (一)", tipImg:"Một gạch ngang.", soundStory:"Âm On: **ICHI** -> Í chị.", combo:"MỘT GẠCH NHẤT Í CHỊ.", words:[{w:"一つ",f:"ひとつ",m:"Một cái",lvl:"N5"},{w:"一日",f:"ついたち",m:"Mùng 1",lvl:"N5"},{w:"一回",f:"いっかい",m:"Một lần",lvl:"N5"},{w:"一生",f:"いっしょう",m:"Cả đời",lvl:"N3"},{w:"一致",f:"いっち",m:"Thống nhất",lvl:"N1"}] },
+            "二": { hanviet:"NHỊ", meanMain:"Hai", kun:"futa.tsu", on:"NI", radicals:"Nhị (二)", tipImg:"Hai gạch ngang.", soundStory:"Âm On: **NI** -> Nỉ.", combo:"HAI GẠCH NHỊ NỈ.", words:[{w:"二つ",f:"ふたつ",m:"Hai cái",lvl:"N5"},{w:"二日",f:"ふつか",m:"Mùng 2",lvl:"N5"},{w:"二人",f:"ふたり",m:"Hai người",lvl:"N5"},{w:"二回",f:"にかい",m:"Hai lần",lvl:"N5"},{w:"二酸化",f:"にさんか",m:"Dioxit",lvl:"N2"}] },
+            "三": { hanviet:"TAM", meanMain:"Ba", kun:"mit.tsu", on:"SAN", radicals:"Nhất (一)", tipImg:"Ba gạch ngang.", soundStory:"Âm On: **SAN** -> Sân.", combo:"BA GẠCH TAM SÂN.", words:[{w:"三つ",f:"みっつ",m:"Ba cái",lvl:"N5"},{w:"三日",f:"みっか",m:"Mùng 3",lvl:"N5"},{w:"三人",f:"さんにん",m:"Ba người",lvl:"N5"},{w:"三日月",f:"みかづき",m:"Trăng khuyết",lvl:"N2"},{w:"三脚",f:"さんきゃく",m:"Chân máy ảnh",lvl:"N1"}] },
+            "四": { hanviet:"TỨ", meanMain:"Bốn", kun:"yot.tsu / yon", on:"SHI", radicals:"Vi (囗) + Nhi (儿)", tipImg:"Bốn đứa trẻ (儿) trong phòng (囗).", soundStory:"Âm On: **SHI** -> Tử (chết).", combo:"BỐN LÀ TỨ SHI (TỬ).", words:[{w:"四つ",f:"よっつ",m:"Bốn cái",lvl:"N5"},{w:"四日",f:"よっか",m:"Mùng 4",lvl:"N5"},{w:"四人",f:"よにん",m:"Bốn người",lvl:"N5"},{w:"四季",f:"しき",m:"Bốn mùa",lvl:"N3"},{w:"四角い",f:"しかくい",m:"Vuông",lvl:"N2"}] },
+            "五": { hanviet:"NGŨ", meanMain:"Năm", kun:"itsu.tsu", on:"GO", radicals:"Nhị (二)", tipImg:"Số 5 vắt chéo.", soundStory:"Âm On: **GO** -> Gỗ.", combo:"SỐ NĂM NGŨ GỖ.", words:[{w:"五つ",f:"いつつ",m:"Năm cái",lvl:"N5"},{w:"五日",f:"いつか",m:"Mùng 5",lvl:"N5"},{w:"五人",f:"ごにん",m:"Năm người",lvl:"N5"},{w:"五十音",f:"ごじゅうおん",m:"Bảng chữ cái",lvl:"N3"},{w:"五感",f:"ごかん",m:"Năm giác quan",lvl:"N1"}] },
+            "六": { hanviet:"LỤC", meanMain:"Sáu", kun:"mut.tsu", on:"ROKU", radicals:"Bát (八)", tipImg:"Người dang chân tay tạo thành 6 góc.", soundStory:"Âm On: **ROKU** -> Rổ cú.", combo:"SÁU GÓC LỤC RỔ CÚ.", words:[{w:"六つ",f:"むっつ",m:"Sáu cái",lvl:"N5"},{w:"六日",f:"むいか",m:"Mùng 6",lvl:"N5"},{w:"六人",f:"ろくにん",m:"Sáu người",lvl:"N5"},{w:"六角形",f:"ろっかくけい",m:"Hình lục giác",lvl:"N2"}] },
+            "七": { hanviet:"THẤT", meanMain:"Bảy", kun:"nana.tsu", on:"SHICHI", radicals:"Nhất (一)", tipImg:"Bị cắt lộn ngược thành số 7.", soundStory:"Âm Kun: **NANA** -> Na nà.", combo:"BẢY LÀ THẤT NA NÀ.", words:[{w:"七つ",f:"ななつ",m:"Bảy cái",lvl:"N5"},{w:"七日",f:"なのか",m:"Mùng 7",lvl:"N5"},{w:"七夕",f:"たなばた",m:"Lễ Thất Tịch",lvl:"N2"}] },
+            "八": { hanviet:"BÁT", meanMain:"Tám", kun:"yat.tsu", on:"HACHI", radicals:"Bát (八)", tipImg:"Hai nét rẽ ra 2 hướng (Tám).", soundStory:"Âm On: **HACHI** -> Hát chi.", combo:"TÁM HƯỚNG BÁT HÁT CHI.", words:[{w:"八つ",f:"やっつ",m:"Tám cái",lvl:"N5"},{w:"八日",f:"ようか",m:"Mùng 8",lvl:"N5"},{w:"八百屋",f:"やおや",m:"Tiệm rau",lvl:"N4"}] },
+            "九": { hanviet:"CỬU", meanMain:"Chín", kun:"kokono.tsu", on:"KYUU / KU", radicals:"Ất (乙)", tipImg:"Người chống tay gập gối (Số 9).", soundStory:"Âm On: **KYUU** -> Cứu.", combo:"CHÍN NGƯỜI CỬU CỨU.", words:[{w:"九つ",f:"ここのつ",m:"Chín cái",lvl:"N5"},{w:"九日",f:"ここのか",m:"Mùng 9",lvl:"N5"},{w:"九州",f:"きゅうしゅう",m:"Đảo Kyushu",lvl:"N3"}] },
+            "十": { hanviet:"THẬP", meanMain:"Mười", kun:"too", on:"JUU", radicals:"Thập (十)", tipImg:"Cây thánh giá.", soundStory:"Âm On: **JUU** -> Dù.", combo:"MƯỜI THẬP DÙ.", words:[{w:"十",f:"とお",m:"Mười cái",lvl:"N5"},{w:"十日",f:"とおか",m:"Mùng 10",lvl:"N5"},{w:"十分",f:"じゅうぶん",m:"Đầy đủ",lvl:"N4"},{w:"十字路",f:"じゅうじろ",m:"Ngã tư",lvl:"N3"}] },
+            "掃": { hanviet:"TẢO", meanMain:"Quét dọn", kun:"ha.ku", on:"SOU", radicals:"Thủ (扌) + Trử (帚)", tipImg:"Tay (扌) cầm chổi (帚) **quét** nhà.", soundStory:"Âm On: **SOU** -> Sâu.", combo:"TAY CẦM CHỔI QUÉT SÂU TẢO.", words:[{w:"掃除",f:"そうじ",m:"Dọn dẹp",lvl:"N5"},{w:"掃く",f:"はく",m:"Quét",lvl:"N3"},{w:"清掃",f:"せいそう",m:"Vệ sinh",lvl:"N2"},{w:"一掃",f:"いっそう",m:"Quét sạch",lvl:"N1"},{w:"掃討",f:"そうとう",m:"Quét dọn",lvl:"N1"}] },
+            "除": { hanviet:"TRỪ", meanMain:"Loại bỏ", kun:"nozo.ku", on:"JO / JI", radicals:"Phụ (阝) + Dư (余)", tipImg:"Ở gò đất (阝) dư (余) thừa thì loại **trừ**.", soundStory:"Âm On: **JO** -> Dơ.", combo:"ĐẤT DƯ DƠ TRỪ.", words:[{w:"掃除",f:"そうじ",m:"Dọn dẹp",lvl:"N5"},{w:"除く",f:"のぞく",m:"Ngoại trừ",lvl:"N3"},{w:"削除",f:"さくじょ",m:"Xóa",lvl:"N2"},{w:"解除",f:"かいじょ",m:"Hủy bỏ",lvl:"N2"},{w:"排除",f:"はいじょ",m:"Loại trừ",lvl:"N1"}] },
+            "働": { hanviet:"ĐỘNG", meanMain:"Làm việc", kun:"hatara.ku", on:"DOU", radicals:"Nhân (亻) + Động (動)", tipImg:"Người (亻) **vận động** (動) là làm việc.", soundStory:"Âm Kun: **HATARA** -> Hạ ta ra.", combo:"NGƯỜI VẬN ĐỘNG HẠ TA RA ĐỘNG.", words:[{w:"働く",f:"はたらく",m:"Làm việc",lvl:"N5"},{w:"労働",f:"ろうどう",m:"Lao động",lvl:"N3"},{w:"共働き",f:"ともばたらき",m:"Cùng kiếm tiền",lvl:"N2"},{w:"稼働",f:"かどう",m:"Hoạt động",lvl:"N1"},{w:"働き者",f:"はたらきもの",m:"Người chăm chỉ",lvl:"N1"}] },
+            "選": { hanviet:"TUYỂN", meanMain:"Chọn", kun:"era.bu", on:"SEN", radicals:"Xước (⻌) + Tốn (巽)", tipImg:"Hai con rắn (己) đi (⻌) thi **tuyển**.", soundStory:"Âm On: **SEN** -> Sên.", combo:"RẮN ĐI THI TUYỂN SÊN.", words:[{w:"選ぶ",f:"えらぶ",m:"Chọn",lvl:"N4"},{w:"選手",f:"せんしゅ",m:"Tuyển thủ",lvl:"N4"},{w:"選挙",f:"せんきょ",m:"Bầu cử",lvl:"N3"},{w:"選択",f:"せんたく",m:"Lựa chọn",lvl:"N2"},{w:"選考",f:"せんこう",m:"Tuyển chọn",lvl:"N1"}] },
+            "回": { hanviet:"HỒI", meanMain:"Lần, vòng", kun:"mawa.ru", on:"KAI", radicals:"Vi (囗) + Khẩu (口)", tipImg:"Hai cái miệng xoay **vòng**.", soundStory:"Âm On: **KAI** -> Cái.", combo:"HAI MIỆNG XOAY VÒNG CÁI HỒI.", words:[{w:"回",f:"かい",m:"Lần",lvl:"N5"},{w:"回す",f:"まわす",m:"Xoay",lvl:"N4"},{w:"回る",f:"まわる",m:"(Tự) xoay",lvl:"N4"},{w:"回復",f:"かいふく",m:"Hồi phục",lvl:"N3"},{w:"回収",f:"かいしゅう",m:"Thu hồi",lvl:"N2"}] },
+            "台": { hanviet:"ĐÀI", meanMain:"Cái (máy)", kun:"", on:"DAI / TAI", radicals:"Khư (厶) + Khẩu (口)", tipImg:"Cái miệng nói chuyện riêng trên **đài**.", soundStory:"Âm On: **DAI** -> Đại.", combo:"MIỆNG NÓI TRÊN ĐÀI ĐẠI.", words:[{w:"台",f:"だい",m:"Cái (đếm máy)",lvl:"N5"},{w:"台所",f:"だいどころ",m:"Nhà bếp",lvl:"N5"},{w:"台風",f:"たいふう",m:"Bão",lvl:"N4"},{w:"舞台",f:"ぶたい",m:"Sân khấu",lvl:"N3"},{w:"台湾",f:"たいわん",m:"Đài Loan",lvl:"N2"}] },
+            "枚": { hanviet:"MAI", meanMain:"Tờ, tấm", kun:"", on:"MAI", radicals:"Mộc (木) + Phộc (攵)", tipImg:"Cây (木) bị đánh (攵) mỏng thành **tấm**.", soundStory:"Âm On: **MAI** -> Mái.", combo:"CÂY ĐÁNH MỎNG THÀNH TẤM MÁI MAI.", words:[{w:"枚",f:"まい",m:"Tờ, tấm",lvl:"N5"},{w:"枚数",f:"まいすう",m:"Số tờ",lvl:"N3"},{w:"二枚目",f:"にまいめ",m:"Anh chàng đẹp trai",lvl:"N1"},{w:"大枚",f:"たいまい",m:"Khoản tiền lớn",lvl:"N1"},{w:"三枚肉",f:"さんまいにく",m:"Thịt ba chỉ",lvl:"N1"}] },
+            "本": { hanviet:"BẢN", meanMain:"Sách, gốc", kun:"moto", on:"HON", radicals:"Mộc (木)", tipImg:"Đánh dấu rễ (gốc) cây (木).", soundStory:"Âm On: **HON** -> Hòn.", combo:"GỐC CÂY SÁCH HÒN BẢN.", words:[{w:"本",f:"ほん",m:"Sách/Cây",lvl:"N5"},{w:"日本",f:"にほん",m:"Nhật Bản",lvl:"N5"},{w:"本当",f:"ほんとう",m:"Sự thật",lvl:"N5"},{w:"基本",f:"きほん",m:"Cơ bản",lvl:"N3"},{w:"資本",f:"しほん",m:"Tư bản",lvl:"N2"}] },
+            "手": { hanviet:"THỦ", meanMain:"Tay", kun:"te", on:"SHU", radicals:"Thủ (手)", tipImg:"Bàn **tay** xòe ra.", soundStory:"Âm Kun: **TE** -> Tê.", combo:"BÀN TAY TÊ THỦ.", words:[{w:"手",f:"て",m:"Tay",lvl:"N5"},{w:"上手",f:"じょうず",m:"Giỏi",lvl:"N5"},{w:"歌手",f:"かしゅ",m:"Ca sĩ",lvl:"N4"},{w:"拍手",f:"はくしゅ",m:"Vỗ tay",lvl:"N3"},{w:"握手",f:"あくしゅ",m:"Bắt tay",lvl:"N3"}] },
+            "紙": { hanviet:"CHỈ", meanMain:"Giấy", kun:"kami", on:"SHI", radicals:"Mịch (糸) + Thị (氏)", tipImg:"Chỉ (糸) dệt thành **giấy**.", soundStory:"Âm Kun: **KAMI** -> Cà mì.", combo:"CHỈ DỆT GIẤY CÀ MÌ CHỈ.", words:[{w:"紙",f:"かみ",m:"Giấy",lvl:"N5"},{w:"手紙",f:"てがみ",m:"Thư",lvl:"N5"},{w:"折り紙",f:"おりがみ",m:"Gấp giấy",lvl:"N3"},{w:"用紙",f:"ようし",m:"Mẫu giấy",lvl:"N2"},{w:"紙幣",f:"しへい",m:"Tiền giấy",lvl:"N1"}] },
+            "寺": { hanviet:"TỰ", meanMain:"Ngôi chùa", kun:"tera", on:"JI", radicals:"Thổ (土) + Thốn (寸)", tipImg:"Đất (土) có tấc (寸) cỏ làm **chùa**.", soundStory:"Âm Kun: **TERA** -> Tê ra.", combo:"ĐẤT CHÙA TÊ RA TỰ.", words:[{w:"お寺",f:"おてら",m:"Chùa",lvl:"N5"},{w:"寺院",f:"じいん",m:"Đền thờ",lvl:"N2"},{w:"金閣寺",f:"きんかくじ",m:"Chùa Vàng",lvl:"N2"},{w:"山寺",f:"やまでら",m:"Chùa trên núi",lvl:"N1"},{w:"仏寺",f:"ぶつじ",m:"Chùa Phật",lvl:"N1"}] },
+            "郵": { hanviet:"BƯU", meanMain:"Bưu chính", kun:"", on:"YUU", radicals:"Thùy (垂) + Phụ (阝)", tipImg:"Vùng đất (阝) xa xôi rủ xuống (垂) gửi **bưu** điện.", soundStory:"Âm On: **YUU** -> Yêu.", combo:"ĐẤT XA GỬI BƯU ĐIỆN YÊU BƯU.", words:[{w:"郵便局",f:"ゆうびんきょく",m:"Bưu điện",lvl:"N4"},{w:"郵便",f:"ゆうびん",m:"Thư từ",lvl:"N3"},{w:"郵送",f:"ゆうそう",m:"Gửi bưu điện",lvl:"N2"},{w:"郵券",f:"ゆうけん",m:"Tem",lvl:"N1"},{w:"郵政",f:"ゆうせい",m:"Bưu chính",lvl:"N1"}] },
+            "便": { hanviet:"TIỆN", meanMain:"Tiện lợi, bưu điện", kun:"tayo.ri", on:"BEN / BIN", radicals:"Nhân (亻) + Canh (更)", tipImg:"Người (亻) canh (更) cửa rất **tiện**.", soundStory:"Âm On: **BEN** -> Bên.", combo:"NGƯỜI CANH TIỆN BÊN TIỆN.", words:[{w:"便利",f:"べんり",m:"Tiện lợi",lvl:"N5"},{w:"不便",f:"ふべん",m:"Bất tiện",lvl:"N5"},{w:"郵便局",f:"ゆうびんきょく",m:"Bưu điện",lvl:"N4"},{w:"航空便",f:"こうくうびん",m:"Đường chim bay",lvl:"N3"},{w:"便宜",f:"べんぎ",m:"Sự tiện lợi",lvl:"N1"}] },
+            "局": { hanviet:"CỤC", meanMain:"Cục, trạm", kun:"", on:"KYOKU", radicals:"Thi (尸) + Bao (勹) + Khẩu (口)", tipImg:"Xác chết (尸) trong cái bao (勹) ở **cục** cảnh sát.", soundStory:"Âm On: **KYOKU** -> Kiệu.", combo:"XÁC TRONG BAO TRẠM KIỆU CỤC.", words:[{w:"郵便局",f:"ゆうびんきょく",m:"Bưu điện",lvl:"N4"},{w:"薬局",f:"やっきょく",m:"Hiệu thuốc",lvl:"N3"},{w:"結局",f:"けっきょく",m:"Rốt cuộc",lvl:"N2"},{w:"放送局",f:"ほうそうきょく",m:"Đài phát thanh",lvl:"N2"},{w:"局面",f:"きょくめん",m:"Cục diện",lvl:"N1"}] },
+            "買": { hanviet:"MÃI", meanMain:"Mua", kun:"ka.u", on:"BAI", radicals:"Võng (罒) + Bối (貝)", tipImg:"Dùng lưới (罒) bắt tiền (貝) để đi **mua** đồ.", soundStory:"Âm Kun: **KA** -> Cà.", combo:"LƯỚI BẮT TIỀN MUA CÀ MÃI.", words:[{w:"買う",f:"かう",m:"Mua",lvl:"N5"},{w:"買い物",f:"かいもの",m:"Mua sắm",lvl:"N5"},{w:"売買",f:"ばいばい",m:"Mua bán",lvl:"N2"},{w:"買い手",f:"かいて",m:"Người mua",lvl:"N2"},{w:"買収",f:"ばいしゅう",m:"Thâu tóm",lvl:"N1"}] },
+            "物": { hanviet:"VẬT", meanMain:"Đồ vật", kun:"mono", on:"BUTSU", radicals:"Ngưu (牛) + Vật (勿)", tipImg:"Bò (牛) thì không (勿) phải đồ **vật**.", soundStory:"Âm Kun: **MONO** -> Mò nó.", combo:"BÒ KHÔNG PHẢI VẬT MÒ NÓ VẬT.", words:[{w:"買い物",f:"かいもの",m:"Mua sắm",lvl:"N5"},{w:"果物",f:"くだもの",m:"Hoa quả",lvl:"N5"},{w:"動物",f:"どうぶつ",m:"Động vật",lvl:"N4"},{w:"荷物",f:"にもつ",m:"Hành lý",lvl:"N4"},{w:"植物",f:"しょくぶつ",m:"Thực vật",lvl:"N3"}] },
+            "出": { hanviet:"XUẤT", meanMain:"Ra, nộp", kun:"de.ru", on:"SHUTSU", radicals:"Khảm (凵)", tipImg:"Hai ngọn núi chồng lên nhau tìm lối **ra**.", soundStory:"Âm Kun: **DE** -> Đi ra **đê**.", combo:"QUA NGỌN NÚI LỐI RA ĐÊ XUẤT.", words:[{w:"出る",f:"でる",m:"Đi ra",lvl:"N5"},{w:"出す",f:"だす",m:"Nộp",lvl:"N5"},{w:"出口",f:"でぐち",m:"Lối ra",lvl:"N5"},{w:"出発",f:"しゅっぱつ",m:"Xuất phát",lvl:"N4"},{w:"輸出",f:"ゆしゅつ",m:"Xuất khẩu",lvl:"N3"}] },
+            "祈": { hanviet:"KỲ", meanMain:"Cầu nguyện", kun:"ino.ru", on:"KI", radicals:"Kỳ (礻) + Cân (斤)", tipImg:"Thần (礻) cầm rìu (斤) **cầu nguyện**.", soundStory:"Âm Kun: **INO** -> Í nổ.", combo:"THẦN CẦM RÌU CẦU NGUYỆN Í NỔ KỲ.", words:[{w:"祈る",f:"いのる",m:"Cầu nguyện",lvl:"N3"},{w:"祈り",f:"いのり",m:"Lời cầu nguyện",lvl:"N2"},{w:"祈願",f:"きがん",m:"Cầu khấn",lvl:"N1"},{w:"祈祷",f:"きとう",m:"Cầu tú",lvl:"N1"},{w:"念祈",f:"ねんき",m:"Tâm nguyện",lvl:"N1"}] },
+            "見": { hanviet:"KIẾN", meanMain:"Nhìn, xem", kun:"mi.ru", on:"KEN", radicals:"Mục (目) + Nhi (儿)", tipImg:"Đôi **mắt** mọc **chân** đi **nhìn**.", soundStory:"Âm Kun: **MI** -> Mí mắt.", combo:"Đôi MẮT có CHÂN đi NHÌN. Mở MÍ mắt KIẾN.", words:[{w:"見る",f:"みる",m:"Nhìn",lvl:"N5"},{w:"見せる",f:"みせる",m:"Cho xem",lvl:"N5"},{w:"見学",f:"けんがく",m:"Tham quan",lvl:"N4"},{w:"意見",f:"いけん",m:"Ý kiến",lvl:"N3"},{w:"発見",f:"はっけん",m:"Phát hiện",lvl:"N3"}] },
+            "学": { hanviet:"HỌC", meanMain:"Học tập", kun:"mana.bu", on:"GAKU", radicals:"Miên (冖) + Tử (子)", tipImg:"Trẻ con trong nhà đội mũ **học**.", soundStory:"Âm Kun: **MANA** -> Mắt nà.", combo:"TRẺ CON HỌC MẮT NÀ HỌC.", words:[{w:"学生",f:"がくせい",m:"Học sinh",lvl:"N5"},{w:"学校",f:"がっこう",m:"Trường học",lvl:"N5"},{w:"大学",f:"だいがく",m:"Đại học",lvl:"N5"},{w:"学習",f:"がくしゅう",m:"Việc học",lvl:"N3"},{w:"科学",f:"かがく",m:"Khoa học",lvl:"N3"}] },
+            "番": { hanviet:"PHIÊN", meanMain:"Lượt, số", kun:"", on:"BAN", radicals:"Biện (釆) + Điền (田)", tipImg:"Phân biệt (釆) ruộng (田) bằng cách đánh **số**.", soundStory:"Âm On: **BAN** -> Bàn.", combo:"PHÂN BIỆT RUỘNG BÀN đánh SỐ PHIÊN.", words:[{w:"交番",f:"こうばん",m:"Đồn cảnh sát",lvl:"N5"},{w:"一番",f:"いちばん",m:"Số một",lvl:"N5"},{w:"番号",f:"ばんごう",m:"Số hiệu",lvl:"N5"},{w:"順番",f:"じゅんばん",m:"Thứ tự",lvl:"N3"},{w:"当番",f:"とうばん",m:"Đến phiên",lvl:"N2"}] },
+            "世": { hanviet:"THẾ", meanMain:"Thế giới", kun:"yo", on:"SEI", radicals:"Nhất (一)", tipImg:"Ba mươi (卅) năm là một **thế** hệ.", soundStory:"Âm Kun: **YO** -> Dô.", combo:"BA MƯƠI NĂM THẾ GIỚI DÔ THẾ.", words:[{w:"世界",f:"せかい",m:"Thế giới",lvl:"N4"},{w:"世話",f:"せわ",m:"Chăm sóc",lvl:"N3"},{w:"世紀",f:"せいき",m:"Thế kỷ",lvl:"N2"},{w:"出世",f:"しゅっせ",m:"Thành đạt",lvl:"N2"},{w:"世間",f:"せけん",m:"Thiên hạ",lvl:"N1"}] },
+            "界": { hanviet:"GIỚI", meanMain:"Ranh giới", kun:"", on:"KAI", radicals:"Điền (田) + Giới (介)", tipImg:"Ruộng (田) bị **giới** hạn (介).", soundStory:"Âm On: **KAI** -> Cái.", combo:"RUỘNG GIỚI HẠN CÁI GIỚI.", words:[{w:"世界",f:"せかい",m:"Thế giới",lvl:"N4"},{w:"限界",f:"げんかい",m:"Giới hạn",lvl:"N2"},{w:"境界",f:"きょうかい",m:"Ranh giới",lvl:"N1"},{w:"財界",f:"ざいかい",m:"Giới tài chính",lvl:"N1"},{w:"政界",f:"せいかい",m:"Giới chính trị",lvl:"N1"}] },
+            "季": { hanviet:"QUÝ", meanMain:"Mùa", kun:"", on:"KI", radicals:"Hòa (禾) + Tử (子)", tipImg:"Cây lúa (禾) non (子) theo **mùa**.", soundStory:"Âm On: **KI** -> Kì.", combo:"LÚA NON THEO MÙA KÌ QUÝ.", words:[{w:"季節",f:"きせつ",m:"Mùa",lvl:"N4"},{w:"四季",f:"しき",m:"Bốn mùa",lvl:"N3"},{w:"季語",f:"きご",m:"Quý ngữ",lvl:"N1"},{w:"雨季",f:"うき",m:"Mùa mưa",lvl:"N1"},{w:"乾季",f:"かんき",m:"Mùa khô",lvl:"N1"}] },
+            "節": { hanviet:"TIẾT", meanMain:"Mùa, khớp", kun:"fushi", on:"SETSU", radicals:"Trúc (竹) + Tức (即)", tipImg:"Tre (竹) tức (即) khí **tiết**.", soundStory:"Âm On: **SETSU** -> Sếp.", combo:"TRE KHÍ TIẾT SẾP TIẾT.", words:[{w:"季節",f:"きせつ",m:"Mùa",lvl:"N4"},{w:"調節",f:"ちょうせつ",m:"Điều tiết",lvl:"N3"},{w:"節約",f:"せつやく",m:"Tiết kiệm",lvl:"N2"},{w:"関節",f:"かんせつ",m:"Khớp xương",lvl:"N1"},{w:"お節介",f:"おせっかい",m:"Tọc mạch",lvl:"N1"}] },
+            "春": { hanviet:"XUÂN", meanMain:"Mùa xuân", kun:"haru", on:"SHUN", radicals:"Nhật (日)", tipImg:"Ba người ngắm mặt trời (日) mùa **xuân**.", soundStory:"Âm Kun: **HARU** -> Hà rủ.", combo:"NGẮM MẶT TRỜI MÙA XUÂN HÀ RỦ XUÂN.", words:[{w:"春",f:"はる",m:"Mùa xuân",lvl:"N4"},{w:"青春",f:"せいしゅん",m:"Thanh xuân",lvl:"N2"},{w:"春分",f:"しゅんぶん",m:"Xuân phân",lvl:"N1"},{w:"新春",f:"しんしゅん",m:"Đầu năm mới",lvl:"N1"},{w:"春夏秋冬",f:"しゅんかしゅうとう",m:"Bốn mùa",lvl:"N1"}] },
+            "夏": { hanviet:"HẠ", meanMain:"Mùa hè", kun:"natsu", on:"KA", radicals:"Hiệt (頁) + Tuy (夂)", tipImg:"Người đầu to (頁) đi (夂) dưới nắng **hè**.", soundStory:"Âm Kun: **NATSU** -> Nát sự.", combo:"ĐI BỘ NẮNG HÈ NÁT SỰ HẠ.", words:[{w:"夏",f:"なつ",m:"Mùa hè",lvl:"N5"},{w:"夏休み",f:"なつやすみ",m:"Nghỉ hè",lvl:"N5"},{w:"真夏",f:"まなつ",m:"Giữa hè",lvl:"N3"},{w:"初夏",f:"しょか",m:"Đầu hè",lvl:"N2"},{w:"夏服",f:"なつふく",m:"Áo mùa hè",lvl:"N3"}] },
+            "秋": { hanviet:"THU", meanMain:"Mùa thu", kun:"aki", on:"SHUU", radicals:"Hòa (禾) + Hỏa (火)", tipImg:"Lúa (禾) chín như lửa (火) mùa **thu**.", soundStory:"Âm Kun: **AKI** -> Ả kì.", combo:"LÚA CHÍN LỬA MÙA THU Ả KÌ THU.", words:[{w:"秋",f:"あき",m:"Mùa thu",lvl:"N4"},{w:"秋分",f:"しゅうぶん",m:"Thu phân",lvl:"N1"},{w:"秋晴れ",f:"あきばれ",m:"Trời thu trong xanh",lvl:"N1"},{w:"晩秋",f:"ばんしゅう",m:"Cuối thu",lvl:"N1"},{w:"秋風",f:"あきかぜ",m:"Gió thu",lvl:"N1"}] },
+            "冬": { hanviet:"ĐÔNG", meanMain:"Mùa đông", kun:"fuyu", on:"TOU", radicals:"Băng (冫) + Phộc (夂)", tipImg:"Bước đi (夂) trên băng (冫) mùa **đông**.", soundStory:"Âm Kun: **FUYU** -> Phú du.", combo:"BƯỚC TRÊN BĂNG MÙA ĐÔNG PHÚ DU ĐÔNG.", words:[{w:"冬",f:"ふゆ",m:"Mùa đông",lvl:"N4"},{w:"冬休み",f:"ふゆやすみ",m:"Nghỉ đông",lvl:"N4"},{w:"冬眠",f:"とうみん",m:"Ngủ đông",lvl:"N2"},{w:"真冬",f:"まふゆ",m:"Giữa mùa đông",lvl:"N2"},{w:"暖冬",f:"だんとう",m:"Mùa đông ấm",lvl:"N1"}] },
+            "食": { hanviet:"THỰC", meanMain:"Ăn", kun:"ta.beru", on:"SHOKU", radicals:"Nhân (人) + Cấn (艮)", tipImg:"Người (人) ăn (艮) **thực** phẩm tốt.", soundStory:"Âm Kun: **TABE** -> Ta bế.", combo:"NGƯỜI ĂN THỰC PHẨM TA BẾ THỰC.", words:[{w:"食べる",f:"たべる",m:"Ăn",lvl:"N5"},{w:"食事",f:"しょくじ",m:"Bữa ăn",lvl:"N5"},{w:"食堂",f:"しょくどう",m:"Nhà ăn",lvl:"N4"},{w:"食料",f:"しょくりょう",m:"Thực phẩm",lvl:"N3"},{w:"食欲",f:"しょくよく",m:"Sự thèm ăn",lvl:"N2"}] },
+            "飲": { hanviet:"ẨM", meanMain:"Uống", kun:"no.mu", on:"IN", radicals:"Thực (饣) + Khiếm (欠)", tipImg:"Ăn (饣) xong thiếu (欠) nước phải **uống**.", soundStory:"Âm Kun: **NOMU** -> Nổ mù.", combo:"ĂN XONG THIẾU NƯỚC UỐNG NỔ MÙ ẨM.", words:[{w:"飲む",f:"のむ",m:"Uống",lvl:"N5"},{w:"飲み物",f:"のみもの",m:"Đồ uống",lvl:"N5"},{w:"飲食店",f:"いんしょくてん",m:"Cửa hàng ăn uống",lvl:"N3"},{w:"飲酒",f:"いんしゅ",m:"Uống rượu",lvl:"N2"},{w:"飲料",f:"いんりょう",m:"Đồ uống",lvl:"N2"}] },
+            "乗": { hanviet:"THỪA", meanMain:"Lên xe", kun:"no.ru", on:"JOU", radicals:"Thiên (千) + Mộc (木)", tipImg:"Ngàn (千) người lên cây (木) như **lên xe**.", soundStory:"Âm Kun: **NO** -> Nó.", combo:"NGÀN NGƯỜI LÊN CÂY NÓ THỪA.", words:[{w:"乗る",f:"のる",m:"Lên xe",lvl:"N5"},{w:"乗り物",f:"のりもの",m:"Phương tiện",lvl:"N5"},{w:"乗車",f:"じょうしゃ",m:"Việc lên xe",lvl:"N3"},{w:"乗客",f:"じょうきゃく",m:"Hành khách",lvl:"N3"},{w:"乗馬",f:"じょうば",m:"Cưỡi ngựa",lvl:"N2"}] },
+            "大": { hanviet:"ĐẠI", meanMain:"To lớn", kun:"oo.kii", on:"DAI", radicals:"Đại (大)", tipImg:"Hình người dang tay rất **to lớn**.", soundStory:"Âm Kun: **OO** -> Ồ ồ.", combo:"DANG TAY TO LỚN Ồ Ồ ĐẠI.", words:[{w:"大きい",f:"おおきい",m:"To lớn",lvl:"N5"},{w:"大学",f:"だいがく",m:"Đại học",lvl:"N5"},{w:"大切",f:"たいせつ",m:"Quan trọng",lvl:"N4"},{w:"拡大",f:"かくだい",m:"Mở rộng",lvl:"N2"},{w:"大胆",f:"だいたん",m:"Táo bạo",lvl:"N1"}] },
+            "変": { hanviet:"BIẾN", meanMain:"Thay đổi", kun:"ka.waru", on:"HEN", radicals:"Truy (夂) + Diệc (亦)", tipImg:"Đi lại (夂) thay **đổi**.", soundStory:"Âm On: **HEN** -> Hên.", combo:"ĐI LẠI THAY ĐỔI HÊN BIẾN.", words:[{w:"大変",f:"たいへん",m:"Vất vả",lvl:"N5"},{w:"変わる",f:"かわる",m:"Thay đổi",lvl:"N4"},{w:"変な",f:"へんな",m:"Kỳ lạ",lvl:"N3"},{w:"変化",f:"へんか",m:"Sự thay đổi",lvl:"N2"},{w:"変更",f:"へんこう",m:"Thay đổi (kế hoạch)",lvl:"N2"}] },
+            "嬉": { hanviet:"HI", meanMain:"Vui mừng", kun:"ure.shii", on:"KI", radicals:"Nữ (女) + Hỉ (喜)", tipImg:"Người phụ nữ (女) **vui mừng** (喜).", soundStory:"Âm Kun: **URE** -> Ú rề.", combo:"NỮ VUI MỪNG Ú RỀ HI.", words:[{w:"嬉しい",f:"うれしい",m:"Vui mừng",lvl:"N3"},{w:"嬉し泣き",f:"うれしなき",m:"Khóc vì vui",lvl:"N2"},{w:"嬉々",f:"きき",m:"Hớn hở",lvl:"N1"},{w:"嬉しがる",f:"うれしがる",m:"Tỏ ra vui vẻ",lvl:"N2"},{w:"嬉しそう",f:"うれしそう",m:"Có vẻ vui",lvl:"N3"}] },
+            "週": { hanviet:"CHU", meanMain:"Tuần", kun:"", on:"SHUU", radicals:"Xước (⻌) + Chu (周)", tipImg:"Đi (⻌) một vòng (周) là hết một **tuần**.", soundStory:"Âm On: **SHUU** -> Sưu.", combo:"ĐI MỘT VÒNG TUẦN SƯU CHU.", words:[{w:"週末",f:"しゅうまつ",m:"Cuối tuần",lvl:"N5"},{w:"先週",f:"せんしゅう",m:"Tuần trước",lvl:"N5"},{w:"毎週",f:"まいしゅう",m:"Mỗi tuần",lvl:"N5"},{w:"一週間",f:"いっしゅうかん",m:"1 tuần lễ",lvl:"N5"},{w:"週刊誌",f:"しゅうかんし",m:"Tạp chí tuần",lvl:"N3"}] },
+            "末": { hanviet:"MẠT", meanMain:"Cuối", kun:"sue", on:"MATSU", radicals:"Mộc (木)", tipImg:"Cây (木) có nét dài ở trên là ngọn (cuối).", soundStory:"Âm On: **MATSU** -> Mạt.", combo:"NGỌN CÂY CUỐI MẠT MẠT.", words:[{w:"週末",f:"しゅうまつ",m:"Cuối tuần",lvl:"N5"},{w:"月末",f:"げつまつ",m:"Cuối tháng",lvl:"N4"},{w:"年末",f:"ねんまつ",m:"Cuối năm",lvl:"N3"},{w:"末っ子",f:"すえっこ",m:"Con út",lvl:"N2"},{w:"結末",f:"けつまつ",m:"Kết cục",lvl:"N1"}] },
+            "面": { hanviet:"DIỆN", meanMain:"Khuôn mặt", kun:"omo", on:"MEN", radicals:"Diện (面)", tipImg:"Gương **mặt**.", soundStory:"Âm Kun: **OMO** -> Ô mô.", combo:"MẶT THÚ VỊ Ô MÔ DIỆN.", words:[{w:"面白い",f:"おもしろい",m:"Thú vị",lvl:"N5"},{w:"画面",f:"がめん",m:"Màn hình",lvl:"N3"},{w:"表面",f:"ひょうめん",m:"Bề mặt",lvl:"N2"},{w:"面接",f:"めんせつ",m:"Phỏng vấn",lvl:"N2"},{w:"面積",f:"めんせき",m:"Diện tích",lvl:"N3"}] },
+            "積": { hanviet:"TÍCH", meanMain:"Tích tụ", kun:"tsu.mu", on:"SEKI", radicals:"Hòa (禾) + Trách (責)", tipImg:"Cây lúa (禾) chất đống (責) **tích tụ** lại.", soundStory:"Âm Kun: **TSU** -> Tủ.", combo:"LÚA CHẤT ĐỐNG TÍCH TỤ TỦ TÍCH.", words:[{w:"面積",f:"めんせき",m:"Diện tích",lvl:"N3"},{w:"積む",f:"つむ",m:"Chất, xếp",lvl:"N3"},{w:"積極的",f:"せっきょくてき",m:"Tích cực",lvl:"N3"},{w:"見積もり",f:"みつもり",m:"Báo giá",lvl:"N2"},{w:"蓄積",f:"ちくせき",m:"Tích lũy",lvl:"N1"}] },
+            "渇": { hanviet:"KHÁT", meanMain:"Khát nước", kun:"kawa.ku", on:"KATSU", radicals:"Thủy (氵) + Hạt (曷)", tipImg:"Nước (氵) cạn kiệt, kêu la (曷) vì **khát**.", soundStory:"Âm Kun: **KAWA** -> Cà wa.", combo:"THIẾU NƯỚC KHÁT CÀ WA KHÁT.", words:[{w:"渇く",f:"かわく",m:"Khát",lvl:"N3"},{w:"渇水",f:"かっすい",m:"Thiếu nước",lvl:"N1"},{w:"枯渇",f:"こかつ",m:"Cạn kiệt",lvl:"N1"},{w:"渇望",f:"かつぼう",m:"Khát vọng",lvl:"N1"},{w:"喉が渇く",f:"のどがかわく",m:"Khát nước",lvl:"N3"}] },
+            "腹": { hanviet:"PHÚC", meanMain:"Bụng", kun:"hara", on:"FUKU", radicals:"Nhục (月) + Phục (复)", tipImg:"Cơ thể (月) phục (复) hồi là **bụng**.", soundStory:"Âm Kun: **HARA** -> Hà ra.", combo:"BỤNG PHỤC HỒI HÀ RA PHÚC.", words:[{w:"お腹",f:"おなか",m:"Bụng",lvl:"N5"},{w:"腹痛",f:"ふくつう",m:"Đau bụng",lvl:"N3"},{w:"空腹",f:"くうふく",m:"Đói bụng",lvl:"N2"},{w:"腹立ち",f:"はらだち",m:"Tức giận",lvl:"N1"},{w:"山腹",f:"さんぷく",m:"Sườn núi",lvl:"N1"}] },
+            "空": { hanviet:"KHÔNG", meanMain:"Trống rỗng", kun:"su.ku / sora", on:"KUU", radicals:"Huyệt (穴) + Công (工)", tipImg:"Dưới hang (穴) thợ (工) làm việc **trống không**.", soundStory:"Âm Kun: **SU** -> Sú.", combo:"LỖ TRỐNG KHÔNG SÚ KHÔNG.", words:[{w:"空く",f:"すく",m:"Trống, đói",lvl:"N4"},{w:"空",f:"そら",m:"Bầu trời",lvl:"N5"},{w:"空気",f:"くうき",m:"Không khí",lvl:"N4"},{w:"空港",f:"くうこう",m:"Sân bay",lvl:"N4"},{w:"空間",f:"くうかん",m:"Không gian",lvl:"N2"}] },
+            "電": { hanviet:"ĐIỆN", meanMain:"Điện", kun:"", on:"DEN", radicals:"Vũ (雨) + Điện (乚)", tipImg:"Trời mưa (雨) có tia chớp là có **điện**.", soundStory:"Âm On: **DEN** -> Đen.", combo:"MƯA CÓ CHỚP ĐEN ĐIỆN.", words:[{w:"電気",f:"でんき",m:"Điện",lvl:"N5"},{w:"電車",f:"でんしゃ",m:"Tàu điện",lvl:"N5"},{w:"電話",f:"でんわ",m:"Điện thoại",lvl:"N5"},{w:"電子",f:"でんし",m:"Điện tử",lvl:"N3"},{w:"停電",f:"ていでん",m:"Mất điện",lvl:"N2"}] },
+            "気": { hanviet:"KHÍ", meanMain:"Khí chất", kun:"iki", on:"KI", radicals:"Khí (气) + Mễ (米)", tipImg:"Hơi (气) từ gạo (米) bốc lên thành **khí**.", soundStory:"Âm On: **KI** -> Kì.", combo:"HƠI GẠO BỐC LÊN KHÍ KÌ KHÍ.", words:[{w:"電気",f:"でんき",m:"Điện",lvl:"N5"},{w:"天気",f:"てんき",m:"Thời tiết",lvl:"N5"},{w:"元気",f:"げんき",m:"Khỏe mạnh",lvl:"N5"},{w:"病気",f:"びょうき",m:"Bị ốm",lvl:"N5"},{w:"気分",f:"きぶん",m:"Tâm trạng",lvl:"N4"}] },
+            "風": { hanviet:"PHONG", meanMain:"Gió", kun:"kaze", on:"FUU", radicals:"Phong (風)", tipImg:"Con sâu (虫) trong **gió**.", soundStory:"Âm Kun: **KAZE** -> Cà rề.", combo:"SÂU TRONG GIÓ CÀ RỀ PHONG.", words:[{w:"お風呂",f:"おふろ",m:"Bồn tắm",lvl:"N5"},{w:"風",f:"かぜ",m:"Gió",lvl:"N5"},{w:"台風",f:"たいふう",m:"Bão",lvl:"N4"},{w:"風邪",f:"かぜ",m:"Cảm cúm",lvl:"N4"},{w:"風景",f:"ふうけい",m:"Phong cảnh",lvl:"N3"}] },
+            "呂": { hanviet:"LỮ", meanMain:"Xương sống", kun:"", on:"RO", radicals:"Khẩu (口)", tipImg:"Hai đốt xương sống.", soundStory:"Âm On: **RO** -> Rô.", combo:"XƯƠNG SỐNG RÔ LỮ.", words:[{w:"お風呂",f:"おふろ",m:"Bồn tắm",lvl:"N5"},{w:"語呂",f:"ごろ",m:"Cách phát âm",lvl:"N1"},{w:"呂布",f:"りょふ",m:"Lữ Bố",lvl:"N1"},{w:"風呂敷",f:"ふろしき",m:"Khăn gói đồ",lvl:"N2"},{w:"風呂場",f:"ふろば",m:"Phòng tắm",lvl:"N3"}] },
+            "鍵": { hanviet:"KIỆN", meanMain:"Chìa khóa", kun:"kagi", on:"KEN", radicals:"Kim (金) + Kiến (建)", tipImg:"Kim loại (金) kiến (建) thiết **chìa khóa**.", soundStory:"Âm Kun: **KAGI** -> Cà gì.", combo:"KIM LOẠI CHÌA KHÓA CÀ GÌ KIỆN.", words:[{w:"鍵",f:"かぎ",m:"Chìa khóa",lvl:"N5"},{w:"鍵盤",f:"けんばん",m:"Bàn phím",lvl:"N1"},{w:"合鍵",f:"あいかぎ",m:"Chìa khóa phụ",lvl:"N1"},{w:"鍵穴",f:"かぎあな",m:"Lỗ khóa",lvl:"N1"},{w:"南京錠",f:"なんきんじょう",m:"Ổ khóa",lvl:"N1"}] },
+            "新": { hanviet:"TÂN", meanMain:"Mới", kun:"atara.shii", on:"SHIN", radicals:"Lập (立) + Mộc (木) + Cân (斤)", tipImg:"Dùng rìu (斤) đẽo cây (木) làm đồ **mới**.", soundStory:"Âm Kun: **ATARA** -> A ta ra.", combo:"ĐỨNG CHẶT CÂY MỚI A TA RA TÂN.", words:[{w:"新聞",f:"しんぶん",m:"Tờ báo",lvl:"N5"},{w:"新しい",f:"あたらしい",m:"Mới",lvl:"N5"},{w:"新年",f:"しんねん",m:"Năm mới",lvl:"N4"},{w:"新鮮",f:"しんせん",m:"Tươi mới",lvl:"N3"},{w:"革新",f:"かくしん",m:"Đổi mới",lvl:"N1"}] },
+            "聞": { hanviet:"VĂN", meanMain:"Nghe", kun:"ki.ku", on:"BUN", radicals:"Môn (門) + Nhĩ (耳)", tipImg:"Ghé tai (耳) vào cổng (門) để **nghe**.", soundStory:"Âm Kun: **KI** -> Phải **nghe** cho **kỹ**.", combo:"Ghé TAI vào CỔNG NGHE KỸ những VĂN bản.", words:[{w:"新聞",f:"しんぶん",m:"Tờ báo",lvl:"N5"},{w:"聞く",f:"きく",m:"Nghe",lvl:"N5"},{w:"聞こえる",f:"きこえる",m:"Nghe thấy",lvl:"N4"},{w:"見聞",f:"けんぶん",m:"Kiến văn",lvl:"N2"},{w:"前代未聞",f:"ぜんだいみもん",m:"Chưa từng nghe",lvl:"N1"}] },
+            "雑": { hanviet:"TẠP", meanMain:"Tạp chí, phức tạp", kun:"", on:"ZATSU", radicals:"Chuy (隹)", tipImg:"Chim (隹) bay lộn xộn **phức tạp**.", soundStory:"Âm On: **ZATSU** -> Giật.", combo:"CHIM LỘN XỘN TẠP GIẬT TẠP.", words:[{w:"雑誌",f:"ざっし",m:"Tạp chí",lvl:"N5"},{w:"複雑",f:"ふくざつ",m:"Phức tạp",lvl:"N5"},{w:"雑音",f:"ざつおん",m:"Tạp âm",lvl:"N3"},{w:"雑談",f:"ざつだん",m:"Tán gẫu",lvl:"N2"},{w:"混雑",f:"こんざつ",m:"Đông đúc",lvl:"N2"}] },
+            "誌": { hanviet:"CHÍ", meanMain:"Ghi chép", kun:"", on:"SHI", radicals:"Ngôn (言) + Chí (志)", tipImg:"Lời nói (言) ghi chép ý chí (志).", soundStory:"Âm On: **SHI** -> Chí.", combo:"LỜI NÓI GHI CHÉP Ý CHÍ SHI CHÍ.", words:[{w:"雑誌",f:"ざっし",m:"Tạp chí",lvl:"N5"},{w:"日誌",f:"にっし",m:"Nhật ký",lvl:"N1"},{w:"週刊誌",f:"しゅうかんし",m:"Tạp chí tuần",lvl:"N3"},{w:"文芸誌",f:"ぶんげいし",m:"Tạp chí văn nghệ",lvl:"N1"},{w:"地誌",f:"ちし",m:"Địa chí",lvl:"N1"}] },
+            "消": { hanviet:"TIÊU", meanMain:"Tắt, xóa", kun:"ke.su", on:"SHOU", radicals:"Thủy (氵) + Tiêu (肖)", tipImg:"Nước (氵) **tiêu** tan lửa.", soundStory:"Âm Kun: **KE** -> Kệ.", combo:"NƯỚC TIÊU TAN LỬA TẮT KỆ TIÊU.", words:[{w:"消す",f:"けす",m:"Tắt",lvl:"N5"},{w:"消える",f:"きえる",m:"Bị tắt",lvl:"N5"},{w:"消防車",f:"しょうぼうしゃ",m:"Xe cứu hỏa",lvl:"N3"},{w:"消費",f:"しょうひ",m:"Tiêu dùng",lvl:"N3"},{w:"消化",f:"しょうか",m:"Tiêu hóa",lvl:"N2"}] },
+            "浴": { hanviet:"DỤC", meanMain:"Tắm", kun:"a.biru", on:"YOKU", radicals:"Thủy (氵) + Cốc (谷)", tipImg:"Nước (氵) chảy thung lũng (谷) để **tắm**.", soundStory:"Âm Kun: **A** -> A.", combo:"NƯỚC THUNG LŨNG TẮM A DỤC.", words:[{w:"浴びる",f:"あびる",m:"Tắm (vòi sen)",lvl:"N5"},{w:"浴室",f:"よくしつ",m:"Phòng tắm",lvl:"N3"},{w:"海水浴",f:"かいすいよく",m:"Tắm biển",lvl:"N2"},{w:"入浴",f:"にゅうよく",m:"Việc tắm",lvl:"N2"},{w:"日光浴",f:"にっこうよく",m:"Tắm nắng",lvl:"N2"}] },
+            "入": { hanviet:"NHẬP", meanMain:"Vào", kun:"hai.ru", on:"NYUU", radicals:"Nhập (入)", tipImg:"Người đi **vào** cửa.", soundStory:"Âm Kun: **HAI** -> Hái lộc.", combo:"ĐI VÀO HÁI LỘC NHẬP CẢNH.", words:[{w:"入る",f:"はいる",m:"Đi vào",lvl:"N5"},{w:"入れる",f:"いれる",m:"Cho vào",lvl:"N5"},{w:"入口",f:"いりぐち",m:"Lối vào",lvl:"N5"},{w:"入学",f:"にゅうがく",m:"Nhập học",lvl:"N4"},{w:"輸入",f:"ゆにゅう",m:"Nhập khẩu",lvl:"N3"}] },
+            "掛": { hanviet:"QUẢI", meanMain:"Treo, khóa", kun:"ka.ける", on:"KAI", radicals:"Thủ (扌) + Quải (卦)", tipImg:"Tay (扌) cầm quẻ (卦) **treo** lên.", soundStory:"Âm Kun: **KAKE** -> Cá trê.", combo:"TAY CẦM QUẺ TREO LÊN CÁ TRÊ QUẢI.", words:[{w:"掛ける",f:"かける",m:"Khóa/Treo",lvl:"N5"},{w:"気掛かり",f:"きがかり",m:"Lo lắng",lvl:"N2"},{w:"手掛かり",f:"てがかり",m:"Manh mối",lvl:"N2"},{w:"仕掛け",f:"しかけ",m:"Cơ chế",lvl:"N1"},{w:"掛け金",f:"かけきん",m:"Tiền cược",lvl:"N1"}] },
+            "押": { hanviet:"ÁP", meanMain:"Ấn, đẩy", kun:"o.su", on:"OU", radicals:"Thủ (扌) + Giáp (甲)", tipImg:"Tay (扌) **ấn** cái giáp (甲).", soundStory:"Âm Kun: **O** -> Ồ.", combo:"TAY ẤN GIÁP Ồ ÁP.", words:[{w:"押す",f:"おす",m:"Ấn, đẩy",lvl:"N5"},{w:"押し入れ",f:"おしいれ",m:"Tủ âm tường",lvl:"N4"},{w:"押収",f:"おうしゅう",m:"Tịch thu",lvl:"N1"},{w:"押印",f:"おういん",m:"Đóng dấu",lvl:"N1"},{w:"横押し",f:"よこおし",m:"Đẩy ngang",lvl:"N1"}] },
+            "洗": { hanviet:"TẨY", meanMain:"Rửa", kun:"ara.u", on:"SEN", radicals:"Thủy (氵) + Tiên (先)", tipImg:"Nước (氵) **rửa** sạch trước (先).", soundStory:"Âm Kun: **ARAU** -> À râu.", combo:"NƯỚC RỬA SẠCH À RÂU TẨY.", words:[{w:"洗う",f:"あらう",m:"Rửa",lvl:"N5"},{w:"お手洗い",f:"おてあらい",m:"Nhà vệ sinh",lvl:"N5"},{w:"洗濯",f:"せんたく",m:"Giặt giũ",lvl:"N5"},{w:"洗剤",f:"せんざい",m:"Chất tẩy rửa",lvl:"N2"},{w:"洗面所",f:"せんめんじょ",m:"Chỗ rửa mặt",lvl:"N2"}] },
+            "濯": { hanviet:"TRẠC", meanMain:"Giặt", kun:"", on:"TAKU", radicals:"Thủy (氵) + Địch (翟)", tipImg:"Nước (氵) **giặt** lông chim (翟).", soundStory:"Âm On: **TAKU** -> Tạ cứ.", combo:"NƯỚC GIẶT TẠ CỨ TRẠC.", words:[{w:"洗濯",f:"せんたく",m:"Giặt",lvl:"N5"},{w:"洗濯機",f:"せんたくき",m:"Máy giặt",lvl:"N4"},{w:"洗濯物",f:"せんたくもの",m:"Đồ giặt",lvl:"N4"},{w:"濯ぐ",f:"すすぐ",m:"Súc, rửa",lvl:"N1"},{w:"洗濯屋",f:"せんたくや",m:"Tiệm giặt",lvl:"N1"}] },
+            "機": { hanviet:"CƠ", meanMain:"Máy móc", kun:"hata", on:"KI", radicals:"Mộc (木) + Cơ (幾)", tipImg:"Dùng bao nhiêu (幾) cây (木) để làm **máy móc**.", soundStory:"Âm On: **KI** -> Kì.", combo:"DÙNG CÂY LÀM MÁY KÌ CƠ.", words:[{w:"洗濯機",f:"せんたくき",m:"Máy giặt",lvl:"N4"},{w:"飛行機",f:"ひこうき",m:"Máy bay",lvl:"N5"},{w:"機械",f:"きかい",m:"Máy móc",lvl:"N4"},{w:"機会",f:"きかい",m:"Cơ hội",lvl:"N3"},{w:"機能",f:"きのう",m:"Chức năng",lvl:"N2"}] },
+            "独": { hanviet:"ĐỘC", meanMain:"Độc thân", kun:"hito.ri", on:"DOKU", radicals:"Khuyển (犭) + Trùng (虫)", tipImg:"Chó (犭) bị sâu (虫) cắn **một mình**.", soundStory:"Âm On: **DOKU** -> Độc.", combo:"CHÓ BỊ SÂU CẮN ĐỘC THÂN MỘT MÌNH.", words:[{w:"独身",f:"どくしん",m:"Độc thân",lvl:"N4"},{w:"独立",f:"どくりつ",m:"Độc lập",lvl:"N2"},{w:"独占",f:"どくせん",m:"Độc chiếm",lvl:"N1"},{w:"孤独",f:"こどく",m:"Cô độc",lvl:"N1"},{w:"独自",f:"どくとく",m:"Độc đáo",lvl:"N1"}] },
+            "身": { hanviet:"THÂN", meanMain:"Thân thể", kun:"mi", on:"SHIN", radicals:"Thân (身)", tipImg:"**Thân thể** mang bầu.", soundStory:"Âm Kun: **MI** -> Mì.", combo:"THÂN THỂ MANG BẦU MÌ THÂN.", words:[{w:"独身",f:"どくしん",m:"Độc thân",lvl:"N4"},{w:"出身",f:"しゅっしん",m:"Xuất thân",lvl:"N3"},{w:"身長",f:"しんちょう",m:"Chiều cao",lvl:"N3"},{w:"身分",f:"みぶん",m:"Thân phận",lvl:"N2"},{w:"中身",f:"なかみ",m:"Bên trong",lvl:"N2"}] },
+            "資": { hanviet:"TƯ", meanMain:"Tư liệu, vốn", kun:"", on:"SHI", radicals:"Thứ (次) + Bối (貝)", tipImg:"Tiền (貝) thứ (次) yếu là **vốn**.", soundStory:"Âm On: **SHI** -> Xì.", combo:"TIỀN LÀ VỐN XÌ TƯ.", words:[{w:"資料",f:"しりょう",m:"Tài liệu",lvl:"N3"},{w:"資格",f:"しかく",m:"Bằng cấp",lvl:"N2"},{w:"資源",f:"しげん",m:"Tài nguyên",lvl:"N2"},{w:"資本",f:"しほん",m:"Tư bản",lvl:"N2"},{w:"投資",f:"とうし",m:"Đầu tư",lvl:"N1"}] },
+            "料": { hanviet:"LIỆU", meanMain:"Nguyên liệu", kun:"", on:"RYOU", radicals:"Mễ (米) + Đấu (斗)", tipImg:"Đong gạo làm **nguyên liệu**.", soundStory:"Âm On: **RYOU** -> Rìu.", combo:"ĐONG GẠO LÀM NGUYÊN LIỆU bằng RÌU.", words:[{w:"資料",f:"しりょう",m:"Tài liệu",lvl:"N3"},{w:"料理",f:"りょうり",m:"Món ăn",lvl:"N5"},{w:"料金",f:"りょうきん",m:"Cước phí",lvl:"N4"},{w:"給料",f:"きゅうりょう",m:"Lương",lvl:"N3"},{w:"原料",f:"げんりょう",m:"Nguyên liệu",lvl:"N3"}] },
+            "話": { hanviet:"THOẠI", meanMain:"Nói chuyện", kun:"hana.su", on:"WA", radicals:"Ngôn (言) + Thiệt (舌)", tipImg:"Lời nói (言) từ lưỡi (舌) là **thoại**.", soundStory:"Âm Kun: **HANA** -> Há nà.", combo:"LỜI TỪ LƯỠI NÓI THOẠI HÁ NÀ.", words:[{w:"電話",f:"でんわ",m:"Điện thoại",lvl:"N5"},{w:"話す",f:"はなす",m:"Nói chuyện",lvl:"N5"},{w:"会話",f:"かいわ",m:"Hội thoại",lvl:"N4"},{w:"話題",f:"わだい",m:"Chủ đề",lvl:"N3"},{w:"世話",f:"せわ",m:"Chăm sóc",lvl:"N3"}] },
+            "予": { hanviet:"DỰ", meanMain:"Dự báo", kun:"", on:"YO", radicals:"Quyết (亅) + Mâu (矛)", tipImg:"Cái mâu (矛) **dự báo** chiến tranh.", soundStory:"Âm On: **YO** -> Dô.", combo:"MÂU DỰ BÁO DÔ DỰ.", words:[{w:"予約",f:"よやく",m:"Đặt trước",lvl:"N4"},{w:"予定",f:"よてい",m:"Dự định",lvl:"N4"},{w:"予習",f:"よしゅう",m:"Học trước",lvl:"N4"},{w:"天気予報",f:"てんきよほう",m:"Dự báo thời tiết",lvl:"N4"},{w:"予算",f:"よさん",m:"Dự toán",lvl:"N2"}] },
+            "約": { hanviet:"ƯỚC", meanMain:"Hẹn, ước chừng", kun:"", on:"YAKU", radicals:"Mịch (糸) + Thược (勺)", tipImg:"Sợi chỉ (糸) ràng buộc **lời hứa**.", soundStory:"Âm On: **YAKU** -> Ra cớ.", combo:"CHỈ BUỘC LỜI HỨA RA CỚ ƯỚC.", words:[{w:"予約",f:"よやく",m:"Đặt trước",lvl:"N4"},{w:"約束",f:"やくそく",m:"Lời hứa",lvl:"N4"},{w:"約",f:"やく",m:"Khoảng chừng",lvl:"N3"},{w:"節約",f:"せつやく",m:"Tiết kiệm",lvl:"N2"},{w:"契約",f:"けいやく",m:"Hợp đồng",lvl:"N1"}] },
+            "歯": { hanviet:"XỈ", meanMain:"Răng", kun:"ha", on:"SHI", radicals:"Xỉ (歯)", tipImg:"Dừng (止) lại để nhe **răng**.", soundStory:"Âm Kun: **HA** -> Hả.", combo:"DỪNG NHÌN RĂNG HẢ XỈ.", words:[{w:"歯",f:"は",m:"Răng",lvl:"N5"},{w:"歯医者",f:"はいしゃ",m:"Nha sĩ",lvl:"N5"},{w:"歯科",f:"しか",m:"Nha khoa",lvl:"N3"},{w:"虫歯",f:"むしば",m:"Sâu răng",lvl:"N3"},{w:"歯車",f:"はぐるま",m:"Bánh răng",lvl:"N1"}] },
+            "顔": { hanviet:"NHAN", meanMain:"Khuôn mặt", kun:"kao", on:"GAN", radicals:"Nhan (彦) + Hiệt (頁)", tipImg:"Đầu (頁) có nhan sắc (彦) là khuôn **mặt**.", soundStory:"Âm Kun: **KAO** -> Cáo.", combo:"ĐẦU CÓ NHAN SẮC MẶT CÁO NHAN.", words:[{w:"顔",f:"かお",m:"Khuôn mặt",lvl:"N5"},{w:"顔色",f:"かおいろ",m:"Sắc mặt",lvl:"N2"},{w:"笑顔",f:"えがお",m:"Mặt cười",lvl:"N2"},{w:"洗顔",f:"せんがん",m:"Rửa mặt",lvl:"N1"},{w:"顔面",f:"がんめん",m:"Nét mặt",lvl:"N1"}] },
+            "試": { hanviet:"THÍ", meanMain:"Thử", kun:"tame.su", on:"SHI", radicals:"Ngôn (言) + Thức (式)", tipImg:"Lời nói (言) theo khuôn thước (式) là thi **thử**.", soundStory:"Âm On: **SHI** -> Xì.", combo:"LỜI NÓI THỬ XÌ THÍ.", words:[{w:"試合",f:"しあい",m:"Trận đấu",lvl:"N4"},{w:"試験",f:"しけん",m:"Kỳ thi",lvl:"N4"},{w:"試す",f:"ためす",m:"Thử nghiệm",lvl:"N3"},{w:"試食",f:"ししょく",m:"Ăn thử",lvl:"N2"},{w:"試着",f:"しちゃく",m:"Mặc thử",lvl:"N2"}] },
+            "合": { hanviet:"HỢP", meanMain:"Hợp, gặp", kun:"a.u", on:"GOU", radicals:"Nhân (人) + Nhất (一) + Khẩu (口)", tipImg:"Một (一) người (人) mở miệng (口) **hợp** lại.", soundStory:"Âm On: **GOU** -> Gấu.", combo:"NGƯỜI HỢP MIỆNG GẤU HỢP.", words:[{w:"試合",f:"しあい",m:"Trận đấu",lvl:"N4"},{w:"間に合う",f:"まにあう",m:"Kịp giờ",lvl:"N4"},{w:"都合",f:"つごう",m:"Hoàn cảnh",lvl:"N3"},{w:"合格",f:"ごうかく",m:"Thi đỗ",lvl:"N3"},{w:"合同",f:"ごうどう",m:"Hợp đồng",lvl:"N2"}] },
+            "砂": { hanviet:"SA", meanMain:"Cát", kun:"suna", on:"SA", radicals:"Thạch (石) + Thiểu (少)", tipImg:"Đá (石) nhỏ (少) là **cát**.", soundStory:"Âm Kun: **SUNA** -> Su na.", combo:"ĐÁ NHỎ CÁT SU NA SA.", words:[{w:"砂糖",f:"さとう",m:"Đường",lvl:"N4"},{w:"砂",f:"すな",m:"Cát",lvl:"N3"},{w:"砂漠",f:"さばく",m:"Sa mạc",lvl:"N2"},{w:"土砂",f:"どしゃ",m:"Đất cát",lvl:"N1"},{w:"砂丘",f:"さきゅう",m:"Cồn cát",lvl:"N1"}] },
+            "糖": { hanviet:"ĐƯỜNG", meanMain:"Đường ăn", kun:"", on:"TOU", radicals:"Mễ (米) + Đường (唐)", tipImg:"Gạo (米) nhà đường (唐) rất ngọt.", soundStory:"Âm On: **TOU** -> Tồ.", combo:"GẠO NHÀ ĐƯỜNG NGỌT TỒ ĐƯỜNG.", words:[{w:"砂糖",f:"さとう",m:"Đường",lvl:"N4"},{w:"糖分",f:"とうぶん",m:"Lượng đường",lvl:"N2"},{w:"血糖",f:"けっとう",m:"Đường huyết",lvl:"N1"},{w:"糖尿病",f:"とうにょうびょう",m:"Bệnh tiểu đường",lvl:"N1"},{w:"糖質",f:"とうしつ",m:"Chất đường",lvl:"N1"}] },
+            "塩": { hanviet:"DIÊM", meanMain:"Muối", kun:"shio", on:"EN", radicals:"Thổ (土) + Nhân (亻) + Mãnh (皿)", tipImg:"Người nằm (亻) trên đất (土) ăn **muối** trong đĩa (皿).", soundStory:"Âm Kun: **SHIO** -> Xi ố.", combo:"NGƯỜI LÀM ĐẤT MUỐI XI Ố DIÊM.", words:[{w:"塩",f:"しお",m:"Muối",lvl:"N4"},{w:"塩辛い",f:"しおからい",m:"Mặn",lvl:"N3"},{w:"食塩",f:"しょくえん",m:"Muối ăn",lvl:"N2"},{w:"塩分",f:"えんぶん",m:"Lượng muối",lvl:"N1"},{w:"塩素",f:"えんそ",m:"Clo",lvl:"N1"}] },
+            "住": { hanviet:"TRÚ", meanMain:"Sống, ở", kun:"su.mu", on:"JUU", radicals:"Nhân (亻) + Chủ (主)", tipImg:"Người (亻) làm chủ (主) nơi **ở**.", soundStory:"Âm Kun: **SUMU** -> Su mù.", combo:"NGƯỜI Ở SU MÙ TRÚ.", words:[{w:"住所",f:"じゅうしょ",m:"Địa chỉ",lvl:"N5"},{w:"住む",f:"すむ",m:"Sống",lvl:"N5"},{w:"住宅",f:"じゅうたく",m:"Nhà ở",lvl:"N3"},{w:"住民",f:"じゅうみん",m:"Cư dân",lvl:"N2"},{w:"移住",f:"いじゅう",m:"Di cư",lvl:"N1"}] },
+            "所": { hanviet:"SỞ", meanMain:"Nơi chốn", kun:"tokoro", on:"SHO", radicals:"Hộ (戸) + Cân (斤)", tipImg:"Cửa (戸) có rìu (斤) canh giữ **nơi chốn**.", soundStory:"Âm Kun: **TOKORO** -> Tới cỗ đó.", combo:"CỬA CÓ RÌU NƠI TỚI ĐÓ SỞ.", words:[{w:"住所",f:"じゅうしょ",m:"Địa chỉ",lvl:"N5"},{w:"所",f:"ところ",m:"Nơi chốn",lvl:"N5"},{w:"事務所",f:"じむしょ",m:"Văn phòng",lvl:"N4"},{w:"長所",f:"ちょうしょ",m:"Sở trường",lvl:"N3"},{w:"所有",f:"しょゆう",m:"Sở hữu",lvl:"N2"}] },
+            "交": { hanviet:"GIAO", meanMain:"Giao nhau", kun:"maji.waru", on:"KOU", radicals:"Đầu (亠) + Phụ (父)", tipImg:"Người cha (父) đội mũ (亠) đi **giao lưu**.", soundStory:"Âm On: **KOU** -> Cậu.", combo:"CHA ĐỘI MŨ đi GIAO lưu với CẬU.", words:[{w:"交差点",f:"こうさてん",m:"Ngã tư",lvl:"N4"},{w:"交番",f:"こうばん",m:"Đồn cảnh sát",lvl:"N5"},{w:"交通",f:"こうつう",m:"Giao thông",lvl:"N4"},{w:"交流",f:"こうりゅう",m:"Giao lưu",lvl:"N3"},{w:"交代",f:"こうたい",m:"Thay ca",lvl:"N2"}] },
+            "差": { hanviet:"SAI", meanMain:"Khác biệt", kun:"sa.su", on:"SA", radicals:"Dương (⺶) + Công (工)", tipImg:"Dê (⺶) làm việc công (工) bị **sai**.", soundStory:"Âm Kun: **SASU** -> Xa xù.", combo:"DÊ LÀM SAI XA XÙ SAI.", words:[{w:"交差点",f:"こうさてん",m:"Ngã tư",lvl:"N4"},{w:"差す",f:"さす",m:"Che (ô)",lvl:"N4"},{w:"差別",f:"さべつ",m:"Phân biệt",lvl:"N2"},{w:"時差",f:"じさ",m:"Chênh lệch giờ",lvl:"N2"},{w:"誤差",f:"ごさ",m:"Sai số",lvl:"N1"}] },
+            "点": { hanviet:"ĐIỂM", meanMain:"Điểm", kun:"", on:"TEN", radicals:"Hỏa (灬) + Chiếm (占)", tipImg:"Chiếm (占) lấy lửa (灬) là **điểm** nóng.", soundStory:"Âm On: **TEN** -> Tên.", combo:"CHIẾM LỬA TÊN ĐIỂM.", words:[{w:"交差点",f:"こうさてん",m:"Ngã tư",lvl:"N4"},{w:"点数",f:"てんすう",m:"Điểm số",lvl:"N3"},{w:"欠点",f:"けってん",m:"Khuyết điểm",lvl:"N3"},{w:"要点",f:"ようてん",m:"Trọng điểm",lvl:"N2"},{w:"採点",f:"さいてん",m:"Chấm điểm",lvl:"N1"}] },
+            "信": { hanviet:"TÍN", meanMain:"Tin tưởng", kun:"", on:"SHIN", radicals:"Nhân (亻) + Ngôn (言)", tipImg:"Lời nói (言) của người (亻) có uy **tín**.", soundStory:"Âm On: **SHIN** -> Xin.", combo:"LỜI NÓI NGƯỜI TÍN XIN TÍN.", words:[{w:"信号",f:"しんごう",m:"Đèn giao thông",lvl:"N4"},{w:"信じる",f:"しんじる",m:"Tin tưởng",lvl:"N3"},{w:"信用",f:"しんよう",m:"Tín dụng",lvl:"N2"},{w:"自信",f:"じしん",m:"Tự tin",lvl:"N2"},{w:"迷信",f:"めいしん",m:"Mê tín",lvl:"N1"}] },
+            "号": { hanviet:"HIỆU", meanMain:"Số hiệu", kun:"", on:"GOU", radicals:"Khẩu (口) + Khuy (丂)", tipImg:"Miệng (口) kêu gào **hiệu** lệnh.", soundStory:"Âm On: **GOU** -> Gấu.", combo:"MIỆNG GÀO HIỆU GẤU HIỆU.", words:[{w:"信号",f:"しんごう",m:"Đèn giao thông",lvl:"N4"},{w:"番号",f:"ばんごう",m:"Số hiệu",lvl:"N5"},{w:"記号",f:"きごう",m:"Ký hiệu",lvl:"N3"},{w:"年号",f:"ねんごう",m:"Niên hiệu",lvl:"N2"},{w:"暗号",f:"あんごう",m:"Mật mã",lvl:"N2"}] },
+            "曲": { hanviet:"KHÚC", meanMain:"Cong, rẽ", kun:"ma.garu", on:"KYOKU", radicals:"Điền (田)", tipImg:"Ruộng (田) bị uốn **cong**.", soundStory:"Âm Kun: **MAGA** -> Má gà.", combo:"RUỘNG CONG MÁ GÀ KHÚC.", words:[{w:"曲がる",f:"まがる",m:"Rẽ, quẹo",lvl:"N5"},{w:"曲",f:"きょく",m:"Ca khúc",lvl:"N4"},{w:"曲線",f:"きょくせん",m:"Đường cong",lvl:"N2"},{w:"名曲",f:"めいきょく",m:"Danh khúc",lvl:"N1"},{w:"屈曲",f:"くっきょく",m:"Khúc khuỷu",lvl:"N1"}] },
+            "付": { hanviet:"PHÓ", meanMain:"Gắn vào", kun:"tsu.ける", on:"FU", radicals:"Nhân (亻) + Thốn (寸)", tipImg:"Người (亻) trao tấc (寸) lòng **gắn bó**.", soundStory:"Âm Kun: **TSUKE** -> Chú kề.", combo:"NGƯỜI TRAO TẤC GẮN BÓ CHÚ KỀ PHÓ.", words:[{w:"気を付ける",f:"きをつける",m:"Chú ý",lvl:"N5"},{w:"受付",f:"うけつけ",m:"Quầy lễ tân",lvl:"N4"},{w:"片付ける",f:"かたづける",m:"Dọn dẹp",lvl:"N3"},{w:"日付",f:"ひづけ",m:"Ngày tháng",lvl:"N2"},{w:"寄付",f:"きふ",m:"Quyên góp",lvl:"N1"}] },
+            "急": { hanviet:"CẤP", meanMain:"Vội, gấp", kun:"iso.ぐ", on:"KYUU", radicals:"Tâm (心) + Trừ (刍)", tipImg:"Tâm (心) bị đè nén rất **gấp**.", soundStory:"Âm Kun: **ISOGU** -> Í sờ gừ.", combo:"TÂM GẤP Í SỜ GỪ CẤP.", words:[{w:"急ぐ",f:"いそぐ",m:"Vội vàng",lvl:"N4"},{w:"急に",f:"きゅうに",m:"Đột nhiên",lvl:"N4"},{w:"特急",f:"とっきゅう",m:"Tàu tốc hành",lvl:"N4"},{w:"急行",f:"きゅうこう",m:"Tàu nhanh",lvl:"N4"},{w:"救急車",f:"きゅうきゅうしゃ",m:"Xe cứu thương",lvl:"N3"}] },
+            "止": { hanviet:"CHỈ", meanMain:"Dừng", kun:"to.める / to.まる", on:"SHI", radicals:"Chỉ (止)", tipImg:"Dấu chân **dừng** lại.", soundStory:"Âm Kun: **TOME** -> Tớ mạ.", combo:"CHÂN DỪNG TỚ MẠ CHỈ.", words:[{w:"止める",f:"とめる",m:"Dừng (xe)",lvl:"N5"},{w:"止まる",f:"とまる",m:"(Tự) dừng",lvl:"N5"},{w:"中止",f:"ちゅうし",m:"Hủy bỏ",lvl:"N3"},{w:"禁止",f:"きんし",m:"Cấm",lvl:"N3"},{w:"停止",f:"ていし",m:"Đình chỉ",lvl:"N1"}] },
+            "雨": { hanviet:"VŨ", meanMain:"Mưa", kun:"ame", on:"U", radicals:"Vũ (雨)", tipImg:"Những hạt **mưa** rơi.", soundStory:"Âm Kun: **AME** -> A mẹ.", combo:"MƯA RƠI A MẸ VŨ.", words:[{w:"雨",f:"あめ",m:"Mưa",lvl:"N5"},{w:"大雨",f:"おおあめ",m:"Mưa to",lvl:"N4"},{w:"雨季",f:"うき",m:"Mùa mưa",lvl:"N2"},{w:"梅雨",f:"つゆ",m:"Mùa mưa (Nhật)",lvl:"N2"},{w:"降雨",f:"こうう",m:"Lượng mưa",lvl:"N1"}] },
+            "磨": { hanviet:"MA", meanMain:"Mài, đánh", kun:"miga.く", on:"MA", radicals:"Thạch (石) + Ma (麻)", tipImg:"Cây gai (麻) **mài** lên đá (石).", soundStory:"Âm Kun: **MIGAKU** -> Mì gà cú.", combo:"CÂY MÀI ĐÁ MÌ GÀ CÚ MA.", words:[{w:"磨く",f:"みがく",m:"Đánh (răng)",lvl:"N5"},{w:"歯磨き",f:"はみがき",m:"Đánh răng",lvl:"N4"},{w:"研磨",f:"けんま",m:"Mài giũa",lvl:"N1"},{w:"摩擦",f:"まさつ",m:"Ma sát",lvl:"N1"},{w:"悪魔",f:"あくま",m:"Ác ma",lvl:"N1"}] }
         };
 
-        // --- 4. APP LOGIC (Standard Day 1 Logic) ---
-        let currentIndex = 0; 
-        let currentQuizItem = null; 
-        let score = 0; 
+        // --- 4. APP LOGIC ---
+        let currentIndex = 0;
+        let score = 0;
         let currentStrokeSvg = null;
+        let currentQuizItem = null;
 
         function init() {
             renderList();
             renderGrammarMenu();
             loadWord(0);
             
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', e => { 
-                    const t = e.target.value.toLowerCase(); 
-                    document.querySelectorAll('.vocab-item').forEach(el => el.style.display = el.innerText.toLowerCase().includes(t) ? 'block' : 'none'); 
+            document.getElementById('searchInput').addEventListener('input', e => {
+                const q = e.target.value.toLowerCase();
+                document.querySelectorAll('#vocabList .vocab-item').forEach(el => {
+                    el.style.display = el.innerText.toLowerCase().includes(q) ? 'block' : 'none';
+                });
+            });
+            
+            const mSearch = document.getElementById('mobileSearchInput');
+            if(mSearch) {
+                mSearch.addEventListener('input', e => {
+                    const q = e.target.value.toLowerCase();
+                    document.querySelectorAll('#mobileVocabList .vocab-item').forEach(el => {
+                        el.style.display = el.innerText.toLowerCase().includes(q) ? 'block' : 'none';
+                    });
                 });
             }
 
-            const mobileSearchInput = document.getElementById('mobileSearchInput');
-            if (mobileSearchInput) {
-                mobileSearchInput.addEventListener('input', e => { 
-                    const t = e.target.value.toLowerCase(); 
-                    document.querySelectorAll('.vocab-item').forEach(el => el.style.display = el.innerText.toLowerCase().includes(t) ? 'block' : 'none'); 
-                });
-            }
-
-            const quizInput = document.getElementById('quiz-input');
-            if (quizInput) {
-                quizInput.addEventListener('keypress', e => { if(e.key === 'Enter') checkAnswer(); });
-            }
+            document.getElementById('quiz-input').addEventListener('keypress', e => { if(e.key === 'Enter') checkAnswer(); });
         }
 
         function switchTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`tab-${tab}`).classList.add('active');
             document.getElementById('learn-section').classList.toggle('hidden', tab !== 'learn');
             document.getElementById('quiz-section').classList.toggle('hidden', tab !== 'quiz');
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                if(b.id === `tab-${tab}`) {
+                    b.classList.add('bg-white', 'text-indigo-900', 'shadow');
+                    b.classList.remove('text-indigo-100', 'hover:text-white', 'hover:bg-indigo-800/50');
+                } else {
+                    b.classList.remove('bg-white', 'text-indigo-900', 'shadow');
+                    b.classList.add('text-indigo-100', 'hover:text-white', 'hover:bg-indigo-800/50');
+                }
+            });
+            const mBar = document.getElementById('mobileBottomBar');
+            if(mBar) mBar.style.display = (tab === 'learn') ? 'flex' : 'none';
             if(tab === 'quiz') nextQuestion();
         }
 
         function renderList() {
-            const listD = document.getElementById('vocabList'); 
-            const listM = document.getElementById('mobileVocabList');
             const html = vocabData.map((item, i) => `
-                <div class="vocab-item p-3 border-b hover:bg-gray-50 cursor-pointer rounded-lg mx-1 my-1" data-index="${i}" onclick="loadWord(${i}); if(window.innerWidth < 768) toggleDrawer();">
-                    <div class="flex justify-between font-bold items-center">
-                        <span class="text-gray-800 ja-text">${item.Kanji || item.Furigana}</span>
-                        <span class="text-gray-300 text-xs font-mono">#${item.STT}</span>
+                <div class="vocab-item p-4 border-b border-gray-50 hover:bg-indigo-50/50 cursor-pointer rounded-2xl transition-all" data-index="${i}" onclick="loadWord(${i}); if(window.innerWidth < 768) { toggleDrawer(); }">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-gray-800 ja-text text-lg">${item.Kanji || item.Furigana}</span>
+                        <span class="text-[10px] text-gray-400 font-mono">#${String(item.STT).padStart(2, '0')}</span>
                     </div>
-                    <div class="text-xs text-gray-500 mt-1 truncate">${item.Nghĩa}</div>
-                </div>`).join('');
-            if (listD) listD.innerHTML = html;
-            if (listM) listM.innerHTML = html;
+                    <div class="text-xs text-gray-500 font-medium">${item.Nghĩa}</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('vocabList').innerHTML = html;
+            const mList = document.getElementById('mobileVocabList');
+            if(mList) mList.innerHTML = html;
         }
 
         function loadWord(idx) {
-            currentIndex = idx; 
+            currentIndex = idx;
             const word = vocabData[idx];
             document.querySelectorAll('.vocab-item').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll(`.vocab-item[data-index="${idx}"]`).forEach(el => el.classList.add('active'));
+            document.querySelectorAll(`.vocab-item[data-index="${idx}"]`).forEach(el => {
+                el.classList.add('active');
+            });
             
-            const activeItem = document.querySelector(`.vocab-item[data-index="${idx}"]`);
-            if (activeItem) activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            const desktopActive = document.querySelector(`#vocabList .vocab-item[data-index="${idx}"]`);
+            if(desktopActive) desktopActive.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-            document.getElementById('headerProgress').innerText = `${idx+1}/${vocabData.length}`;
-            document.getElementById('wordIndex').innerText = `#${word.STT}`;
+            document.getElementById('mobileProgress').innerText = `${idx+1}/${vocabData.length}`;
+            document.getElementById('wordIndex').innerText = `#${String(word.STT).padStart(2, '0')}`;
             document.getElementById('cardKanji').innerText = word.Kanji || word.Furigana;
             document.getElementById('cardFurigana').innerText = word.Furigana;
             document.getElementById('cardMeaning').innerText = word.Nghĩa;
-            document.getElementById('wordType').innerText = word.type.toUpperCase();
             
-            const hasKanji = word.Kanji && word.Kanji !== word.Furigana;
-            document.getElementById('strokeBtn').classList.toggle('hidden', !hasKanji);
-            
-            renderShadowing(word);
+            const kanjis = (word.Kanji || "").match(/[\u4e00-\u9faf]/g);
+            document.getElementById('strokeBtn').classList.toggle('hidden', !kanjis);
+
+            renderSentences(word);
         }
 
-        function renderShadowing(word) {
-            const cont = document.getElementById('sentenceList'); 
-            cont.innerHTML = '';
-            
-            if(!word.conv) { 
-                document.getElementById('emptyState').classList.remove('hidden'); 
-                return; 
+        function renderSentences(word) {
+            const container = document.getElementById('sentenceList');
+            container.innerHTML = '';
+            if(!word.conv) {
+                container.innerHTML = `<div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-3xl p-10 text-center text-gray-400 font-bold"><i class="fas fa-hammer text-4xl mb-3 opacity-20 block"></i>Dữ liệu câu đang được cập nhật...</div>`;
+                return;
             }
-            document.getElementById('emptyState').classList.add('hidden');
-            
-            const types = [
-                { k:'polite', l:'Lịch sự', m:word.conv.pVi, i:'user-tie', c:'indigo' }, 
-                { k:'casual', l:'Thân mật', m:word.conv.cVi, i:'comments', c:'pink' }
-            ];
-            
-            types.forEach(t => {
-                const grammarBtn = word.conv.gIds && word.conv.gIds.length > 0 
-                    ? `<button onclick="openExplan('${word.conv.gIds.join(',')}')" class="text-xs text-indigo-500 hover:text-indigo-700 font-bold px-2 py-1 rounded hover:bg-indigo-50 transition"><i class="fas fa-info-circle"></i> Ngữ pháp</button>`
-                    : '';
 
-                cont.innerHTML += `
-                    <div class="shadow-card bg-white rounded-2xl p-4 border border-gray-100">
-                        <div class="flex justify-between border-b border-gray-100 pb-2 mb-3">
-                            <div class="flex gap-2 items-center">
-                                <div class="bg-${t.c}-50 p-1.5 rounded text-${t.c}-600"><i class="fas fa-${t.i}"></i></div>
-                                <span class="text-xs font-bold text-gray-400 uppercase tracking-wide">${t.l}</span>
-                            </div>
-                            ${grammarBtn}
+            [{ k:'polite', l:'Lịch sự', t:word.conv.polite, v:word.conv.pVi, c:'indigo' },
+             { k:'casual', l:'Thân mật', t:word.conv.casual, v:word.conv.cVi, c:'pink' }].forEach(row => {
+                if(!row.t) return;
+                const btnG = word.conv.gIds && word.conv.gIds.length > 0 ? `<button onclick="openGrammar('${word.conv.gIds.join(',')}', '${row.k}')" class="text-[10px] font-black text-${row.c}-600 bg-${row.c}-50 px-4 py-1.5 rounded-full border border-${row.c}-100 hover:bg-${row.c}-600 hover:text-white transition-all shadow-sm"><i class="fas fa-microscope mr-1"></i> PHÂN TÍCH</button>` : '';
+                
+                container.innerHTML += `
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1 rounded-lg">${row.l}</span>
+                            ${btnG}
                         </div>
-                        <div class="flex justify-between items-start gap-3">
-                            <div>
-                                <div class="text-lg md:text-xl ja-text font-medium text-gray-800 mb-1 cursor-pointer hover:text-indigo-600 transition-colors" onclick="speakText('${word.conv[t.k]}')">${word.conv[t.k]}</div>
-                                <div class="text-sm text-gray-500 italic">${t.m}</div>
+                        <div class="flex justify-between items-center gap-4">
+                            <div class="flex-1">
+                                <div class="text-xl md:text-2xl ja-text font-black text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors" onclick="speakText('${row.t}')">${row.t}</div>
+                                <div class="text-sm md:text-base text-gray-500 italic mt-2 font-medium">${row.v}</div>
                             </div>
-                            <button onclick="speakText('${word.conv[t.k]}')" class="audio-btn text-${t.c}-400 hover:text-${t.c}-600 p-2 rounded-full hover:bg-${t.c}-50 transition-colors flex-shrink-0">
-                                <i class="fas fa-volume-up text-xl"></i>
-                            </button>
+                            <button onclick="speakText('${row.t}')" class="w-12 h-12 rounded-full bg-${row.c}-50 text-${row.c}-500 hover:bg-${row.c}-100 flex items-center justify-center transition-colors flex-shrink-0"><i class="fas fa-volume-up text-xl"></i></button>
                         </div>
-                    </div>`;
+                    </div>
+                `;
             });
         }
 
-        function openExplan(idsStr) {
-            const ids = idsStr.split(','); 
-            const f = document.getElementById('dgFormula'); 
-            const e = document.getElementById('dgExplanation');
-            
-            f.innerText = ids.map(id => grammarRepo[id] ? grammarRepo[id].formula : "N/A").join("  /  ");
-            e.innerHTML = ids.map(id => {
-                if (!grammarRepo[id]) return `<div class="text-red-500">Missing grammar: ${id}</div>`;
+        // --- GRAMMAR UI ---
+        function renderGrammarMenu() {
+            const grid = document.getElementById('grammarGrid');
+            grid.innerHTML = Object.keys(grammarRepo).map(k => {
+                const g = grammarRepo[k];
                 return `
-                <div class="pb-2 border-b border-gray-100 last:border-0">
-                    <strong class="text-indigo-700 block mb-1">${grammarRepo[id].title} <span class="text-xs font-normal text-gray-400">(${grammarRepo[id].desc.split(':')[0]})</span></strong>
-                    <p>${grammarRepo[id].desc.split(':').slice(1).join(':') || grammarRepo[id].desc}</p>
-                    <p class="text-xs text-gray-400 mt-1 italic">Vd: ${grammarRepo[id].ex}</p>
+                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group" onclick="openGrammar('${k}', 'polite')">
+                    <div class="font-black text-indigo-700 mb-2 flex items-center justify-between">
+                        <span>${g.title}</span>
+                        <i class="fas fa-arrow-right text-gray-200 group-hover:text-indigo-400 transition-colors text-xs"></i>
+                    </div>
+                    <code class="text-sm font-black bg-indigo-50 text-indigo-900 px-3 py-1 rounded-lg block mb-3 font-mono border border-indigo-100">${g.formula}</code>
+                    <p class="text-xs text-gray-500 font-medium line-clamp-2 leading-relaxed">${g.desc}</p>
                 </div>`;
-            }).join("");
-            
+            }).join('');
+        }
+
+        function openGrammar(ids, style) {
+            const container = document.getElementById('dgContent');
+            container.innerHTML = ids.split(',').map(id => {
+                const g = grammarRepo[id]; if(!g) return '';
+                const breakdown = g[`p_${style}`]; 
+                
+                let breakdownHtml = '';
+                if(breakdown) {
+                    breakdownHtml = `
+                    <div class="bg-white border-2 border-gray-50 rounded-3xl overflow-hidden mt-6">
+                        <div class="bg-gray-50 px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest border-b border-gray-100">
+                            <i class="fas fa-puzzle-piece mr-2"></i> Phân tích cấu trúc (${style === 'polite' ? 'Lịch sự' : 'Thân mật'})
+                        </div>
+                        <div class="p-3 space-y-2">
+                            ${breakdown.map(b => `
+                                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-4 bg-slate-50/50 rounded-2xl border border-gray-100/50 hover:bg-indigo-50/30 transition-colors">
+                                    <div class="font-black ja-text text-indigo-700 text-xl">${b.part}</div>
+                                    <div class="text-left sm:text-right mt-1 sm:mt-0">
+                                        <div class="text-[10px] text-gray-400 font-black uppercase tracking-wider mb-0.5">${b.func}</div>
+                                        <div class="text-sm font-bold text-slate-700">${b.mean}</div>
+                                    </div>
+                                </div>`).join('')}
+                        </div>
+                    </div>`;
+                }
+
+                return `
+                    <div class="space-y-6">
+                        <div class="bg-indigo-600 text-white p-6 md:p-8 rounded-[2rem] shadow-xl relative overflow-hidden">
+                            <div class="absolute -right-4 -bottom-4 text-8xl text-indigo-500 opacity-30"><i class="fas fa-quote-right"></i></div>
+                            <div class="text-xs font-black text-indigo-200 uppercase tracking-widest mb-3 relative z-10">Cấu trúc tiêu chuẩn</div>
+                            <div class="text-2xl md:text-3xl font-black font-mono relative z-10">${g.formula}</div>
+                        </div>
+                        ${breakdownHtml}
+                        <div class="bg-blue-50/80 p-6 md:p-8 rounded-[2rem] border border-blue-100 mt-6 relative">
+                            <div class="absolute -left-[3px] top-8 w-1.5 h-10 bg-blue-500 rounded-r-full"></div>
+                            <h5 class="text-sm font-black text-blue-800 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fas fa-lightbulb text-yellow-500 text-lg"></i> Bản chất logic</h5>
+                            <p class="text-blue-900 text-base md:text-lg leading-relaxed font-medium">${g.logic ? g.logic.replace(/\*\*(.*?)\*\*/g, '<b class="text-blue-700 bg-blue-100/50 px-1 rounded">$1</b>') : 'Đang cập nhật logic...'}</p>
+                        </div>
+                    </div>`;
+            }).join('<hr class="my-10 border-t-4 border-dashed border-gray-100 rounded-full">');
             showModal('detailGrammarModal');
         }
 
-        function renderGrammarMenu() {
-            const grid = document.getElementById('grammarGrid'); 
-            grid.innerHTML = '';
-            Object.keys(grammarRepo).forEach(key => {
-                const r = grammarRepo[key];
-                grid.innerHTML += `
-                    <div class="bg-white p-4 rounded-xl border border-gray-100 flex flex-col justify-between hover:shadow-md transition cursor-pointer" onclick="speakText('${r.ex}')">
-                        <div>
-                            <div class="font-bold text-sm text-indigo-600 mb-1 flex items-center gap-2"><i class="fas fa-tag text-xs"></i> ${r.title}</div>
-                            <code class="text-xs block bg-gray-50 p-1.5 rounded mb-2 border border-gray-200 font-mono text-gray-700">${r.formula}</code>
-                            <p class="text-xs text-gray-500 mb-2 line-clamp-2">${r.desc}</p>
-                        </div>
-                        <div class="bg-indigo-50 p-2 rounded flex justify-between items-center gap-2 mt-2">
-                            <span class="text-[11px] font-medium text-indigo-800 ja-text truncate">${r.ex}</span>
-                            <i class="fas fa-volume-up text-indigo-400 text-xs"></i>
-                        </div>
-                    </div>`;
-            });
+        // --- KANJI 5-STEP UI ---
+        async function openStrokeModal() {
+            const kanjis = (vocabData[currentIndex].Kanji || "").match(/[\u4e00-\u9faf]/g);
+            if(!kanjis) return;
+            document.getElementById('strokeTabs').innerHTML = kanjis.map(k => `
+                <button onclick="loadKanjiDetail('${k}')" class="w-14 h-14 rounded-2xl border-2 font-black ja-text text-xl hover:bg-indigo-50 hover:border-indigo-300 transition-all text-gray-500 flex-shrink-0">${k}</button>
+            `).join('');
+            showModal('strokeModal');
+            loadKanjiDetail(kanjis[0]);
         }
 
-        function showModal(id) { 
-            const modal = document.getElementById(id);
-            modal.classList.remove('hidden'); 
-            setTimeout(() => { 
-                document.getElementById(id.replace('Modal','Backdrop')).classList.remove('opacity-0'); 
-                document.getElementById(id.replace('Modal','Panel')).classList.remove('opacity-0', 'scale-95'); 
-            }, 10); 
-        }
-        function closeModal(id) { 
-            const b = document.getElementById(id.replace('Modal','Backdrop')); 
-            const p = document.getElementById(id.replace('Modal','Panel'));
-            if(b) b.classList.add('opacity-0'); 
-            if(p) p.classList.add('opacity-0', 'scale-95');
-            setTimeout(() => document.getElementById(id).classList.add('hidden'), 200); 
-        }
-        function openGrammarList() { showModal('grammarListModal'); }
-
-        async function openStrokeModal(char) {
-            const word = vocabData[currentIndex]; 
-            const kanjis = word.Kanji.match(/[\u4e00-\u9faf]/g) || [];
-            if(kanjis.length === 0) return;
-            const target = char || kanjis[0];
-            const tabs = document.getElementById('strokeTabs'); 
-            tabs.innerHTML = '';
-            if(kanjis.length > 1) {
-                kanjis.forEach(k => {
-                    const b = document.createElement('button'); 
-                    b.innerText = k;
-                    b.className = `w-12 h-12 text-xl rounded-xl font-bold border transition ja-text ${k===target ? 'bg-pink-600 text-white border-pink-600 shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`;
-                    b.onclick = () => showKanjiStroke(k); 
-                    tabs.appendChild(b);
-                });
-            }
-            showModal('strokeModal'); 
-            await showKanjiStroke(target);
-        }
-
-        async function showKanjiStroke(k) {
-            const d = kanjiDetails[k]; 
-            const c = document.getElementById('kanjiDetailContent'); 
-            const e = document.getElementById('kanjiDetailEmpty');
-            if(d) {
-                c.classList.remove('hidden'); e.classList.add('hidden');
-                document.getElementById('detailKanji').innerText = k; 
-                document.getElementById('detailHanViet').innerText = d.hanviet || '?';
-                document.getElementById('detailMeaning').innerText = d.mean || ''; 
-                document.getElementById('detailOn').innerText = d.on || '-'; 
-                document.getElementById('detailKun').innerText = d.kun || '-';
-                document.getElementById('detailRadicals').innerText = d.radicals || '...';
-                
-                const fmt = s => s.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-gray-900">$1</span>');
-                document.getElementById('detailTipImg').innerHTML = fmt(d.tipImg || ''); 
-                document.getElementById('detailTipSoundOn').innerHTML = fmt(d.tipSoundOn || ''); 
-                document.getElementById('detailTipSoundKun').innerHTML = fmt(d.tipSoundKun || '');
-                
-                document.getElementById('btnPlayOn').onclick = () => speakText(d.on);
-                document.getElementById('btnPlayKun').onclick = () => speakText(d.kun);
-
-                const wc = document.getElementById('detailWords'); 
-                wc.innerHTML = '';
-                if(d.words) {
-                    d.words.forEach(w => wc.innerHTML += `<div class="flex justify-between items-center bg-gray-50 p-2 rounded hover:bg-gray-100 cursor-pointer border border-transparent hover:border-gray-200 transition" onclick="speakText('${w.w}')"><span class="text-lg font-bold text-indigo-700 ja-text">${w.w}</span><span class="text-xs text-gray-500 font-medium">${w.m}</span></div>`);
+        async function loadKanjiDetail(k) {
+            Array.from(document.getElementById('strokeTabs').children).forEach(btn => {
+                if(btn.innerText === k) {
+                    btn.className = "w-14 h-14 rounded-2xl border-2 font-black ja-text text-xl bg-indigo-600 border-indigo-600 text-white shadow-lg flex-shrink-0 scale-110 transition-all";
+                } else {
+                    btn.className = "w-14 h-14 rounded-2xl border-2 font-black ja-text text-xl bg-white border-gray-200 text-gray-500 hover:bg-gray-50 flex-shrink-0 transition-all";
                 }
-            } else { 
-                c.classList.add('hidden'); e.classList.remove('hidden'); 
+            });
+
+            let d = kanjiDetails[k] || {}; 
+            const hanviet = d.hanviet || "?";
+            const meanMain = d.meanMain || "Đang cập nhật";
+            const kun = d.kun || "-";
+            const on = d.on || "-";
+            const radicals = d.radicals || "Đang phân tích...";
+            const tipImg = d.tipImg || "Đang cập nhật hình ảnh chiết tự.";
+            let soundStoryArr = [];
+            if(d.tipSoundKun) soundStoryArr.push(d.tipSoundKun);
+            if(d.tipSoundOn) soundStoryArr.push(d.tipSoundOn);
+            if(d.soundStory) soundStoryArr.push(d.soundStory); 
+            const soundStory = soundStoryArr.length > 0 ? soundStoryArr.join("<br><br>") : "Đang cập nhật mẹo nhớ.";
+            const combo = d.combo || "Đang cập nhật Combo 3-trong-1.";
+            const fmt = str => str.replace(/\*\*(.*?)\*\*/g, '<b class="text-current bg-black/5 px-1.5 py-0.5 rounded">$1</b>');
+
+            document.getElementById('detailKanjiBig').innerText = k;
+            document.getElementById('detailHanViet').innerText = hanviet;
+            document.getElementById('detailMeaningMain').innerText = meanMain;
+            document.getElementById('detailKun').innerText = kun;
+            document.getElementById('detailOn').innerText = on;
+            document.getElementById('detailRadicals').innerText = radicals;
+            document.getElementById('detailTipImg').innerHTML = fmt(tipImg);
+            document.getElementById('detailSoundStory').innerHTML = fmt(soundStory);
+            document.getElementById('detailCombo').innerHTML = fmt(combo);
+            
+            const words = d.words || [{w: k, f: k, m: meanMain, lvl: "N5"}]; 
+            document.getElementById('detailWordsGrid').innerHTML = words.map(w => `
+                <div class="bg-white p-5 rounded-2xl border-2 border-gray-100 shadow-sm cursor-pointer hover:border-emerald-300 hover:shadow-md transition-all group relative overflow-hidden" onclick="revealCard(this, '${w.f || w.w}')">
+                    <div class="flex items-center gap-3 mb-2 relative z-10">
+                        <span class="text-[10px] font-black px-2 py-1 rounded bg-emerald-100 text-emerald-800 shadow-sm">${w.lvl || 'N?'}</span>
+                        <span class="text-2xl font-black ja-text text-slate-800">${w.w}</span>
+                    </div>
+                    <div class="card-back opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out relative z-10">
+                        <div class="border-t border-gray-100 pt-3 mt-2 flex justify-between items-center">
+                            <div>
+                                <div class="text-lg font-black text-indigo-600 ja-text mb-0.5">${w.f || w.w}</div>
+                                <div class="text-sm font-bold text-gray-500">${w.m}</div>
+                            </div>
+                            <div class="w-10 h-10 bg-indigo-50 text-indigo-400 rounded-full flex items-center justify-center group-hover:text-indigo-600 transition-colors"><i class="fas fa-volume-up"></i></div>
+                        </div>
+                    </div>
+                    <div class="card-front text-[11px] font-black text-slate-400 uppercase tracking-widest text-center py-2 bg-slate-50 rounded-xl mt-3 border border-dashed border-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors relative z-10">
+                        <i class="fas fa-hand-pointer mr-1"></i> Chạm để xem
+                    </div>
+                </div>`).join('');
+                
+            await drawStroke(k);
+        }
+
+        window.revealCard = function(el, furigana) {
+            const back = el.querySelector('.card-back');
+            const front = el.querySelector('.card-front');
+            if(back.classList.contains('opacity-0')) {
+                back.classList.remove('opacity-0', 'max-h-0');
+                back.classList.add('opacity-100', 'max-h-32');
+                front.classList.add('hidden');
             }
-            const anim = document.getElementById('strokeAnimContainer'); 
+            speakText(furigana);
+        }
+
+        async function drawStroke(k) {
+            const container = document.getElementById('strokeAnimContainer');
             const grid = document.getElementById('strokeGridContainer');
-            anim.innerHTML = '<i class="fas fa-spinner fa-spin text-gray-300 text-2xl"></i>'; 
+            container.innerHTML = '<i class="fas fa-spinner fa-spin text-gray-300 text-4xl"></i>';
             grid.innerHTML = '';
             try {
-                const r = await fetch(`https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/${getKanjiHex(k)}.svg`);
-                if(!r.ok) throw new Error();
-                const svgText = await r.text();
+                const hex = k.charCodeAt(0).toString(16).padStart(5, '0');
+                const resp = await fetch(`https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/${hex}.svg`);
+                if(!resp.ok) throw new Error();
+                const svgText = await resp.text();
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(svgText, "image/svg+xml");
-                doc.querySelectorAll('path').forEach(p => p.setAttribute('style', 'opacity:0; stroke:#333; stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round;')); 
-                anim.innerHTML = new XMLSerializer().serializeToString(doc.documentElement);
-                const mainSvg = anim.querySelector('svg');
-                mainSvg.setAttribute('width','100%'); mainSvg.setAttribute('height','100%');
-                currentStrokeSvg = mainSvg;
+                doc.querySelectorAll('path').forEach(p => p.setAttribute('style', 'opacity:0; stroke:#1e293b; stroke-width:3; fill:none; stroke-linecap:round;'));
+                container.innerHTML = new XMLSerializer().serializeToString(doc.documentElement);
+                currentStrokeSvg = container.querySelector('svg');
                 replayStrokeAnimation();
-                const cleanDoc = parser.parseFromString(svgText, "image/svg+xml"); 
-                cleanDoc.querySelectorAll('path').forEach((p, i) => {
-                    const b = document.createElement('div'); 
-                    b.className = "w-16 h-16 stroke-grid-box flex items-center justify-center rounded bg-white shadow-sm";
-                    const clone = cleanDoc.documentElement.cloneNode(true);
-                    clone.setAttribute('width','100%'); clone.setAttribute('height','100%');
-                    clone.querySelectorAll('path').forEach((pp, idx) => {
-                        pp.style.fill="none"; pp.style.strokeLinecap="round"; pp.style.strokeLinejoin="round";
-                        if(idx<i) { pp.style.stroke="#e5e7eb"; pp.style.strokeWidth="3"; }
-                        else if(idx===i) { pp.style.stroke="#db2777"; pp.style.strokeWidth="4"; } 
-                        else pp.style.display="none";
+                
+                doc.querySelectorAll('path').forEach((p, i) => {
+                    const box = document.createElement('div');
+                    box.className = "w-12 h-12 md:w-14 md:h-14 border-2 border-gray-100 rounded-xl bg-white flex items-center justify-center p-1.5 shadow-sm";
+                    const clone = doc.documentElement.cloneNode(true);
+                    clone.querySelectorAll('path').forEach((cp, ci) => {
+                        cp.style.opacity = ci <= i ? '1' : '0';
+                        cp.style.stroke = ci === i ? '#ec4899' : '#cbd5e1';
+                        cp.style.strokeWidth = ci === i ? '4' : '3';
                     });
-                    b.appendChild(clone); grid.appendChild(b);
+                    box.appendChild(clone); grid.appendChild(box);
                 });
-            } catch(e) { anim.innerHTML = "<span class='text-xs text-red-400'>Lỗi tải nét viết</span>"; }
+            } catch(e) { container.innerHTML = '<span class="text-xs font-bold text-red-400">Không có nét viết</span>'; }
         }
 
-        function replayStrokeAnimation() {
+        window.replayStrokeAnimation = function() {
             if(!currentStrokeSvg) return;
             const paths = currentStrokeSvg.querySelectorAll('path');
-            paths.forEach(p => { p.style.transition='none'; p.style.opacity='0'; });
-            void currentStrokeSvg.offsetWidth;
+            paths.forEach(p => p.style.opacity = '0');
             let delay = 0;
             paths.forEach(p => {
                 const len = p.getTotalLength();
-                p.style.strokeDasharray = len; p.style.strokeDashoffset = len; p.style.opacity = '1';
-                setTimeout(() => { p.style.transition = `stroke-dashoffset 0.6s ease-in-out`; p.style.strokeDashoffset = '0'; }, delay * 1000);
-                delay += 0.6;
+                p.style.strokeDasharray = len;
+                p.style.strokeDashoffset = len;
+                p.style.opacity = '1';
+                setTimeout(() => { p.style.transition = 'stroke-dashoffset 0.5s ease-in-out'; p.style.strokeDashoffset = '0'; }, delay * 500);
+                delay++;
             });
         }
 
-        function getKanjiHex(k) { return k.charCodeAt(0).toString(16).padStart(5, '0'); }
-        function speakText(t) { if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(t); u.lang = 'ja-JP'; u.rate = 0.9; speechSynthesis.speak(u); } }
-        function speakCurrent() { speakText(vocabData[currentIndex].Furigana); }
-        function toggleDrawer() { const d = document.getElementById('mobileDrawer'); const c = document.getElementById('drawerContent'); const b = document.getElementById('drawerBackdrop'); if(d.classList.contains('pointer-events-none')) { d.classList.remove('pointer-events-none'); c.classList.remove('-translate-x-full'); b.classList.remove('opacity-0'); } else { c.classList.add('-translate-x-full'); b.classList.add('opacity-0'); setTimeout(() => d.classList.add('pointer-events-none'), 300); } }
-
+        // --- QUIZ LOGIC ---
         function nextQuestion() {
-            document.getElementById('feedback-area').classList.add('hidden'); document.getElementById('btn-check').classList.remove('hidden'); document.getElementById('btn-next').classList.add('hidden');
-            document.getElementById('quiz-kanji').className = "text-6xl ja-text font-bold text-gray-800 mb-4 transition-all inline-block";
-            const inp = document.getElementById('quiz-input'); inp.value = ''; inp.disabled = false; inp.focus();
-            const valid = vocabData.filter(v => v.Furigana !== "...");
+            document.getElementById('feedback').classList.add('hidden');
+            document.getElementById('btn-check').classList.remove('hidden');
+            document.getElementById('btn-next').classList.add('hidden');
+            const inp = document.getElementById('quiz-input');
+            inp.value = ''; inp.disabled = false; inp.focus();
+            
+            const valid = vocabData.filter(v => v.Furigana);
             currentQuizItem = valid[Math.floor(Math.random() * valid.length)];
             document.getElementById('quiz-kanji').innerText = currentQuizItem.Kanji || currentQuizItem.Furigana;
-            document.getElementById('quiz-meaning').innerText = currentQuizItem.Nghĩa;
+            document.getElementById('quiz-meaning').innerText = currentQuizItem.Nghĩa.toUpperCase();
         }
+
         function checkAnswer() {
-            const inp = document.getElementById('quiz-input'); if(!inp.value.trim()) return;
-            inp.disabled = true; 
-            const correct = inp.value.trim() === currentQuizItem.Furigana;
-            const k = document.getElementById('quiz-kanji'); const fbTitle = document.getElementById('feedback-title'); const fbArea = document.getElementById('feedback-area');
-            if(correct) { 
-                score += 10; k.classList.add("text-green-600", "correct-anim"); 
-                fbTitle.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle mr-2"></i> Chính xác!</span>';
-                fbArea.className = fbArea.className.replace("bg-red-50 border-red-200", "") + " bg-green-50 border-green-200";
-                speakText(currentQuizItem.Furigana); 
-            } else { 
-                score = Math.max(0, score - 5); k.classList.add("text-red-500", "wrong-anim"); 
-                fbTitle.innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle mr-2"></i> Sai rồi!</span>';
-                fbArea.className = fbArea.className.replace("bg-green-50 border-green-200", "") + " bg-red-50 border-red-200";
+            const inp = document.getElementById('quiz-input');
+            const ans = inp.value.trim(); if(!ans) return;
+            inp.disabled = true;
+            const correct = ans === currentQuizItem.Furigana;
+            const fb = document.getElementById('feedback');
+            fb.classList.remove('hidden');
+            if(correct) {
+                score += 10; 
+                fb.innerHTML = '<i class="fas fa-check-circle mr-2"></i> CHÍNH XÁC! +10 ĐIỂM'; 
+                fb.className = "mt-6 p-5 rounded-2xl font-black text-xl border-2 flex items-center justify-center animate-fade-in bg-emerald-50 text-emerald-600 border-emerald-200 shadow-inner";
+                speakText(currentQuizItem.Furigana);
+            } else {
+                score = Math.max(0, score - 5); 
+                fb.innerHTML = `<i class="fas fa-times-circle mr-2"></i> SAI RỒI! ĐÁP ÁN: <span class="ja-text ml-2 text-2xl">${currentQuizItem.Furigana}</span>`; 
+                fb.className = "mt-6 p-5 rounded-2xl font-black text-xl border-2 flex items-center justify-center animate-fade-in bg-rose-50 text-rose-600 border-rose-200 shadow-inner";
             }
-            document.getElementById('score-display').innerText = score; document.getElementById('correct-answer').innerText = currentQuizItem.Furigana;
-            document.getElementById('feedback-area').classList.remove('hidden'); document.getElementById('btn-check').classList.add('hidden'); document.getElementById('btn-next').classList.remove('hidden');
+            document.getElementById('score-display').innerText = `ĐIỂM: ${score}`;
+            document.getElementById('btn-check').classList.add('hidden');
+            document.getElementById('btn-next').classList.remove('hidden');
         }
-        function playQuizAudio() { if(currentQuizItem) speakText(currentQuizItem.Furigana); }
+
+        // --- MOBILE NAV LOGIC ---
         function prevWord() { if(currentIndex > 0) loadWord(currentIndex - 1); }
         function nextWord() { if(currentIndex < vocabData.length - 1) loadWord(currentIndex + 1); }
+        function toggleDrawer() { 
+            const d = document.getElementById('mobileDrawer'); 
+            const c = document.getElementById('drawerContent'); 
+            const b = document.getElementById('drawerBackdrop'); 
+            if(d.classList.contains('pointer-events-none')) { 
+                d.classList.remove('pointer-events-none'); 
+                c.classList.remove('-translate-x-full'); 
+                b.classList.remove('opacity-0'); 
+                document.body.style.overflow = 'hidden';
+            } else { 
+                c.classList.add('-translate-x-full'); 
+                b.classList.add('opacity-0'); 
+                setTimeout(() => d.classList.add('pointer-events-none'), 300); 
+                document.body.style.overflow = 'auto';
+            } 
+        }
 
-        document.addEventListener('DOMContentLoaded', init);
+        // --- UTILS ---
+        function showModal(id) { 
+            const m = document.getElementById(id); m.classList.remove('hidden'); 
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal(id) { 
+            document.getElementById(id).classList.add('hidden'); 
+            document.body.style.overflow = 'auto';
+        }
+        function speakText(t) { const u = new SpeechSynthesisUtterance(t); u.lang = 'ja-JP'; window.speechSynthesis.speak(u); }
+        function speakCurrent() { speakText(vocabData[currentIndex].Furigana); }
+
+        window.onload = init;
     </script>
 </body>
 </html>
