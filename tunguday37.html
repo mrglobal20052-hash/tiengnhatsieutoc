@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JLPT N4 Master - Khơi Nguồn Chân Ngã</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 font-sans p-4 md:p-8 text-slate-800">
+
+    <header class="max-w-4xl mx-auto mb-8 text-center animate-fade-in">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-blue-700 tracking-tight flex justify-center items-center gap-3">
+            <i class="fa-solid fa-water text-blue-500"></i>
+            Tĩnh Tâm Học N4
+        </h1>
+        <p class="text-slate-500 mt-2">Thanh lọc các thể • Quy tập về Chân Ngã • Hướng tới N3 (7/2026)</p>
+    </header>
+
+    <main id="app-root" class="max-w-4xl mx-auto"></main>
+
+    <script>
+        // DỮ LIỆU N4: ĐÃ GOM NHÓM KHOA HỌC THÀNH 8 CHUYÊN ĐỀ
+        const grammarData = [
+            // --- NHÓM 1: CÁC THỂ ĐỘNG TỪ BIẾN ĐỔI (QUAN TRỌNG NHẤT) ---
+            { id: 101, category: '1. Biến Đổi Động Từ', level: 'N4', grammar: 'Thể Khả năng (Vれる/られる)', meaning: 'Có thể làm gì', formula: 'N が V(khả năng)', exampleJP: '私は漢字を読めます。', exampleVN: 'Tôi có thể đọc được chữ Hán.', parts: ['私は', '漢字を', '読めます。'] },
+            { id: 102, category: '1. Biến Đổi Động Từ', level: 'N4', grammar: '聞こえます / 見えます', meaning: 'Có thể nghe/nhìn thấy (tự nhiên)', formula: 'N が聞こえます/見えます', exampleJP: '鳥の声が聞こえます。', exampleVN: 'Tôi nghe được tiếng chim hót.', parts: ['鳥の声が', '聞こえます。'] },
+            { id: 103, category: '1. Biến Đổi Động Từ', level: 'N4', grammar: 'Thể Ý định (Vよう)', meaning: 'Hãy cùng làm / Định làm', formula: 'Dạng ngắn của Vましょう', exampleJP: '明日、映画を見に行こう。', exampleVN: 'Mai cùng đi xem phim đi.', parts: ['明日、', '映画を見に', '行こう。'] },
+            { id: 104, category: '1. Biến Đổi Động Từ', level: 'N4', grammar: 'Thể Mệnh lệnh (Vろ/Vな)', meaning: 'Ra lệnh / Cấm đoán', formula: 'V(mệnh lệnh) / Vるな', exampleJP: 'ここに止まれ！', exampleVN: 'Dừng lại ở đây!', parts: ['ここに', '止まれ！'] },
+            { id: 105, category: '1. Biến Đổi Động Từ', level: 'N4', grammar: 'Thể Bị động (Vられる)', meaning: 'Bị, được (Ai đó làm gì mình)', formula: 'N1 は N2 に V(bị động)', exampleJP: '泥棒に財布を盗まれました。', exampleVN: 'Tôi bị tên trộm lấy mất ví.', parts: ['泥棒に', '財布を', '盗まれました。'] },
+            { id: 106, category: '1. Biến Đổi Động Từ', level: 'N4', grammar: 'Thể Sai khiến (Vさせる)', meaning: 'Bắt / Cho phép làm gì', formula: 'N1 は N2 に V(sai khiến)', exampleJP: '先生は学生に作文を書かせました。', exampleVN: 'Thầy giáo bắt học sinh viết văn.', parts: ['先生は', '学生に', '作文を', '書かせました。'] },
+            { id: 107, category: '1. Biến Đổi Động Từ', level: 'N4', grammar: 'Sai khiến Bị động (Vさせられる)', meaning: 'Bị bắt phải làm gì', formula: 'N1 は N2 に V(sai khiến bị động)', exampleJP: '母に買い物に行かされました。', exampleVN: 'Tôi bị mẹ bắt đi mua đồ.', parts: ['母に', '買い物に', '行かされました。'] },
+
+            // --- NHÓM 2: CÂU ĐIỀU KIỆN (NẾU... THÌ) ---
+            { id: 201, category: '2. Câu Điều Kiện', level: 'N4', grammar: '〜ば (Ba-form)', meaning: 'Nếu... (Điều kiện cần)', formula: 'Vば / Aければ / Nならば', exampleJP: '説明書を読めば、わかります。', exampleVN: 'Nếu đọc sách hướng dẫn thì sẽ hiểu.', parts: ['説明書を', '読めば、', 'わかります。'] },
+            { id: 202, category: '2. Câu Điều Kiện', level: 'N4', grammar: '〜なら', meaning: 'Nếu là... (Theo chủ đề)', formula: 'N / V(thông thường) + なら', exampleJP: '旅行なら、北海道がいいですよ。', exampleVN: 'Nếu là đi du lịch thì Hokkaido được đấy.', parts: ['旅行なら、', '北海道が', 'いいですよ。'] },
+            { id: 203, category: '2. Câu Điều Kiện', level: 'N4', grammar: '〜と', meaning: 'Hễ mà... (Tất yếu)', formula: 'Vる + と、〜', exampleJP: 'このボタンを押すと、水が出ます。', exampleVN: 'Hễ ấn nút này là nước sẽ chảy ra.', parts: ['このボタンを', '押すと、', '水が出ます。'] },
+            { id: 204, category: '2. Câu Điều Kiện', level: 'N4', grammar: '〜ば〜ほど', meaning: 'Càng... càng...', formula: 'Vば + Vるほど', exampleJP: '給料は高ければ高いほどいいです。', exampleVN: 'Lương càng cao thì càng tốt.', parts: ['給料は', '高ければ', '高いほど', 'いいです。'] },
+            { id: 205, category: '2. Câu Điều Kiện', level: 'N4', grammar: '〜場合', meaning: 'Trong trường hợp...', formula: 'Vる/た/ない/Nの + 場合', exampleJP: '雨の場合、試合は中止です。', exampleVN: 'Nếu trời mưa, trận đấu sẽ bị hủy.', parts: ['雨の', '場合、', '試合は', '中止です。'] },
+
+            // --- NHÓM 3: PHỎNG ĐOÁN & TRUYỀN ĐẠT THÔNG TIN ---
+            { id: 301, category: '3. Phỏng Đoán & Truyền Đạt', level: 'N4', grammar: '〜そうです (Trạng thái)', meaning: 'Trông có vẻ... (Nhìn bằng mắt)', formula: 'Vます/Aな/Aい + そうです', exampleJP: 'このケーキは美味しそうです。', exampleVN: 'Cái bánh này có vẻ ngon.', parts: ['このケーキは', '美味し', 'そうです。'] },
+            { id: 302, category: '3. Phỏng Đoán & Truyền Đạt', level: 'N4', grammar: '〜そうです (Nghe nói)', meaning: 'Nghe nói là... (Dẫn nguồn)', formula: 'Thể thông thường + そうです', exampleJP: '明日は晴れるそうです。', exampleVN: 'Nghe nói mai trời nắng.', parts: ['明日は', '晴れる', 'そうです。'] },
+            { id: 303, category: '3. Phỏng Đoán & Truyền Đạt', level: 'N4', grammar: '〜ようです/みたいです', meaning: 'Dường như... / Giống như...', formula: 'Thể thông thường + ようです/みたい', exampleJP: 'あの人、日本人みたい。', exampleVN: 'Người kia hình như là người Nhật.', parts: ['あの人、', '日本人', 'みたい。'] },
+            { id: 304, category: '3. Phỏng Đoán & Truyền Đạt', level: 'N4', grammar: '〜はずです', meaning: 'Chắc chắn là... (Theo logic)', formula: 'Thể thông thường + はずです', exampleJP: 'カギはカバンにあるはず。', exampleVN: 'Chìa khóa chắc chắn nằm trong túi.', parts: ['カギは', 'カバンに', 'あるはず。'] },
+            { id: 305, category: '3. Phỏng Đoán & Truyền Đạt', level: 'N4', grammar: '〜はずがない', meaning: 'Không thể nào...', formula: 'Thể thông thường + はずがない', exampleJP: '彼が犯人のはずがありません。', exampleVN: 'Anh ấy không thể nào là thủ phạm được.', parts: ['彼が', '犯人の', 'はずがありません。'] },
+            { id: 306, category: '3. Phỏng Đoán & Truyền Đạt', level: 'N4', grammar: '〜かもしれません', meaning: 'Có lẽ... (Khoảng 50%)', formula: 'Thể thông thường + かもしれません', exampleJP: '午後から雨が降るかもしれません。', exampleVN: 'Có lẽ chiều nay trời sẽ mưa.', parts: ['午後から', '雨が降る', 'かもしれません。'] },
+            { id: 307, category: '3. Phỏng Đoán & Truyền Đạt', level: 'N4', grammar: '〜と言っていました', meaning: 'Nhắn lại là / Nói là...', formula: 'Thể thông thường + と言っていました', exampleJP: '田中さんは明日休むと言っていました。', exampleVN: 'Anh Tanaka nhắn là ngày mai sẽ nghỉ.', parts: ['田中さんは', '明日休むと', '言っていました。'] },
+
+            // --- NHÓM 4: TRẠNG THÁI & MỞ RỘNG THỂ "TE" ---
+            { id: 401, category: '4. Mở Rộng Thể TE', level: 'N4', grammar: '〜てあります', meaning: 'Trạng thái có mục đích (với tha động từ)', formula: 'V(tha động từ)て + あります', exampleJP: '窓が開けてあります。', exampleVN: 'Cửa sổ đang được mở sẵn (có người mở).', parts: ['窓が', '開けて', 'あります。'] },
+            { id: 402, category: '4. Mở Rộng Thể TE', level: 'N4', grammar: '〜ています (Tự động từ)', meaning: 'Trạng thái tự nhiên (với tự động từ)', formula: 'V(tự động từ)て + います', exampleJP: '会議室は、かぎがかかっています。', exampleVN: 'Phòng họp đang khóa cửa.', parts: ['会議室は、', 'かぎが', 'かかっています。'] },
+            { id: 403, category: '4. Mở Rộng Thể TE', level: 'N4', grammar: '〜ておきます', meaning: 'Làm sẵn, làm trước', formula: 'Vて + おきます', exampleJP: '掃除しておきます。', exampleVN: 'Tôi sẽ dọn dẹp sẵn.', parts: ['掃除して', 'おきます。'] },
+            { id: 404, category: '4. Mở Rộng Thể TE', level: 'N4', grammar: '〜てしまいます', meaning: 'Làm xong hết / Lỡ (tiếc nuối)', formula: 'Vて + しまいます', exampleJP: '財布を忘れてしまいました。', exampleVN: 'Tôi lỡ quên ví mất rồi.', parts: ['財布を', '忘れて', 'しまいました。'] },
+            { id: 405, category: '4. Mở Rộng Thể TE', level: 'N4', grammar: '〜てみます', meaning: 'Thử làm gì đó', formula: 'Vて + みます', exampleJP: 'この靴を履いてみます。', exampleVN: 'Tôi sẽ đi thử đôi giày này.', parts: ['この靴を', '履いて', 'みます。'] },
+            { id: 406, category: '4. Mở Rộng Thể TE', level: 'N4', grammar: '〜てきます', meaning: 'Đi làm gì đó rồi về', formula: 'Vて + きます', exampleJP: 'タバコを買ってきます。', exampleVN: 'Tôi đi mua thuốc lá rồi về.', parts: ['タバコを', '買って', 'きます。'] },
+
+            // --- NHÓM 5: Ý ĐỊNH, MỤC ĐÍCH & SỰ BIẾN ĐỔI ---
+            { id: 501, category: '5. Mục Đích & Ý Định', level: 'N4', grammar: '〜と思っています / つもり / 予定', meaning: 'Dự định làm...', formula: 'Vよう と思う / Vる つもり / Nの 予定', exampleJP: '来年日本に留学するつもりです。', exampleVN: 'Tôi dự định năm sau sẽ đi du học Nhật Bản.', parts: ['来年', '日本に', '留学する', 'つもりです。'] },
+            { id: 502, category: '5. Mục Đích & Ý Định', level: 'N4', grammar: '〜ために', meaning: 'Để... (Mục đích có ý chí)', formula: 'Vる / Nの + ために', exampleJP: '家を買うために、貯金します。', exampleVN: 'Tôi tiết kiệm tiền để mua nhà.', parts: ['家を買う', 'ために、', '貯金します。'] },
+            { id: 503, category: '5. Mục Đích & Ý Định', level: 'N4', grammar: '〜ように', meaning: 'Để... (Mục đích trạng thái/khả năng)', formula: 'Vる / Vない + ように', exampleJP: '忘れないように、メモします。', exampleVN: 'Tôi ghi chép lại để không quên.', parts: ['忘れない', 'ように、', 'メモします。'] },
+            { id: 504, category: '5. Mục Đích & Ý Định', level: 'N4', grammar: '〜のに', meaning: 'Để / Cho việc... (Dùng đánh giá/công cụ)', formula: 'Vる / N + のに', exampleJP: 'この洗剤は、セーターを洗うのに使います。', exampleVN: 'Bột giặt này dùng để giặt áo len.', parts: ['この洗剤は、', 'セーターを洗う', 'のに', '使います。'] },
+            { id: 505, category: '5. Mục Đích & Ý Định', level: 'N4', grammar: '〜ようになります / なくなります', meaning: 'Trở nên có thể / Không thể', formula: 'Vる ようになる / Vない なくなる', exampleJP: '小さい字が読めなくなりました。', exampleVN: 'Đã không thể đọc được chữ nhỏ nữa.', parts: ['小さい字が', '読めなく', 'なりました。'] },
+            { id: 506, category: '5. Mục Đích & Ý Định', level: 'N4', grammar: '〜ようにします / ことにします', meaning: 'Cố gắng / Quyết định làm', formula: 'Vる ようにする / ことにする', exampleJP: '毎日、ジョギングするようにしています。', exampleVN: 'Tôi cố gắng chạy bộ mỗi ngày.', parts: ['毎日、', 'ジョギングする', 'ようにしています。'] },
+
+            // --- NHÓM 6: GIẢI THÍCH, NHẤN MẠNH & LỜI KHUYÊN ---
+            { id: 601, category: '6. Giải Thích & Lời Khuyên', level: 'N4', grammar: '〜んです', meaning: 'Nhấn mạnh, giải thích lý do', formula: 'Thể thông thường + んです', exampleJP: '頭が痛いんです。', exampleVN: '(Vì) tôi bị đau đầu.', parts: ['頭が', '痛い', 'んです。'] },
+            { id: 602, category: '6. Giải Thích & Lời Khuyên', level: 'N4', grammar: '〜し、〜し', meaning: 'Vừa... vừa... (Liệt kê lý do)', formula: 'Thể thông thường + し、〜', exampleJP: 'この店は安いし、美味しいです。', exampleVN: 'Cửa hàng này vừa rẻ lại vừa ngon.', parts: ['この店は', '安いし、', '美味しいです。'] },
+            { id: 603, category: '6. Giải Thích & Lời Khuyên', level: 'N4', grammar: '〜ながら', meaning: 'Vừa làm V1 vừa làm V2', formula: 'V1ます + ながら、V2', exampleJP: 'お茶を飲みながら、話しましょう。', exampleVN: 'Cùng nhau vừa uống trà, vừa nói chuyện nào.', parts: ['お茶を', '飲みながら、', '話しましょう。'] },
+            { id: 604, category: '6. Giải Thích & Lời Khuyên', level: 'N4', grammar: '〜ほうがいい', meaning: 'Nên / Không nên...', formula: 'Vた / Vない + ほうがいい', exampleJP: '毎日運動したほうがいいです。', exampleVN: 'Bạn nên tập thể dục hằng ngày.', parts: ['毎日', '運動した', 'ほうがいいです。'] },
+            { id: 605, category: '6. Giải Thích & Lời Khuyên', level: 'N4', grammar: '〜といい / たらいい / ばいい', meaning: 'Nếu... thì tốt nhỉ / Nên làm gì', formula: 'Thể điều kiện + いい', exampleJP: '雨が降らないといいですね。', exampleVN: 'Trời mà không mưa thì tốt nhỉ.', parts: ['雨が', '降らないと', 'いいですね。'] },
+
+            // --- NHÓM 7: KÍNH NGỮ (KEIGO) --- CHI TIẾT ---
+            { id: 701, category: '7. Kính Ngữ (Keigo)', level: 'N4', grammar: 'Tôn kính ngữ (Có quy tắc)', meaning: 'Nâng cao hành động của người khác', formula: 'お + V(bỏ ます) + になる', exampleJP: '社長はもうお帰りになりました。', exampleVN: 'Giám đốc đã về rồi ạ.', parts: ['社長は', 'もう', 'お帰りになりました。'] },
+            { id: 702, category: '7. Kính Ngữ (Keigo)', level: 'N4', grammar: 'Tôn kính ngữ (Đặc biệt)', meaning: 'Các động từ bất quy tắc (Hành động của người khác)', formula: '<ul class="list-disc pl-5 space-y-1 mt-2 text-sm text-slate-600 bg-white p-3 rounded border border-slate-200"><li>行く/来る/いる → <span class="font-bold text-blue-600">いらっしゃる / おいでになる</span></li><li>する → <span class="font-bold text-blue-600">なさる</span></li><li>言う → <span class="font-bold text-blue-600">おっしゃる</span></li><li>食べる/飲む → <span class="font-bold text-blue-600">召し上がる</span></li><li>見る → <span class="font-bold text-blue-600">ご覧になる</span></li><li>知っている → <span class="font-bold text-blue-600">ご存じです</span></li><li>死ぬ → <span class="font-bold text-blue-600">お亡くなりになる</span></li><li>くれる → <span class="font-bold text-blue-600">くださる</span></li></ul>', exampleJP: '先生は明日いらっしゃいますか。', exampleVN: 'Ngày mai thầy có đến không ạ?', parts: ['先生は', '明日', 'いらっしゃいますか。'] },
+            { id: 703, category: '7. Kính Ngữ (Keigo)', level: 'N4', grammar: 'Khiêm nhường ngữ (Có quy tắc)', meaning: 'Hạ thấp hành động của bản thân', formula: 'お + V(bỏ ます) + する', exampleJP: '重い荷物をお持ちします。', exampleVN: 'Con xin mang hành lý giúp ạ.', parts: ['重い荷物を', 'お持ち', 'します。'] },
+            { id: 704, category: '7. Kính Ngữ (Keigo)', level: 'N4', grammar: 'Khiêm nhường ngữ (Đặc biệt)', meaning: 'Các động từ bất quy tắc (Hành động của bản thân)', formula: '<ul class="list-disc pl-5 space-y-1 mt-2 text-sm text-slate-600 bg-white p-3 rounded border border-slate-200"><li>行く/来る → <span class="font-bold text-indigo-600">参る / 伺う</span></li><li>いる → <span class="font-bold text-indigo-600">おる</span></li><li>する → <span class="font-bold text-indigo-600">いたす</span></li><li>言う → <span class="font-bold text-indigo-600">申す / 申し上げます</span></li><li>食べる/飲む/もらう → <span class="font-bold text-indigo-600">いただく</span></li><li>聞く/訪ねる → <span class="font-bold text-indigo-600">伺う / お邪魔する</span></li><li>見る → <span class="font-bold text-indigo-600">拝見する</span></li><li>知っている → <span class="font-bold text-indigo-600">存じております</span></li><li>会う → <span class="font-bold text-indigo-600">お目にかかる</span></li><li>あげる → <span class="font-bold text-indigo-600">差し上げる</span></li></ul>', exampleJP: 'ハノイから参りました。', exampleVN: 'Tôi đến từ Hà Nội.', parts: ['ハノイから', '参りました。'] },
+            { id: 705, category: '7. Kính Ngữ (Keigo)', level: 'N4', grammar: 'Thể lịch sự (Teineigo)', meaning: 'Làm câu nói trang trọng, lịch sự hơn', formula: '<ul class="list-disc pl-5 space-y-1 mt-2 text-sm text-slate-600 bg-white p-3 rounded border border-slate-200"><li>〜です → <span class="font-bold text-teal-600">〜でございます</span></li><li>あります → <span class="font-bold text-teal-600">ございます</span></li><li>いいです → <span class="font-bold text-teal-600">よろしいです</span></li><li>知りません → <span class="font-bold text-teal-600">存じません</span></li><li>死にます → <span class="font-bold text-teal-600">亡くなります</span></li><li>いいえ → <span class="font-bold text-teal-600">結構です</span></li></ul>', exampleJP: 'こちらがメニューでございます。', exampleVN: 'Đây là thực đơn ạ.', parts: ['こちらが', 'メニューで', 'ございます。'] },
+            { id: 706, category: '7. Kính Ngữ (Keigo)', level: 'N4', grammar: '〜いただけませんか', meaning: 'Làm ơn... giúp tôi được không?', formula: 'Vて + いただけませんか', exampleJP: '荷物を持っていただけませんか。', exampleVN: 'Bạn cầm hành lý giúp tôi được không?', parts: ['荷物を', '持って', 'いただけませんか。'] },
+            { id: 707, category: '7. Kính Ngữ (Keigo)', level: 'N4', grammar: '〜と伝えていただけませんか', meaning: 'Nhờ truyền đạt lại', formula: 'Mệnh đề + と伝えていただけませんか', exampleJP: '明日休むと伝えていただけませんか。', exampleVN: 'Bạn nhắn lại là mai tôi nghỉ được không?', parts: ['明日', '休むと', '伝えていただけませんか。'] },
+
+            // --- NHÓM 8: CẤU TRÚC ĐẶC BIỆT KHÁC ---
+            { id: 801, category: '8. Cấu Trúc Đặc Biệt', level: 'N4', grammar: '〜のに', meaning: 'Thế mà... (Bất ngờ, bất mãn)', formula: 'Thể thông thường + のに', exampleJP: '約束したのに、来ませんでした。', exampleVN: 'Đã hứa thế mà không đến.', parts: ['約束', 'したのに、', '来ませんでした。'] },
+            { id: 802, category: '8. Cấu Trúc Đặc Biệt', level: 'N4', grammar: '〜ところです', meaning: 'Sắp / Đang / Vừa mới làm xong', formula: 'Vる/Vている/Vた + ところです', exampleJP: '今、食べているところです。', exampleVN: 'Bây giờ tôi đúng lúc đang ăn.', parts: ['今、', '食べている', 'ところです。'] },
+            { id: 803, category: '8. Cấu Trúc Đặc Biệt', level: 'N4', grammar: '〜ばかり', meaning: 'Vừa mới... (Cảm giác cá nhân)', formula: 'Vた + ばかり', exampleJP: '学校から帰ってきたばかりです。', exampleVN: 'Tôi vừa mới đi học về xong.', parts: ['学校から', '帰ってきた', 'ばかりです。'] },
+            { id: 804, category: '8. Cấu Trúc Đặc Biệt', level: 'N4', grammar: '〜という意味です', meaning: 'Có nghĩa là...', formula: 'X は Y という意味です', exampleJP: '「立入禁止」は入るなという意味です。', exampleVN: '"Tachiiirikinshi" có nghĩa là cấm vào.', parts: ['「立入禁止」は', '入るなと', 'いう意味です。'] },
+            { id: 805, category: '8. Cấu Trúc Đặc Biệt', level: 'N4', grammar: '〜と読みます / 書いてあります', meaning: 'Đọc là / Được viết là...', formula: '〜と 読みます/書いてあります', exampleJP: 'この漢字は何と読みますか。', exampleVN: 'Chữ Hán này đọc là gì thế?', parts: ['この漢字は', '何と', '読みますか。'] },
+            { id: 806, category: '8. Cấu Trúc Đặc Biệt', level: 'N4', grammar: '〜すぎます', meaning: 'Quá...', formula: 'Vます/Aな/Aい + すぎます', exampleJP: '昨日お酒を飲みすぎました。', exampleVN: 'Hôm qua tôi đã uống quá nhiều rượu.', parts: ['昨日', 'お酒を', '飲みすぎました。'] },
+            { id: 807, category: '8. Cấu Trúc Đặc Biệt', level: 'N4', grammar: '〜やすい / 〜にくい', meaning: 'Dễ / Khó (làm gì)', formula: 'Vます + やすい/にくい', exampleJP: '事故が起きやすいです。', exampleVN: 'Rất dễ xảy ra tai nạn.', parts: ['事故が', '起き', 'やすいです。'] },
+            { id: 808, category: '8. Cấu Trúc Đặc Biệt', level: 'N4', grammar: '〜途中で', meaning: 'Đang trên đường / Đang giữa chừng...', formula: 'Vる / Nの + 途中で', exampleJP: '家に帰る途中で、パン屋に寄った。', exampleVN: 'Trên đường về nhà, tôi ghé tiệm bánh mì.', parts: ['家に帰る', '途中で、', 'パン屋に', '寄った。'] },
+            { id: 809, category: '8. Cấu Trúc Đặc Biệt', level: 'N4', grammar: '〜がします', meaning: 'Có (âm thanh, mùi, vị)...', formula: 'N(giác quan) + がします', exampleJP: '変なにおいがします。', exampleVN: 'Có mùi lạ.', parts: ['変な', 'においが', 'します。'] }
+        ];
+
+        const categories = [...new Set(grammarData.map(item => item.category))];
+
+        let state = {
+            currentView: 'dashboard',
+            selectedCategory: null,
+            filteredData: [],
+            currentIndex: 0,
+            showAnswer: false,
+            shuffledParts: [],
+            selectedParts: [],
+            jlptResult: null
+        };
+
+        function render() {
+            const root = document.getElementById('app-root');
+            if (state.currentView === 'dashboard') {
+                root.innerHTML = renderDashboard();
+            } else if (state.currentView === 'category_menu') {
+                root.innerHTML = renderCategoryMenu();
+            } else if (state.currentView === 'flashcard') {
+                root.innerHTML = renderFlashcard();
+            } else if (state.currentView === 'jlpt') {
+                root.innerHTML = renderJlptMode();
+            }
+        }
+
+        window.openCategory = function(categoryName) {
+            state.selectedCategory = categoryName;
+            state.filteredData = grammarData.filter(item => item.category === categoryName);
+            state.currentView = 'category_menu';
+            render();
+        };
+
+        window.setView = function(view) {
+            if(view === 'dashboard') {
+                state.selectedCategory = null;
+                state.filteredData = [];
+            }
+            state.currentView = view;
+            if (view === 'jlpt') {
+                state.currentIndex = 0;
+                initJlptExercise();
+            }
+            if (view === 'flashcard') {
+                state.currentIndex = 0;
+                state.showAnswer = false;
+            }
+            render();
+        };
+
+        window.toggleAnswer = function(event) {
+            if(event && event.target.closest('button.audio-btn')) return;
+            state.showAnswer = !state.showAnswer;
+            render();
+        };
+
+        window.nextCard = function() {
+            state.showAnswer = false;
+            state.currentIndex = (state.currentIndex + 1) % state.filteredData.length;
+            if (state.currentView === 'jlpt') initJlptExercise();
+            render();
+        };
+
+        window.prevCard = function() {
+            state.showAnswer = false;
+            state.currentIndex = (state.currentIndex - 1 + state.filteredData.length) % state.filteredData.length;
+            if (state.currentView === 'jlpt') initJlptExercise();
+            render();
+        };
+
+        window.speakText = function(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ja-JP';
+                utterance.rate = 0.85;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("Trình duyệt của bạn không hỗ trợ đọc giọng nói.");
+            }
+        };
+
+        function initJlptExercise() {
+            const currentCard = state.filteredData[state.currentIndex];
+            let parts = [...currentCard.parts];
+            for (let i = parts.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [parts[i], parts[j]] = [parts[j], parts[i]];
+            }
+            state.shuffledParts = parts;
+            state.selectedParts = [];
+            state.jlptResult = null;
+        }
+
+        window.handleSelectPart = function(part) {
+            if (state.selectedParts.includes(part)) {
+                state.selectedParts = state.selectedParts.filter(p => p !== part);
+            } else {
+                state.selectedParts.push(part);
+            }
+            render();
+        };
+
+        window.checkJlptAnswer = function() {
+            const currentCard = state.filteredData[state.currentIndex];
+            const isCorrect = state.selectedParts.join('') === currentCard.parts.join('');
+            state.jlptResult = isCorrect;
+            render();
+        };
+
+        window.resetJlpt = function() {
+            state.selectedParts = [];
+            state.jlptResult = null;
+            render();
+        };
+
+        function renderDashboard() {
+            const categoryCards = categories.map((cat, index) => {
+                const count = grammarData.filter(item => item.category === cat).length;
+                const icons = ['fa-random', 'fa-code-branch', 'fa-bullhorn', 'fa-box-open', 'fa-bullseye', 'fa-lightbulb', 'fa-hands-praying', 'fa-puzzle-piece'];
+                return `
+                <button onclick="openCategory('${cat}')" class="glass-panel p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left flex flex-col gap-2 group border border-blue-100/50 hover:border-blue-300">
+                    <div class="bg-blue-100 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition">
+                        <i class="fa-solid ${icons[index] || 'fa-book'}"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-800 leading-tight">${cat}</h3>
+                    <p class="text-xs text-slate-500 font-medium">${count} mẫu câu</p>
+                </button>
+                `;
+            }).join('');
+
+            return `
+            <div class="space-y-8 animate-fade-in">
+                <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100">
+                    <h2 class="text-xl font-bold mb-4 text-slate-800 border-b pb-2"><i class="fa-solid fa-layer-group text-blue-500 mr-2"></i>Chọn Chuyên Đề N4</h2>
+                    <p class="text-sm text-slate-500 mb-6">Ngữ pháp N4 phức tạp hơn nhưng nếu được "chunking" (gom nhóm) một cách logic, Thể Trí của bạn sẽ hấp thụ cực kỳ tự nhiên và bình tĩnh.</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        ${categoryCards}
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function renderCategoryMenu() {
+            return `
+            <div class="max-w-2xl mx-auto space-y-6 animate-fade-in">
+                <button onclick="setView('dashboard')" class="text-slate-500 hover:text-slate-800 transition flex items-center gap-2 font-medium">
+                    <i class="fa-solid fa-arrow-left"></i> Trở về Danh sách
+                </button>
+
+                <div class="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-2xl p-6 md:p-8 text-white shadow-lg relative overflow-hidden">
+                    <div class="relative z-10">
+                        <span class="bg-white/20 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3 inline-block">Chuyên đề N4</span>
+                        <h2 class="text-2xl md:text-3xl font-bold mb-2">${state.selectedCategory}</h2>
+                        <p class="text-blue-50 flex items-center gap-2 text-sm md:text-base">
+                            <i class="fa-solid fa-brain"></i> Gồm ${state.filteredData.length} mẫu câu liên kết logic với nhau.
+                        </p>
+                    </div>
+                    <i class="fa-solid fa-water absolute -bottom-4 -right-4 text-8xl text-white opacity-10"></i>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button onclick="setView('flashcard')" class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition border border-slate-100 flex flex-col items-center justify-center gap-4 group">
+                        <div class="bg-indigo-50 text-indigo-500 w-16 h-16 rounded-full flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-100 transition">
+                            <i class="fa-solid fa-book-open text-2xl"></i>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="font-bold text-lg text-slate-800">Học & Luyện Nghe</h3>
+                            <p class="text-sm text-slate-500 mt-1">Học công thức và luyện Shadowing.</p>
+                        </div>
+                    </button>
+
+                    <button onclick="setView('jlpt')" class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition border border-slate-100 flex flex-col items-center justify-center gap-4 group">
+                        <div class="bg-orange-50 text-orange-500 w-16 h-16 rounded-full flex items-center justify-center group-hover:scale-110 group-hover:bg-orange-100 transition">
+                            <i class="fa-solid fa-star text-2xl"></i>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="font-bold text-lg text-slate-800">Luyện Đề Dấu Sao (*)</h3>
+                            <p class="text-sm text-slate-500 mt-1">Luyện tư duy ghép câu JLPT.</p>
+                        </div>
+                    </button>
+                </div>
+            </div>`;
+        }
+
+        function renderFlashcard() {
+            const currentCard = state.filteredData[state.currentIndex];
+            
+            let cardContent = '';
+            if (!state.showAnswer) {
+                cardContent = `
+                <div class="space-y-6 pointer-events-none w-full flex flex-col items-center justify-center min-h-[250px] py-6">
+                    <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-2 shadow-inner border border-blue-100/50">
+                        <i class="fa-solid fa-leaf text-4xl text-blue-400"></i>
+                    </div>
+                    <h2 class="text-3xl md:text-5xl font-extrabold text-slate-800 leading-tight tracking-tight text-center px-4">${currentCard.grammar}</h2>
+                    <div class="mt-8 flex items-center gap-2 text-blue-600 bg-blue-50 px-5 py-2.5 rounded-full border border-blue-100 shadow-sm animate-bounce">
+                        <i class="fa-solid fa-hand-pointer"></i>
+                        <span class="text-sm font-bold tracking-wide">Chạm để tĩnh tâm & xem ý nghĩa</span>
+                    </div>
+                </div>`;
+            } else {
+                cardContent = `
+                <div class="space-y-6 w-full animate-fade-in pointer-events-auto text-left">
+                    <div class="border-b border-slate-100 pb-4">
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-2">${currentCard.grammar}</h2>
+                        <p class="text-lg md:text-xl text-blue-600 font-bold">${currentCard.meaning}</p>
+                    </div>
+                    
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Công thức</p>
+                        <div class="font-mono text-slate-700 font-medium">${currentCard.formula}</div>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Ví dụ (Nghe & Lặp lại)</p>
+                        <div class="flex gap-4 items-start bg-indigo-50/50 p-4 rounded-xl">
+                            <button onclick="speakText('${currentCard.exampleJP}')" class="audio-btn shrink-0 bg-indigo-500 hover:bg-indigo-600 text-white w-10 h-10 rounded-full flex items-center justify-center transition shadow-md" title="Nghe Audio">
+                                <i class="fa-solid fa-headphones"></i>
+                            </button>
+                            <div>
+                                <p class="text-lg font-bold text-slate-800 leading-snug">${currentCard.exampleJP}</p>
+                                <p class="text-slate-600 mt-2 text-sm md:text-base">${currentCard.exampleVN}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            return `
+            <div class="max-w-xl mx-auto w-full animate-fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <button onclick="setView('category_menu')" class="text-slate-500 hover:text-slate-800 font-medium transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> Chuyên đề
+                    </button>
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold shadow-sm">
+                        ${state.currentIndex + 1} / ${state.filteredData.length}
+                    </span>
+                </div>
+
+                <div onclick="toggleAnswer(event)" class="bg-white min-h-[350px] rounded-3xl shadow-lg p-6 md:p-10 flex flex-col justify-center items-center cursor-pointer relative border border-slate-100 hover:border-blue-200 transition-colors">
+                    ${cardContent}
+                </div>
+
+                <div class="flex justify-between items-center mt-8">
+                    <button onclick="prevCard()" class="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 font-bold transition shadow-sm w-28">
+                        <i class="fa-solid fa-chevron-left mr-1"></i> Trước
+                    </button>
+                    <button onclick="nextCard()" class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold transition shadow-md w-28">
+                        Tiếp <i class="fa-solid fa-chevron-right ml-1"></i>
+                    </button>
+                </div>
+            </div>`;
+        }
+
+        function renderJlptMode() {
+            const currentCard = state.filteredData[state.currentIndex];
+            
+            let selectedHTML = state.selectedParts.map(part => 
+                `<span onclick="handleSelectPart('${part}')" class="bg-orange-100 text-orange-800 px-4 py-2 rounded-lg font-medium cursor-pointer hover:bg-orange-200 transition shadow-sm">${part}</span>`
+            ).join('');
+            
+            if (state.selectedParts.length === 0) {
+                selectedHTML = `<span class="text-slate-400 italic py-2">Chạm vào các từ bên dưới để ghép câu...</span>`;
+            }
+
+            let shuffledHTML = state.shuffledParts.map(part => {
+                const isSelected = state.selectedParts.includes(part);
+                const baseClass = "px-4 py-2 rounded-lg border-2 font-bold transition";
+                const stateClass = isSelected 
+                    ? "bg-slate-50 border-slate-200 text-slate-300 cursor-not-allowed opacity-50" 
+                    : "bg-white border-orange-200 text-slate-700 hover:border-orange-500 hover:text-orange-600 shadow-sm";
+                
+                return `<button onclick="handleSelectPart('${part}')" ${isSelected ? 'disabled' : ''} class="${baseClass} ${stateClass}">${part}</button>`;
+            }).join('');
+
+            let resultHTML = '';
+            if (state.jlptResult === null) {
+                const isComplete = state.selectedParts.length === state.shuffledParts.length;
+                resultHTML = `
+                <button onclick="checkJlptAnswer()" ${!isComplete ? 'disabled' : ''} class="px-8 py-4 rounded-xl font-bold text-white transition w-full md:w-auto text-lg ${!isComplete ? 'bg-slate-300 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600 shadow-lg hover:-translate-y-1'}">
+                    Kiểm tra đáp án
+                </button>`;
+            } else {
+                if (state.jlptResult) {
+                    resultHTML = `
+                    <div class="w-full p-6 rounded-2xl flex flex-col items-center gap-5 animate-fade-in bg-blue-50 border border-blue-200">
+                        <div class="flex items-center gap-3 text-xl">
+                            <i class="fa-solid fa-circle-check text-blue-500 text-2xl"></i>
+                            <span class="font-extrabold text-blue-700">Chính xác! Tâm bạn đang rất tĩnh.</span>
+                        </div>
+                        <div class="flex flex-wrap justify-center gap-4">
+                            <button onclick="speakText('${currentCard.exampleJP}')" class="px-5 py-2.5 bg-indigo-500 text-white rounded-xl flex items-center gap-2 hover:bg-indigo-600 shadow-md font-bold transition">
+                                <i class="fa-solid fa-headphones"></i> Luyện đọc theo
+                            </button>
+                            <button onclick="nextCard()" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl flex items-center gap-2 hover:bg-blue-700 shadow-md font-bold transition">
+                                Câu tiếp theo <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>`;
+                } else {
+                    resultHTML = `
+                    <div class="w-full p-6 rounded-2xl flex flex-col items-center gap-4 animate-fade-in bg-rose-50 border border-rose-200">
+                        <div class="flex items-center gap-2 text-lg">
+                            <i class="fa-solid fa-rotate-right text-rose-500"></i>
+                            <span class="font-bold text-rose-700">Chưa đúng rồi. Hãy thử tĩnh tâm lại nhé!</span>
+                        </div>
+                        <button onclick="resetJlpt()" class="px-6 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 font-bold transition shadow-sm">
+                            Xóa đi ghép lại
+                        </button>
+                    </div>`;
+                }
+            }
+
+            return `
+            <div class="max-w-2xl mx-auto w-full animate-fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <button onclick="setView('category_menu')" class="text-slate-500 hover:text-slate-800 font-medium transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> Chuyên đề
+                    </button>
+                    <span class="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-sm">
+                        <i class="fa-solid fa-star text-xs"></i> Luyện ghép câu (N4)
+                    </span>
+                </div>
+
+                <div class="bg-white rounded-3xl shadow-lg p-6 md:p-8 mb-6 border border-slate-100">
+                    <div class="mb-8 text-center">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Nghĩa tiếng Việt</p>
+                        <p class="text-xl md:text-2xl text-slate-800 font-bold bg-slate-50 inline-block px-6 py-3 rounded-2xl border border-slate-100">${currentCard.exampleVN}</p>
+                    </div>
+
+                    <div class="min-h-[80px] bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl mb-8 flex flex-wrap gap-2 items-center justify-center p-4">
+                        ${selectedHTML}
+                    </div>
+
+                    <div class="flex flex-wrap gap-3 justify-center mb-8">
+                        ${shuffledHTML}
+                    </div>
+
+                    <div class="flex flex-col items-center gap-4">
+                        ${resultHTML}
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center text-sm font-medium text-slate-500">
+                    <button onclick="prevCard()" class="hover:text-slate-800 transition">Câu trước</button>
+                    <span class="bg-slate-200 px-3 py-1 rounded-full text-slate-700">${state.currentIndex + 1} / ${state.filteredData.length}</span>
+                    <button onclick="nextCard()" class="hover:text-slate-800 transition">Bỏ qua</button>
+                </div>
+            </div>`;
+        }
+
+        render();
+    </script>
+</body>
+</html>
