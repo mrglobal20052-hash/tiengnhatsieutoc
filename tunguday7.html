@@ -82,9 +82,14 @@
         <!-- DESKTOP SIDEBAR -->
         <aside class="hidden md:flex w-72 bg-white border-r border-gray-200 flex-col z-10">
             <div class="p-4 border-b border-gray-100 bg-gray-50">
-                <div class="relative">
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                    <input type="text" id="searchInput" placeholder="Tìm kiếm từ..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm outline-none">
+                <div class="flex gap-2">
+                    <div class="relative flex-1">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="searchInput" placeholder="Tìm kiếm từ..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm outline-none">
+                    </div>
+                    <button id="btnFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50" title="Chỉ hiện từ khó">
+                        <i class="fas fa-star"></i>
+                    </button>
                 </div>
             </div>
             <div id="vocabList" class="flex-1 scroller p-2 space-y-1"></div>
@@ -199,7 +204,7 @@
         </div>
     </div>
 
-    <!-- SỬA LỖI 1: THÊM MOBILE DRAWER (MENU TRƯỢT TỪ BÊN TRÁI) CHO MOBILE -->
+    <!-- MOBILE DRAWER -->
     <div id="mobileDrawer" class="fixed inset-0 z-50 pointer-events-none md:hidden">
         <div id="drawerBackdrop" class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="toggleDrawer()"></div>
         <div id="drawerContent" class="absolute top-0 left-0 bottom-0 w-[85%] max-w-sm bg-white shadow-2xl transform -translate-x-full transition-transform duration-300 flex flex-col">
@@ -208,9 +213,14 @@
                 <button onclick="toggleDrawer()" class="w-8 h-8 rounded-full bg-white text-gray-500 hover:bg-gray-100 flex items-center justify-center shadow-sm transition"><i class="fas fa-times"></i></button>
             </div>
             <div class="p-3 border-b border-gray-100 bg-gray-50">
-                <div class="relative">
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                    <input type="text" id="mobileSearchInput" placeholder="Tìm kiếm từ..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm outline-none">
+                <div class="flex gap-2">
+                    <div class="relative flex-1">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="mobileSearchInput" placeholder="Tìm kiếm từ..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm outline-none">
+                    </div>
+                    <button id="btnMobileFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50" title="Chỉ hiện từ khó">
+                        <i class="fas fa-star"></i>
+                    </button>
                 </div>
             </div>
             <div id="mobileVocabList" class="flex-1 overflow-y-auto scroller p-2 space-y-1 bg-white pb-24"></div>
@@ -328,7 +338,6 @@
 
     <script>
         // --- 1. GRAMMAR REPO (N5 - N3) --- 
-        // SỬA LỖI 2: Đã thêm các trường còn thiếu mà bạn gắn trong gIds của vocabData
         const grammarRepo = {
             "te_oku": { title: "Làm sẵn", formula: "Vておく", desc: "N4: Làm gì đó để chuẩn bị cho tương lai.", ex: "旅行の前にホテルを予約しておきます。" },
             "te_aru": { title: "Có sẵn (Trạng thái)", formula: "Vてある", desc: "N4: Trạng thái kết quả của một hành động có chủ ý.", ex: "カレンダーに予定が書いてあります。" },
@@ -361,8 +370,6 @@
             "te_morau": { title: "Được làm cho", formula: "Vてもらう", desc: "N4: Được ai đó làm gì cho mình (biết ơn).", ex: "教えてもらった。" },
             "ba_yokatta": { title: "Giá mà...", formula: "Vば + よかった", desc: "N3: Hối tiếc về việc đã không làm.", ex: "もっと勉強すればよかった。" },
             "dake": { title: "Chỉ", formula: "N + だけ", desc: "N5: Giới hạn phạm vi (chỉ có cái này).", ex: "これだけです。" },
-            
-            // --- CÁC NGỮ PHÁP BỔ SUNG ĐỂ SỬA LỖI ---
             "koto_ga_aru": { title: "Đã từng", formula: "Vた + ことがある", desc: "N5: Biểu đạt kinh nghiệm trong quá khứ.", ex: "日本へ行ったことがあります。" },
             "tai": { title: "Muốn làm gì", formula: "V(bỏ masu) + たい", desc: "N5: Biểu thị mong muốn của người nói.", ex: "お茶を飲みたいです。" },
             "ga_aru": { title: "Có (Sự việc/Đồ vật)", formula: "N + がある", desc: "N5: Tồn tại đồ vật, hoặc có sự kiện, dự định.", ex: "明日、テストがあります。" },
@@ -570,7 +577,8 @@
         let score = 0; 
         let currentStrokeSvg = null;
         let strokeCache = {}; // Cache cho nét viết
-        let bookmarkedWords = JSON.parse(localStorage.getItem('azakanji_bookmarks')) || []; // Lưu trữ từ khó vào máy
+        let bookmarkedWords = JSON.parse(localStorage.getItem('azakanji_bookmarks_day7')) || []; // Đã đổi key cho Day 7
+        let filterBookmarked = false; // Trạng thái lọc từ khó
 
         function init() {
             renderList();
@@ -578,25 +586,61 @@
             loadWord(0);
             
             const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', e => { 
-                    const t = e.target.value.toLowerCase(); 
-                    document.querySelectorAll('.vocab-item').forEach(el => el.style.display = el.innerText.toLowerCase().includes(t) ? 'block' : 'none'); 
-                });
-            }
+            if (searchInput) searchInput.addEventListener('input', applyFilters);
 
             const mobileSearchInput = document.getElementById('mobileSearchInput');
-            if (mobileSearchInput) {
-                mobileSearchInput.addEventListener('input', e => { 
-                    const t = e.target.value.toLowerCase(); 
-                    document.querySelectorAll('.vocab-item').forEach(el => el.style.display = el.innerText.toLowerCase().includes(t) ? 'block' : 'none'); 
-                });
-            }
+            if (mobileSearchInput) mobileSearchInput.addEventListener('input', applyFilters);
 
             const quizInput = document.getElementById('quiz-input');
             if (quizInput) {
                 quizInput.addEventListener('keypress', e => { if(e.key === 'Enter') checkAnswer(); });
             }
+        }
+
+        // Hàm bật/tắt bộ lọc từ khó
+        function toggleBookmarkFilter() {
+            filterBookmarked = !filterBookmarked;
+            
+            const btn1 = document.getElementById('btnFilterStar');
+            const btn2 = document.getElementById('btnMobileFilterStar');
+            
+            // Đổi màu nút khi được bật/tắt
+            const activeClass = "w-10 h-10 rounded-xl border border-yellow-300 bg-yellow-50 text-yellow-500 flex items-center justify-center shadow-sm transition-colors";
+            const inactiveClass = "w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50";
+            
+            if (btn1) btn1.className = filterBookmarked ? activeClass : inactiveClass;
+            if (btn2) btn2.className = filterBookmarked ? activeClass : inactiveClass;
+            
+            applyFilters();
+        }
+
+        // Hàm áp dụng cả tìm kiếm text và lọc Bookmark
+        function applyFilters() {
+            // Đồng bộ text giữa mobile và desktop search bar
+            const inputD = document.getElementById('searchInput');
+            const inputM = document.getElementById('mobileSearchInput');
+            let activeTerm = '';
+
+            if (inputD && document.activeElement === inputD) {
+                activeTerm = inputD.value.toLowerCase();
+                if (inputM) inputM.value = inputD.value;
+            } else if (inputM && document.activeElement === inputM) {
+                activeTerm = inputM.value.toLowerCase();
+                if (inputD) inputD.value = inputM.value;
+            } else {
+                activeTerm = (inputD?.value || inputM?.value || '').toLowerCase();
+            }
+
+            // Quét danh sách
+            document.querySelectorAll('.vocab-item').forEach(el => {
+                const idx = parseInt(el.getAttribute('data-index'));
+                const word = vocabData[idx];
+                
+                const textMatch = el.innerText.toLowerCase().includes(activeTerm);
+                const bookmarkMatch = !filterBookmarked || bookmarkedWords.includes(word.STT);
+                
+                el.style.display = (textMatch && bookmarkMatch) ? 'block' : 'none';
+            });
         }
 
         function switchTab(tab) {
@@ -792,6 +836,8 @@
                 
                 const fmt = s => s.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-gray-900">$1</span>');
                 document.getElementById('detailTipImg').innerHTML = fmt(d.tipImg || ''); 
+                
+                // Hiển thị phần mẹo nhớ âm thanh dựa vào template cải tiến
                 document.getElementById('detailTipSoundOn').innerHTML = fmt(d.tipSoundOn || ''); 
                 document.getElementById('detailTipSoundKun').innerHTML = fmt(d.tipSoundKun || '');
                 
@@ -929,13 +975,16 @@
             }
             
             // Lưu vào LocalStorage
-            localStorage.setItem('azakanji_bookmarks', JSON.stringify(bookmarkedWords));
+            localStorage.setItem('azakanji_bookmarks_day7', JSON.stringify(bookmarkedWords));
             
             // Cập nhật icon sao trên danh sách bên trái/drawer
             document.querySelectorAll(`.bookmark-icon-${word.STT}`).forEach(icon => {
                 if (idx > -1) icon.classList.add('hidden');
                 else icon.classList.remove('hidden');
             });
+
+            // Nếu đang bật chế độ lọc mà bỏ đánh dấu, cập nhật lại danh sách ngay lập tức
+            if (filterBookmarked) applyFilters();
         }
 
         // Bổ sung phím tắt điều hướng cho Thể Trí tập trung
