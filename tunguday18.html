@@ -37,6 +37,8 @@
         
         @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         .correct-anim { animation: pop 0.3s ease-in-out; }
+        
+        .bookmark-anim { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
         /* Stroke Order Styles */
         .stroke-grid-box { border: 1px solid #e5e7eb; background-color: white; position: relative; }
@@ -81,9 +83,14 @@
         <!-- DESKTOP SIDEBAR -->
         <aside class="hidden md:flex w-72 bg-white border-r border-gray-200 flex-col z-10">
             <div class="p-4 border-b border-gray-100 bg-gray-50">
-                <div class="relative">
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                    <input type="text" id="searchInput" placeholder="Tìm kiếm từ..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm outline-none">
+                <div class="flex gap-2">
+                    <div class="relative flex-1">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="searchInput" placeholder="Tìm kiếm từ..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm outline-none">
+                    </div>
+                    <button id="btnFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50" title="Chỉ hiện từ khó">
+                        <i class="fas fa-star"></i>
+                    </button>
                 </div>
             </div>
             <div id="vocabList" class="flex-1 scroller p-2 space-y-1"></div>
@@ -100,6 +107,10 @@
                             <span id="wordType" class="text-[10px] font-bold uppercase text-indigo-500">WORD</span>
                             <div class="w-px h-3 bg-gray-300"></div>
                             <span class="text-[10px] text-gray-400 font-mono" id="wordIndex">#1</span>
+                            <div class="w-px h-3 bg-gray-300"></div>
+                            <button id="btnBookmark" onclick="toggleBookmark()" class="text-gray-300 hover:text-yellow-400 transition-colors" title="Đánh dấu từ khó (Phím B)">
+                                <i class="fas fa-star text-xs"></i>
+                            </button>
                         </div>
                         <div class="relative inline-block mb-2">
                             <h2 id="cardKanji" class="text-5xl md:text-6xl font-bold text-gray-800 ja-text tracking-tight cursor-pointer hover:text-indigo-700 transition-colors" onclick="speakCurrent()">凄い</h2>
@@ -194,6 +205,29 @@
         </div>
     </div>
 
+    <!-- MOBILE DRAWER -->
+    <div id="mobileDrawer" class="fixed inset-0 z-50 pointer-events-none md:hidden">
+        <div id="drawerBackdrop" class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="toggleDrawer()"></div>
+        <div id="drawerContent" class="absolute top-0 left-0 bottom-0 w-[85%] max-w-sm bg-white shadow-2xl transform -translate-x-full transition-transform duration-300 flex flex-col">
+            <div class="p-4 border-b border-gray-100 bg-indigo-50 flex justify-between items-center">
+                <h2 class="font-bold text-indigo-800"><i class="fas fa-list-ul mr-2"></i> Danh Sách Từ</h2>
+                <button onclick="toggleDrawer()" class="w-8 h-8 rounded-full bg-white text-gray-500 hover:bg-gray-100 flex items-center justify-center shadow-sm transition"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-3 border-b border-gray-100 bg-gray-50">
+                <div class="flex gap-2">
+                    <div class="relative flex-1">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="mobileSearchInput" placeholder="Tìm kiếm từ..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm outline-none">
+                    </div>
+                    <button id="btnMobileFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50" title="Chỉ hiện từ khó">
+                        <i class="fas fa-star"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="mobileVocabList" class="flex-1 overflow-y-auto scroller p-2 space-y-1 bg-white pb-24"></div>
+        </div>
+    </div>
+
     <!-- MODAL: GRAMMAR LIST -->
     <div id="grammarListModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center px-4">
         <div class="absolute inset-0 bg-gray-900/70 backdrop-blur-sm transition-opacity opacity-0" id="grammarListBackdrop" onclick="closeModal('grammarListModal')"></div>
@@ -203,7 +237,7 @@
                     <div class="bg-indigo-600 text-white p-2 rounded-lg shadow-sm"><i class="fas fa-book"></i></div>
                     <div>
                         <h3 class="text-xl font-bold text-gray-800">Cẩm Nang Ngữ Pháp</h3>
-                        <p class="text-xs text-gray-500">Thư viện ngữ pháp Day 18 (N4 - N3)</p>
+                        <p class="text-xs text-gray-500">Thư viện ngữ pháp Day 18 (N5 - N4)</p>
                     </div>
                 </div>
                 <button onclick="closeModal('grammarListModal')" class="w-8 h-8 rounded-full hover:bg-white flex items-center justify-center text-gray-500 transition-colors"><i class="fas fa-times text-xl"></i></button>
@@ -232,7 +266,7 @@
                 <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-center mb-4 shadow-sm">
                     <code class="text-lg font-bold text-indigo-700 font-mono" id="dgFormula"></code>
                 </div>
-                <div id="dgExplanation" class="text-gray-600 text-sm mb-4 space-y-3 leading-relaxed"></div>
+                <div id="dgExplanation" class="text-gray-600 text-sm mb-4 space-y-4 leading-relaxed"></div>
             </div>
         </div>
     </div>
@@ -284,7 +318,11 @@
                                 </div>
                                 <div class="bg-orange-50 p-4 rounded-lg border border-orange-100">
                                     <h4 class="text-sm font-bold text-orange-800 mb-2 flex items-center gap-2"><i class="fas fa-music"></i> Mẹo nhớ âm thanh</h4>
-                                    <p class="text-sm text-orange-700" id="detailTipSound"></p>
+                                    <div class="space-y-2">
+                                        <p id="tipSoundGeneric" class="text-sm text-orange-700 hidden"></p>
+                                        <p id="tipSoundOnWrapper" class="text-sm text-orange-700 flex items-start gap-2"><span class="font-bold text-[10px] bg-orange-200 px-1.5 py-0.5 rounded text-orange-800 min-w-[30px] text-center mt-0.5">ON</span> <span id="detailTipSoundOn"></span></p>
+                                        <p id="tipSoundKunWrapper" class="text-sm text-orange-700 flex items-start gap-2"><span class="font-bold text-[10px] bg-pink-200 px-1.5 py-0.5 rounded text-pink-800 min-w-[30px] text-center mt-0.5">KUN</span> <span id="detailTipSoundKun"></span></p>
+                                    </div>
                                 </div>
                             </div>
                             <!-- Related Words -->
@@ -301,7 +339,7 @@
     </div>
 
     <script>
-        // --- 1. GRAMMAR REPO (N4 - N3) ---
+        // --- 1. GRAMMAR REPO (N5 - N4) ---
         const grammarRepo = {
             "sou_da_hearsay": { title: "Nghe nói là (Truyền đạt)", formula: "Thể thường + そうだ", desc: "N4: Truyền đạt lại thông tin nghe được từ người khác hoặc nguồn tin (dự báo thời tiết, tin tức...).", ex: "明日は雨が降るそうです。" },
             "no_ni": { title: "Thế mà/Vậy mà (Đối lập)", formula: "V/A/N(na) + のに", desc: "N4: Diễn tả sự ngạc nhiên, bất mãn khi kết quả trái ngược với mong đợi.", ex: "約束したのに、来ませんでした。" },
@@ -321,7 +359,10 @@
             "te_mo_ii": { title: "Làm...được không", formula: "Vてもいい", desc: "N5/N4: Xin phép.", ex: "入ってもいいですか。" },
             "koto_ga_aru": { title: "Đã từng", formula: "Vた + ことがある", desc: "N4: Kinh nghiệm.", ex: "見たことがあります。" },
             "ndesu": { title: "Giải thích", formula: "V/Adj + んです", desc: "N4: Giải thích lý do.", ex: "頭が痛いんです。" },
-            "na_adj": { title: "Tính từ đuôi Na", formula: "Adj + な", desc: "N5: Bổ nghĩa cho danh từ.", ex: "静かな町。" }
+            "na_adj": { title: "Tính từ đuôi Na", formula: "Adj + な", desc: "N5: Bổ nghĩa cho danh từ.", ex: "静かな町。" },
+            "to_omou": { title: "Nghĩ rằng", formula: "～と思います", desc: "N4: Suy nghĩ cá nhân.", ex: "いいと思います。" },
+            "ka_embedded": { title: "Câu hỏi lồng", formula: "Từ để hỏi + V/Adj/N + か", desc: "N4: Lồng câu hỏi vào câu khác.", ex: "どこに行くか、わかりません。" },
+            "te_wa_ikemasen": { title: "Cấm đoán", formula: "Vてはいけません", desc: "N5: Không được phép làm gì.", ex: "ここで写真を撮ってはいけません。" }
         };
 
         // --- 2. VOCABULARY DATA (Day 18) ---
@@ -335,82 +376,82 @@
             { "STT": 7, "Kanji": "特別(な)", "Nghĩa": "Đặc biệt", "Furigana": "とくべつ(な)", "type": "adj_na", "conv": { "polite": "今日は特別な日だそうです。", "pVi": "Nghe nói hôm nay là một ngày đặc biệt.", "casual": "今日、特別な日だそうだ。", "cVi": "Nghe bảo nay ngày đặc biệt.", "gIds": ["sou_da_hearsay"] } },
             { "STT": 8, "Kanji": "完全(な)", "Nghĩa": "Hoàn toàn", "Furigana": "かんぜん(な)", "type": "adj_na", "conv": { "polite": "この計画は完全だそうです。", "pVi": "Nghe nói kế hoạch này hoàn hảo.", "casual": "この計画、完全だそうだ。", "cVi": "Nghe bảo kế hoạch này hoàn hảo.", "gIds": ["sou_da_hearsay"] } },
             { "STT": 9, "Kanji": "盛ん(な)", "Nghĩa": "Thịnh vượng", "Furigana": "さかん(な)", "type": "adj_na", "conv": { "polite": "この町は昔は盛んだったそうです。", "pVi": "Nghe nói thị trấn này ngày xưa rất thịnh vượng.", "casual": "この町、昔は盛んだったそうだ。", "cVi": "Nghe bảo thị trấn này xưa giàu lắm.", "gIds": ["sou_da_hearsay"] } },
-            { "STT": 10, "Kanji": "様々(な)", "Nghĩa": "Nhiều loại", "Furigana": "さまざま(な)", "type": "adj_na", "conv": { "polite": "様々な種類の花が咲いているそうです。", "pVi": "Nghe nói có nhiều loại hoa đang nở.", "casual": "様々な種類の花が咲いてるそうだ。", "cVi": "Nghe bảo nhiều loại hoa nở lắm.", "gIds": ["sou_da_hearsay"] } },
+            { "STT": 10, "Kanji": "様々(な)", "Nghĩa": "Nhiều loại", "Furigana": "さまざま(な)", "type": "adj_na", "conv": { "polite": "様々な種類の花が咲いているそうです。", "pVi": "Nghe nói có nhiều loại hoa đang nở.", "casual": "様々な種類の花が咲いてるそうだ。", "cVi": "Nghe bảo nhiều loại hoa nở lắm.", "gIds": ["sou_da_hearsay", "te_iru"] } },
             { "STT": 11, "Kanji": "可能(な)", "Nghĩa": "Khả thi", "Furigana": "かのう(な)", "type": "adj_na", "conv": { "polite": "それは可能なはずです。", "pVi": "Điều đó chắc chắn là có thể.", "casual": "それ、可能なはずだ。", "cVi": "Cái đó chắc chắn làm được.", "gIds": ["hazu"] } },
             { "STT": 12, "Kanji": "不可能(な)", "Nghĩa": "Không khả thi", "Furigana": "ふかのう(な)", "type": "adj_na", "conv": { "polite": "それは不可能なはずです。", "pVi": "Điều đó chắc chắn là không thể.", "casual": "それ、不可能なはずだ。", "cVi": "Cái đó chắc chắn không được đâu.", "gIds": ["hazu"] } },
-            { "STT": 13, "Kanji": "基本的(な)", "Nghĩa": "Cơ bản", "Furigana": "きほんてき(な)", "type": "adj_na", "conv": { "polite": "基本的な文法はもう習ったはずです。", "pVi": "Ngữ pháp cơ bản chắc chắn đã học rồi.", "casual": "基本的な文法、もう習ったはずだ。", "cVi": "Ngữ pháp cơ bản chắc học rồi chứ.", "gIds": ["hazu"] } },
-            { "STT": 14, "Kanji": "国際的(な)", "Nghĩa": "Quốc tế", "Furigana": "こくさいてき(な)", "type": "adj_na", "conv": { "polite": "彼は国際的な仕事をしているそうです。", "pVi": "Nghe nói anh ấy đang làm công việc quốc tế.", "casual": "彼、国際的な仕事してるそうだ。", "cVi": "Nghe bảo hắn làm việc quốc tế.", "gIds": ["sou_da_hearsay"] } },
-            { "STT": 15, "Kanji": "", "Nghĩa": "Bừa bộn", "Furigana": "ばらばら(な)", "type": "adj_na", "conv": { "polite": "部屋がばらばらなのに、掃除しませんか。", "pVi": "Phòng bừa bộn vậy mà không dọn dẹp à?", "casual": "部屋ばらばらなのに、掃除しない？", "cVi": "Phòng bừa thế mà không dọn à?", "gIds": ["no_ni"] } },
-            { "STT": 16, "Kanji": "", "Nghĩa": "Rách nát", "Furigana": "ぼろぼろ(な)", "type": "adj_na", "conv": { "polite": "ぼろぼろの服を着て、出かけますか。", "pVi": "Bạn mặc quần áo rách nát rồi ra ngoài à?", "casual": "ぼろぼろの服着て出かける？", "cVi": "Mặc đồ rách thế mà cũng đi à?", "gIds": [] } },
+            { "STT": 13, "Kanji": "基本的(な)", "Nghĩa": "Cơ bản", "Furigana": "きほんてき(な)", "type": "adj_na", "conv": { "polite": "基本的な文法はもう習ったはずです。", "pVi": "Ngữ pháp cơ bản chắc chắn đã học rồi.", "casual": "基本的な文法、もう習ったはずだ。", "cVi": "Ngữ pháp cơ bản chắc học rồi chứ.", "gIds": ["hazu", "ta_form"] } },
+            { "STT": 14, "Kanji": "国際的(な)", "Nghĩa": "Quốc tế", "Furigana": "こくさいてき(な)", "type": "adj_na", "conv": { "polite": "彼は国際的な仕事をしているそうです。", "pVi": "Nghe nói anh ấy đang làm công việc quốc tế.", "casual": "彼、国際的な仕事してるそうだ。", "cVi": "Nghe bảo hắn làm việc quốc tế.", "gIds": ["sou_da_hearsay", "te_iru"] } },
+            { "STT": 15, "Kanji": "", "Nghĩa": "Bừa bộn", "Furigana": "ばらばら(な)", "type": "adj_na", "conv": { "polite": "部屋がばらばらなのに、掃除しませんか。", "pVi": "Phòng bừa bộn vậy mà không dọn dẹp à?", "casual": "部屋ばらばらなのに、掃除しない？", "cVi": "Phòng bừa thế mà không dọn à?", "gIds": ["no_ni", "mashou"] } },
+            { "STT": 16, "Kanji": "", "Nghĩa": "Rách nát", "Furigana": "ぼろぼろ(な)", "type": "adj_na", "conv": { "polite": "ぼろぼろの服を着て、出かけますか。", "pVi": "Bạn mặc quần áo rách nát rồi ra ngoài à?", "casual": "ぼろぼろの服着て出かける？", "cVi": "Mặc đồ rách thế mà cũng đi à?", "gIds": ["te_iru"] } },
             { "STT": 17, "Kanji": "読書", "Nghĩa": "Đọc sách", "Furigana": "どくしょ", "type": "noun", "conv": { "polite": "読書は楽しいはずです。", "pVi": "Đọc sách chắc chắn là vui.", "casual": "読書、楽しいはずだ。", "cVi": "Đọc sách chắc vui mà.", "gIds": ["hazu"] } },
             { "STT": 18, "Kanji": "演奏", "Nghĩa": "Biểu diễn", "Furigana": "えんそう", "type": "noun", "conv": { "polite": "彼の演奏は素晴らしいそうです。", "pVi": "Nghe nói màn trình diễn của anh ấy rất tuyệt vời.", "casual": "彼の演奏、素晴らしいそうだ。", "cVi": "Nghe bảo hắn diễn hay lắm.", "gIds": ["sou_da_hearsay"] } },
             { "STT": 19, "Kanji": "芸術", "Nghĩa": "Nghệ thuật", "Furigana": "げいじゅつ", "type": "noun", "conv": { "polite": "芸術を学ぶのは難しいです。", "pVi": "Việc học nghệ thuật rất khó.", "casual": "芸術学ぶの難しい。", "cVi": "Học nghệ thuật khó phết.", "gIds": [] } },
-            { "STT": 20, "Kanji": "検査する", "Nghĩa": "Kiểm tra", "Furigana": "けんさする", "type": "verb", "conv": { "polite": "健康診断はもう終わったはずです。", "pVi": "Khám sức khỏe chắc chắn đã xong rồi.", "casual": "健康診断、もう終わったはずだ。", "cVi": "Khám sức khỏe chắc xong rồi.", "gIds": ["hazu"] } },
+            { "STT": 20, "Kanji": "検査する", "Nghĩa": "Kiểm tra", "Furigana": "けんさする", "type": "verb", "conv": { "polite": "健康診断はもう終わったはずです。", "pVi": "Khám sức khỏe chắc chắn đã xong rồi.", "casual": "健康診断、もう終わったはずだ。", "cVi": "Khám sức khỏe chắc xong rồi.", "gIds": ["hazu", "ta_form"] } },
             { "STT": 21, "Kanji": "胃", "Nghĩa": "Dạ dày", "Furigana": "い", "type": "noun", "conv": { "polite": "胃が痛いのに、ご飯を食べますか。", "pVi": "Dạ dày đau vậy mà bạn vẫn ăn cơm à?", "casual": "胃が痛いのに、ご飯食べる？", "cVi": "Đau dạ dày mà vẫn ăn à?", "gIds": ["no_ni"] } },
             { "STT": 22, "Kanji": "血液", "Nghĩa": "Máu", "Furigana": "けつえき", "type": "noun", "conv": { "polite": "血液型は何ですか。", "pVi": "Nhóm máu của bạn là gì?", "casual": "血液型は何？", "cVi": "Nhóm máu gì thế?", "gIds": ["wa_desu"] } },
             { "STT": 23, "Kanji": "治療する", "Nghĩa": "Trị liệu", "Furigana": "ちりょうする", "type": "verb", "conv": { "polite": "病気を治療するために、病院へ行ってきます。", "pVi": "Để điều trị bệnh, tôi sẽ đi bệnh viện rồi về.", "casual": "病気治療するため、病院行ってくる。", "cVi": "Đi viện chữa bệnh cái đã.", "gIds": ["tame_ni", "te_kimasu"] } },
             { "STT": 24, "Kanji": "症状", "Nghĩa": "Triệu chứng", "Furigana": "しょうじょう", "type": "noun", "conv": { "polite": "どんな症状が出ましたか。", "pVi": "Bạn đã có triệu chứng gì?", "casual": "どんな症状出た？", "cVi": "Có triệu chứng gì không?", "gIds": ["ta_form"] } },
-            { "STT": 25, "Kanji": "鼻水", "Nghĩa": "Nước mũi", "Furigana": "はなみず", "type": "noun", "conv": { "polite": "鼻水が出ているのに、学校へ行きますか。", "pVi": "Chảy nước mũi vậy mà bạn vẫn đi học à?", "casual": "鼻水出てるのに、学校行く？", "cVi": "Sổ mũi mà vẫn đi học à?", "gIds": ["no_ni"] } },
+            { "STT": 25, "Kanji": "鼻水", "Nghĩa": "Nước mũi", "Furigana": "はなみず", "type": "noun", "conv": { "polite": "鼻水が出ているのに、学校へ行きますか。", "pVi": "Chảy nước mũi vậy mà bạn vẫn đi học à?", "casual": "鼻水出てるのに、学校行く？", "cVi": "Sổ mũi mà vẫn đi học à?", "gIds": ["no_ni", "te_iru"] } },
             { "STT": 26, "Kanji": "予防する", "Nghĩa": "Dự phòng", "Furigana": "よぼうする", "type": "verb", "conv": { "polite": "風邪を予防するために、マスクをします。", "pVi": "Để phòng cúm, tôi sẽ đeo khẩu trang.", "casual": "風邪予防するため、マスクする。", "cVi": "Đeo khẩu trang phòng cúm.", "gIds": ["tame_ni"] } },
-            { "STT": 27, "Kanji": "栄養", "Nghĩa": "Dinh dưỡng", "Furigana": "えいよう", "type": "noun", "conv": { "polite": "栄養があるものを食べたばかりです。", "pVi": "Tôi vừa mới ăn đồ bổ dưỡng.", "casual": "栄養あるもの食べたばっかだ。", "cVi": "Vừa ăn đồ bổ xong.", "gIds": ["bakari"] } },
-            { "STT": 28, "Kanji": "手術", "Nghĩa": "Phẫu thuật", "Furigana": "しゅじゅつ", "type": "noun", "conv": { "polite": "手術はもう終わったはずです。", "pVi": "Ca phẫu thuật chắc chắn đã xong rồi.", "casual": "手術、もう終わったはずだ。", "cVi": "Mổ chắc xong rồi.", "gIds": ["hazu"] } },
-            { "STT": 29, "Kanji": "死亡する", "Nghĩa": "Tử vong", "Furigana": "しぼうする", "type": "verb", "conv": { "polite": "事故で死亡したそうです。", "pVi": "Nghe nói anh ấy đã tử vong do tai nạn.", "casual": "事故で死亡したそうだ。", "cVi": "Nghe bảo mất vì tai nạn.", "gIds": ["sou_da_hearsay"] } },
+            { "STT": 27, "Kanji": "栄養", "Nghĩa": "Dinh dưỡng", "Furigana": "えいよう", "type": "noun", "conv": { "polite": "栄養があるものを食べたばかりです。", "pVi": "Tôi vừa mới ăn đồ bổ dưỡng.", "casual": "栄養あるもの食べたばっかだ。", "cVi": "Vừa ăn đồ bổ xong.", "gIds": ["bakari", "ta_form"] } },
+            { "STT": 28, "Kanji": "手術", "Nghĩa": "Phẫu thuật", "Furigana": "しゅじゅつ", "type": "noun", "conv": { "polite": "手術はもう終わったはずです。", "pVi": "Ca phẫu thuật chắc chắn đã xong rồi.", "casual": "手術、もう終わったはずだ。", "cVi": "Mổ chắc xong rồi.", "gIds": ["hazu", "ta_form"] } },
+            { "STT": 29, "Kanji": "死亡する", "Nghĩa": "Tử vong", "Furigana": "しぼうする", "type": "verb", "conv": { "polite": "事故で死亡したそうです。", "pVi": "Nghe nói anh ấy đã tử vong do tai nạn.", "casual": "事故で死亡したそうだ。", "cVi": "Nghe bảo mất vì tai nạn.", "gIds": ["sou_da_hearsay", "ta_form"] } },
             { "STT": 30, "Kanji": "命", "Nghĩa": "Sinh mệnh", "Furigana": "いのち", "type": "noun", "conv": { "polite": "命は大切だそうです。", "pVi": "Nghe nói cuộc sống rất quý giá.", "casual": "命は大切だそうだ。", "cVi": "Mạng sống quan trọng lắm đấy.", "gIds": ["sou_da_hearsay"] } },
-            { "STT": 31, "Kanji": "一生", "Nghĩa": "Một đời", "Furigana": "いっしょう", "type": "noun", "conv": { "polite": "一生懸命勉強したばかりです。", "pVi": "Tôi vừa mới học chăm chỉ.", "casual": "一生懸命勉強したばっかだ。", "cVi": "Vừa mới học hộc mặt ra.", "gIds": ["bakari"] } },
-            { "STT": 32, "Kanji": "誤解する", "Nghĩa": "Hiểu lầm", "Furigana": "ごかいする", "type": "verb", "conv": { "polite": "誤解したばかりです。", "pVi": "Tôi vừa mới hiểu nhầm.", "casual": "誤解したばっかだ。", "cVi": "Vừa hiểu nhầm xong.", "gIds": ["bakari"] } },
-            { "STT": 33, "Kanji": "後悔", "Nghĩa": "Hối hận", "Furigana": "こうかい", "type": "noun", "conv": { "polite": "後悔したくないのに、失敗してしまいました。", "pVi": "Tôi không muốn hối hận vậy mà lại thất bại mất rồi.", "casual": "後悔したくないのに、失敗しちゃった。", "cVi": "Không muốn hối hận mà lại fail rồi.", "gIds": ["no_ni"] } },
-            { "STT": 34, "Kanji": "訳", "Nghĩa": "Lý do", "Furigana": "わけ", "type": "noun", "conv": { "polite": "どうして休むのか、訳を教えてください。", "pVi": "Vui lòng cho tôi biết lý do tại sao bạn nghỉ.", "casual": "なんで休むのか、訳教えて。", "cVi": "Sao nghỉ thế, nói lý do xem nào.", "gIds": ["te_kudasai"] } },
+            { "STT": 31, "Kanji": "一生", "Nghĩa": "Một đời", "Furigana": "いっしょう", "type": "noun", "conv": { "polite": "一生懸命勉強したばかりです。", "pVi": "Tôi vừa mới học chăm chỉ.", "casual": "一生懸命勉強したばっかだ。", "cVi": "Vừa mới học hộc mặt ra.", "gIds": ["bakari", "ta_form"] } },
+            { "STT": 32, "Kanji": "誤解する", "Nghĩa": "Hiểu lầm", "Furigana": "ごかいする", "type": "verb", "conv": { "polite": "誤解したばかりです。", "pVi": "Tôi vừa mới hiểu nhầm.", "casual": "誤解したばっかだ。", "cVi": "Vừa hiểu nhầm xong.", "gIds": ["bakari", "ta_form"] } },
+            { "STT": 33, "Kanji": "後悔", "Nghĩa": "Hối hận", "Furigana": "こうかい", "type": "noun", "conv": { "polite": "後悔したくないのに、失敗してしまいました。", "pVi": "Tôi không muốn hối hận vậy mà lại thất bại mất rồi.", "casual": "後悔したくないのに、失敗しちゃった。", "cVi": "Không muốn hối hận mà lại fail rồi.", "gIds": ["no_ni", "tai"] } },
+            { "STT": 34, "Kanji": "訳", "Nghĩa": "Lý do", "Furigana": "わけ", "type": "noun", "conv": { "polite": "どうして休むのか、訳を教えてください。", "pVi": "Vui lòng cho tôi biết lý do tại sao bạn nghỉ.", "casual": "なんで休むのか、訳教えて。", "cVi": "Sao nghỉ thế, nói lý do xem nào.", "gIds": ["te_kudasai", "ka_embedded"] } },
             { "STT": 35, "Kanji": "態度", "Nghĩa": "Thái độ", "Furigana": "たいど", "type": "noun", "conv": { "polite": "彼の態度は悪いそうです。", "pVi": "Nghe nói thái độ của anh ấy tệ.", "casual": "彼の態度、悪いそうだ。", "cVi": "Nghe bảo thái độ lồi lõm lắm.", "gIds": ["sou_da_hearsay"] } },
             { "STT": 36, "Kanji": "癖", "Nghĩa": "Tật xấu", "Furigana": "くせ", "type": "noun", "conv": { "polite": "彼は変な癖があるそうです。", "pVi": "Nghe nói anh ấy có tật xấu lạ.", "casual": "彼、変な癖あるそうだ。", "cVi": "Nghe bảo hắn có tật lạ lắm.", "gIds": ["sou_da_hearsay"] } },
             { "STT": 37, "Kanji": "礼儀", "Nghĩa": "Lễ nghi", "Furigana": "れいぎ", "type": "noun", "conv": { "polite": "日本の礼儀は難しいです。", "pVi": "Lễ nghi Nhật Bản khó.", "casual": "日本の礼儀、難しい。", "cVi": "Lễ nghi Nhật khó thật.", "gIds": ["wa_desu"] } },
-            { "STT": 38, "Kanji": "文句", "Nghĩa": "Phàn nàn", "Furigana": "もんく", "type": "noun", "conv": { "polite": "文句を言ったばかりです。", "pVi": "Tôi vừa mới than phiền.", "casual": "文句言ったばっかだ。", "cVi": "Vừa ca cẩm xong.", "gIds": ["bakari"] } },
+            { "STT": 38, "Kanji": "文句", "Nghĩa": "Phàn nàn", "Furigana": "もんく", "type": "noun", "conv": { "polite": "文句を言ったばかりです。", "pVi": "Tôi vừa mới than phiền.", "casual": "文句言ったばっかだ。", "cVi": "Vừa ca cẩm xong.", "gIds": ["bakari", "ta_form"] } },
             { "STT": 39, "Kanji": "表情", "Nghĩa": "Biểu cảm", "Furigana": "ひょうじょう", "type": "noun", "conv": { "polite": "彼女の表情は悲しそうです。", "pVi": "Biểu cảm của cô ấy trông có vẻ buồn.", "casual": "彼女の表情、悲しそう。", "cVi": "Mặt cổ trông buồn thế.", "gIds": ["sou_da_visual"] } },
             { "STT": 40, "Kanji": "表面", "Nghĩa": "Bề mặt", "Furigana": "ひょうめん", "type": "noun", "conv": { "polite": "表面は綺麗ですが、中は汚いそうです。", "pVi": "Bề ngoài thì sạch nhưng nghe nói bên trong bẩn.", "casual": "表面綺麗だけど、中汚いそうだ。", "cVi": "Ngoài đẹp mà nghe bảo trong bẩn lắm.", "gIds": ["sou_da_hearsay"] } },
             { "STT": 41, "Kanji": "禁煙する", "Nghĩa": "Cấm hút thuốc", "Furigana": "きんえんする", "type": "verb", "conv": { "polite": "ここは禁煙のはずです。", "pVi": "Chắc chắn ở đây cấm hút thuốc.", "casual": "ここ、禁煙のはずだ。", "cVi": "Chỗ này chắc chắn cấm hút thuốc.", "gIds": ["hazu"] } },
             { "STT": 42, "Kanji": "禁止する", "Nghĩa": "Cấm", "Furigana": "きんしする", "type": "verb", "conv": { "polite": "ここは駐車禁止のはずです。", "pVi": "Chắc chắn ở đây cấm đỗ xe.", "casual": "ここ、駐車禁止のはずだ。", "cVi": "Chỗ này cấm đỗ xe mà.", "gIds": ["hazu"] } },
-            { "STT": 43, "Kanji": "完成する", "Nghĩa": "Hoàn thành", "Furigana": "かんせいする", "type": "verb", "conv": { "polite": "レポートはもう完成したはずです。", "pVi": "Báo cáo chắc chắn đã hoàn thành rồi.", "casual": "レポート、もう完成したはずだ。", "cVi": "Báo cáo chắc xong rồi.", "gIds": ["hazu"] } },
-            { "STT": 44, "Kanji": "課題", "Nghĩa": "Bài tập/Chủ đề", "Furigana": "かだい", "type": "noun", "conv": { "polite": "難しい課題が出たばかりです。", "pVi": "Vừa mới có một chủ đề khó.", "casual": "難しい課題出たばっかだ。", "cVi": "Vừa ra bài khó xong.", "gIds": ["bakari"] } },
+            { "STT": 43, "Kanji": "完成する", "Nghĩa": "Hoàn thành", "Furigana": "かんせいする", "type": "verb", "conv": { "polite": "レポートはもう完成したはずです。", "pVi": "Báo cáo chắc chắn đã hoàn thành rồi.", "casual": "レポート、もう完成したはずだ。", "cVi": "Báo cáo chắc xong rồi.", "gIds": ["hazu", "ta_form"] } },
+            { "STT": 44, "Kanji": "課題", "Nghĩa": "Bài tập/Chủ đề", "Furigana": "かだい", "type": "noun", "conv": { "polite": "難しい課題が出たばかりです。", "pVi": "Vừa mới có một chủ đề khó.", "casual": "難しい課題出たばっかだ。", "cVi": "Vừa ra bài khó xong.", "gIds": ["bakari", "ta_form"] } },
             { "STT": 45, "Kanji": "例外", "Nghĩa": "Ngoại lệ", "Furigana": "れいがい", "type": "noun", "conv": { "polite": "それは例外だそうです。", "pVi": "Nghe nói đó là ngoại lệ.", "casual": "それ、例外だそうだ。", "cVi": "Nghe bảo cái đó ngoại lệ.", "gIds": ["sou_da_hearsay"] } },
             { "STT": 46, "Kanji": "基本", "Nghĩa": "Cơ bản", "Furigana": "きほん", "type": "noun", "conv": { "polite": "基本を学ぶのは大切です。", "pVi": "Việc học cơ bản là quan trọng.", "casual": "基本学ぶの大切だ。", "cVi": "Học cơ bản quan trọng lắm.", "gIds": [] } },
-            { "STT": 47, "Kanji": "記録する", "Nghĩa": "Ghi chép", "Furigana": "きろくする", "type": "verb", "conv": { "polite": "記録したばかりです。", "pVi": "Tôi vừa mới ghi lại.", "casual": "記録したばっかだ。", "cVi": "Vừa ghi lại xong.", "gIds": ["bakari"] } },
+            { "STT": 47, "Kanji": "記録する", "Nghĩa": "Ghi chép", "Furigana": "きろくする", "type": "verb", "conv": { "polite": "記録したばかりです。", "pVi": "Tôi vừa mới ghi lại.", "casual": "記録したばっかだ。", "cVi": "Vừa ghi lại xong.", "gIds": ["bakari", "ta_form"] } },
             { "STT": 48, "Kanji": "状態", "Nghĩa": "Trạng thái", "Furigana": "じょうたい", "type": "noun", "conv": { "polite": "彼の健康状態は悪いそうです。", "pVi": "Nghe nói tình trạng sức khỏe của anh ấy tệ.", "casual": "彼の健康状態、悪いそうだ。", "cVi": "Nghe bảo sức khỏe hắn tệ lắm.", "gIds": ["sou_da_hearsay"] } },
-            { "STT": 49, "Kanji": "出来事", "Nghĩa": "Sự việc", "Furigana": "できごと", "type": "noun", "conv": { "polite": "変な出来事があったばかりです。", "pVi": "Vừa mới có một việc lạ xảy ra.", "casual": "変な出来事あったばっかだ。", "cVi": "Vừa có biến xong.", "gIds": ["bakari"] } },
+            { "STT": 49, "Kanji": "出来事", "Nghĩa": "Sự việc", "Furigana": "できごと", "type": "noun", "conv": { "polite": "変な出来事があったばかりです。", "pVi": "Vừa mới có một việc lạ xảy ra.", "casual": "変な出来事あったばっかだ。", "cVi": "Vừa có biến xong.", "gIds": ["bakari", "ta_form"] } },
             { "STT": 50, "Kanji": "場面", "Nghĩa": "Bối cảnh", "Furigana": "ばめん", "type": "noun", "conv": { "polite": "どんな場面でも、落ち着いてください。", "pVi": "Dù trong bất kỳ tình huống nào, xin hãy bình tĩnh.", "casual": "どんな場面でも、落ち着いて。", "cVi": "Gặp cảnh nào cũng phải bình tĩnh.", "gIds": ["te_kudasai"] } },
-            { "STT": 51, "Kanji": "機会", "Nghĩa": "Cơ hội", "Furigana": "きかい", "type": "noun", "conv": { "polite": "チャンスは来たばかりです。", "pVi": "Cơ hội vừa mới đến.", "casual": "チャンス来たばっかだ。", "cVi": "Cơ hội vừa tới xong.", "gIds": ["bakari"] } },
+            { "STT": 51, "Kanji": "機会", "Nghĩa": "Cơ hội", "Furigana": "きかい", "type": "noun", "conv": { "polite": "チャンスは来たばかりです。", "pVi": "Cơ hội vừa mới đến.", "casual": "チャンス来たばっかだ。", "cVi": "Cơ hội vừa tới xong.", "gIds": ["bakari", "ta_form"] } },
             { "STT": 52, "Kanji": "距離", "Nghĩa": "Khoảng cách", "Furigana": "きょり", "type": "noun", "conv": { "polite": "距離が遠いのに、歩きますか。", "pVi": "Khoảng cách xa vậy mà bạn vẫn đi bộ à?", "casual": "距離遠いのに、歩く？", "cVi": "Xa thế mà vẫn đi bộ à?", "gIds": ["no_ni"] } },
-            { "STT": 53, "Kanji": "提案する", "Nghĩa": "Đề xuất", "Furigana": "ていあんする", "type": "verb", "conv": { "polite": "新しい提案をしたばかりです。", "pVi": "Tôi vừa mới đưa ra một đề xuất mới.", "casual": "新しい提案したばっかだ。", "cVi": "Vừa đề xuất cái mới xong.", "gIds": ["bakari"] } },
-            { "STT": 54, "Kanji": "やり取り", "Nghĩa": "Trao đổi", "Furigana": "やりとりする", "type": "verb", "conv": { "polite": "彼女とメールのやり取りをしたばかりです。", "pVi": "Tôi vừa mới trao đổi email với cô ấy.", "casual": "彼女とメールやり取りしたばっかだ。", "cVi": "Vừa mail với cổ xong.", "gIds": ["bakari"] } },
+            { "STT": 53, "Kanji": "提案する", "Nghĩa": "Đề xuất", "Furigana": "ていあんする", "type": "verb", "conv": { "polite": "新しい提案をしたばかりです。", "pVi": "Tôi vừa mới đưa ra một đề xuất mới.", "casual": "新しい提案したばっかだ。", "cVi": "Vừa đề xuất cái mới xong.", "gIds": ["bakari", "ta_form"] } },
+            { "STT": 54, "Kanji": "やり取り", "Nghĩa": "Trao đổi", "Furigana": "やりとりする", "type": "verb", "conv": { "polite": "彼女とメールのやり取りをしたばかりです。", "pVi": "Tôi vừa mới trao đổi email với cô ấy.", "casual": "彼女とメールやり取りしたばっかだ。", "cVi": "Vừa mail với cổ xong.", "gIds": ["bakari", "ta_form"] } },
             { "STT": 55, "Kanji": "知識", "Nghĩa": "Kiến thức", "Furigana": "ちしき", "type": "noun", "conv": { "polite": "知識は大切だそうです。", "pVi": "Nghe nói tri thức rất quan trọng.", "casual": "知識は大切だそうだ。", "cVi": "Nghe bảo kiến thức quan trọng lắm.", "gIds": ["sou_da_hearsay"] } },
             { "STT": 56, "Kanji": "実力", "Nghĩa": "Thực lực", "Furigana": "じつりょく", "type": "noun", "conv": { "polite": "彼は実力があるはずです。", "pVi": "Anh ấy chắc chắn có thực lực.", "casual": "彼、実力あるはずだ。", "cVi": "Hắn chắc chắn có thực lực.", "gIds": ["hazu"] } },
             { "STT": 57, "Kanji": "手段", "Nghĩa": "Phương pháp", "Furigana": "しゅだん", "type": "noun", "conv": { "polite": "どんな手段を使いますか。", "pVi": "Bạn dùng phương pháp nào?", "casual": "どんな手段使う？", "cVi": "Dùng cách nào?", "gIds": [] } },
             { "STT": 58, "Kanji": "代表する", "Nghĩa": "Đại diện", "Furigana": "だいひょうする", "type": "verb", "conv": { "polite": "彼は日本を代表する選手だそうです。", "pVi": "Nghe nói anh ấy là cầu thủ đại diện cho Nhật Bản.", "casual": "彼、日本代表する選手だそうだ。", "cVi": "Nghe bảo hắn đại diện cho Nhật đấy.", "gIds": ["sou_da_hearsay"] } },
             { "STT": 59, "Kanji": "影響する", "Nghĩa": "Ảnh hưởng", "Furigana": "えいきょうする", "type": "verb", "conv": { "polite": "天気は気分に影響するそうです。", "pVi": "Nghe nói thời tiết ảnh hưởng đến tâm trạng.", "casual": "天気、気分に影響するそうだ。", "cVi": "Nghe bảo thời tiết ảnh hưởng tâm trạng.", "gIds": ["sou_da_hearsay"] } },
             { "STT": 60, "Kanji": "効果", "Nghĩa": "Hiệu quả", "Furigana": "こうか", "type": "noun", "conv": { "polite": "この薬は効果があるはずです。", "pVi": "Thuốc này chắc chắn có hiệu quả.", "casual": "この薬、効果あるはずだ。", "cVi": "Thuốc này chắc chắn hiệu nghiệm.", "gIds": ["hazu"] } },
-            { "STT": 61, "Kanji": "印象", "Nghĩa": "Ấn tượng", "Furigana": "いんしょう", "type": "noun", "conv": { "polite": "良い印象を与えたばかりです。", "pVi": "Tôi vừa mới tạo được ấn tượng tốt.", "casual": "良い印象与えたばっかだ。", "cVi": "Vừa ghi điểm xong.", "gIds": ["bakari"] } },
+            { "STT": 61, "Kanji": "印象", "Nghĩa": "Ấn tượng", "Furigana": "いんしょう", "type": "noun", "conv": { "polite": "良い印象を与えたばかりです。", "pVi": "Tôi vừa mới tạo được ấn tượng tốt.", "casual": "良い印象与えたばっかだ。", "cVi": "Vừa ghi điểm xong.", "gIds": ["bakari", "ta_form"] } },
             { "STT": 62, "Kanji": "印", "Nghĩa": "Dấu hiệu", "Furigana": "しるし", "type": "noun", "conv": { "polite": "変な印があるそうです。", "pVi": "Nghe nói có dấu hiệu lạ.", "casual": "変な印あるそうだ。", "cVi": "Nghe bảo có dấu lạ.", "gIds": ["sou_da_hearsay"] } },
-            { "STT": 63, "Kanji": "合図", "Nghĩa": "Ám hiệu", "Furigana": "あいず", "type": "noun", "conv": { "polite": "合図を送ったばかりです。", "pVi": "Tôi vừa mới gửi tín hiệu.", "casual": "合図送ったばっかだ。", "cVi": "Vừa ra hiệu xong.", "gIds": ["bakari"] } },
+            { "STT": 63, "Kanji": "合図", "Nghĩa": "Ám hiệu", "Furigana": "あいず", "type": "noun", "conv": { "polite": "合図を送ったばかりです。", "pVi": "Tôi vừa mới gửi tín hiệu.", "casual": "合図送ったばっかだ。", "cVi": "Vừa ra hiệu xong.", "gIds": ["bakari", "ta_form"] } },
             { "STT": 64, "Kanji": "共通する", "Nghĩa": "Điểm chung", "Furigana": "きょうつうする", "type": "verb", "conv": { "polite": "彼らには共通点があるはずです。", "pVi": "Chắc chắn họ có điểm chung.", "casual": "彼ら、共通点あるはずだ。", "cVi": "Họ chắc chắn có điểm chung.", "gIds": ["hazu"] } },
-            { "STT": 65, "Kanji": "強調する", "Nghĩa": "Nhấn mạnh", "Furigana": "きょうちょうする", "type": "verb", "conv": { "polite": "重要な点を強調したばかりです。", "pVi": "Tôi vừa mới nhấn mạnh điểm quan trọng.", "casual": "重要な点強調したばっかだ。", "cVi": "Vừa nhấn mạnh điểm chính xong.", "gIds": ["bakari"] } },
-            { "STT": 66, "Kanji": "大事(な)", "Nghĩa": "Quan trọng", "Furigana": "だいじ(な)", "type": "adj_na", "conv": { "polite": "大事な話があるので、帰ってきます。", "pVi": "Vì có chuyện quan trọng nên tôi sẽ về.", "casual": "大事な話あるんで、帰ってくる。", "cVi": "Có chuyện quan trọng nên tớ về cái.", "gIds": ["te_kimasu"] } },
-            { "STT": 67, "Kanji": "説明する", "Nghĩa": "Giải thích", "Furigana": "せつめいする", "type": "verb", "conv": { "polite": "詳しく説明したばかりです。", "pVi": "Tôi vừa mới giải thích chi tiết.", "casual": "詳しく説明したばっかだ。", "cVi": "Vừa giải thích xong.", "gIds": ["bakari"] } },
-            { "STT": 68, "Kanji": "省略する", "Nghĩa": "Lược bỏ", "Furigana": "しょうりゃくする", "type": "verb", "conv": { "polite": "一部を省略したそうです。", "pVi": "Nghe nói đã lược bỏ một phần.", "casual": "一部省略したそうだ。", "cVi": "Nghe bảo bỏ bớt rồi.", "gIds": ["sou_da_hearsay"] } },
+            { "STT": 65, "Kanji": "強調する", "Nghĩa": "Nhấn mạnh", "Furigana": "きょうちょうする", "type": "verb", "conv": { "polite": "重要な点を強調したばかりです。", "pVi": "Tôi vừa mới nhấn mạnh điểm quan trọng.", "casual": "重要な点強調したばっかだ。", "cVi": "Vừa nhấn mạnh điểm chính xong.", "gIds": ["bakari", "ta_form"] } },
+            { "STT": 66, "Kanji": "大事(な)", "Nghĩa": "Quan trọng", "Furigana": "だいじ(な)", "type": "adj_na", "conv": { "polite": "大事な話があるので、帰ってきます。", "pVi": "Vì có chuyện quan trọng nên tôi sẽ về.", "casual": "大事な話あるんで、帰ってくる。", "cVi": "Có chuyện quan trọng nên tớ về cái.", "gIds": ["te_kimasu", "node"] } },
+            { "STT": 67, "Kanji": "説明する", "Nghĩa": "Giải thích", "Furigana": "せつめいする", "type": "verb", "conv": { "polite": "詳しく説明したばかりです。", "pVi": "Tôi vừa mới giải thích chi tiết.", "casual": "詳しく説明したばっかだ。", "cVi": "Vừa giải thích xong.", "gIds": ["bakari", "ta_form"] } },
+            { "STT": 68, "Kanji": "省略する", "Nghĩa": "Lược bỏ", "Furigana": "しょうりゃくする", "type": "verb", "conv": { "polite": "一部を省略したそうです。", "pVi": "Nghe nói đã lược bỏ một phần.", "casual": "一部省略したそうだ。", "cVi": "Nghe bảo bỏ bớt rồi.", "gIds": ["sou_da_hearsay", "ta_form"] } },
             { "STT": 69, "Kanji": "詳細", "Nghĩa": "Chi tiết", "Furigana": "しょうさい", "type": "noun", "conv": { "polite": "詳細を教えてください。", "pVi": "Vui lòng cho tôi biết chi tiết.", "casual": "詳細教えて。", "cVi": "Cho xin chi tiết đi.", "gIds": ["te_kudasai"] } },
-            { "STT": 70, "Kanji": "挑戦する", "Nghĩa": "Thử thách", "Furigana": "ちょうせんする", "type": "verb", "conv": { "polite": "新しいことに挑戦したばかりです。", "pVi": "Tôi vừa mới thử thách điều mới.", "casual": "新しいこと挑戦したばっかだ。", "cVi": "Vừa thử cái mới xong.", "gIds": ["bakari"] } },
+            { "STT": 70, "Kanji": "挑戦する", "Nghĩa": "Thử thách", "Furigana": "ちょうせんする", "type": "verb", "conv": { "polite": "新しいことに挑戦したばかりです。", "pVi": "Tôi vừa mới thử thách điều mới.", "casual": "新しいこと挑戦したばっかだ。", "cVi": "Vừa thử cái mới xong.", "gIds": ["bakari", "ta_form"] } },
             { "STT": 71, "Kanji": "やる気", "Nghĩa": "Động lực", "Furigana": "やるき", "type": "noun", "conv": { "polite": "やる気があるはずです。", "pVi": "Chắc chắn là có hứng thú.", "casual": "やる気あるはずだ。", "cVi": "Chắc chắn là máu lắm.", "gIds": ["hazu"] } },
-            { "STT": 72, "Kanji": "勇気", "Nghĩa": "Dũng khí", "Furigana": "ゆうき", "type": "noun", "conv": { "polite": "勇気を出したばかりです。", "pVi": "Tôi vừa mới lấy hết dũng khí.", "casual": "勇気出したばっかだ。", "cVi": "Vừa lấy hết can đảm xong.", "gIds": ["bakari"] } },
+            { "STT": 72, "Kanji": "勇気", "Nghĩa": "Dũng khí", "Furigana": "ゆうき", "type": "noun", "conv": { "polite": "勇気を出したばかりです。", "pVi": "Tôi vừa mới lấy hết dũng khí.", "casual": "勇気出したばっかだ。", "cVi": "Vừa lấy hết can đảm xong.", "gIds": ["bakari", "ta_form"] } },
             { "STT": 73, "Kanji": "資格", "Nghĩa": "Bằng cấp", "Furigana": "しかく", "type": "noun", "conv": { "polite": "資格があるはずです。", "pVi": "Chắc chắn là có tư cách.", "casual": "資格あるはずだ。", "cVi": "Chắc chắn có bằng rồi.", "gIds": ["hazu"] } },
             { "STT": 74, "Kanji": "弁護士", "Nghĩa": "Luật sư", "Furigana": "べんごし", "type": "noun", "conv": { "polite": "彼は弁護士だそうです。", "pVi": "Nghe nói anh ấy là luật sư.", "casual": "彼弁護士だそうだ。", "cVi": "Nghe bảo hắn là luật sư.", "gIds": ["sou_da_hearsay"] } },
-            { "STT": 75, "Kanji": "申請する", "Nghĩa": "Đăng ký", "Furigana": "しんせいする", "type": "verb", "conv": { "polite": "申請したばかりです。", "pVi": "Tôi vừa mới nộp đơn.", "casual": "申請したばっかだ。", "cVi": "Vừa nộp đơn xong.", "gIds": ["bakari"] } },
+            { "STT": 75, "Kanji": "申請する", "Nghĩa": "Đăng ký", "Furigana": "しんせいする", "type": "verb", "conv": { "polite": "申請したばかりです。", "pVi": "Tôi vừa mới nộp đơn.", "casual": "申請したばっかだ。", "cVi": "Vừa nộp đơn xong.", "gIds": ["bakari", "ta_form"] } },
             { "STT": 76, "Kanji": "通帳", "Nghĩa": "Sổ tiết kiệm", "Furigana": "つうちょう", "type": "noun", "conv": { "polite": "通帳はどこですか。", "pVi": "Sổ tiết kiệm ở đâu?", "casual": "通帳どこ？", "cVi": "Sổ đâu rồi?", "gIds": [] } },
-            { "STT": 77, "Kanji": "貯金する", "Nghĩa": "Tiết kiệm", "Furigana": "ちょきんする", "type": "verb", "conv": { "polite": "貯金したばかりです。", "pVi": "Tôi vừa mới tiết kiệm tiền.", "casual": "貯金したばっかだ。", "cVi": "Vừa gửi tiền xong.", "gIds": ["bakari"] } },
-            { "STT": 78, "Kanji": "本人", "Nghĩa": "Chính chủ", "Furigana": "ほんにん", "type": "noun", "conv": { "polite": "本人が来たばかりです。", "pVi": "Chính chủ vừa mới đến.", "casual": "本人来たばっかだ。", "cVi": "Người đó vừa tới xong.", "gIds": ["bakari"] } },
-            { "STT": 79, "Kanji": "契約する", "Nghĩa": "Ký hợp đồng", "Furigana": "けいやくする", "type": "verb", "conv": { "polite": "契約したばかりです。", "pVi": "Tôi vừa mới ký hợp đồng.", "casual": "契約したばっかだ。", "cVi": "Vừa ký xong.", "gIds": ["bakari"] } },
-            { "STT": 80, "Kanji": "証明する", "Nghĩa": "Chứng minh", "Furigana": "しょうめいする", "type": "verb", "conv": { "polite": "証明したばかりです。", "pVi": "Tôi vừa mới chứng minh.", "casual": "証明したばっかだ。", "cVi": "Vừa chứng minh xong.", "gIds": ["bakari"] } },
-            { "STT": 81, "Kanji": "変更する", "Nghĩa": "Thay đổi", "Furigana": "へんこうする", "type": "verb", "conv": { "polite": "変更したばかりです。", "pVi": "Tôi vừa mới sửa đổi.", "casual": "変更したばっかだ。", "cVi": "Vừa đổi xong.", "gIds": ["bakari"] } },
-            { "STT": 82, "Kanji": "保存する", "Nghĩa": "Lưu", "Furigana": "ほぞんする", "type": "verb", "conv": { "polite": "保存したばかりです。", "pVi": "Tôi vừa mới lưu lại.", "casual": "保存したばっかだ。", "cVi": "Vừa save xong.", "gIds": ["bakari"] } },
-            { "STT": 83, "Kanji": "保護する", "Nghĩa": "Bảo vệ", "Furigana": "ほごする", "type": "verb", "conv": { "polite": "保護したばかりです。", "pVi": "Tôi vừa mới bảo hộ.", "casual": "保護したばっかだ。", "cVi": "Vừa bảo vệ xong.", "gIds": ["bakari"] } },
-            { "STT": 84, "Kanji": "郊外", "Nghĩa": "Ngoại ô", "Furigana": "こうがい", "type": "place", "conv": { "polite": "郊外に住んでいるそうです。", "pVi": "Nghe nói anh ấy sống ở ngoại ô.", "casual": "郊外に住んでるそうだ。", "cVi": "Nghe bảo sống ở ngoại ô.", "gIds": ["sou_da_hearsay"] } },
-            { "STT": 85, "Kanji": "都会", "Nghĩa": "Thành phố", "Furigana": "とかい", "type": "place", "conv": { "polite": "都会に住むのは便利です。", "pVi": "Việc sống ở thành phố rất tiện lợi.", "casual": "都会住むの便利だ。", "cVi": "Sống thành phố tiện thật.", "gIds": ["no_wa"] } },
+            { "STT": 77, "Kanji": "貯金する", "Nghĩa": "Tiết kiệm", "Furigana": "ちょきんする", "type": "verb", "conv": { "polite": "貯金したばかりです。", "pVi": "Tôi vừa mới tiết kiệm tiền.", "casual": "貯金したばっかだ。", "cVi": "Vừa gửi tiền xong.", "gIds": ["bakari", "ta_form"] } },
+            { "STT": 78, "Kanji": "本人", "Nghĩa": "Chính chủ", "Furigana": "ほんにん", "type": "noun", "conv": { "polite": "本人が来たばかりです。", "pVi": "Chính chủ vừa mới đến.", "casual": "本人来たばっかだ。", "cVi": "Người đó vừa tới xong.", "gIds": ["bakari", "ta_form"] } },
+            { "STT": 79, "Kanji": "契約する", "Nghĩa": "Ký hợp đồng", "Furigana": "けいやくする", "type": "verb", "conv": { "polite": "契約したばかりです。", "pVi": "Tôi vừa mới ký hợp đồng.", "casual": "契約したばっかだ。", "cVi": "Vừa ký xong.", "gIds": ["bakari", "ta_form"] } },
+            { "STT": 80, "Kanji": "証明する", "Nghĩa": "Chứng minh", "Furigana": "しょうめいする", "type": "verb", "conv": { "polite": "証明したばかりです。", "pVi": "Tôi vừa mới chứng minh.", "casual": "証明したばっかだ。", "cVi": "Vừa chứng minh xong.", "gIds": ["bakari", "ta_form"] } },
+            { "STT": 81, "Kanji": "変更する", "Nghĩa": "Thay đổi", "Furigana": "へんこうする", "type": "verb", "conv": { "polite": "変更したばかりです。", "pVi": "Tôi vừa mới sửa đổi.", "casual": "変更したばっかだ。", "cVi": "Vừa đổi xong.", "gIds": ["bakari", "ta_form"] } },
+            { "STT": 82, "Kanji": "保存する", "Nghĩa": "Lưu", "Furigana": "ほぞんする", "type": "verb", "conv": { "polite": "保存したばかりです。", "pVi": "Tôi vừa mới lưu lại.", "casual": "保存したばっかだ。", "cVi": "Vừa save xong.", "gIds": ["bakari", "ta_form"] } },
+            { "STT": 83, "Kanji": "保護する", "Nghĩa": "Bảo vệ", "Furigana": "ほごする", "type": "verb", "conv": { "polite": "保護したばかりです。", "pVi": "Tôi vừa mới bảo hộ.", "casual": "保護したばっかだ。", "cVi": "Vừa bảo vệ xong.", "gIds": ["bakari", "ta_form"] } },
+            { "STT": 84, "Kanji": "郊外", "Nghĩa": "Ngoại ô", "Furigana": "こうがい", "type": "place", "conv": { "polite": "郊外に住んでいるそうです。", "pVi": "Nghe nói anh ấy sống ở ngoại ô.", "casual": "郊外に住んでるそうだ。", "cVi": "Nghe bảo sống ở ngoại ô.", "gIds": ["sou_da_hearsay", "te_iru"] } },
+            { "STT": 85, "Kanji": "都会", "Nghĩa": "Thành phố", "Furigana": "とかい", "type": "place", "conv": { "polite": "都会に住むのは便利です。", "pVi": "Việc sống ở thành phố rất tiện lợi.", "casual": "都会住むの便利だ。", "cVi": "Sống thành phố tiện thật.", "gIds": [] } },
             { "STT": 86, "Kanji": "資源", "Nghĩa": "Tài nguyên", "Furigana": "しげん", "type": "noun", "conv": { "polite": "資源は大切だそうです。", "pVi": "Nghe nói tài nguyên rất quan trọng.", "casual": "資源は大切だそうだ。", "cVi": "Nghe bảo tài nguyên quan trọng lắm.", "gIds": ["sou_da_hearsay"] } },
             { "STT": 87, "Kanji": "有効", "Nghĩa": "Hữu hiệu", "Furigana": "ゆうこう", "type": "adj_na", "conv": { "polite": "このチケットはまだ有効なはずです。", "pVi": "Vé này chắc chắn vẫn còn hiệu lực.", "casual": "このチケット、まだ有効なはずだ。", "cVi": "Vé này chắc vẫn dùng được.", "gIds": ["hazu"] } }
         ];
@@ -482,11 +523,14 @@
             "効": { hanviet: "HIỆU", mean: "Hiệu quả", on: "コウ", kun: "き.く", radicals: "Lực (力)", tipImg: "Sức lực có hiệu quả.", tipSoundOn: "Yuu**kou** hữu hiệu.", tipSoundKun: "**Ki**ku có tác dụng.", words: [{w:"有効 (ゆうこう)", m:"Hữu hiệu"}] }
         };
 
-        // --- 4. APP LOGIC (Standard Day 1 Logic) ---
+        // --- 4. APP LOGIC ---
         let currentIndex = 0; 
         let currentQuizItem = null; 
         let score = 0; 
         let currentStrokeSvg = null;
+        let strokeCache = {}; // Cache cho nét viết
+        let bookmarkedWords = JSON.parse(localStorage.getItem('azakanji_bookmarks_day18')) || []; // Đổi key cho Day 18
+        let filterBookmarked = false; // Trạng thái lọc từ khó
 
         function init() {
             renderList();
@@ -494,25 +538,61 @@
             loadWord(0);
             
             const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', e => { 
-                    const t = e.target.value.toLowerCase(); 
-                    document.querySelectorAll('.vocab-item').forEach(el => el.style.display = el.innerText.toLowerCase().includes(t) ? 'block' : 'none'); 
-                });
-            }
+            if (searchInput) searchInput.addEventListener('input', applyFilters);
 
             const mobileSearchInput = document.getElementById('mobileSearchInput');
-            if (mobileSearchInput) {
-                mobileSearchInput.addEventListener('input', e => { 
-                    const t = e.target.value.toLowerCase(); 
-                    document.querySelectorAll('.vocab-item').forEach(el => el.style.display = el.innerText.toLowerCase().includes(t) ? 'block' : 'none'); 
-                });
-            }
+            if (mobileSearchInput) mobileSearchInput.addEventListener('input', applyFilters);
 
             const quizInput = document.getElementById('quiz-input');
             if (quizInput) {
                 quizInput.addEventListener('keypress', e => { if(e.key === 'Enter') checkAnswer(); });
             }
+        }
+
+        // Hàm bật/tắt bộ lọc từ khó
+        function toggleBookmarkFilter() {
+            filterBookmarked = !filterBookmarked;
+            
+            const btn1 = document.getElementById('btnFilterStar');
+            const btn2 = document.getElementById('btnMobileFilterStar');
+            
+            // Đổi màu nút khi được bật/tắt
+            const activeClass = "w-10 h-10 rounded-xl border border-yellow-300 bg-yellow-50 text-yellow-500 flex items-center justify-center shadow-sm transition-colors";
+            const inactiveClass = "w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50";
+            
+            if (btn1) btn1.className = filterBookmarked ? activeClass : inactiveClass;
+            if (btn2) btn2.className = filterBookmarked ? activeClass : inactiveClass;
+            
+            applyFilters();
+        }
+
+        // Hàm áp dụng cả tìm kiếm text và lọc Bookmark
+        function applyFilters() {
+            // Đồng bộ text giữa mobile và desktop search bar
+            const inputD = document.getElementById('searchInput');
+            const inputM = document.getElementById('mobileSearchInput');
+            let activeTerm = '';
+
+            if (inputD && document.activeElement === inputD) {
+                activeTerm = inputD.value.toLowerCase();
+                if (inputM) inputM.value = inputD.value;
+            } else if (inputM && document.activeElement === inputM) {
+                activeTerm = inputM.value.toLowerCase();
+                if (inputD) inputD.value = inputM.value;
+            } else {
+                activeTerm = (inputD?.value || inputM?.value || '').toLowerCase();
+            }
+
+            // Quét danh sách
+            document.querySelectorAll('.vocab-item').forEach(el => {
+                const idx = parseInt(el.getAttribute('data-index'));
+                const word = vocabData[idx];
+                
+                const textMatch = el.innerText.toLowerCase().includes(activeTerm);
+                const bookmarkMatch = !filterBookmarked || bookmarkedWords.includes(word.STT);
+                
+                el.style.display = (textMatch && bookmarkMatch) ? 'block' : 'none';
+            });
         }
 
         function switchTab(tab) {
@@ -526,14 +606,17 @@
         function renderList() {
             const listD = document.getElementById('vocabList'); 
             const listM = document.getElementById('mobileVocabList');
-            const html = vocabData.map((item, i) => `
+            const html = vocabData.map((item, i) => {
+                const isBookmarked = bookmarkedWords.includes(item.STT);
+                return `
                 <div class="vocab-item p-3 border-b hover:bg-gray-50 cursor-pointer rounded-lg mx-1 my-1" data-index="${i}" onclick="loadWord(${i}); if(window.innerWidth < 768) toggleDrawer();">
                     <div class="flex justify-between font-bold items-center">
-                        <span class="text-gray-800 ja-text">${item.Kanji || item.Furigana}</span>
+                        <span class="text-gray-800 ja-text">${item.Kanji || item.Furigana} <i class="fas fa-star text-yellow-400 text-[10px] ml-1 ${isBookmarked ? '' : 'hidden'} bookmark-icon-${item.STT}"></i></span>
                         <span class="text-gray-300 text-xs font-mono">#${item.STT}</span>
                     </div>
                     <div class="text-xs text-gray-500 mt-1 truncate">${item.Nghĩa}</div>
-                </div>`).join('');
+                </div>`;
+            }).join('');
             if (listD) listD.innerHTML = html;
             if (listM) listM.innerHTML = html;
         }
@@ -553,6 +636,14 @@
             document.getElementById('cardFurigana').innerText = word.Furigana;
             document.getElementById('cardMeaning').innerText = word.Nghĩa;
             document.getElementById('wordType').innerText = word.type.toUpperCase();
+            
+            // Cập nhật trạng thái nút Bookmark
+            const btnBookmark = document.getElementById('btnBookmark');
+            if (bookmarkedWords.includes(word.STT)) {
+                btnBookmark.classList.replace('text-gray-300', 'text-yellow-400');
+            } else {
+                btnBookmark.classList.replace('text-yellow-400', 'text-gray-300');
+            }
             
             const hasKanji = word.Kanji && word.Kanji !== word.Furigana;
             document.getElementById('strokeBtn').classList.toggle('hidden', !hasKanji);
@@ -598,23 +689,39 @@
                                 <i class="fas fa-volume-up text-xl"></i>
                             </button>
                         </div>
+                        
+                        <!-- Practice Area -->
+                        <div class="mt-4 bg-gray-50 p-3 rounded-xl border border-gray-200">
+                            <div class="flex items-center gap-2">
+                                <button id="mic-${word.STT}-${t.k}" onclick="startDictation('${word.STT}', '${t.k}', '${word.conv[t.k].replace(/'/g, "\\'")}')" class="w-10 h-10 flex-shrink-0 rounded-full bg-white border border-gray-300 text-gray-500 shadow-sm hover:text-blue-600 hover:border-blue-300 transition-all flex items-center justify-center" title="Đọc bằng giọng nói">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <input type="text" id="input-${word.STT}-${t.k}" onkeypress="if(event.key === 'Enter') checkSentencePractice('${word.STT}', '${t.k}', '${word.conv[t.k].replace(/'/g, "\\'")}')" class="flex-1 w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm ja-text outline-none focus:ring-2 focus:ring-indigo-400 transition-all" placeholder="Gõ tiếng Nhật hoặc dùng mic..." autocomplete="off">
+                                <button onclick="checkSentencePractice('${word.STT}', '${t.k}', '${word.conv[t.k].replace(/'/g, "\\'")}')" class="w-10 h-10 flex-shrink-0 rounded-lg bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 transition-all flex items-center justify-center" title="Kiểm tra">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <div id="feedback-${word.STT}-${t.k}" class="text-[11px] font-bold mt-2 hidden text-center"></div>
+                        </div>
                     </div>`;
             });
         }
 
+        // Cập nhật hàm xử lý giải thích ngữ pháp để bắt lỗi tốt hơn
         function openExplan(idsStr) {
             const ids = idsStr.split(','); 
             const f = document.getElementById('dgFormula'); 
             const e = document.getElementById('dgExplanation');
             
-            f.innerText = ids.map(id => grammarRepo[id] ? grammarRepo[id].formula : "N/A").join("  /  ");
+            f.innerText = ids.map(id => grammarRepo[id] ? grammarRepo[id].formula : "Đang cập nhật...").join("  /  ");
+            
             e.innerHTML = ids.map(id => {
-                if (!grammarRepo[id]) return `<div class="text-red-500">Missing grammar: ${id}</div>`;
+                if (!grammarRepo[id]) return `<div class="text-red-500 text-sm pb-2"><i class="fas fa-exclamation-triangle"></i> Đang chờ cập nhật dữ liệu cho mã: <b>${id}</b></div>`;
                 return `
-                <div class="pb-2 border-b border-gray-100 last:border-0">
+                <div class="pb-3 border-b border-gray-100 last:border-0">
                     <strong class="text-indigo-700 block mb-1">${grammarRepo[id].title} <span class="text-xs font-normal text-gray-400">(${grammarRepo[id].desc.split(':')[0]})</span></strong>
-                    <p>${grammarRepo[id].desc.split(':').slice(1).join(':') || grammarRepo[id].desc}</p>
-                    <p class="text-xs text-gray-400 mt-1 italic">Vd: ${grammarRepo[id].ex}</p>
+                    <p class="text-gray-700">${grammarRepo[id].desc.split(':').slice(1).join(':') || grammarRepo[id].desc}</p>
+                    <p class="text-sm text-gray-500 mt-2 italic flex items-start gap-2 bg-gray-50 p-2 rounded"><i class="fas fa-quote-left text-indigo-300 text-xs mt-1"></i> <span>${grammarRepo[id].ex}</span></p>
                 </div>`;
             }).join("");
             
@@ -649,6 +756,7 @@
                 document.getElementById(id.replace('Modal','Panel')).classList.remove('opacity-0', 'scale-95'); 
             }, 10); 
         }
+        
         function closeModal(id) { 
             const b = document.getElementById(id.replace('Modal','Backdrop')); 
             const p = document.getElementById(id.replace('Modal','Panel'));
@@ -656,6 +764,7 @@
             if(p) p.classList.add('opacity-0', 'scale-95');
             setTimeout(() => document.getElementById(id).classList.add('hidden'), 200); 
         }
+        
         function openGrammarList() { showModal('grammarListModal'); }
 
         async function openStrokeModal(char) {
@@ -694,11 +803,29 @@
                 const fmt = s => s.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-gray-900">$1</span>');
                 document.getElementById('detailTipImg').innerHTML = fmt(d.tipImg || ''); 
                 
-                let soundContent = d.tipSound || '';
-                if (!soundContent && (d.tipSoundOn || d.tipSoundKun)) {
-                    soundContent = [d.tipSoundOn, d.tipSoundKun].filter(Boolean).join(' / ');
+                // Hiển thị phần mẹo nhớ âm thanh tương thích với mọi loại data
+                if (d.tipSound) {
+                    document.getElementById('tipSoundGeneric').innerHTML = fmt(d.tipSound);
+                    document.getElementById('tipSoundGeneric').classList.remove('hidden');
+                    document.getElementById('tipSoundOnWrapper').classList.add('hidden');
+                    document.getElementById('tipSoundKunWrapper').classList.add('hidden');
+                } else {
+                    document.getElementById('tipSoundGeneric').classList.add('hidden');
+                    
+                    if (d.tipSoundOn) {
+                        document.getElementById('detailTipSoundOn').innerHTML = fmt(d.tipSoundOn);
+                        document.getElementById('tipSoundOnWrapper').classList.remove('hidden');
+                    } else {
+                        document.getElementById('tipSoundOnWrapper').classList.add('hidden');
+                    }
+                    
+                    if (d.tipSoundKun) {
+                        document.getElementById('detailTipSoundKun').innerHTML = fmt(d.tipSoundKun);
+                        document.getElementById('tipSoundKunWrapper').classList.remove('hidden');
+                    } else {
+                        document.getElementById('tipSoundKunWrapper').classList.add('hidden');
+                    }
                 }
-                document.getElementById('detailTipSound').innerHTML = fmt(soundContent);
                 
                 document.getElementById('btnPlayOn').onclick = () => speakText(d.on);
                 document.getElementById('btnPlayKun').onclick = () => speakText(d.kun);
@@ -711,14 +838,21 @@
             } else { 
                 c.classList.add('hidden'); e.classList.remove('hidden'); 
             }
+            
             const anim = document.getElementById('strokeAnimContainer'); 
             const grid = document.getElementById('strokeGridContainer');
             anim.innerHTML = '<i class="fas fa-spinner fa-spin text-gray-300 text-2xl"></i>'; 
             grid.innerHTML = '';
+            
             try {
-                const r = await fetch(`https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/${getKanjiHex(k)}.svg`);
-                if(!r.ok) throw new Error();
-                const svgText = await r.text();
+                let svgText = strokeCache[k];
+                if (!svgText) {
+                    const r = await fetch(`https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/${getKanjiHex(k)}.svg`);
+                    if(!r.ok) throw new Error();
+                    svgText = await r.text();
+                    strokeCache[k] = svgText; // Lưu vào cache để tải nhanh lần sau
+                }
+                
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(svgText, "image/svg+xml");
                 doc.querySelectorAll('path').forEach(p => p.setAttribute('style', 'opacity:0; stroke:#333; stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round;')); 
@@ -761,7 +895,21 @@
         function getKanjiHex(k) { return k.charCodeAt(0).toString(16).padStart(5, '0'); }
         function speakText(t) { if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(t); u.lang = 'ja-JP'; u.rate = 0.9; speechSynthesis.speak(u); } }
         function speakCurrent() { speakText(vocabData[currentIndex].Furigana); }
-        function toggleDrawer() { const d = document.getElementById('mobileDrawer'); const c = document.getElementById('drawerContent'); const b = document.getElementById('drawerBackdrop'); if(d.classList.contains('pointer-events-none')) { d.classList.remove('pointer-events-none'); c.classList.remove('-translate-x-full'); b.classList.remove('opacity-0'); } else { c.classList.add('-translate-x-full'); b.classList.add('opacity-0'); setTimeout(() => d.classList.add('pointer-events-none'), 300); } }
+        
+        function toggleDrawer() { 
+            const d = document.getElementById('mobileDrawer'); 
+            const c = document.getElementById('drawerContent'); 
+            const b = document.getElementById('drawerBackdrop'); 
+            if(d.classList.contains('pointer-events-none')) { 
+                d.classList.remove('pointer-events-none'); 
+                c.classList.remove('-translate-x-full'); 
+                b.classList.remove('opacity-0'); 
+            } else { 
+                c.classList.add('-translate-x-full'); 
+                b.classList.add('opacity-0'); 
+                setTimeout(() => d.classList.add('pointer-events-none'), 300); 
+            } 
+        }
 
         function nextQuestion() {
             document.getElementById('feedback-area').classList.add('hidden'); document.getElementById('btn-check').classList.remove('hidden'); document.getElementById('btn-next').classList.add('hidden');
@@ -772,6 +920,7 @@
             document.getElementById('quiz-kanji').innerText = currentQuizItem.Kanji || currentQuizItem.Furigana;
             document.getElementById('quiz-meaning').innerText = currentQuizItem.Nghĩa;
         }
+
         function checkAnswer() {
             const inp = document.getElementById('quiz-input'); if(!inp.value.trim()) return;
             inp.disabled = true; 
@@ -790,9 +939,152 @@
             document.getElementById('score-display').innerText = score; document.getElementById('correct-answer').innerText = currentQuizItem.Furigana;
             document.getElementById('feedback-area').classList.remove('hidden'); document.getElementById('btn-check').classList.add('hidden'); document.getElementById('btn-next').classList.remove('hidden');
         }
+        
         function playQuizAudio() { if(currentQuizItem) speakText(currentQuizItem.Furigana); }
         function prevWord() { if(currentIndex > 0) loadWord(currentIndex - 1); }
         function nextWord() { if(currentIndex < vocabData.length - 1) loadWord(currentIndex + 1); }
+
+        // --- NEW AUDIO & PRACTICE LOGIC ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playFeedbackSound(isCorrect) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (isCorrect) {
+                // Âm thanh Ting! (Đúng)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1); 
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else {
+                // Âm thanh Bíp (Sai)
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        function normalizeJapanese(str) {
+            // Loại bỏ khoảng trắng, dấu câu tiếng Nhật để so sánh dễ hơn
+            return str.replace(/[\s　、。！？！？「」『』（）]/g, '');
+        }
+
+        function checkSentencePractice(stt, type, targetSentence) {
+            const inputEl = document.getElementById(`input-${stt}-${type}`);
+            const feedbackEl = document.getElementById(`feedback-${stt}-${type}`);
+            const userText = normalizeJapanese(inputEl.value);
+            const target = normalizeJapanese(targetSentence);
+
+            if (!userText) return;
+
+            inputEl.classList.remove('bg-white', 'border-gray-300', 'bg-red-50', 'border-red-400', 'text-red-700', 'bg-green-50', 'border-green-400', 'text-green-700', 'wrong-anim');
+            feedbackEl.classList.remove('hidden', 'text-green-600', 'text-red-600');
+
+            if (userText === target) {
+                playFeedbackSound(true);
+                inputEl.classList.add('bg-green-50', 'border-green-400', 'text-green-700');
+                feedbackEl.classList.add('text-green-600');
+                feedbackEl.innerHTML = '<i class="fas fa-check-circle"></i> Tuyệt vời! Bạn đã nhập chính xác.';
+            } else {
+                playFeedbackSound(false);
+                inputEl.classList.add('bg-red-50', 'border-red-400', 'text-red-700', 'wrong-anim');
+                feedbackEl.classList.add('text-red-600');
+                feedbackEl.innerHTML = '<i class="fas fa-times-circle"></i> Sai rồi, hãy kiểm tra lại Kanji/Hiragana nhé!';
+            }
+        }
+
+        function startDictation(stt, type, targetSentence) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Trình duyệt của bạn hiện không hỗ trợ nhận diện giọng nói. Hãy dùng trình duyệt Chrome hoặc Safari nhé!");
+                return;
+            }
+            
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'ja-JP';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            const inputEl = document.getElementById(`input-${stt}-${type}`);
+            const micBtn = document.getElementById(`mic-${stt}-${type}`);
+
+            // Reset trạng thái
+            inputEl.value = 'Đang nghe...';
+            inputEl.classList.remove('bg-green-50', 'bg-red-50', 'text-green-700', 'text-red-700');
+            micBtn.classList.add('animate-pulse', 'bg-red-100', 'text-red-600', 'border-red-300');
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                inputEl.value = transcript;
+                checkSentencePractice(stt, type, targetSentence);
+            };
+
+            recognition.onerror = function(event) {
+                inputEl.value = '';
+                alert("Lỗi thu âm: " + event.error);
+            };
+
+            recognition.onend = function() {
+                micBtn.classList.remove('animate-pulse', 'bg-red-100', 'text-red-600', 'border-red-300');
+                if(inputEl.value === 'Đang nghe...') inputEl.value = '';
+            };
+
+            recognition.start();
+        }
+
+        function toggleBookmark() {
+            const word = vocabData[currentIndex];
+            const idx = bookmarkedWords.indexOf(word.STT);
+            const btn = document.getElementById('btnBookmark');
+            
+            if (idx > -1) {
+                bookmarkedWords.splice(idx, 1);
+                btn.classList.replace('text-yellow-400', 'text-gray-300');
+            } else {
+                bookmarkedWords.push(word.STT);
+                btn.classList.replace('text-gray-300', 'text-yellow-400');
+                btn.classList.remove('bookmark-anim');
+                void btn.offsetWidth; // Kích hoạt lại animation
+                btn.classList.add('bookmark-anim');
+            }
+            
+            // Lưu vào LocalStorage
+            localStorage.setItem('azakanji_bookmarks_day18', JSON.stringify(bookmarkedWords));
+            
+            // Cập nhật icon sao trên danh sách bên trái/drawer
+            document.querySelectorAll(`.bookmark-icon-${word.STT}`).forEach(icon => {
+                if (idx > -1) icon.classList.add('hidden');
+                else icon.classList.remove('hidden');
+            });
+
+            // Nếu đang bật chế độ lọc mà bỏ đánh dấu, cập nhật lại danh sách ngay lập tức
+            if (filterBookmarked) applyFilters();
+        }
+
+        // Bổ sung phím tắt điều hướng cho Thể Trí tập trung
+        document.addEventListener('keydown', (e) => {
+            // Không kích hoạt nếu đang gõ chữ hoặc mở Pop-up
+            if (document.activeElement.tagName === 'INPUT') return;
+            const modals = ['grammarListModal', 'detailGrammarModal', 'strokeModal'];
+            if (modals.some(id => !document.getElementById(id).classList.contains('hidden'))) return;
+            
+            // Chỉ hoạt động khi ở tab Học từ
+            if (!document.getElementById('learn-section').classList.contains('hidden')) {
+                if (e.key === 'ArrowRight') nextWord();
+                if (e.key === 'ArrowLeft') prevWord();
+                if (e.key === 'b' || e.key === 'B') toggleBookmark(); 
+            }
+        });
 
         window.speakCurrent = speakCurrent;
         window.switchTab = switchTab;
@@ -810,8 +1102,19 @@
         window.openExplan = openExplan;
         window.closeModal = closeModal;
         window.showModal = showModal;
+        window.toggleBookmarkFilter = toggleBookmarkFilter;
+        window.toggleBookmark = toggleBookmark;
+        window.checkSentencePractice = checkSentencePractice;
+        window.startDictation = startDictation;
 
         document.addEventListener('DOMContentLoaded', init);
     </script>
+    
+    <!-- Meta Data -->
+    <meta name="description" content="Khám phá ngay bài học tiếng Nhật tiếp theo cùng グローバルソリューション株式会社. Cơ hội làm việc trong môi trường quốc tế đang chờ đón bạn. Theo dõi Facebook: グローバルソリューション株式会社 để cập nhật tin tức mới nhất!">
+    <div style="display: none;">
+        Tuyển dụng kỹ sư IT làm việc tại Nhật Bản. Xem chi tiết tại <a href="https://globalsolution.jp">グローバルソリューション株式会社</a>. 
+        Theo dõi fanpage của chúng tôi: <a href="https://www.facebook.com/profile.php?id=61577256908615">Facebook: グローバルソリューション株式会社</a>.
+    </div>
 </body>
 </html>
