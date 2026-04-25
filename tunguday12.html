@@ -37,6 +37,8 @@
         
         @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         .correct-anim { animation: pop 0.3s ease-in-out; }
+        
+        .bookmark-anim { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
         /* Stroke Order Styles */
         .stroke-grid-box { border: 1px solid #e5e7eb; background-color: white; position: relative; }
@@ -81,9 +83,14 @@
         <!-- DESKTOP SIDEBAR -->
         <aside class="hidden md:flex w-72 bg-white border-r border-gray-200 flex-col z-10">
             <div class="p-4 border-b border-gray-100 bg-gray-50">
-                <div class="relative">
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                    <input type="text" id="searchInput" placeholder="Tìm kiếm từ..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm outline-none">
+                <div class="flex gap-2">
+                    <div class="relative flex-1">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="searchInput" placeholder="Tìm kiếm từ..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm outline-none">
+                    </div>
+                    <button id="btnFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50" title="Chỉ hiện từ khó">
+                        <i class="fas fa-star"></i>
+                    </button>
                 </div>
             </div>
             <div id="vocabList" class="flex-1 scroller p-2 space-y-1"></div>
@@ -100,6 +107,10 @@
                             <span id="wordType" class="text-[10px] font-bold uppercase text-indigo-500">WORD</span>
                             <div class="w-px h-3 bg-gray-300"></div>
                             <span class="text-[10px] text-gray-400 font-mono" id="wordIndex">#1</span>
+                            <div class="w-px h-3 bg-gray-300"></div>
+                            <button id="btnBookmark" onclick="toggleBookmark()" class="text-gray-300 hover:text-yellow-400 transition-colors" title="Đánh dấu từ khó (Phím B)">
+                                <i class="fas fa-star text-xs"></i>
+                            </button>
                         </div>
                         <div class="relative inline-block mb-2">
                             <h2 id="cardKanji" class="text-5xl md:text-6xl font-bold text-gray-800 ja-text tracking-tight cursor-pointer hover:text-indigo-700 transition-colors" onclick="speakCurrent()">埋める</h2>
@@ -194,6 +205,29 @@
         </div>
     </div>
 
+    <!-- MOBILE DRAWER -->
+    <div id="mobileDrawer" class="fixed inset-0 z-50 pointer-events-none md:hidden">
+        <div id="drawerBackdrop" class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="toggleDrawer()"></div>
+        <div id="drawerContent" class="absolute top-0 left-0 bottom-0 w-[85%] max-w-sm bg-white shadow-2xl transform -translate-x-full transition-transform duration-300 flex flex-col">
+            <div class="p-4 border-b border-gray-100 bg-indigo-50 flex justify-between items-center">
+                <h2 class="font-bold text-indigo-800"><i class="fas fa-list-ul mr-2"></i> Danh Sách Từ</h2>
+                <button onclick="toggleDrawer()" class="w-8 h-8 rounded-full bg-white text-gray-500 hover:bg-gray-100 flex items-center justify-center shadow-sm transition"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-3 border-b border-gray-100 bg-gray-50">
+                <div class="flex gap-2">
+                    <div class="relative flex-1">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="mobileSearchInput" placeholder="Tìm kiếm từ..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm outline-none">
+                    </div>
+                    <button id="btnMobileFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50" title="Chỉ hiện từ khó">
+                        <i class="fas fa-star"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="mobileVocabList" class="flex-1 overflow-y-auto scroller p-2 space-y-1 bg-white pb-24"></div>
+        </div>
+    </div>
+
     <!-- MODAL: GRAMMAR LIST -->
     <div id="grammarListModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center px-4">
         <div class="absolute inset-0 bg-gray-900/70 backdrop-blur-sm transition-opacity opacity-0" id="grammarListBackdrop" onclick="closeModal('grammarListModal')"></div>
@@ -220,19 +254,19 @@
     <!-- MODAL: GRAMMAR DETAIL -->
     <div id="detailGrammarModal" class="fixed inset-0 z-[90] hidden flex items-center justify-center px-4">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity opacity-0" id="detailGrammarBackdrop" onclick="closeModal('detailGrammarModal')"></div>
-        <div class="bg-white rounded-2xl w-full max-w-md relative z-10 shadow-2xl transform transition-all scale-95 opacity-0 flex flex-col" id="detailGrammarPanel">
-            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-2xl">
+        <div class="bg-white rounded-2xl w-full max-w-md relative z-10 shadow-2xl transform transition-all scale-95 opacity-0 flex flex-col max-h-[90vh]" id="detailGrammarPanel">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-2xl flex-shrink-0">
                 <div class="flex items-center gap-2">
                     <div class="bg-indigo-100 p-1.5 rounded-lg text-indigo-600"><i class="fas fa-info-circle"></i></div>
                     <h3 class="text-lg font-bold text-gray-800">Giải thích Ngữ pháp</h3>
                 </div>
                 <button onclick="closeModal('detailGrammarModal')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
             </div>
-            <div class="p-6">
+            <div class="p-6 overflow-y-auto scroller">
                 <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-center mb-4 shadow-sm">
                     <code class="text-lg font-bold text-indigo-700 font-mono" id="dgFormula"></code>
                 </div>
-                <div id="dgExplanation" class="text-gray-600 text-sm mb-4 space-y-3 leading-relaxed"></div>
+                <div id="dgExplanation" class="text-gray-600 text-sm mb-4 space-y-4 leading-relaxed"></div>
             </div>
         </div>
     </div>
@@ -284,7 +318,11 @@
                                 </div>
                                 <div class="bg-orange-50 p-4 rounded-lg border border-orange-100">
                                     <h4 class="text-sm font-bold text-orange-800 mb-2 flex items-center gap-2"><i class="fas fa-music"></i> Mẹo nhớ âm thanh</h4>
-                                    <p class="text-sm text-orange-700" id="detailTipSound"></p>
+                                    <div class="space-y-2">
+                                        <p id="tipSoundGeneric" class="text-sm text-orange-700 hidden"></p>
+                                        <p id="tipSoundOnWrapper" class="text-sm text-orange-700 flex items-start gap-2"><span class="font-bold text-[10px] bg-orange-200 px-1.5 py-0.5 rounded text-orange-800 min-w-[30px] text-center mt-0.5">ON</span> <span id="detailTipSoundOn"></span></p>
+                                        <p id="tipSoundKunWrapper" class="text-sm text-orange-700 flex items-start gap-2"><span class="font-bold text-[10px] bg-pink-200 px-1.5 py-0.5 rounded text-pink-800 min-w-[30px] text-center mt-0.5">KUN</span> <span id="detailTipSoundKun"></span></p>
+                                    </div>
                                 </div>
                             </div>
                             <!-- Related Words -->
@@ -301,44 +339,68 @@
     </div>
 
     <script>
-        // --- 1. GRAMMAR REPO (N5 - N3) ---
+        // --- 1. GRAMMAR REPO (N5 - N3) --- 
         const grammarRepo = {
-            // N5
-            "wa_desu": { title: "Cấu trúc định danh", formula: "N1 は N2 です", desc: "N5: Khẳng định N1 là N2.", ex: "これはペンです。" },
-            "wo_kaimasu": { title: "Trợ từ O", formula: "N + を + V", desc: "N5: Chỉ đối tượng tác động.", ex: "パンを買います。" },
-            "de_place": { title: "Tại (Nơi chốn)", formula: "N(địa điểm) + で + V", desc: "N5: Hành động diễn ra tại địa điểm nào đó.", ex: "駅で会います。" },
-            "ni_iku": { title: "Đi để...", formula: "V(bỏ masu)/N + に行く", desc: "N5: Đi đâu đó để thực hiện mục đích gì.", ex: "映画を見に行きます。" },
-            "mashou": { title: "Cùng làm nhé", formula: "Vましょう", desc: "N5: Rủ rê, đề nghị.", ex: "帰りましょう。" },
+            "te_oku": { title: "Làm sẵn", formula: "Vておく", desc: "N4: Làm gì đó để chuẩn bị cho tương lai.", ex: "旅行の前にホテルを予約しておきます。" },
+            "te_aru": { title: "Có sẵn (Trạng thái)", formula: "Vてある", desc: "N4: Trạng thái kết quả của một hành động có chủ ý.", ex: "カレンダーに予定が書いてあります。" },
+            "volitional": { title: "Thể ý định", formula: "Vよう", desc: "N4: Dự định làm gì (văn nói) hoặc rủ rê.", ex: "夏休みは国へ帰ろうと思います。" },
+            "tsumori": { title: "Dự định", formula: "Vる/ない + つもり", desc: "N4: Dự định làm hoặc không làm gì (khá chắc chắn).", ex: "来年、日本へ留学するつもりです。" },
+            "yotei": { title: "Kế hoạch", formula: "N/Vる + 予定", desc: "N4: Kế hoạch, dự định đã được quyết định.", ex: "会議は3時に終わる予定です。" },
+            "tara": { title: "Sau khi/Nếu", formula: "Vたら", desc: "N4: Điều kiện giả định hoặc hành động nối tiếp.", ex: "駅に着いたら、電話します。" },
+            "hou_ga_ii": { title: "Nên/Không nên", formula: "Vた/Vない + ほうがいい", desc: "N4: Đưa ra lời khuyên.", ex: "薬を飲んだほうがいいですよ。" },
+            "koto_ni_suru": { title: "Quyết định (Chủ quan)", formula: "Vる/ない + ことにする", desc: "N3: Tự mình quyết định làm gì.", ex: "タバコをやめることにしました。" },
+            "koto_ni_naru": { title: "Được quyết định (Khách quan)", formula: "Vる/ない + ことになる", desc: "N3: Việc được quyết định không do ý chí bản thân.", ex: "来月、転勤することになりました。" },
+            "nai_de": { title: "Không làm mà...", formula: "Vないで", desc: "N4: Làm V2 trong trạng thái không làm V1.", ex: "朝ごはんを食べないで学校へ行きました。" },
+            "te_kudasai": { title: "Hãy...", formula: "Vてください", desc: "N5: Yêu cầu, nhờ vả lịch sự.", ex: "ここに名前を書いてください。" },
             "ta_form": { title: "Thể quá khứ ngắn", formula: "Vた", desc: "N5: Dùng trong văn nói thân mật.", ex: "もう食べた？" },
-            "te_kudasai": { title: "Hãy...", formula: "Vてください", desc: "N5: Yêu cầu, nhờ vả lịch sự.", ex: "書いてください。" },
-            "nai_de": { title: "Xin đừng", formula: "Vないで + ください", desc: "N5: Yêu cầu không làm gì.", ex: "行かないでください。" },
-            "te_mo_ii": { title: "Làm...được không", formula: "Vてもいい", desc: "N5/N4: Xin phép.", ex: "入ってもいいですか。" },
-            "ga_aru": { title: "Có (sở hữu/tồn tại)", formula: "N + が ある", desc: "N5: Có đồ vật, sự việc.", ex: "時間があります。" },
-            "de_method": { title: "Bằng cách nào", formula: "N(phương tiện) + で", desc: "N5: Phương tiện, cách thức.", ex: "バスで行きます。" },
-            "adverb": { title: "Phó từ (Tính từ)", formula: "Adj(i)く / Adj(na)に + V", desc: "N5/N4: Biến tính từ thành phó từ.", ex: "早く起きます。" },
-
-            // N4
-            "te_iru": { title: "Trạng thái (Kết quả)", formula: "Vている (Tự động từ)", desc: "N4: Diễn tả trạng thái còn lưu lại của một hành động.", ex: "ドアが開いています。" },
-            "te_aru": { title: "Trạng thái (Có chủ ý)", formula: "Vてある (Tha động từ)", desc: "N4: Trạng thái kết quả của một hành động có chủ ý của ai đó.", ex: "花が飾ってあります。" },
-            "te_oku": { title: "Làm sẵn/Để nguyên", formula: "Vておく", desc: "N4: Làm gì đó để chuẩn bị cho tương lai.", ex: "予約しておきます。" },
-            "te_simau": { title: "Lỡ/Hoàn thành", formula: "Vてしまう", desc: "N4: Hối tiếc vì lỡ làm hoặc làm xong hết.", ex: "忘れてしまいました。" },
-            "volitional": { title: "Thể ý định", formula: "Vよう", desc: "N4: Dự định làm gì (văn nói) hoặc rủ rê.", ex: "行こう！" },
-            "to_omou": { title: "Nghĩ rằng/Định làm", formula: "Vよう + と思う", desc: "N4: Dự định làm gì đó.", ex: "留学しようと思っています。" },
-            "tara": { title: "Nếu/Sau khi", formula: "Vたら", desc: "N4: Điều kiện giả định hoặc hành động nối tiếp.", ex: "雨が降ったら、行きません。" },
-            "koto_ga_aru": { title: "Đã từng", formula: "Vた + ことがある", desc: "N4: Kinh nghiệm trong quá khứ.", ex: "見たことがあります。" },
+            "wa_desu": { title: "Cấu trúc định danh", formula: "N1 は N2 です", desc: "N5: Khẳng định N1 là N2.", ex: "私は学生です。" },
+            "ni_place": { title: "Ở/Tại (Tồn tại/Đích đến)", formula: "N + に", desc: "N5: Chỉ nơi tồn tại hoặc điểm đến.", ex: "ホテルに泊まります。" },
+            "o_particle": { title: "Trợ từ O", formula: "N + を + V", desc: "N5: Chỉ đối tượng tác động.", ex: "ご飯を食べます。" },
+            "wo_particle": { title: "Trợ từ O", formula: "N + を + V", desc: "N5: Chỉ đối tượng tác động.", ex: "パンを買います。" },
+            "sou_da_hearsay": { title: "Nghe nói là", formula: "Vru/Adj + そうです", desc: "N4: Truyền đạt thông tin.", ex: "雨が降るそうです。" },
+            "sou_da_visual": { title: "Trông có vẻ", formula: "Adj(bỏ i/na) + そう", desc: "N4: Phỏng đoán qua thị giác.", ex: "おいしそうです。" },
+            "te_iru": { title: "Đang/Trạng thái", formula: "Vている", desc: "N5/N4: Hành động đang diễn ra hoặc trạng thái.", ex: "雨が降っています。" },
+            "shi_shi": { title: "Vừa...vừa... (Liệt kê)", formula: "～し、～し", desc: "N4: Liệt kê lý do, tính chất.", ex: "安くて、おいしいです。" },
+            "to_omou": { title: "Nghĩ rằng", formula: "～と 思います", desc: "N4: Biểu thị suy nghĩ, phỏng đoán.", ex: "明日雨が降ると思います。" },
+            "mashou": { title: "Cùng làm nhé", formula: "Vましょう", desc: "N5: Rủ rê, đề nghị.", ex: "帰りましょう。" },
+            "te_mo_ii": { title: "Làm...được không", formula: "Vてもいい", desc: "N5/N4: Xin phép làm gì đó.", ex: "入ってもいいですか。" },
+            "ni_iku": { title: "Đi để...", formula: "V(bỏ masu)/N + に行く", desc: "N5: Đi đâu đó để thực hiện mục đích gì.", ex: "映画を見に行きます。" },
             "ndesu": { title: "Giải thích/Nhấn mạnh", formula: "V/Adj + んです", desc: "N4: Giải thích lý do, tình huống.", ex: "お腹が痛いんです。" },
+            "te_simau": { title: "Lỡ/Hoàn thành", formula: "Vてしまう", desc: "N4: Hối tiếc vì lỡ làm hoặc làm xong hết.", ex: "食べてしまった。" },
+            "tari_tari": { title: "Làm những việc như...", formula: "Vたり Vたり します", desc: "N4: Liệt kê hành động đại diện.", ex: "本を読んだり、テレビを見たりします。" },
             "nagara": { title: "Vừa...vừa...", formula: "V(bỏ masu) + ながら", desc: "N4: Hai hành động song song.", ex: "歩きながら話す。" },
-            "te_form_cause": { title: "Vì...nên...", formula: "Vて / Adj(i)くて", desc: "N4: Chỉ nguyên nhân, lý do.", ex: "風邪を引いて、休みました。" },
-            "potential": { title: "Thể khả năng", formula: "Vれる / Vられる", desc: "N4: Có thể làm gì.", ex: "漢字が読めます。" },
-            "to_conditional": { title: "Hễ...thì...", formula: "Vる + と", desc: "N4: Điều kiện tất yếu.", ex: "押すと開きます。" },
-            "deshou": { title: "Có lẽ", formula: "V/Adj/N + でしょう", desc: "N4: Phỏng đoán.", ex: "明日は雨でしょう。" },
-            "kinshi": { title: "Cấm đoán", formula: "Vる + な / N + 禁止", desc: "N4: Cấm không được làm gì.", ex: "入るな。" },
+            "te_kuru": { title: "Đi rồi về/Thay đổi", formula: "Vてくる", desc: "N4: Đi làm gì đó rồi quay lại, hoặc sự thay đổi hướng về phía mình.", ex: "行ってくる。" },
+            "te_morau": { title: "Được làm cho", formula: "Vてもらう", desc: "N4: Được ai đó làm gì cho mình (biết ơn).", ex: "教えてもらった。" },
+            "ba_yokatta": { title: "Giá mà...", formula: "Vば + よかった", desc: "N3: Hối tiếc về việc đã không làm.", ex: "もっと勉強すればよかった。" },
+            "dake": { title: "Chỉ", formula: "N + だけ", desc: "N5: Giới hạn phạm vi (chỉ có cái này).", ex: "これだけです。" },
+            "koto_ga_aru": { title: "Đã từng", formula: "Vた + ことがある", desc: "N5: Biểu đạt kinh nghiệm trong quá khứ.", ex: "日本へ行ったことがあります。" },
+            "tai": { title: "Muốn làm gì", formula: "V(bỏ masu) + たい", desc: "N5: Biểu thị mong muốn của người nói.", ex: "お茶を飲みたいです。" },
+            "ga_aru": { title: "Có (Sự việc/Đồ vật)", formula: "N + がある", desc: "N5: Tồn tại đồ vật, hoặc có sự kiện, dự định.", ex: "明日、テストがあります。" },
+            "nakucha": { title: "Phải làm gì", formula: "Vなきゃ / Vなくちゃ", desc: "N5/N4: Rút gọn của なければならない, nghĩa vụ bắt buộc trong văn nói.", ex: "もう帰らなきゃ。" },
+            "kinshi": { title: "Cấm chỉ", formula: "Vるな / Vてはいけない", desc: "N4: Cấm đoán ai đó không được làm gì.", ex: "ここで写真を撮ってはいけません。" },
+            "potential": { title: "Thể khả năng", formula: "V(thể khả năng)", desc: "N4: Diễn tả khả năng có thể làm được việc gì đó.", ex: "私は漢字が読めます。" },
+            "de_place": { title: "Tại / Ở", formula: "N(địa điểm) + で + V", desc: "N5: Nơi chốn diễn ra một hành động.", ex: "学校で勉強します。" },
+            "to_conditional": { title: "Hễ...thì...", formula: "Vる + と", desc: "N4: Điều kiện dẫn đến kết quả tất yếu.", ex: "ボタンを押すと、ドアが開きます。" },
+            "narimasu": { title: "Trở nên", formula: "Adj(ku/ni) / N(ni) + なります", desc: "N5: Sự thay đổi trạng thái.", ex: "元気になります。" },
+            "adverb": { title: "Phó từ (Tính từ)", formula: "Adj(i)く / Adj(na)に + V", desc: "N5/N4: Biến tính từ thành phó từ bổ nghĩa cho động từ.", ex: "早く帰ります。" },
+            "te_itadakemasen_ka": { title: "Làm ơn (Lịch sự)", formula: "Vていただけませんか", desc: "N4: Nhờ vả lịch sự hơn 'te kudasai'.", ex: "手伝っていただけませんか。" },
+            "mashou_ka": { title: "Cùng làm nhé?", formula: "Vましょうか", desc: "N5: Rủ rê, đề nghị.", ex: "行きましょうか。" },
+            "te_wa_ikemasen": { title: "Cấm", formula: "Vてはいけません", desc: "N5: Không được phép làm gì.", ex: "ここで写真を撮ってはいけません。" },
+            "te_form_cause": { title: "Sau khi / Vì", formula: "Vてから / Vて", desc: "N5/N4: Hành động này xảy ra sau hành động kia, hoặc chỉ nguyên nhân.", ex: "手を洗ってから、食べます。" },
+            "wa_doko": { title: "Hỏi địa điểm", formula: "N はどこですか", desc: "N5: Dùng để hỏi vị trí của N.", ex: "トイレはどこですか。" },
+            "te_mo": { title: "Cho dù / Dù có...", formula: "Vても / Adj(ku/de)も / Nでも", desc: "N4: Biểu thị sự nhượng bộ.", ex: "雨が降っても行きます。" },
+            "de_method": { title: "Bằng cách thức/phương tiện", formula: "N で", desc: "N5: Chỉ phương tiện, công cụ hoặc cách thức tiến hành.", ex: "バスで行きます。" },
             "yori": { title: "So sánh hơn", formula: "N1 は N2 より Adj", desc: "N5: N1 tính chất hơn N2.", ex: "車は自転車より速いです。" },
-            "tai": { title: "Muốn", formula: "Vたい", desc: "N5: Mong muốn làm gì đó.", ex: "行きたいです。" },
-
-             // N3 & Others
-            "tsumori": { title: "Dự định", formula: "Vる/ない + つもり", desc: "N4: Dự định làm hoặc không làm gì.", ex: "帰るつもりです。" },
-            "yotei": { title: "Kế hoạch", formula: "N/Vる + 予定", desc: "N4: Kế hoạch đã được quyết định.", ex: "会議の予定です。" }
+            "you_ni_naru": { title: "Trở nên (Thay đổi khả năng)", formula: "Vる + ようになる", desc: "N4: Biểu thị sự thay đổi trạng thái từ không thể sang có thể.", ex: "泳げるようになりました。" },
+            "deshou": { title: "Có lẽ (Phỏng đoán)", formula: "V/Adj/N + でしょう", desc: "N4: Phỏng đoán.", ex: "明日は雨でしょう。" },
+            "passive": { title: "Thể bị động", formula: "Vられる", desc: "N4: Bị/Được làm gì đó.", ex: "先生にほめられました。" },
+            "no_wa": { title: "Danh từ hóa", formula: "Vる + のは", desc: "N4: Biến động từ thành danh từ để làm chủ ngữ.", ex: "食べるのは楽しいです。" },
+            "na_adj": { title: "Tính từ đuôi Na", formula: "Adj(na) + な + N", desc: "N5: Bổ nghĩa cho danh từ.", ex: "静かな町。" },
+            "ni_kotaeru": { title: "Trả lời cho", formula: "N + に + 答える", desc: "N4: Trả lời câu hỏi/yêu cầu.", ex: "質問に答えます。" },
+            "ga_verb": { title: "Tự động từ", formula: "N + が + V(intransitive)", desc: "N4: Diễn tả trạng thái hoặc hành động tự phát.", ex: "ドアが開きます。" },
+            "toshite": { title: "Với tư cách là", formula: "N + として", desc: "N3: Biểu thị lập trường, tư cách, danh nghĩa.", ex: "留学生として日本に来ました。" },
+            "ni_yotte": { title: "Bởi (Bị động)", formula: "N + によって", desc: "N3: Chỉ tác nhân trong câu bị động.", ex: "この絵はピカソによって描かれました。" },
+            "ba_hodo": { title: "Càng...càng...", formula: "Vば + Vる + ほど", desc: "N3: Mức độ tăng tiến.", ex: "勉強すればするほど難しくなります。" }
         };
 
         // --- 2. VOCABULARY DATA (Day 12) ---
@@ -454,7 +516,7 @@
             "許": { hanviet: "HỨA", mean: "Tha thứ/Cho phép", on: "キョ", kun: "ゆる.す", radicals: "Ngôn (言) + Ngọ (午)", tipImg: "Lời nói (言) lúc ngọ (午) là hứa.", tipSoundOn: "**Kyo**ka cho phép.", tipSoundKun: "**Yuru**su tha thứ.", words: [{w:"許す (ゆるす)", m:"Tha thứ"}, {w:"許可 (きょか)", m:"Sự cho phép"}] },
             "謝": { hanviet: "TẠ", mean: "Cảm tạ/Tạ lỗi", on: "シャ", kun: "あやま.る", radicals: "Ngôn (言) + Xạ (射)", tipImg: "Lời nói (言) bắn (射) ra để tạ lỗi.", tipSoundOn: "Kan**sha** cảm tạ.", tipSoundKun: "**Ayama**ru xin lỗi.", words: [{w:"謝る (あやまる)", m:"Xin lỗi"}, {w:"感謝 (かんしゃ)", m:"Cảm tạ"}] },
             "慣": { hanviet: "QUÁN", mean: "Quen", on: "カン", kun: "な.れる", radicals: "Tâm (忄) + Quán (貫)", tipImg: "Tâm (忄) quán (貫) triệt thói quen.", tipSoundOn: "Shuu**kan** tập quán.", tipSoundKun: "**Na**reru quen.", words: [{w:"慣れる (なれる)", m:"Làm quen"}, {w:"習慣 (しゅうかん)", m:"Tập quán"}] },
-            "立": { hanviet: "LẬP", mean: "Đứng", on: "リツ", kun: "た.つ", radicals: "Lập (立)", tipImg: "Người đứng trên đất.", tipSoundOn: "Kou**ritsu** công lập.", tipSoundKun: "**Ta**tsu đứng.", words: [{w:"立つ (たつ)", m:"Đứng"}, {w:"立てる (たてる)", m:"Dựng"}] },
+            "立": { hanviet: "LẬP", mean: "Đứng", on: "リツ", kun: "た.つ", radicals: "Lập (立)", tipImg: "Người đứng trên mặt đất.", tipSoundOn: "Kou**ritsu** công lập.", tipSoundKun: "**Ta**tsu đứng.", words: [{w:"立つ (たつ)", m:"Đứng"}, {w:"立てる (たてる)", m:"Dựng"}] },
             "建": { hanviet: "KIẾN", mean: "Xây dựng", on: "ケン", kun: "た.てる", radicals: "Dẫn (廴) + Duật (聿)", tipImg: "Tay cầm bút vẽ bản đồ xây dựng.", tipSoundOn: "**Ken**chiku kiến trúc.", tipSoundKun: "**Ta**teru xây.", words: [{w:"建てる (たてる)", m:"Xây"}, {w:"建つ (たつ)", m:"Được xây"}] },
             "育": { hanviet: "DỤC", mean: "Nuôi dạy", on: "イク", kun: "そだ.つ", radicals: "Nhục (月)", tipImg: "Nuôi con lớn bằng thịt.", tipSoundOn: "Kyou**iku** giáo dục.", tipSoundKun: "**Soda**tsu lớn lên.", words: [{w:"育つ (そだつ)", m:"Lớn lên"}, {w:"育てる (そだてる)", m:"Nuôi dạy"}] },
             "生": { hanviet: "SINH", mean: "Sinh sống/Mọc", on: "セイ", kun: "は.える, は.やす", radicals: "Sinh (生)", tipImg: "Cây nảy mầm.", tipSoundOn: "**Sei**katsu sinh hoạt.", tipSoundKun: "**Ha**eru mọc.", words: [{w:"生える (はえる)", m:"Mọc"}, {w:"生やす (はやす)", m:"Để mọc (râu)"}] },
@@ -506,11 +568,14 @@
             "酷": { hanviet: "KHỐC", mean: "Tàn khốc", on: "コク", kun: "ひど.い", radicals: "Dậu (酉) + Cáo (告)", tipImg: "Uống rượu (酉) rồi cáo (告) giác tàn khốc.", tipSoundOn: "Zan**koku** tàn khốc.", tipSoundKun: "**Hido**i tồi tệ.", words: [{w:"酷い (ひどい)", m:"Tồi tệ/Kinh khủng"}] }
         };
 
-        // --- 4. APP LOGIC (Standard Day 1 Logic) ---
+        // --- 4. APP LOGIC ---
         let currentIndex = 0; 
         let currentQuizItem = null; 
         let score = 0; 
         let currentStrokeSvg = null;
+        let strokeCache = {}; // Cache cho nét viết
+        let bookmarkedWords = JSON.parse(localStorage.getItem('azakanji_bookmarks_day12')) || []; // Đổi key cho Day 12
+        let filterBookmarked = false; // Trạng thái lọc từ khó
 
         function init() {
             renderList();
@@ -518,25 +583,61 @@
             loadWord(0);
             
             const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', e => { 
-                    const t = e.target.value.toLowerCase(); 
-                    document.querySelectorAll('.vocab-item').forEach(el => el.style.display = el.innerText.toLowerCase().includes(t) ? 'block' : 'none'); 
-                });
-            }
+            if (searchInput) searchInput.addEventListener('input', applyFilters);
 
             const mobileSearchInput = document.getElementById('mobileSearchInput');
-            if (mobileSearchInput) {
-                mobileSearchInput.addEventListener('input', e => { 
-                    const t = e.target.value.toLowerCase(); 
-                    document.querySelectorAll('.vocab-item').forEach(el => el.style.display = el.innerText.toLowerCase().includes(t) ? 'block' : 'none'); 
-                });
-            }
+            if (mobileSearchInput) mobileSearchInput.addEventListener('input', applyFilters);
 
             const quizInput = document.getElementById('quiz-input');
             if (quizInput) {
                 quizInput.addEventListener('keypress', e => { if(e.key === 'Enter') checkAnswer(); });
             }
+        }
+
+        // Hàm bật/tắt bộ lọc từ khó
+        function toggleBookmarkFilter() {
+            filterBookmarked = !filterBookmarked;
+            
+            const btn1 = document.getElementById('btnFilterStar');
+            const btn2 = document.getElementById('btnMobileFilterStar');
+            
+            // Đổi màu nút khi được bật/tắt
+            const activeClass = "w-10 h-10 rounded-xl border border-yellow-300 bg-yellow-50 text-yellow-500 flex items-center justify-center shadow-sm transition-colors";
+            const inactiveClass = "w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50";
+            
+            if (btn1) btn1.className = filterBookmarked ? activeClass : inactiveClass;
+            if (btn2) btn2.className = filterBookmarked ? activeClass : inactiveClass;
+            
+            applyFilters();
+        }
+
+        // Hàm áp dụng cả tìm kiếm text và lọc Bookmark
+        function applyFilters() {
+            // Đồng bộ text giữa mobile và desktop search bar
+            const inputD = document.getElementById('searchInput');
+            const inputM = document.getElementById('mobileSearchInput');
+            let activeTerm = '';
+
+            if (inputD && document.activeElement === inputD) {
+                activeTerm = inputD.value.toLowerCase();
+                if (inputM) inputM.value = inputD.value;
+            } else if (inputM && document.activeElement === inputM) {
+                activeTerm = inputM.value.toLowerCase();
+                if (inputD) inputD.value = inputM.value;
+            } else {
+                activeTerm = (inputD?.value || inputM?.value || '').toLowerCase();
+            }
+
+            // Quét danh sách
+            document.querySelectorAll('.vocab-item').forEach(el => {
+                const idx = parseInt(el.getAttribute('data-index'));
+                const word = vocabData[idx];
+                
+                const textMatch = el.innerText.toLowerCase().includes(activeTerm);
+                const bookmarkMatch = !filterBookmarked || bookmarkedWords.includes(word.STT);
+                
+                el.style.display = (textMatch && bookmarkMatch) ? 'block' : 'none';
+            });
         }
 
         function switchTab(tab) {
@@ -550,14 +651,17 @@
         function renderList() {
             const listD = document.getElementById('vocabList'); 
             const listM = document.getElementById('mobileVocabList');
-            const html = vocabData.map((item, i) => `
+            const html = vocabData.map((item, i) => {
+                const isBookmarked = bookmarkedWords.includes(item.STT);
+                return `
                 <div class="vocab-item p-3 border-b hover:bg-gray-50 cursor-pointer rounded-lg mx-1 my-1" data-index="${i}" onclick="loadWord(${i}); if(window.innerWidth < 768) toggleDrawer();">
                     <div class="flex justify-between font-bold items-center">
-                        <span class="text-gray-800 ja-text">${item.Kanji || item.Furigana}</span>
+                        <span class="text-gray-800 ja-text">${item.Kanji || item.Furigana} <i class="fas fa-star text-yellow-400 text-[10px] ml-1 ${isBookmarked ? '' : 'hidden'} bookmark-icon-${item.STT}"></i></span>
                         <span class="text-gray-300 text-xs font-mono">#${item.STT}</span>
                     </div>
                     <div class="text-xs text-gray-500 mt-1 truncate">${item.Nghĩa}</div>
-                </div>`).join('');
+                </div>`;
+            }).join('');
             if (listD) listD.innerHTML = html;
             if (listM) listM.innerHTML = html;
         }
@@ -577,6 +681,14 @@
             document.getElementById('cardFurigana').innerText = word.Furigana;
             document.getElementById('cardMeaning').innerText = word.Nghĩa;
             document.getElementById('wordType').innerText = word.type.toUpperCase();
+            
+            // Cập nhật trạng thái nút Bookmark
+            const btnBookmark = document.getElementById('btnBookmark');
+            if (bookmarkedWords.includes(word.STT)) {
+                btnBookmark.classList.replace('text-gray-300', 'text-yellow-400');
+            } else {
+                btnBookmark.classList.replace('text-yellow-400', 'text-gray-300');
+            }
             
             const hasKanji = word.Kanji && word.Kanji !== word.Furigana;
             document.getElementById('strokeBtn').classList.toggle('hidden', !hasKanji);
@@ -622,23 +734,39 @@
                                 <i class="fas fa-volume-up text-xl"></i>
                             </button>
                         </div>
+                        
+                        <!-- Practice Area -->
+                        <div class="mt-4 bg-gray-50 p-3 rounded-xl border border-gray-200">
+                            <div class="flex items-center gap-2">
+                                <button id="mic-${word.STT}-${t.k}" onclick="startDictation('${word.STT}', '${t.k}', '${word.conv[t.k].replace(/'/g, "\\'")}')" class="w-10 h-10 flex-shrink-0 rounded-full bg-white border border-gray-300 text-gray-500 shadow-sm hover:text-blue-600 hover:border-blue-300 transition-all flex items-center justify-center" title="Đọc bằng giọng nói">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <input type="text" id="input-${word.STT}-${t.k}" onkeypress="if(event.key === 'Enter') checkSentencePractice('${word.STT}', '${t.k}', '${word.conv[t.k].replace(/'/g, "\\'")}')" class="flex-1 w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm ja-text outline-none focus:ring-2 focus:ring-indigo-400 transition-all" placeholder="Gõ tiếng Nhật hoặc dùng mic..." autocomplete="off">
+                                <button onclick="checkSentencePractice('${word.STT}', '${t.k}', '${word.conv[t.k].replace(/'/g, "\\'")}')" class="w-10 h-10 flex-shrink-0 rounded-lg bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 transition-all flex items-center justify-center" title="Kiểm tra">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <div id="feedback-${word.STT}-${t.k}" class="text-[11px] font-bold mt-2 hidden text-center"></div>
+                        </div>
                     </div>`;
             });
         }
 
+        // Cập nhật hàm xử lý giải thích ngữ pháp để bắt lỗi tốt hơn
         function openExplan(idsStr) {
             const ids = idsStr.split(','); 
             const f = document.getElementById('dgFormula'); 
             const e = document.getElementById('dgExplanation');
             
-            f.innerText = ids.map(id => grammarRepo[id] ? grammarRepo[id].formula : "N/A").join("  /  ");
+            f.innerText = ids.map(id => grammarRepo[id] ? grammarRepo[id].formula : "Đang cập nhật...").join("  /  ");
+            
             e.innerHTML = ids.map(id => {
-                if (!grammarRepo[id]) return `<div class="text-red-500">Missing grammar: ${id}</div>`;
+                if (!grammarRepo[id]) return `<div class="text-red-500 text-sm pb-2"><i class="fas fa-exclamation-triangle"></i> Đang chờ cập nhật dữ liệu cho mã: <b>${id}</b></div>`;
                 return `
-                <div class="pb-2 border-b border-gray-100 last:border-0">
+                <div class="pb-3 border-b border-gray-100 last:border-0">
                     <strong class="text-indigo-700 block mb-1">${grammarRepo[id].title} <span class="text-xs font-normal text-gray-400">(${grammarRepo[id].desc.split(':')[0]})</span></strong>
-                    <p>${grammarRepo[id].desc.split(':').slice(1).join(':') || grammarRepo[id].desc}</p>
-                    <p class="text-xs text-gray-400 mt-1 italic">Vd: ${grammarRepo[id].ex}</p>
+                    <p class="text-gray-700">${grammarRepo[id].desc.split(':').slice(1).join(':') || grammarRepo[id].desc}</p>
+                    <p class="text-sm text-gray-500 mt-2 italic flex items-start gap-2 bg-gray-50 p-2 rounded"><i class="fas fa-quote-left text-indigo-300 text-xs mt-1"></i> <span>${grammarRepo[id].ex}</span></p>
                 </div>`;
             }).join("");
             
@@ -673,6 +801,7 @@
                 document.getElementById(id.replace('Modal','Panel')).classList.remove('opacity-0', 'scale-95'); 
             }, 10); 
         }
+        
         function closeModal(id) { 
             const b = document.getElementById(id.replace('Modal','Backdrop')); 
             const p = document.getElementById(id.replace('Modal','Panel'));
@@ -680,6 +809,7 @@
             if(p) p.classList.add('opacity-0', 'scale-95');
             setTimeout(() => document.getElementById(id).classList.add('hidden'), 200); 
         }
+        
         function openGrammarList() { showModal('grammarListModal'); }
 
         async function openStrokeModal(char) {
@@ -718,11 +848,29 @@
                 const fmt = s => s.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-gray-900">$1</span>');
                 document.getElementById('detailTipImg').innerHTML = fmt(d.tipImg || ''); 
                 
-                let soundContent = d.tipSound || '';
-                if (!soundContent && (d.tipSoundOn || d.tipSoundKun)) {
-                    soundContent = [d.tipSoundOn, d.tipSoundKun].filter(Boolean).join(' / ');
+                // Hiển thị phần mẹo nhớ âm thanh tương thích với mọi loại data
+                if (d.tipSound) {
+                    document.getElementById('tipSoundGeneric').innerHTML = fmt(d.tipSound);
+                    document.getElementById('tipSoundGeneric').classList.remove('hidden');
+                    document.getElementById('tipSoundOnWrapper').classList.add('hidden');
+                    document.getElementById('tipSoundKunWrapper').classList.add('hidden');
+                } else {
+                    document.getElementById('tipSoundGeneric').classList.add('hidden');
+                    
+                    if (d.tipSoundOn) {
+                        document.getElementById('detailTipSoundOn').innerHTML = fmt(d.tipSoundOn);
+                        document.getElementById('tipSoundOnWrapper').classList.remove('hidden');
+                    } else {
+                        document.getElementById('tipSoundOnWrapper').classList.add('hidden');
+                    }
+                    
+                    if (d.tipSoundKun) {
+                        document.getElementById('detailTipSoundKun').innerHTML = fmt(d.tipSoundKun);
+                        document.getElementById('tipSoundKunWrapper').classList.remove('hidden');
+                    } else {
+                        document.getElementById('tipSoundKunWrapper').classList.add('hidden');
+                    }
                 }
-                document.getElementById('detailTipSound').innerHTML = fmt(soundContent);
                 
                 document.getElementById('btnPlayOn').onclick = () => speakText(d.on);
                 document.getElementById('btnPlayKun').onclick = () => speakText(d.kun);
@@ -735,14 +883,21 @@
             } else { 
                 c.classList.add('hidden'); e.classList.remove('hidden'); 
             }
+            
             const anim = document.getElementById('strokeAnimContainer'); 
             const grid = document.getElementById('strokeGridContainer');
             anim.innerHTML = '<i class="fas fa-spinner fa-spin text-gray-300 text-2xl"></i>'; 
             grid.innerHTML = '';
+            
             try {
-                const r = await fetch(`https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/${getKanjiHex(k)}.svg`);
-                if(!r.ok) throw new Error();
-                const svgText = await r.text();
+                let svgText = strokeCache[k];
+                if (!svgText) {
+                    const r = await fetch(`https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/${getKanjiHex(k)}.svg`);
+                    if(!r.ok) throw new Error();
+                    svgText = await r.text();
+                    strokeCache[k] = svgText; // Lưu vào cache để tải nhanh lần sau
+                }
+                
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(svgText, "image/svg+xml");
                 doc.querySelectorAll('path').forEach(p => p.setAttribute('style', 'opacity:0; stroke:#333; stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round;')); 
@@ -785,7 +940,21 @@
         function getKanjiHex(k) { return k.charCodeAt(0).toString(16).padStart(5, '0'); }
         function speakText(t) { if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(t); u.lang = 'ja-JP'; u.rate = 0.9; speechSynthesis.speak(u); } }
         function speakCurrent() { speakText(vocabData[currentIndex].Furigana); }
-        function toggleDrawer() { const d = document.getElementById('mobileDrawer'); const c = document.getElementById('drawerContent'); const b = document.getElementById('drawerBackdrop'); if(d.classList.contains('pointer-events-none')) { d.classList.remove('pointer-events-none'); c.classList.remove('-translate-x-full'); b.classList.remove('opacity-0'); } else { c.classList.add('-translate-x-full'); b.classList.add('opacity-0'); setTimeout(() => d.classList.add('pointer-events-none'), 300); } }
+        
+        function toggleDrawer() { 
+            const d = document.getElementById('mobileDrawer'); 
+            const c = document.getElementById('drawerContent'); 
+            const b = document.getElementById('drawerBackdrop'); 
+            if(d.classList.contains('pointer-events-none')) { 
+                d.classList.remove('pointer-events-none'); 
+                c.classList.remove('-translate-x-full'); 
+                b.classList.remove('opacity-0'); 
+            } else { 
+                c.classList.add('-translate-x-full'); 
+                b.classList.add('opacity-0'); 
+                setTimeout(() => d.classList.add('pointer-events-none'), 300); 
+            } 
+        }
 
         function nextQuestion() {
             document.getElementById('feedback-area').classList.add('hidden'); document.getElementById('btn-check').classList.remove('hidden'); document.getElementById('btn-next').classList.add('hidden');
@@ -796,6 +965,7 @@
             document.getElementById('quiz-kanji').innerText = currentQuizItem.Kanji || currentQuizItem.Furigana;
             document.getElementById('quiz-meaning').innerText = currentQuizItem.Nghĩa;
         }
+
         function checkAnswer() {
             const inp = document.getElementById('quiz-input'); if(!inp.value.trim()) return;
             inp.disabled = true; 
@@ -814,9 +984,152 @@
             document.getElementById('score-display').innerText = score; document.getElementById('correct-answer').innerText = currentQuizItem.Furigana;
             document.getElementById('feedback-area').classList.remove('hidden'); document.getElementById('btn-check').classList.add('hidden'); document.getElementById('btn-next').classList.remove('hidden');
         }
+        
         function playQuizAudio() { if(currentQuizItem) speakText(currentQuizItem.Furigana); }
         function prevWord() { if(currentIndex > 0) loadWord(currentIndex - 1); }
         function nextWord() { if(currentIndex < vocabData.length - 1) loadWord(currentIndex + 1); }
+
+        // --- NEW AUDIO & PRACTICE LOGIC ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playFeedbackSound(isCorrect) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (isCorrect) {
+                // Âm thanh Ting! (Đúng)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1); 
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else {
+                // Âm thanh Bíp (Sai)
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        function normalizeJapanese(str) {
+            // Loại bỏ khoảng trắng, dấu câu tiếng Nhật để so sánh dễ hơn
+            return str.replace(/[\s　、。！？！？「」『』（）]/g, '');
+        }
+
+        function checkSentencePractice(stt, type, targetSentence) {
+            const inputEl = document.getElementById(`input-${stt}-${type}`);
+            const feedbackEl = document.getElementById(`feedback-${stt}-${type}`);
+            const userText = normalizeJapanese(inputEl.value);
+            const target = normalizeJapanese(targetSentence);
+
+            if (!userText) return;
+
+            inputEl.classList.remove('bg-white', 'border-gray-300', 'bg-red-50', 'border-red-400', 'text-red-700', 'bg-green-50', 'border-green-400', 'text-green-700', 'wrong-anim');
+            feedbackEl.classList.remove('hidden', 'text-green-600', 'text-red-600');
+
+            if (userText === target) {
+                playFeedbackSound(true);
+                inputEl.classList.add('bg-green-50', 'border-green-400', 'text-green-700');
+                feedbackEl.classList.add('text-green-600');
+                feedbackEl.innerHTML = '<i class="fas fa-check-circle"></i> Tuyệt vời! Bạn đã nhập chính xác.';
+            } else {
+                playFeedbackSound(false);
+                inputEl.classList.add('bg-red-50', 'border-red-400', 'text-red-700', 'wrong-anim');
+                feedbackEl.classList.add('text-red-600');
+                feedbackEl.innerHTML = '<i class="fas fa-times-circle"></i> Sai rồi, hãy kiểm tra lại Kanji/Hiragana nhé!';
+            }
+        }
+
+        function startDictation(stt, type, targetSentence) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Trình duyệt của bạn hiện không hỗ trợ nhận diện giọng nói. Hãy dùng trình duyệt Chrome hoặc Safari nhé!");
+                return;
+            }
+            
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'ja-JP';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            const inputEl = document.getElementById(`input-${stt}-${type}`);
+            const micBtn = document.getElementById(`mic-${stt}-${type}`);
+
+            // Reset trạng thái
+            inputEl.value = 'Đang nghe...';
+            inputEl.classList.remove('bg-green-50', 'bg-red-50', 'text-green-700', 'text-red-700');
+            micBtn.classList.add('animate-pulse', 'bg-red-100', 'text-red-600', 'border-red-300');
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                inputEl.value = transcript;
+                checkSentencePractice(stt, type, targetSentence);
+            };
+
+            recognition.onerror = function(event) {
+                inputEl.value = '';
+                alert("Lỗi thu âm: " + event.error);
+            };
+
+            recognition.onend = function() {
+                micBtn.classList.remove('animate-pulse', 'bg-red-100', 'text-red-600', 'border-red-300');
+                if(inputEl.value === 'Đang nghe...') inputEl.value = '';
+            };
+
+            recognition.start();
+        }
+
+        function toggleBookmark() {
+            const word = vocabData[currentIndex];
+            const idx = bookmarkedWords.indexOf(word.STT);
+            const btn = document.getElementById('btnBookmark');
+            
+            if (idx > -1) {
+                bookmarkedWords.splice(idx, 1);
+                btn.classList.replace('text-yellow-400', 'text-gray-300');
+            } else {
+                bookmarkedWords.push(word.STT);
+                btn.classList.replace('text-gray-300', 'text-yellow-400');
+                btn.classList.remove('bookmark-anim');
+                void btn.offsetWidth; // Kích hoạt lại animation
+                btn.classList.add('bookmark-anim');
+            }
+            
+            // Lưu vào LocalStorage
+            localStorage.setItem('azakanji_bookmarks_day12', JSON.stringify(bookmarkedWords));
+            
+            // Cập nhật icon sao trên danh sách bên trái/drawer
+            document.querySelectorAll(`.bookmark-icon-${word.STT}`).forEach(icon => {
+                if (idx > -1) icon.classList.add('hidden');
+                else icon.classList.remove('hidden');
+            });
+
+            // Nếu đang bật chế độ lọc mà bỏ đánh dấu, cập nhật lại danh sách ngay lập tức
+            if (filterBookmarked) applyFilters();
+        }
+
+        // Bổ sung phím tắt điều hướng cho Thể Trí tập trung
+        document.addEventListener('keydown', (e) => {
+            // Không kích hoạt nếu đang gõ chữ hoặc mở Pop-up
+            if (document.activeElement.tagName === 'INPUT') return;
+            const modals = ['grammarListModal', 'detailGrammarModal', 'strokeModal'];
+            if (modals.some(id => !document.getElementById(id).classList.contains('hidden'))) return;
+            
+            // Chỉ hoạt động khi ở tab Học từ
+            if (!document.getElementById('learn-section').classList.contains('hidden')) {
+                if (e.key === 'ArrowRight') nextWord();
+                if (e.key === 'ArrowLeft') prevWord();
+                if (e.key === 'b' || e.key === 'B') toggleBookmark(); 
+            }
+        });
 
         window.speakCurrent = speakCurrent;
         window.switchTab = switchTab;
@@ -834,8 +1147,19 @@
         window.openExplan = openExplan;
         window.closeModal = closeModal;
         window.showModal = showModal;
+        window.toggleBookmarkFilter = toggleBookmarkFilter;
+        window.toggleBookmark = toggleBookmark;
+        window.checkSentencePractice = checkSentencePractice;
+        window.startDictation = startDictation;
 
         document.addEventListener('DOMContentLoaded', init);
     </script>
+    
+    <!-- Meta Data -->
+    <meta name="description" content="Khám phá ngay bài học tiếng Nhật tiếp theo cùng グローバルソリューション株式会社. Cơ hội làm việc trong môi trường quốc tế đang chờ đón bạn. Theo dõi Facebook: グローバルソリューション株式会社 để cập nhật tin tức mới nhất!">
+    <div style="display: none;">
+        Tuyển dụng kỹ sư IT làm việc tại Nhật Bản. Xem chi tiết tại <a href="https://globalsolution.jp">グローバルソリューション株式会社</a>. 
+        Theo dõi fanpage của chúng tôi: <a href="https://www.facebook.com/profile.php?id=61577256908615">Facebook: グローバルソリューション株式会社</a>.
+    </div>
 </body>
 </html>
