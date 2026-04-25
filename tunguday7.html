@@ -8,7 +8,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-    
     <style>
         body { font-family: 'Nunito', 'Inter', sans-serif; background-color: #f3f4f6; height: 100dvh; overflow: hidden; }
         .ja-text { font-family: 'Noto Sans JP', sans-serif; }
@@ -37,6 +36,8 @@
         
         @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         .correct-anim { animation: pop 0.3s ease-in-out; }
+        
+        .bookmark-anim { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
         /* Stroke Order Styles */
         .stroke-grid-box { border: 1px solid #e5e7eb; background-color: white; position: relative; }
@@ -100,6 +101,10 @@
                             <span id="wordType" class="text-[10px] font-bold uppercase text-indigo-500">WORD</span>
                             <div class="w-px h-3 bg-gray-300"></div>
                             <span class="text-[10px] text-gray-400 font-mono" id="wordIndex">#1</span>
+                            <div class="w-px h-3 bg-gray-300"></div>
+                            <button id="btnBookmark" onclick="toggleBookmark()" class="text-gray-300 hover:text-yellow-400 transition-colors" title="Đánh dấu từ khó (Phím B)">
+                                <i class="fas fa-star text-xs"></i>
+                            </button>
                         </div>
                         <div class="relative inline-block mb-2">
                             <h2 id="cardKanji" class="text-5xl md:text-6xl font-bold text-gray-800 ja-text tracking-tight cursor-pointer hover:text-indigo-700 transition-colors" onclick="speakCurrent()">準備</h2>
@@ -194,6 +199,24 @@
         </div>
     </div>
 
+    <!-- SỬA LỖI 1: THÊM MOBILE DRAWER (MENU TRƯỢT TỪ BÊN TRÁI) CHO MOBILE -->
+    <div id="mobileDrawer" class="fixed inset-0 z-50 pointer-events-none md:hidden">
+        <div id="drawerBackdrop" class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="toggleDrawer()"></div>
+        <div id="drawerContent" class="absolute top-0 left-0 bottom-0 w-[85%] max-w-sm bg-white shadow-2xl transform -translate-x-full transition-transform duration-300 flex flex-col">
+            <div class="p-4 border-b border-gray-100 bg-indigo-50 flex justify-between items-center">
+                <h2 class="font-bold text-indigo-800"><i class="fas fa-list-ul mr-2"></i> Danh Sách Từ</h2>
+                <button onclick="toggleDrawer()" class="w-8 h-8 rounded-full bg-white text-gray-500 hover:bg-gray-100 flex items-center justify-center shadow-sm transition"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-3 border-b border-gray-100 bg-gray-50">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <input type="text" id="mobileSearchInput" placeholder="Tìm kiếm từ..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm outline-none">
+                </div>
+            </div>
+            <div id="mobileVocabList" class="flex-1 overflow-y-auto scroller p-2 space-y-1 bg-white pb-24"></div>
+        </div>
+    </div>
+
     <!-- MODAL: GRAMMAR LIST -->
     <div id="grammarListModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center px-4">
         <div class="absolute inset-0 bg-gray-900/70 backdrop-blur-sm transition-opacity opacity-0" id="grammarListBackdrop" onclick="closeModal('grammarListModal')"></div>
@@ -220,19 +243,19 @@
     <!-- MODAL: GRAMMAR DETAIL -->
     <div id="detailGrammarModal" class="fixed inset-0 z-[90] hidden flex items-center justify-center px-4">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity opacity-0" id="detailGrammarBackdrop" onclick="closeModal('detailGrammarModal')"></div>
-        <div class="bg-white rounded-2xl w-full max-w-md relative z-10 shadow-2xl transform transition-all scale-95 opacity-0 flex flex-col" id="detailGrammarPanel">
-            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-2xl">
+        <div class="bg-white rounded-2xl w-full max-w-md relative z-10 shadow-2xl transform transition-all scale-95 opacity-0 flex flex-col max-h-[90vh]" id="detailGrammarPanel">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-2xl flex-shrink-0">
                 <div class="flex items-center gap-2">
                     <div class="bg-indigo-100 p-1.5 rounded-lg text-indigo-600"><i class="fas fa-info-circle"></i></div>
                     <h3 class="text-lg font-bold text-gray-800">Giải thích Ngữ pháp</h3>
                 </div>
                 <button onclick="closeModal('detailGrammarModal')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
             </div>
-            <div class="p-6">
+            <div class="p-6 overflow-y-auto scroller">
                 <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-center mb-4 shadow-sm">
                     <code class="text-lg font-bold text-indigo-700 font-mono" id="dgFormula"></code>
                 </div>
-                <div id="dgExplanation" class="text-gray-600 text-sm mb-4 space-y-3 leading-relaxed"></div>
+                <div id="dgExplanation" class="text-gray-600 text-sm mb-4 space-y-4 leading-relaxed"></div>
             </div>
         </div>
     </div>
@@ -304,7 +327,8 @@
     </div>
 
     <script>
-        // --- 1. GRAMMAR REPO (N5 - N3) ---
+        // --- 1. GRAMMAR REPO (N5 - N3) --- 
+        // SỬA LỖI 2: Đã thêm các trường còn thiếu mà bạn gắn trong gIds của vocabData
         const grammarRepo = {
             "te_oku": { title: "Làm sẵn", formula: "Vておく", desc: "N4: Làm gì đó để chuẩn bị cho tương lai.", ex: "旅行の前にホテルを予約しておきます。" },
             "te_aru": { title: "Có sẵn (Trạng thái)", formula: "Vてある", desc: "N4: Trạng thái kết quả của một hành động có chủ ý.", ex: "カレンダーに予定が書いてあります。" },
@@ -336,7 +360,16 @@
             "te_kuru": { title: "Đi rồi về/Thay đổi", formula: "Vてくる", desc: "N4: Đi làm gì đó rồi quay lại, hoặc sự thay đổi hướng về phía mình.", ex: "行ってくる。" },
             "te_morau": { title: "Được làm cho", formula: "Vてもらう", desc: "N4: Được ai đó làm gì cho mình (biết ơn).", ex: "教えてもらった。" },
             "ba_yokatta": { title: "Giá mà...", formula: "Vば + よかった", desc: "N3: Hối tiếc về việc đã không làm.", ex: "もっと勉強すればよかった。" },
-            "dake": { title: "Chỉ", formula: "N + だけ", desc: "N5: Giới hạn phạm vi (chỉ có cái này).", ex: "これだけです。" }
+            "dake": { title: "Chỉ", formula: "N + だけ", desc: "N5: Giới hạn phạm vi (chỉ có cái này).", ex: "これだけです。" },
+            
+            // --- CÁC NGỮ PHÁP BỔ SUNG ĐỂ SỬA LỖI ---
+            "koto_ga_aru": { title: "Đã từng", formula: "Vた + ことがある", desc: "N5: Biểu đạt kinh nghiệm trong quá khứ.", ex: "日本へ行ったことがあります。" },
+            "tai": { title: "Muốn làm gì", formula: "V(bỏ masu) + たい", desc: "N5: Biểu thị mong muốn của người nói.", ex: "お茶を飲みたいです。" },
+            "ga_aru": { title: "Có (Sự việc/Đồ vật)", formula: "N + がある", desc: "N5: Tồn tại đồ vật, hoặc có sự kiện, dự định.", ex: "明日、テストがあります。" },
+            "nakucha": { title: "Phải làm gì", formula: "Vなきゃ / Vなくちゃ", desc: "N5/N4: Rút gọn của なければならない, nghĩa vụ bắt buộc trong văn nói.", ex: "もう帰らなきゃ。" },
+            "kinshi": { title: "Cấm chỉ", formula: "Vるな / Vてはいけない", desc: "N4: Cấm đoán ai đó không được làm gì.", ex: "ここで写真を撮ってはいけません。" },
+            "potential": { title: "Thể khả năng", formula: "V(thể khả năng)", desc: "N4: Diễn tả khả năng có thể làm được việc gì đó.", ex: "私は漢字が読めます。" },
+            "de_place": { title: "Tại / Ở", formula: "N(địa điểm) + で + V", desc: "N5: Nơi chốn diễn ra một hành động.", ex: "学校で勉強します。" }
         };
 
         const vocabData = [
@@ -531,11 +564,13 @@
             "書": { hanviet: "THƯ", mean: "Viết", on: "ショ", kun: "か.く", radicals: "Duật (聿) + Nhật (日)", tipImg: "Tay cầm bút viết.", tipSoundOn: "Doku**sho** thư.", tipSoundKun: "**Ka**ku viết.", words: [{w:"読書 (どくしょ)", m:"Đọc sách"}, {w:"辞書 (じしょ)", m:"Từ điển"}] }
         };
 
-        // --- 4. APP LOGIC (Standard Day 1 Logic) ---
+        // --- 4. APP LOGIC ---
         let currentIndex = 0; 
         let currentQuizItem = null; 
         let score = 0; 
         let currentStrokeSvg = null;
+        let strokeCache = {}; // Cache cho nét viết
+        let bookmarkedWords = JSON.parse(localStorage.getItem('azakanji_bookmarks')) || []; // Lưu trữ từ khó vào máy
 
         function init() {
             renderList();
@@ -575,14 +610,17 @@
         function renderList() {
             const listD = document.getElementById('vocabList'); 
             const listM = document.getElementById('mobileVocabList');
-            const html = vocabData.map((item, i) => `
+            const html = vocabData.map((item, i) => {
+                const isBookmarked = bookmarkedWords.includes(item.STT);
+                return `
                 <div class="vocab-item p-3 border-b hover:bg-gray-50 cursor-pointer rounded-lg mx-1 my-1" data-index="${i}" onclick="loadWord(${i}); if(window.innerWidth < 768) toggleDrawer();">
                     <div class="flex justify-between font-bold items-center">
-                        <span class="text-gray-800 ja-text">${item.Kanji || item.Furigana}</span>
+                        <span class="text-gray-800 ja-text">${item.Kanji || item.Furigana} <i class="fas fa-star text-yellow-400 text-[10px] ml-1 ${isBookmarked ? '' : 'hidden'} bookmark-icon-${item.STT}"></i></span>
                         <span class="text-gray-300 text-xs font-mono">#${item.STT}</span>
                     </div>
                     <div class="text-xs text-gray-500 mt-1 truncate">${item.Nghĩa}</div>
-                </div>`).join('');
+                </div>`;
+            }).join('');
             if (listD) listD.innerHTML = html;
             if (listM) listM.innerHTML = html;
         }
@@ -602,6 +640,14 @@
             document.getElementById('cardFurigana').innerText = word.Furigana;
             document.getElementById('cardMeaning').innerText = word.Nghĩa;
             document.getElementById('wordType').innerText = word.type.toUpperCase();
+            
+            // Cập nhật trạng thái nút Bookmark
+            const btnBookmark = document.getElementById('btnBookmark');
+            if (bookmarkedWords.includes(word.STT)) {
+                btnBookmark.classList.replace('text-gray-300', 'text-yellow-400');
+            } else {
+                btnBookmark.classList.replace('text-yellow-400', 'text-gray-300');
+            }
             
             const hasKanji = word.Kanji && word.Kanji !== word.Furigana;
             document.getElementById('strokeBtn').classList.toggle('hidden', !hasKanji);
@@ -651,19 +697,21 @@
             });
         }
 
+        // Cập nhật hàm xử lý giải thích ngữ pháp để bắt lỗi tốt hơn
         function openExplan(idsStr) {
             const ids = idsStr.split(','); 
             const f = document.getElementById('dgFormula'); 
             const e = document.getElementById('dgExplanation');
             
-            f.innerText = ids.map(id => grammarRepo[id] ? grammarRepo[id].formula : "N/A").join("  /  ");
+            f.innerText = ids.map(id => grammarRepo[id] ? grammarRepo[id].formula : "Đang cập nhật...").join("  /  ");
+            
             e.innerHTML = ids.map(id => {
-                if (!grammarRepo[id]) return `<div class="text-red-500">Missing grammar: ${id}</div>`;
+                if (!grammarRepo[id]) return `<div class="text-red-500 text-sm pb-2"><i class="fas fa-exclamation-triangle"></i> Đang chờ cập nhật dữ liệu cho mã: <b>${id}</b></div>`;
                 return `
-                <div class="pb-2 border-b border-gray-100 last:border-0">
+                <div class="pb-3 border-b border-gray-100 last:border-0">
                     <strong class="text-indigo-700 block mb-1">${grammarRepo[id].title} <span class="text-xs font-normal text-gray-400">(${grammarRepo[id].desc.split(':')[0]})</span></strong>
-                    <p>${grammarRepo[id].desc.split(':').slice(1).join(':') || grammarRepo[id].desc}</p>
-                    <p class="text-xs text-gray-400 mt-1 italic">Vd: ${grammarRepo[id].ex}</p>
+                    <p class="text-gray-700">${grammarRepo[id].desc.split(':').slice(1).join(':') || grammarRepo[id].desc}</p>
+                    <p class="text-sm text-gray-500 mt-2 italic flex items-start gap-2 bg-gray-50 p-2 rounded"><i class="fas fa-quote-left text-indigo-300 text-xs mt-1"></i> <span>${grammarRepo[id].ex}</span></p>
                 </div>`;
             }).join("");
             
@@ -698,6 +746,7 @@
                 document.getElementById(id.replace('Modal','Panel')).classList.remove('opacity-0', 'scale-95'); 
             }, 10); 
         }
+        
         function closeModal(id) { 
             const b = document.getElementById(id.replace('Modal','Backdrop')); 
             const p = document.getElementById(id.replace('Modal','Panel'));
@@ -705,6 +754,7 @@
             if(p) p.classList.add('opacity-0', 'scale-95');
             setTimeout(() => document.getElementById(id).classList.add('hidden'), 200); 
         }
+        
         function openGrammarList() { showModal('grammarListModal'); }
 
         async function openStrokeModal(char) {
@@ -756,14 +806,21 @@
             } else { 
                 c.classList.add('hidden'); e.classList.remove('hidden'); 
             }
+            
             const anim = document.getElementById('strokeAnimContainer'); 
             const grid = document.getElementById('strokeGridContainer');
             anim.innerHTML = '<i class="fas fa-spinner fa-spin text-gray-300 text-2xl"></i>'; 
             grid.innerHTML = '';
+            
             try {
-                const r = await fetch(`https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/${getKanjiHex(k)}.svg`);
-                if(!r.ok) throw new Error();
-                const svgText = await r.text();
+                let svgText = strokeCache[k];
+                if (!svgText) {
+                    const r = await fetch(`https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/${getKanjiHex(k)}.svg`);
+                    if(!r.ok) throw new Error();
+                    svgText = await r.text();
+                    strokeCache[k] = svgText; // Lưu vào cache để tải nhanh lần sau
+                }
+                
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(svgText, "image/svg+xml");
                 doc.querySelectorAll('path').forEach(p => p.setAttribute('style', 'opacity:0; stroke:#333; stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round;')); 
@@ -806,7 +863,21 @@
         function getKanjiHex(k) { return k.charCodeAt(0).toString(16).padStart(5, '0'); }
         function speakText(t) { if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(t); u.lang = 'ja-JP'; u.rate = 0.9; speechSynthesis.speak(u); } }
         function speakCurrent() { speakText(vocabData[currentIndex].Furigana); }
-        function toggleDrawer() { const d = document.getElementById('mobileDrawer'); const c = document.getElementById('drawerContent'); const b = document.getElementById('drawerBackdrop'); if(d.classList.contains('pointer-events-none')) { d.classList.remove('pointer-events-none'); c.classList.remove('-translate-x-full'); b.classList.remove('opacity-0'); } else { c.classList.add('-translate-x-full'); b.classList.add('opacity-0'); setTimeout(() => d.classList.add('pointer-events-none'), 300); } }
+        
+        function toggleDrawer() { 
+            const d = document.getElementById('mobileDrawer'); 
+            const c = document.getElementById('drawerContent'); 
+            const b = document.getElementById('drawerBackdrop'); 
+            if(d.classList.contains('pointer-events-none')) { 
+                d.classList.remove('pointer-events-none'); 
+                c.classList.remove('-translate-x-full'); 
+                b.classList.remove('opacity-0'); 
+            } else { 
+                c.classList.add('-translate-x-full'); 
+                b.classList.add('opacity-0'); 
+                setTimeout(() => d.classList.add('pointer-events-none'), 300); 
+            } 
+        }
 
         function nextQuestion() {
             document.getElementById('feedback-area').classList.add('hidden'); document.getElementById('btn-check').classList.remove('hidden'); document.getElementById('btn-next').classList.add('hidden');
@@ -817,6 +888,7 @@
             document.getElementById('quiz-kanji').innerText = currentQuizItem.Kanji || currentQuizItem.Furigana;
             document.getElementById('quiz-meaning').innerText = currentQuizItem.Nghĩa;
         }
+
         function checkAnswer() {
             const inp = document.getElementById('quiz-input'); if(!inp.value.trim()) return;
             inp.disabled = true; 
@@ -835,9 +907,51 @@
             document.getElementById('score-display').innerText = score; document.getElementById('correct-answer').innerText = currentQuizItem.Furigana;
             document.getElementById('feedback-area').classList.remove('hidden'); document.getElementById('btn-check').classList.add('hidden'); document.getElementById('btn-next').classList.remove('hidden');
         }
+        
         function playQuizAudio() { if(currentQuizItem) speakText(currentQuizItem.Furigana); }
         function prevWord() { if(currentIndex > 0) loadWord(currentIndex - 1); }
         function nextWord() { if(currentIndex < vocabData.length - 1) loadWord(currentIndex + 1); }
+
+        function toggleBookmark() {
+            const word = vocabData[currentIndex];
+            const idx = bookmarkedWords.indexOf(word.STT);
+            const btn = document.getElementById('btnBookmark');
+            
+            if (idx > -1) {
+                bookmarkedWords.splice(idx, 1);
+                btn.classList.replace('text-yellow-400', 'text-gray-300');
+            } else {
+                bookmarkedWords.push(word.STT);
+                btn.classList.replace('text-gray-300', 'text-yellow-400');
+                btn.classList.remove('bookmark-anim');
+                void btn.offsetWidth; // Kích hoạt lại animation
+                btn.classList.add('bookmark-anim');
+            }
+            
+            // Lưu vào LocalStorage
+            localStorage.setItem('azakanji_bookmarks', JSON.stringify(bookmarkedWords));
+            
+            // Cập nhật icon sao trên danh sách bên trái/drawer
+            document.querySelectorAll(`.bookmark-icon-${word.STT}`).forEach(icon => {
+                if (idx > -1) icon.classList.add('hidden');
+                else icon.classList.remove('hidden');
+            });
+        }
+
+        // Bổ sung phím tắt điều hướng cho Thể Trí tập trung
+        document.addEventListener('keydown', (e) => {
+            // Không kích hoạt nếu đang gõ chữ hoặc mở Pop-up
+            if (document.activeElement.tagName === 'INPUT') return;
+            const modals = ['grammarListModal', 'detailGrammarModal', 'strokeModal'];
+            if (modals.some(id => !document.getElementById(id).classList.contains('hidden'))) return;
+            
+            // Chỉ hoạt động khi ở tab Học từ
+            if (!document.getElementById('learn-section').classList.contains('hidden')) {
+                if (e.key === 'ArrowRight') nextWord();
+                if (e.key === 'ArrowLeft') prevWord();
+                if (e.key === 'b' || e.key === 'B') toggleBookmark(); 
+            }
+        });
 
         document.addEventListener('DOMContentLoaded', init);
     </script>
