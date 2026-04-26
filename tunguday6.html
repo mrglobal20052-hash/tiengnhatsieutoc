@@ -6,267 +6,327 @@
     <title>AzaKanji Master - Ngày 6 (Full 101 Kanji)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Nunito', sans-serif; background-color: #f3f4f6; height: 100dvh; overflow: hidden; }
+        body { font-family: 'Nunito', 'Inter', sans-serif; background-color: #f3f4f6; height: 100dvh; overflow: hidden; }
         .ja-text { font-family: 'Noto Sans JP', sans-serif; }
+        
         .scroller { -webkit-overflow-scrolling: touch; overflow-y: auto; }
         .scroller::-webkit-scrollbar { width: 5px; height: 5px; }
+        .scroller::-webkit-scrollbar-track { background: transparent; }
         .scroller::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
-        .vocab-item { transition: all 0.2s; border-left: 4px solid transparent; }
-        .vocab-item.active { background-color: #eef2ff; border-left-color: #4f46e5; color: #4338ca; padding-left: 0.75rem; }
-        .stroke-grid-box { border: 1px solid #e5e7eb; background-color: white; position: relative; }
-        .stroke-grid-box::after { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: repeating-linear-gradient(to bottom, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); pointer-events: none; }
-        .stroke-grid-box::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: repeating-linear-gradient(to right, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); pointer-events: none; }
-        #strokeAnimContainer svg path { opacity: 0; }
-        .reveal-content { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .vocab-item { transition: all 0.2s; }
+        .vocab-item.active { background-color: #eef2ff; border-left: 4px solid #4f46e5; color: #4338ca; padding-left: 0.75rem; }
+        
+        .shadow-card { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s; }
+        .shadow-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-top: 1px solid rgba(255, 255, 255, 0.3); }
+        .tab-btn.active { background-color: white; color: #312e81; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); }
+        .tab-btn { color: #a5b4fc; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
         
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         .wrong-anim { animation: shake 0.3s ease-in-out; }
-        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        .correct-anim { animation: pop 0.3s ease-in-out; }
         
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .correct-anim { animation: pop 0.3s ease-in-out; }
+
+        .stroke-grid-box { border: 1px solid #e5e7eb; background-color: white; position: relative; }
+        .stroke-grid-box::after { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: repeating-linear-gradient(to bottom, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); pointer-events: none; }
+        .stroke-grid-box::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: repeating-linear-gradient(to right, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); pointer-events: none; }
+        #strokeAnimContainer svg path { opacity: 0; }
     </style>
 </head>
 <body class="flex flex-col text-slate-800">
+    <!-- HEADER -->
     <header class="bg-indigo-700 text-white shadow-lg flex-none z-40 relative">
-        <div class="container mx-auto px-4 py-2 flex flex-col md:flex-row justify-between items-center gap-3">
+        <div class="container mx-auto px-4 py-2 md:py-3 flex flex-col md:flex-row justify-between items-center gap-3">
             <div class="flex items-center justify-between w-full md:w-auto gap-3 cursor-pointer" onclick="location.reload()">
                 <div class="flex items-center gap-3">
                     <i class="fas fa-torii-gate text-3xl text-pink-400 drop-shadow-md"></i>
                     <div>
-                        <h1 class="text-lg font-black uppercase tracking-widest">AzaKanji Master</h1>
-                        <p class="text-[10px] text-indigo-200 font-bold uppercase tracking-wider">Ngày 6: 101 KANJI 100% DATA</p>
+                        <h1 class="text-lg font-bold uppercase tracking-widest">AzaKanji Master</h1>
+                        <p class="text-[10px] text-indigo-200 font-bold uppercase tracking-wider">Ngày 6: 101 Kanji 100% Data</p>
                     </div>
                 </div>
-                <div class="md:hidden bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 shadow-inner">
-                    <span id="headerProgressMobile">0/87</span>
-                </div>
+                <div class="md:hidden bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 shadow-inner" id="headerProgressMobile">0/87</div>
             </div>
             
             <div class="flex bg-indigo-900/50 rounded-xl p-1 w-full md:w-auto overflow-x-auto no-scrollbar shadow-inner gap-1">
-                <button onclick="switchTab('learn')" id="tab-learn" class="tab-btn flex-1 md:flex-none px-5 py-2 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 bg-white text-indigo-900 shadow">
-                    <i class="fas fa-book-open text-indigo-600"></i> Học Từ
+                <button onclick="switchTab('learn')" id="tab-learn" class="tab-btn active flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap">
+                    <i class="fas fa-book-open text-xs"></i> Học Từ
                 </button>
-                <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn flex-1 md:flex-none px-5 py-2 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 text-indigo-100 hover:text-white hover:bg-indigo-800/50">
-                    <i class="fas fa-gamepad"></i> Luyện Tập
+                <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap">
+                    <i class="fas fa-keyboard text-xs"></i> Luyện Tập
                 </button>
                 <div class="w-px bg-indigo-600/50 mx-1"></div>
-                <button onclick="showModal('grammarListModal')" class="tab-btn flex-1 md:flex-none px-5 py-2 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 text-indigo-100 hover:text-white hover:bg-indigo-800/50">
-                    <i class="fas fa-scroll text-yellow-400"></i> Cẩm Nang
+                <button onclick="openGrammarList()" class="tab-btn flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap">
+                    <i class="fas fa-scroll text-xs"></i> Cẩm Nang
                 </button>
             </div>
         </div>
     </header>
 
     <div class="flex flex-1 overflow-hidden relative w-full">
-        <aside class="hidden md:flex w-80 bg-white border-r border-gray-200 flex-col z-10 shadow-sm">
-            <div class="p-4 border-b bg-gray-50 flex items-center gap-3">
-                <div class="relative flex-1 flex items-center">
-                    <div class="bg-indigo-100 text-indigo-600 p-2 rounded-lg absolute left-0"><i class="fas fa-search"></i></div>
-                    <input type="text" id="searchInput" placeholder="Tìm Kanji, Hiragana, Nghĩa..." class="w-full pl-12 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none font-bold placeholder:text-gray-400 placeholder:font-medium focus:ring-2 focus:ring-indigo-500 transition-all">
+        <!-- SIDEBAR DESKTOP -->
+        <aside class="hidden md:flex w-72 bg-white border-r border-gray-200 flex-col z-10 shadow-sm">
+            <div class="p-4 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
+                <div class="relative flex-1">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm từ..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all outline-none font-medium">
                 </div>
-                <button id="btnFilterStar" onclick="toggleBookmarkFilter()" class="w-11 h-11 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50 flex-shrink-0">
+                <button id="btnFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50 flex-shrink-0">
                     <i class="fas fa-star"></i>
                 </button>
             </div>
-            <div id="vocabList" class="flex-1 scroller p-3 space-y-1.5"></div>
+            <div id="vocabList" class="flex-1 scroller p-2 space-y-1"></div>
         </aside>
 
-        <main id="learn-section" class="flex-1 overflow-y-auto scroller bg-slate-50/50 p-4 md:p-8 pb-32">
-            <div class="max-w-3xl mx-auto space-y-8 animate-fade-in">
-                <div class="bg-white rounded-[2rem] p-10 shadow-sm border border-gray-100 text-center relative overflow-hidden group">
-                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-indigo-50 to-pink-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-1000"></div>
-                    <div id="wordIndex" class="absolute top-6 left-6 bg-gray-100 text-gray-500 px-3 py-1 rounded-lg text-xs font-black font-mono tracking-widest shadow-inner">#01</div>
-                    <button id="btnBookmark" onclick="toggleBookmark()" class="absolute top-6 right-6 w-8 h-8 flex items-center justify-center text-gray-300 hover:text-yellow-400 transition-colors z-10">
-                        <i class="fas fa-star text-xl"></i>
+        <!-- MAIN CONTENT (LEARN) -->
+        <main id="learn-section" class="flex-1 overflow-y-auto scroller bg-slate-50 p-4 md:p-8 pb-32 w-full scroll-smooth">
+            <div class="max-w-3xl mx-auto space-y-6 animate-fade-in">
+                <!-- Word Card -->
+                <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-200 text-center relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-50 to-pink-50 rounded-bl-full -mr-8 -mt-8 z-0 opacity-60 transition-transform group-hover:scale-110 duration-700"></div>
+                    
+                    <div class="relative z-10 flex justify-center items-center mb-6">
+                        <div class="inline-flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                            <span id="wordType" class="text-[10px] font-bold uppercase text-indigo-500 tracking-widest">TYPE</span>
+                            <div class="w-px h-3 bg-gray-300"></div>
+                            <span class="text-[10px] text-gray-400 font-mono font-bold" id="wordIndex">#01</span>
+                        </div>
+                    </div>
+                    
+                    <button id="btnBookmark" onclick="toggleBookmark()" class="absolute top-6 right-6 w-8 h-8 flex items-center justify-center text-gray-300 hover:text-yellow-400 transition-colors z-10" title="Đánh dấu (Phím B)">
+                        <i class="fas fa-star text-lg"></i>
                     </button>
-                    <div class="relative z-10 inline-block mt-4">
-                        <h2 id="cardKanji" class="text-7xl md:text-[6rem] font-black text-gray-800 ja-text mb-6 cursor-pointer transition-transform active:scale-95 drop-shadow-sm hover:text-indigo-600" onclick="speakCurrent()"></h2>
-                        <button id="strokeBtn" onclick="openStrokeModal()" class="absolute -right-16 top-4 w-12 h-12 bg-pink-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-pink-200 hover:bg-pink-600 hover:-translate-y-1 transition-all hidden" title="Phân tích Kanji 5 Bước">
-                            <i class="fas fa-pen-nib text-xl"></i>
+                    
+                    <div class="relative z-10 inline-block mb-4">
+                        <h2 id="cardKanji" class="text-6xl md:text-7xl font-bold text-gray-800 ja-text tracking-tight cursor-pointer hover:text-indigo-700 transition-colors drop-shadow-sm" onclick="speakCurrent()">...</h2>
+                        <button id="strokeBtn" onclick="openStrokeModal()" class="absolute -right-12 top-2 w-10 h-10 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center shadow-sm hover:bg-pink-200 hover:-translate-y-1 transition-all hidden" title="Phân tích Kanji 5 Bước">
+                            <i class="fas fa-pen-nib text-sm"></i>
                         </button>
                     </div>
-                    <div class="relative z-10 space-y-2 cursor-pointer" onclick="speakCurrent()">
-                        <span id="cardFurigana" class="text-2xl text-indigo-600 font-bold ja-text block"></span>
-                        <span id="cardMeaning" class="text-2xl text-gray-500 font-black uppercase tracking-wide block"></span>
+                    <div class="relative z-10 flex flex-col items-center gap-1 cursor-pointer" onclick="speakCurrent()">
+                        <span id="cardFurigana" class="text-2xl text-indigo-600 font-bold ja-text">...</span>
+                        <span id="cardMeaning" class="text-lg text-gray-500 font-bold tracking-wide">...</span>
                     </div>
                 </div>
 
-                <div class="space-y-4">
-                    <div class="flex items-center gap-3 px-2">
-                        <div class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-2 rounded-xl shadow-md"><i class="fas fa-comments"></i></div>
-                        <h3 class="font-black text-gray-800 text-xl tracking-tight">Ngữ cảnh & Phân tích</h3>
+                <!-- Sentences -->
+                <div class="w-full space-y-4">
+                    <div class="flex items-center gap-2 px-1">
+                        <div class="bg-pink-100 text-pink-600 p-2 rounded-lg text-sm"><i class="fas fa-comments"></i></div>
+                        <h3 class="font-bold text-gray-700 text-lg">Ngữ cảnh & Phân tích</h3>
                     </div>
-                    <div id="sentenceList" class="space-y-5"></div>
-                    <div id="emptyState" class="hidden flex-col items-center justify-center p-12 text-center bg-white rounded-3xl border-2 border-dashed border-gray-200 text-gray-400">
-                        <i class="fas fa-comment-dots text-5xl mb-4 text-gray-200"></i>
-                        <p class="font-medium">Dữ liệu hội thoại đang được cập nhật...</p>
+                    <div id="sentenceList" class="space-y-4"></div>
+                    <div id="emptyState" class="hidden flex-col items-center justify-center p-8 text-center bg-white rounded-2xl border border-dashed border-gray-300 text-gray-400">
+                        <i class="fas fa-comment-dots text-4xl mb-2 text-gray-300"></i>
+                        <p class="text-sm font-medium">Dữ liệu hội thoại đang được cập nhật...</p>
                     </div>
                 </div>
             </div>
         </main>
 
-        <div id="quiz-section" class="hidden flex-1 p-4 md:p-8 overflow-y-auto scroller bg-slate-50">
-            <div class="max-w-2xl mx-auto mt-4 md:mt-10 bg-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl text-center border border-gray-100 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-                <div class="flex justify-between items-center mb-10">
-                    <div class="text-sm font-black text-gray-400 uppercase tracking-widest"><i class="fas fa-graduation-cap mr-2"></i>Thử thách</div>
-                    <div class="bg-indigo-50 text-indigo-700 px-4 py-1.5 rounded-xl font-black font-mono shadow-inner" id="score-display">ĐIỂM: 0</div>
+        <!-- QUIZ MODE -->
+        <div id="quiz-section" class="hidden flex-1 w-full overflow-y-auto scroller bg-slate-100 p-4 md:p-8">
+            <div class="max-w-2xl mx-auto mt-4 md:mt-10 animate-fade-in">
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 md:p-8 text-white flex justify-between items-center relative overflow-hidden">
+                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                        <div class="relative z-10">
+                            <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2"><i class="fas fa-graduation-cap"></i> Thử Thách</h2>
+                            <p class="text-indigo-100 text-xs md:text-sm mt-1">Nhìn Kanji - Đoán Hiragana</p>
+                        </div>
+                        <div class="text-right relative z-10 bg-white/10 p-3 rounded-xl backdrop-blur-sm">
+                            <div class="text-[10px] text-indigo-100 uppercase font-bold tracking-wider mb-1">Điểm số</div>
+                            <div class="text-3xl font-bold font-mono leading-none" id="score-display">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 md:p-10 text-center">
+                        <div class="mb-8 relative">
+                            <div class="text-xs text-gray-400 mb-3 uppercase font-bold tracking-widest">Từ này đọc là gì?</div>
+                            <div id="quiz-kanji" class="text-6xl md:text-7xl ja-text font-bold text-gray-800 mb-4 transition-all inline-block drop-shadow-sm"></div>
+                            <div id="quiz-meaning" class="text-lg text-indigo-600 font-bold"></div>
+                        </div>
+                        
+                        <div class="relative max-w-sm mx-auto mb-8">
+                            <input type="text" id="quiz-input" class="w-full text-center text-2xl p-4 border-2 border-gray-300 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all ja-text bg-gray-50 focus:bg-white placeholder:text-gray-300 font-medium" placeholder="Nhập hiragana..." autocomplete="off">
+                        </div>
+                        
+                        <div id="feedback-area" class="hidden rounded-xl p-5 border-2 text-left mb-6 animate-fade-in shadow-inner">
+                            <div id="feedback-title" class="font-bold text-lg mb-2 flex items-center"></div>
+                            <div class="text-gray-700 flex items-center flex-wrap gap-2">
+                                Đáp án đúng: <span id="correct-answer" class="font-bold text-xl text-indigo-600 px-3 py-1 bg-white border border-indigo-100 rounded-lg ja-text shadow-sm"></span>
+                                <button onclick="playQuizAudio()" class="text-gray-400 hover:text-indigo-600 transition-colors w-8 h-8 rounded-full flex items-center justify-center hover:bg-white border border-transparent hover:border-gray-200"><i class="fas fa-volume-up"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-center">
+                            <button id="btn-check" onclick="checkAnswer()" class="w-full max-w-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition active:scale-95 text-lg flex items-center justify-center gap-2">
+                                <i class="fas fa-check"></i> Kiểm Tra
+                            </button>
+                            <button id="btn-next" onclick="nextQuestion()" class="hidden w-full max-w-xs bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg transition active:scale-95 text-lg flex items-center justify-center gap-2">
+                                Câu Tiếp Theo <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div id="quiz-kanji" class="text-7xl md:text-8xl ja-text font-black mb-4 text-gray-800 transition-all"></div>
-                <div id="quiz-meaning" class="text-xl text-indigo-500 mb-10 font-black tracking-wide"></div>
-                
-                <div class="relative max-w-sm mx-auto">
-                    <input type="text" id="quiz-input" class="w-full text-center text-3xl p-5 border-2 border-gray-200 rounded-2xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 outline-none transition-all ja-text bg-gray-50 focus:bg-white" placeholder="Gõ Hiragana..." autocomplete="off">
-                </div>
-                
-                <div id="feedback" class="mt-6 p-4 rounded-2xl font-black text-lg hidden animate-fade-in border-2"></div>
-                
-                <button id="btn-check" onclick="checkAnswer()" class="mt-8 w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xl shadow-[0_8px_15px_-3px_rgba(79,70,229,0.3)] hover:bg-indigo-700 active:scale-[0.98] transition-all">
-                    <i class="fas fa-check-circle mr-2"></i> KIỂM TRA
-                </button>
-                <button id="btn-next" onclick="nextQuestion()" class="mt-8 w-full bg-slate-800 text-white py-5 rounded-2xl font-black text-xl shadow-[0_8px_15px_-3px_rgba(30,41,59,0.3)] active:scale-[0.98] transition-all hidden">
-                    CÂU TIẾP THEO <i class="fas fa-arrow-right ml-2"></i>
-                </button>
             </div>
         </div>
     </div>
 
     <!-- MOBILE BOTTOM BAR -->
     <div id="mobileBottomBar" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md px-4 py-3 pb-6 z-30 flex items-center justify-between gap-4 md:hidden shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] border-t border-gray-100">
-        <button onclick="prevWord()" class="w-14 h-14 rounded-2xl bg-white border-2 border-gray-100 text-gray-600 flex items-center justify-center shadow-sm active:bg-gray-50 active:scale-95 transition-all"><i class="fas fa-chevron-left text-xl"></i></button>
-        <button onclick="toggleDrawer()" class="flex-1 h-14 rounded-2xl bg-indigo-600 text-white font-black flex items-center justify-center shadow-lg shadow-indigo-200 gap-2 active:scale-95 transition-all"><i class="fas fa-list-ul"></i> DANH SÁCH</button>
-        <button onclick="nextWord()" class="w-14 h-14 rounded-2xl bg-white border-2 border-gray-100 text-gray-600 flex items-center justify-center shadow-sm active:bg-gray-50 active:scale-95 transition-all"><i class="fas fa-chevron-right text-xl"></i></button>
+        <button onclick="prevWord()" class="w-14 h-14 rounded-xl bg-white border-2 border-gray-100 text-gray-600 flex items-center justify-center shadow-sm active:bg-gray-50 active:scale-95 transition-all"><i class="fas fa-chevron-left text-lg"></i></button>
+        <button onclick="toggleDrawer()" class="flex-1 h-14 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center shadow-lg shadow-indigo-200 gap-2 active:scale-95 transition-all"><i class="fas fa-list-ul"></i> DANH SÁCH</button>
+        <button onclick="nextWord()" class="w-14 h-14 rounded-xl bg-white border-2 border-gray-100 text-gray-600 flex items-center justify-center shadow-sm active:bg-gray-50 active:scale-95 transition-all"><i class="fas fa-chevron-right text-lg"></i></button>
     </div>
     
     <!-- MOBILE DRAWER -->
-    <div id="mobileDrawer" class="fixed inset-0 z-50 pointer-events-none md:hidden">
+    <div id="mobileDrawer" class="fixed inset-0 z-50 pointer-events-none md:hidden flex">
         <div id="drawerBackdrop" class="absolute inset-0 bg-slate-900/60 opacity-0 transition-opacity duration-300" onclick="toggleDrawer()"></div>
-        <div id="drawerContent" class="absolute inset-y-0 bottom-0 left-0 w-[85%] max-w-sm bg-white shadow-2xl transform -translate-x-full transition-transform duration-300 flex flex-col pointer-events-auto">
+        <div id="drawerContent" class="relative w-[85%] max-w-sm bg-white h-full shadow-2xl transform -translate-x-full transition-transform duration-300 flex flex-col pointer-events-auto">
             <div class="p-5 border-b border-gray-100 flex items-center justify-between bg-indigo-50">
-                <h3 class="font-black text-xl text-indigo-900 flex items-center gap-2"><i class="fas fa-list"></i> Danh Sách Từ</h3>
-                <button onclick="toggleDrawer()" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-500 shadow-sm active:scale-95 transition-all"><i class="fas fa-times text-lg"></i></button>
+                <h3 class="font-bold text-lg text-indigo-900 flex items-center gap-2"><i class="fas fa-list"></i> Danh Sách Từ</h3>
+                <button onclick="toggleDrawer()" class="w-8 h-8 rounded-full hover:bg-white flex items-center justify-center text-gray-500 shadow-sm active:scale-95 transition-colors"><i class="fas fa-times"></i></button>
             </div>
-            <div class="p-4 border-b border-gray-100 flex gap-2">
-                <div class="bg-gray-100 rounded-xl flex items-center px-4 py-2 gap-2 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:bg-white transition-all flex-1">
-                    <i class="fas fa-search text-gray-400"></i>
-                    <input type="text" id="mobileSearchInput" placeholder="Tìm kiếm nhanh..." class="w-full bg-transparent outline-none text-sm font-bold placeholder:text-gray-400 placeholder:font-medium">
+            <div class="p-4 border-b border-gray-100 flex gap-2 bg-gray-50">
+                <div class="bg-white rounded-xl flex items-center px-4 py-2 gap-2 focus-within:ring-2 focus-within:ring-indigo-500 transition-all flex-1 border border-gray-200">
+                    <i class="fas fa-search text-gray-400 text-sm"></i>
+                    <input type="text" id="mobileSearchInput" placeholder="Tìm nhanh..." class="w-full bg-transparent outline-none text-sm font-medium placeholder:text-gray-400">
                 </div>
                 <button id="btnMobileFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50 flex-shrink-0">
                     <i class="fas fa-star"></i>
                 </button>
             </div>
-            <div id="mobileVocabList" class="flex-1 overflow-y-auto scroller p-3 space-y-2 bg-slate-50"></div>
+            <div id="mobileVocabList" class="flex-1 overflow-y-auto scroller p-2 space-y-1 bg-white pb-24"></div>
         </div>
     </div>
 
+    <!-- GRAMMAR LIST MODAL -->
     <div id="grammarListModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center px-4 py-6">
         <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" onclick="closeModal('grammarListModal')"></div>
-        <div class="bg-white rounded-[2rem] w-full max-w-6xl relative z-10 shadow-2xl flex flex-col h-full max-h-[90vh] overflow-hidden">
-            <div class="p-6 border-b flex justify-between items-center bg-gradient-to-r from-indigo-50 to-white">
-                <div class="flex items-center gap-4">
-                    <div class="bg-indigo-600 text-white w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"><i class="fas fa-scroll text-xl"></i></div>
+        <div class="bg-white rounded-2xl w-full max-w-5xl relative z-10 shadow-2xl flex flex-col h-full max-h-[85vh] overflow-hidden">
+            <div class="p-5 md:p-6 border-b flex justify-between items-center bg-gradient-to-r from-indigo-50 to-white">
+                <div class="flex items-center gap-3">
+                    <div class="bg-indigo-600 text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-md"><i class="fas fa-scroll"></i></div>
                     <div>
-                        <h3 class="text-2xl font-black text-indigo-900 tracking-tight">Cẩm Nang Ngữ Pháp Day 6</h3>
-                        <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">Trọn bộ các cấu trúc mổ xẻ</p>
+                        <h3 class="text-xl font-bold text-indigo-900 tracking-tight">Cẩm Nang Ngữ Pháp Day 6</h3>
+                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">Trọn bộ các cấu trúc mổ xẻ</p>
                     </div>
                 </div>
-                <button onclick="closeModal('grammarListModal')" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-red-50 hover:text-red-500 flex items-center justify-center text-gray-500 transition-colors"><i class="fas fa-times text-xl"></i></button>
+                <button onclick="closeModal('grammarListModal')" class="w-8 h-8 rounded-full hover:bg-red-50 hover:text-red-500 flex items-center justify-center text-gray-400 transition-colors"><i class="fas fa-times text-lg"></i></button>
             </div>
-            <div class="p-6 overflow-y-auto scroller bg-slate-50/50 flex-1">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="grammarGrid"></div>
+            <div class="p-6 overflow-y-auto scroller bg-slate-50 flex-1">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="grammarGrid"></div>
             </div>
         </div>
     </div>
 
+    <!-- GRAMMAR DETAIL MODAL -->
     <div id="detailGrammarModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center px-4 py-6">
-        <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-md" onclick="closeModal('detailGrammarModal')"></div>
-        <div class="bg-white rounded-[2.5rem] w-full max-w-2xl relative z-10 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-gray-100">
-            <div class="p-6 border-b flex justify-between items-center bg-white relative overflow-hidden">
-                <div class="absolute -right-4 -top-4 text-8xl text-indigo-50 opacity-50"><i class="fas fa-microscope"></i></div>
-                <h3 class="text-xl font-black text-indigo-900 flex items-center gap-3 relative z-10 uppercase tracking-widest">
-                    <div class="w-2 h-8 bg-indigo-500 rounded-full"></div> Phân Tích Cấu Trúc
+        <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm transition-opacity" onclick="closeModal('detailGrammarModal')"></div>
+        <div class="bg-white rounded-2xl w-full max-w-2xl relative z-10 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden border border-gray-100">
+            <div class="p-5 md:p-6 border-b flex justify-between items-center bg-white relative overflow-hidden">
+                <div class="absolute -right-2 -top-2 text-7xl text-indigo-50 opacity-50"><i class="fas fa-microscope"></i></div>
+                <h3 class="text-lg md:text-xl font-bold text-indigo-900 flex items-center gap-3 relative z-10 uppercase tracking-widest">
+                    <div class="w-1.5 h-6 bg-indigo-500 rounded-full"></div> Phân Tích Cấu Trúc
                 </h3>
-                <button onclick="closeModal('detailGrammarModal')" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors relative z-10"><i class="fas fa-times"></i></button>
+                <button onclick="closeModal('detailGrammarModal')" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors relative z-10"><i class="fas fa-times"></i></button>
             </div>
-            <div class="p-6 md:p-8 overflow-y-auto scroller space-y-8 bg-slate-50" id="dgContent"></div>
+            <div class="p-6 md:p-8 overflow-y-auto scroller space-y-6 bg-slate-50" id="dgContent">
+                <!-- Nội dung grammar detail sẽ được render ở đây bằng JS -->
+            </div>
         </div>
     </div>
 
+    <!-- KANJI 5-STEP MODAL -->
     <div id="strokeModal" class="fixed inset-0 z-[80] hidden flex items-center justify-center px-4 py-6">
-        <div class="absolute inset-0 bg-slate-900/95 backdrop-blur-md" onclick="closeModal('strokeModal')"></div>
-        <div class="bg-white rounded-[2.5rem] w-full max-w-6xl relative z-10 shadow-2xl flex flex-col h-full max-h-[95vh] overflow-hidden">
-            <div class="p-5 md:p-6 border-b flex justify-between items-center bg-white">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-pink-200">
-                        <i class="fas fa-layer-group text-xl"></i>
+        <div class="absolute inset-0 bg-slate-900/95 backdrop-blur-sm transition-opacity" onclick="closeModal('strokeModal')"></div>
+        <div class="bg-white rounded-2xl w-full max-w-5xl relative z-10 shadow-2xl flex flex-col h-full max-h-[95vh] overflow-hidden">
+            <div class="p-4 md:p-5 border-b flex justify-between items-center bg-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-500 text-white rounded-xl flex items-center justify-center shadow-md shadow-pink-200">
+                        <i class="fas fa-layer-group"></i>
                     </div>
-                    <h3 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight uppercase">Phân Tích Kanji 5 Bước</h3>
+                    <h3 class="text-lg md:text-xl font-bold text-slate-800 uppercase tracking-tight">Phân Tích Kanji 5 Bước</h3>
                 </div>
-                <button onclick="closeModal('strokeModal')" class="text-slate-300 hover:text-red-500 transition-colors"><i class="fas fa-times-circle text-4xl md:text-5xl"></i></button>
+                <button onclick="closeModal('strokeModal')" class="text-slate-400 hover:text-red-500 transition-colors"><i class="fas fa-times-circle text-3xl"></i></button>
             </div>
-            <div class="flex-1 overflow-y-auto scroller p-4 md:p-10 bg-slate-50">
-                <div id="strokeTabs" class="flex justify-center gap-3 mb-8 overflow-x-auto pb-2 no-scrollbar"></div>
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <div class="flex-1 overflow-y-auto scroller p-4 md:p-8 bg-slate-50">
+                <div id="strokeTabs" class="flex justify-center gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar"></div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+                    <!-- Trái: Nét viết -->
                     <div class="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-0 h-fit">
-                        <div class="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-gray-100 text-center relative group">
-                            <p class="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-6 border-b border-gray-50 pb-4">Mô phỏng nét viết</p>
-                            <div id="strokeAnimContainer" class="w-48 h-48 md:w-56 md:h-56 mx-auto bg-white border-2 border-gray-50 relative stroke-grid-box flex items-center justify-center rounded-3xl cursor-pointer hover:shadow-lg transition-all" onclick="replayStrokeAnimation()"></div>
-                            <button onclick="replayStrokeAnimation()" class="absolute top-6 right-6 w-10 h-10 bg-pink-50 text-pink-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-sm"><i class="fas fa-redo"></i></button>
-                            <p class="text-xs font-bold text-indigo-400 mt-6"><i class="fas fa-hand-pointer mr-1"></i> Chạm vào ô để xem lại</p>
-                            <div id="strokeGridContainer" class="mt-6 flex flex-wrap gap-2 justify-center hidden md:flex"></div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center relative group">
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-4 border-b border-gray-50 pb-3">Mô phỏng nét viết</p>
+                            <div id="strokeAnimContainer" class="w-40 h-40 md:w-52 md:h-52 mx-auto bg-white border border-gray-100 relative stroke-grid-box flex items-center justify-center rounded-xl cursor-pointer hover:shadow-md transition-all" onclick="replayStrokeAnimation()"></div>
+                            <button onclick="replayStrokeAnimation()" class="absolute top-5 right-5 w-8 h-8 bg-pink-50 text-pink-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-sm"><i class="fas fa-redo text-sm"></i></button>
+                            <p class="text-[11px] font-medium text-indigo-400 mt-4"><i class="fas fa-hand-pointer mr-1"></i> Chạm vào ô để xem lại</p>
+                            <div id="strokeGridContainer" class="mt-5 flex flex-wrap gap-1.5 justify-center hidden md:flex"></div>
                         </div>
                     </div>
+                    
+                    <!-- Phải: Chi tiết Kanji -->
                     <div class="lg:col-span-8">
-                        <div id="kanjiDetailBody" class="bg-white rounded-[2rem] p-6 md:p-10 shadow-sm border border-gray-100 h-full">
-                            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-10 border-b border-gray-100 pb-8">
-                                <div id="detailKanjiBig" class="text-8xl md:text-[8rem] font-black ja-text text-slate-800 leading-none drop-shadow-sm"></div>
-                                <div class="space-y-4 text-center sm:text-left flex-1">
-                                    <div class="inline-block bg-indigo-600 text-white px-4 py-1.5 rounded-xl font-black text-sm uppercase tracking-widest shadow-md">HÁN-VIỆT: <span id="detailHanViet" class="ml-1 text-yellow-300"></span></div>
-                                    <h4 class="text-2xl md:text-3xl font-black text-slate-700 tracking-tight capitalize" id="detailMeaningMain"></h4>
-                                    <div class="flex flex-wrap justify-center sm:justify-start gap-3 mt-2">
-                                        <div class="bg-pink-50 border border-pink-100 px-3 py-2 rounded-xl flex flex-col min-w-[80px]">
-                                            <span class="text-[9px] font-black text-pink-400 uppercase">Kun'yomi</span>
-                                            <span class="font-bold text-pink-600 ja-text" id="detailKun"></span>
+                        <div id="kanjiDetailBody" class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 h-full">
+                            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 mb-8 border-b border-gray-100 pb-6">
+                                <div id="detailKanjiBig" class="text-7xl md:text-8xl font-bold ja-text text-slate-800 leading-none drop-shadow-sm"></div>
+                                <div class="space-y-3 text-center sm:text-left flex-1">
+                                    <div class="inline-block bg-indigo-600 text-white px-3 py-1 rounded-lg font-bold text-xs uppercase tracking-widest shadow-sm">HÁN-VIỆT: <span id="detailHanViet" class="ml-1 text-yellow-300"></span></div>
+                                    <h4 class="text-xl md:text-2xl font-bold text-slate-700 capitalize" id="detailMeaningMain"></h4>
+                                    <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-2">
+                                        <div class="bg-pink-50 border border-pink-100 px-3 py-1.5 rounded-lg flex flex-col min-w-[70px] cursor-pointer hover:bg-pink-100 transition-colors" onclick="speakText(document.getElementById('detailKun').innerText)">
+                                            <span class="text-[9px] font-bold text-pink-400 uppercase tracking-wider mb-0.5">Kun'yomi</span>
+                                            <span class="font-bold text-pink-600 ja-text text-sm md:text-base" id="detailKun"></span>
                                         </div>
-                                        <div class="bg-orange-50 border border-orange-100 px-3 py-2 rounded-xl flex flex-col min-w-[80px]">
-                                            <span class="text-[9px] font-black text-orange-400 uppercase">On'yomi</span>
-                                            <span class="font-bold text-orange-600 ja-text" id="detailOn"></span>
+                                        <div class="bg-orange-50 border border-orange-100 px-3 py-1.5 rounded-lg flex flex-col min-w-[70px] cursor-pointer hover:bg-orange-100 transition-colors" onclick="speakText(document.getElementById('detailOn').innerText)">
+                                            <span class="text-[9px] font-bold text-orange-400 uppercase tracking-wider mb-0.5">On'yomi</span>
+                                            <span class="font-bold text-orange-600 ja-text text-sm md:text-base" id="detailOn"></span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="space-y-10">
-                                <div class="relative pl-6 md:pl-8 border-l-[5px] border-blue-500 group">
-                                    <div class="absolute -left-[14px] top-0 w-6 h-6 bg-blue-500 rounded-full border-[5px] border-white shadow-sm"></div>
-                                    <h4 class="text-sm font-black text-blue-600 uppercase tracking-widest mb-4 flex items-center gap-2">1. Chiết tự <i class="fas fa-cubes text-blue-300 text-lg"></i></h4>
-                                    <div id="detailRadicals" class="text-xs font-black text-blue-800 bg-blue-50 border border-blue-100 px-3 py-2 rounded-lg mb-3 inline-block"></div>
-                                    <p id="detailTipImg" class="text-base md:text-lg text-slate-700 leading-relaxed font-medium bg-gray-50/50 p-4 rounded-2xl"></p>
+                            
+                            <div class="space-y-8">
+                                <div class="relative pl-5 md:pl-6 border-l-4 border-blue-400 group">
+                                    <div class="absolute -left-[10px] top-0 w-4 h-4 bg-blue-400 rounded-full border-4 border-white shadow-sm"></div>
+                                    <h4 class="text-xs font-bold text-blue-600 uppercase tracking-widest mb-3 flex items-center gap-2">1. Chiết tự <i class="fas fa-cubes text-blue-300"></i></h4>
+                                    <div id="detailRadicals" class="text-[11px] font-bold text-blue-800 bg-blue-50 border border-blue-100 px-2.5 py-1.5 rounded-md mb-2 inline-block"></div>
+                                    <p id="detailTipImg" class="text-sm md:text-base text-slate-700 leading-relaxed font-medium bg-gray-50/50 p-3 rounded-xl"></p>
                                 </div>
-                                <div class="relative pl-6 md:pl-8 border-l-[5px] border-orange-500">
-                                    <div class="absolute -left-[14px] top-0 w-6 h-6 bg-orange-500 rounded-full border-[5px] border-white shadow-sm"></div>
-                                    <h4 class="text-sm font-black text-orange-600 uppercase tracking-widest mb-4 flex items-center gap-2">2. Mẹo Âm Thanh <i class="fas fa-headphones text-orange-300 text-lg"></i></h4>
-                                    <div class="bg-orange-50/50 p-4 md:p-5 rounded-2xl border border-orange-100">
-                                        <p id="detailSoundStory" class="text-base md:text-lg text-orange-900 leading-relaxed font-medium"></p>
+                                
+                                <div class="relative pl-5 md:pl-6 border-l-4 border-orange-400">
+                                    <div class="absolute -left-[10px] top-0 w-4 h-4 bg-orange-400 rounded-full border-4 border-white shadow-sm"></div>
+                                    <h4 class="text-xs font-bold text-orange-600 uppercase tracking-widest mb-3 flex items-center gap-2">2. Mẹo Âm Thanh <i class="fas fa-headphones text-orange-300"></i></h4>
+                                    <div class="bg-orange-50/50 p-3 md:p-4 rounded-xl border border-orange-100">
+                                        <p id="detailSoundStory" class="text-sm md:text-base text-orange-900 leading-relaxed font-medium"></p>
                                     </div>
                                 </div>
-                                <div class="relative pl-6 md:pl-8 border-l-[5px] border-indigo-600">
-                                    <div class="absolute -left-[14px] top-0 w-6 h-6 bg-indigo-600 rounded-full border-[5px] border-white shadow-sm"></div>
-                                    <h4 class="text-sm font-black text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">3. Combo 3-Trong-1 <i class="fas fa-bolt text-yellow-400 text-lg"></i></h4>
-                                    <p id="detailCombo" class="text-lg md:text-xl font-black text-indigo-900 leading-snug bg-gradient-to-r from-indigo-50 to-white p-5 md:p-6 rounded-2xl border border-indigo-100 shadow-sm"></p>
+                                
+                                <div class="relative pl-5 md:pl-6 border-l-4 border-indigo-500">
+                                    <div class="absolute -left-[10px] top-0 w-4 h-4 bg-indigo-500 rounded-full border-4 border-white shadow-sm"></div>
+                                    <h4 class="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-3 flex items-center gap-2">3. Combo 3-Trong-1 <i class="fas fa-bolt text-yellow-400"></i></h4>
+                                    <p id="detailCombo" class="text-base md:text-lg font-bold text-indigo-900 leading-snug bg-gradient-to-r from-indigo-50 to-white p-4 md:p-5 rounded-xl border border-indigo-100 shadow-sm"></p>
                                 </div>
-                                <div class="relative pl-6 md:pl-8 border-l-[5px] border-emerald-500">
-                                    <div class="absolute -left-[14px] top-0 w-6 h-6 bg-emerald-500 rounded-full border-[5px] border-white shadow-sm"></div>
-                                    <div class="flex justify-between items-end mb-5">
-                                        <h4 class="text-sm font-black text-emerald-600 uppercase tracking-widest flex items-center gap-2">4. Học theo cụm <i class="fas fa-layer-group text-emerald-300 text-lg"></i></h4>
-                                        <span class="text-[10px] font-bold bg-gray-100 text-gray-500 px-2 py-1 rounded hidden md:inline-block animate-pulse">Chạm thẻ để xem</span>
+                                
+                                <div class="relative pl-5 md:pl-6 border-l-4 border-emerald-400">
+                                    <div class="absolute -left-[10px] top-0 w-4 h-4 bg-emerald-400 rounded-full border-4 border-white shadow-sm"></div>
+                                    <div class="flex justify-between items-end mb-4">
+                                        <h4 class="text-xs font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2">4. Học theo cụm <i class="fas fa-layer-group text-emerald-300"></i></h4>
+                                        <span class="text-[9px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded hidden md:inline-block animate-pulse">Chạm thẻ để xem</span>
                                     </div>
-                                    <div id="detailWordsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                                    <div id="detailWordsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
                                 </div>
                             </div>
                         </div>
@@ -276,9 +336,10 @@
         </div>
     </div>
 
+    <!-- SCRIPTS -->
     <script>
         const DAY_KEY = "azakanji_bookmarks_day6";
-        
+
         // ==========================================
         // 1. DATA: GRAMMAR REPOSITORY FULL (DAY 6)
         // ==========================================
@@ -348,7 +409,7 @@
             { "STT": 35, "Kanji": "お弁当", "Nghĩa": "Cơm hộp", "Furigana": "おべんとう", "type": "food", "conv": { "polite": "お弁当を作ってきました。", "pVi": "Tôi đã làm cơm hộp mang đến.", "casual": "今日はお弁当だ。", "cVi": "Nay ăn cơm hộp.", "gIds": ["te_kuru", "ta_form"] } },
             { "STT": 36, "Kanji": "", "Nghĩa": "Cà phê", "Furigana": "コーヒー", "type": "food", "conv": { "polite": "コーヒーを飲みませんか。", "pVi": "Uống cà phê không?", "casual": "コーヒー飲む？", "cVi": "Uống cà phê không?", "gIds": ["mashou"] } },
             { "STT": 37, "Kanji": "お茶", "Nghĩa": "Trà", "Furigana": "おちゃ", "type": "food", "conv": { "polite": "お茶を入れましょうか。", "pVi": "Để tôi pha trà nhé?", "casual": "お茶、飲む？", "cVi": "Uống trà không?", "gIds": ["mashou_ka"] } },
-            { "STT": 38, "Kanji": "美術館", "Nghĩa": "Bảo tàng", "Furigana": "びじゅつかん", "type": "place", "conv": { "polite": "美術館へ行きました。", "pVi": "Tôi đã đi bảo tàng.", "casual": "美術館行ったよ。", "cVi": "Đi bảo tàng rồi.", "gIds": ["ta_form"] } },
+            { "STT": 38, "Kanji": "美術館", "Nghĩa": "Bảo tàng mỹ thuật", "Furigana": "びじゅつかん", "type": "place", "conv": { "polite": "美術館へ行きました。", "pVi": "Tôi đã đi bảo tàng.", "casual": "美術館行ったよ。", "cVi": "Đi bảo tàng rồi.", "gIds": ["ta_form"] } },
             { "STT": 39, "Kanji": "連れていきます", "Nghĩa": "Dẫn đi", "Furigana": "つれていきます", "type": "verb", "conv": { "polite": "子供を病院へ連れていきます。", "pVi": "Tôi dẫn con đi bệnh viện.", "casual": "子供、病院連れていく。", "cVi": "Dẫn con đi viện.", "gIds": ["ni_iku"] } },
             { "STT": 40, "Kanji": "連れてきます", "Nghĩa": "Dẫn đến", "Furigana": "つれてきます", "type": "verb", "conv": { "polite": "友達を連れてきました。", "pVi": "Tôi đã dẫn bạn đến.", "casual": "友達連れてきたよ。", "cVi": "Dẫn bạn đến rồi này.", "gIds": ["te_kuru", "ta_form"] } },
             { "STT": 41, "Kanji": "紹介します", "Nghĩa": "Giới thiệu", "Furigana": "しょうかいします", "type": "verb", "conv": { "polite": "彼を紹介してください。", "pVi": "Hãy giới thiệu anh ấy cho tôi.", "casual": "いい人紹介して。", "cVi": "Giới thiệu người tốt cho tớ đi.", "gIds": ["te_kudasai"] } },
@@ -401,7 +462,7 @@
         ];
 
         // ==========================================
-        // 3. KANJI 5-STEP ENGINE FULL (ALL 101 KANJI)
+        // 3. KANJI 5-STEP ENGINE FULL (101 KANJI - DAY 6)
         // ==========================================
         const kanjiDetails = {
             "見":{hanviet:"KIẾN",meanMain:"Nhìn, xem",kun:"み.る",on:"ケン",radicals:"Mục(目)+Nhi(儿)",tipImg:"Mắt(目) có chân(儿) đi **nhìn**.",soundStory:"MI: Mở mí mắt nhìn.",combo:"MẮT CHÂN NHÌN MÍ KIẾN.",words:[{w:"見る",f:"みる",m:"Nhìn",lvl:"N5"},{w:"見学",f:"けんがく",m:"Tham quan",lvl:"N4"},{w:"意見",f:"いけん",m:"Ý kiến",lvl:"N3"},{w:"発見",f:"はっけん",m:"Phát hiện",lvl:"N3"},{w:"見物",f:"けんぶつ",m:"Ngắm",lvl:"N2"}]},
@@ -426,7 +487,7 @@
             "愛":{hanviet:"ÁI",meanMain:"Yêu",kun:"あい.する",on:"アイ",radicals:"Tâm(心)",tipImg:"Tình từ tim(心).",soundStory:"AI: Ai ái.",combo:"TÌNH TỪ TIM AI ÁI.",words:[{w:"可愛い",f:"かわいい",m:"Đáng yêu",lvl:"N5"},{w:"愛",f:"あい",m:"Yêu",lvl:"N3"},{w:"愛情",f:"あいじょう",m:"Tình cảm",lvl:"N2"},{w:"恋愛",f:"れんあい",m:"Luyến ái",lvl:"N2"},{w:"愛する",f:"あいする",m:"Yêu",lvl:"N2"}]},
             "汚":{hanviet:"Ô",meanMain:"Bẩn",kun:"きたな.い",on:"オ",radicals:"Thủy(氵)+Vu(于)",tipImg:"Nước(氵) bùn(于) **bẩn**.",soundStory:"KITANA: Kì tá na.",combo:"NƯỚC BÙN KÌ TÁ NA Ô.",words:[{w:"汚い",f:"きたない",m:"Bẩn",lvl:"N4"},{w:"汚れる",f:"よごれる",m:"Bị bẩn",lvl:"N4"},{w:"汚染",f:"おせん",m:"Ô nhiễm",lvl:"N2"},{w:"汚職",f:"おしょく",m:"Tham nhũng",lvl:"N1"},{w:"汚名",f:"おめい",m:"Ô danh",lvl:"N1"}]},
             "臭":{hanviet:"XÚ",meanMain:"Hôi",kun:"くさ.い",on:"シュウ",radicals:"Tự(自)+Khuyển(犬)",tipImg:"Tự(自) thấy chó(犬) **hôi**.",soundStory:"KUSAI: Cú sài.",combo:"CHÓ HÔI CÚ SÀI XÚ.",words:[{w:"臭い",f:"くさい",m:"Hôi",lvl:"N3"},{w:"悪臭",f:"あくしゅう",m:"Mùi hôi",lvl:"N2"},{w:"面倒臭い",f:"めんどうくさい",m:"Phiền",lvl:"N2"},{w:"体臭",f:"たいしゅう",m:"Mùi cơ thể",lvl:"N1"},{w:"防臭",f:"ぼうしゅう",m:"Khử mùi",lvl:"N1"}]},
-            "親":{hanviet:"THÂN",meanMain:"Bố mẹ/Thân",kun:"おや",on:"シン",radicals:"Mộc(木)+Kiến(見)",tipImg:"Đứng(立) cây(木) nhìn(見) **người thân**.",soundStory:"OYA: Ô dạ.",combo:"ĐỨNG CÂY NHÌN Ô DẠ THÂN.",words:[{w:"親切",f:"しんせつ",m:"Tốt bụng",lvl:"N5"},{w:"両親",f:"りょうしん",m:"Bố mẹ",lvl:"N5"},{w:"親",f:"おや",m:"Bố mẹ",lvl:"N4"},{w:"親しい",f:"したしい",m:"Thân thiết",lvl:"N3"},{w:"親友",f:"しんゆう",m:"Bạn thân",lvl:"N3"}]},
+            "親":{hanviet:"THÂN",meanMain:"Bố mẹ",kun:"おや",on:"シン",radicals:"Mộc(木)+Kiến(見)",tipImg:"Đứng(立) cây(木) nhìn(見) **người thân**.",soundStory:"OYA: Ô dạ.",combo:"ĐỨNG CÂY NHÌN Ô DẠ THÂN.",words:[{w:"親切",f:"しんせつ",m:"Tốt bụng",lvl:"N5"},{w:"両親",f:"りょうしん",m:"Bố mẹ",lvl:"N5"},{w:"親",f:"おや",m:"Bố mẹ",lvl:"N4"},{w:"親しい",f:"したしい",m:"Thân thiết",lvl:"N3"},{w:"親友",f:"しんゆう",m:"Bạn thân",lvl:"N3"}]},
             "切":{hanviet:"THIẾT",meanMain:"Cắt",kun:"き.る",on:"セツ",radicals:"Thất(七)+Đao(刀)",tipImg:"Dao(刀) **cắt** 7(七) mảnh.",soundStory:"KI: Kì.",combo:"DAO CẮT KÌ THIẾT.",words:[{w:"切る",f:"きる",m:"Cắt",lvl:"N5"},{w:"親切",f:"しんせつ",m:"Tốt",lvl:"N5"},{w:"大切",f:"たいせつ",m:"Quan trọng",lvl:"N4"},{w:"切符",f:"きっぷ",m:"Vé",lvl:"N4"},{w:"一切",f:"いっさい",m:"Tất cả",lvl:"N2"}]},
             "引":{hanviet:"DẪN",meanMain:"Kéo",kun:"ひ.く",on:"イン",radicals:"Cung(弓)+Cổn(丨)",tipImg:"**Kéo** căng cung(弓).",soundStory:"HIKU: Hí cùi.",combo:"KÉO CUNG HÍ CÙI DẪN.",words:[{w:"引く",f:"ひく",m:"Kéo",lvl:"N4"},{w:"引き出し",f:"ひきだし",m:"Ngăn kéo",lvl:"N4"},{w:"割引",f:"わりびき",m:"Giảm giá",lvl:"N3"},{w:"引用",f:"いんよう",m:"Trích dẫn",lvl:"N2"},{w:"強引",f:"ごういん",m:"Cưỡng ép",lvl:"N2"}]},
             "土":{hanviet:"THỔ",meanMain:"Đất",kun:"つち",on:"ド",radicals:"Thổ(土)",tipImg:"Cây mọc từ **đất**.",soundStory:"DO: Dô đất.",combo:"CÂY MỌC ĐẤT DÔ THỔ.",words:[{w:"お土産",f:"おみやげ",m:"Quà",lvl:"N5"},{w:"土地",f:"とち",m:"Đất đai",lvl:"N3"},{w:"土曜日",f:"どようび",m:"Thứ 7",lvl:"N5"},{w:"土砂",f:"どしゃ",m:"Đất cát",lvl:"N1"},{w:"土台",f:"どだい",m:"Nền tảng",lvl:"N1"}]},
@@ -439,7 +500,7 @@
             "女":{hanviet:"NỮ",meanMain:"Phụ nữ",kun:"おんな",on:"ジョ",radicals:"Nữ(女)",tipImg:"Người phụ **nữ**.",soundStory:"ONNA: Ôn nà.",combo:"PHỤ NỮ ÔN NÀ NỮ.",words:[{w:"彼女",f:"かのじょ",m:"Cô ấy",lvl:"N4"},{w:"女の子",f:"おんなのこ",m:"Bé gái",lvl:"N5"},{w:"女性",f:"じょせい",m:"Nữ giới",lvl:"N4"},{w:"長女",f:"ちょうじょ",m:"Trưởng nữ",lvl:"N3"},{w:"女神",f:"めがみ",m:"Nữ thần",lvl:"N1"}]},
             "恋":{hanviet:"LUYẾN",meanMain:"Yêu",kun:"こい",on:"レン",radicals:"Tâm(心)",tipImg:"Lời từ tim(心) là **yêu**.",soundStory:"KOE: Còi.",combo:"TIM YÊU CÒI LUYẾN.",words:[{w:"恋人",f:"こいびと",m:"Người yêu",lvl:"N4"},{w:"恋",f:"こい",m:"Tình yêu",lvl:"N3"},{w:"恋愛",f:"れんあい",m:"Luyến ái",lvl:"N2"},{w:"失恋",f:"しつれん",m:"Thất tình",lvl:"N2"},{w:"恋しい",f:"こいしい",m:"Nhớ nhung",lvl:"N2"}]},
             "人":{hanviet:"NHÂN",meanMain:"Người",kun:"ひと",on:"ジン / ニン",radicals:"Nhân(人)",tipImg:"**Người** đi.",soundStory:"HITO: Hi to.",combo:"NGƯỜI ĐI HI TO NHÂN.",words:[{w:"人",f:"ひと",m:"Người",lvl:"N5"},{w:"日本人",f:"にほんじん",m:"Người Nhật",lvl:"N5"},{w:"人口",f:"じんこう",m:"Dân số",lvl:"N4"},{w:"人生",f:"じんせい",m:"Đời",lvl:"N3"},{w:"人類",f:"じんるい",m:"Nhân loại",lvl:"N2"}]},
-            "氏":{hanviet:"THỊ",meanMain:"Họ",kun:"うじ",on:"シ",radicals:"Thị(氏)",tipImg:"Người cúi chào.",soundStory:"SHI: Xì.",combo:"CÚI CHÀO XÌ THỊ.",words:[{w:"彼氏",f:"かれし",m:"Bạn trai",lvl:"N3"},{w:"氏名",f:"しめい",m:"Họ tên",lvl:"N3"},{w:"氏",f:"し",m:"Ngài",lvl:"N2"},{w:"両氏",f:"りょうし",m:"Hai ngài",lvl:"N1"},{w:"氏神",f:"うじがみ",m:"Thần bản mạng",lvl:"N1"}]},
+            "氏":{hanviet:"THỊ",meanMain:"Họ",kun:"うじ",on:"シ",radicals:"Thị(氏)",tipImg:"Người cúi chào.",soundStory:"SHI: Xì.",combo:"CÚI CHÀO XÌ THỊ.",words:[{w:"彼氏",f:"かれし",m:"Bạn trai",lvl:"N3"},{w:"氏名",f:"しめい",m:"Họ tên",lvl:"N3"},{w:"氏",f:"し",m:"Ngài",lvl:"N2"},{w:"両氏",f:"りょうし",m:"Hai ngài",lvl:"N1"},{w:"氏神",f:"うじがみ",m:"Thần bổnn mạng",lvl:"N1"}]},
             "友":{hanviet:"HỮU",meanMain:"Bạn",kun:"とも",on:"ユウ",radicals:"Hựu(又)",tipImg:"Hai tay kết **bạn**.",soundStory:"TOMO: Tớ mổ.",combo:"TAY BẠN TỚ MỔ HỮU.",words:[{w:"友達",f:"ともだち",m:"Bạn bè",lvl:"N5"},{w:"友人",f:"ゆうじん",m:"Bạn thân",lvl:"N3"},{w:"親友",f:"しんゆう",m:"Bạn thân",lvl:"N3"},{w:"友情",f:"ゆうじょう",m:"Tình bạn",lvl:"N2"},{w:"友好",f:"ゆうこう",m:"Hữu nghị",lvl:"N1"}]},
             "弁":{hanviet:"BIỆN",meanMain:"Biện luận",kun:"",on:"ベン",radicals:"Củng(廾)",tipImg:"Tay(廾) nâng mũ.",soundStory:"BEN: Bền.",combo:"TAY NÂNG BỀN BIỆN.",words:[{w:"お弁当",f:"おべんとう",m:"Cơm hộp",lvl:"N5"},{w:"弁護士",f:"べんごし",m:"Luật sư",lvl:"N3"},{w:"弁当",f:"べんとう",m:"Cơm hộp",lvl:"N5"},{w:"弁解",f:"べんかい",m:"Biện giải",lvl:"N1"},{w:"弁論",f:"べんろん",m:"Biện luận",lvl:"N1"}]},
             "当":{hanviet:"ĐƯƠNG",meanMain:"Trúng",kun:"あ.たる",on:"トウ",radicals:"Tiểu(小)",tipImg:"Chổi quét **trúng**.",soundStory:"TOU: Tồ.",combo:"QUÉT TRÚNG TỒ ĐƯƠNG.",words:[{w:"お弁当",f:"おべんとう",m:"Cơm hộp",lvl:"N5"},{w:"本当",f:"ほんとう",m:"Thật",lvl:"N5"},{w:"当たる",f:"あたる",m:"Trúng",lvl:"N4"},{w:"当然",f:"とうぜん",m:"Đương nhiên",lvl:"N3"},{w:"担当",f:"たんとう",m:"Đảm nhận",lvl:"N2"}]},
@@ -462,7 +523,7 @@
             "事":{hanviet:"SỰ",meanMain:"Việc",kun:"こと",on:"ジ",radicals:"Quyết(亅)",tipImg:"Nói **việc**.",soundStory:"KOTO: Cỗ to.",combo:"NÓI VIỆC CỖ TO SỰ.",words:[{w:"仕事",f:"しごと",m:"Công việc",lvl:"N5"},{w:"食事",f:"しょくじ",m:"Bữa ăn",lvl:"N5"},{w:"事務所",f:"じむしょ",m:"Văn phòng",lvl:"N4"},{w:"事故",f:"じこ",m:"Tai nạn",lvl:"N4"},{w:"事情",f:"じじょう",m:"Sự tình",lvl:"N2"}]},
             "漢":{hanviet:"HÁN",meanMain:"Hán",kun:"",on:"カン",radicals:"Thủy(氵)",tipImg:"Đất **hán**.",soundStory:"KAN: Can.",combo:"ĐẤT HÁN CAN.",words:[{w:"漢字",f:"かんじ",m:"Chữ Hán",lvl:"N5"},{w:"漢方薬",f:"かんぽうやく",m:"Thuốc bắc",lvl:"N2"},{w:"漢和",f:"かんわ",m:"Hán Hòa",lvl:"N1"},{w:"悪漢",f:"あっかん",m:"Kẻ ác",lvl:"N1"},{w:"漢文",f:"かんぶん",m:"Hán văn",lvl:"N1"}]},
             "字":{hanviet:"TỰ",meanMain:"Chữ",kun:"あざ",on:"ジ",radicals:"Miên(宀)",tipImg:"Học **chữ**.",soundStory:"JI: Dì.",combo:"HỌC CHỮ DÌ TỰ.",words:[{w:"漢字",f:"かんじ",m:"Chữ Hán",lvl:"N5"},{w:"文字",f:"もじ",m:"Chữ",lvl:"N4"},{w:"赤字",f:"あかじ",m:"Lỗ",lvl:"N2"},{w:"黒字",f:"くろじ",m:"Lãi",lvl:"N2"},{w:"十字",f:"じゅうじ",m:"Chữ thập",lvl:"N3"}]},
-            "言":{hanviet:"NGÔN",meanMain:"Nói",kun:"い.う",on:"ゴン, ゲン",radicals:"Ngôn(言)",tipImg:"**Nói**.",soundStory:"I: Ít.",combo:"NÓI ÍT NGÔN.",words:[{w:"言う",f:"いう",m:"Nói",lvl:"N5"},{w:"言葉",f:"ことば",m:"Từ vựng",lvl:"N5"},{w:"伝言",f:"でんごん",m:"Lời nhắn",lvl:"N4"},{w:"方言",f:"ほうげん",m:"Tiếng địa phương",lvl:"N3"},{w:"言い訳",f:"いいわけ",m:"Viện cớ",lvl:"N3"}]},
+            "言":{hanviet:"NGÔN",meanMain:"Nói",kun:"い.う",on:"ゴン / ゲン",radicals:"Ngôn(言)",tipImg:"**Nói**.",soundStory:"I: Ít.",combo:"NÓI ÍT NGÔN.",words:[{w:"言う",f:"いう",m:"Nói",lvl:"N5"},{w:"言葉",f:"ことば",m:"Từ vựng",lvl:"N5"},{w:"伝言",f:"でんごん",m:"Lời nhắn",lvl:"N4"},{w:"方言",f:"ほうげん",m:"Tiếng địa phương",lvl:"N3"},{w:"言い訳",f:"いいわけ",m:"Viện cớ",lvl:"N3"}]},
             "葉":{hanviet:"DIỆP",meanMain:"Lá",kun:"は",on:"ヨウ",radicals:"Thảo(艹)",tipImg:"Cỏ cây **lá**.",soundStory:"HA: Hả.",combo:"CỎ CÂY LÁ HẢ DIỆP.",words:[{w:"言葉",f:"ことば",m:"Từ vựng",lvl:"N5"},{w:"葉",f:"は",m:"Lá cây",lvl:"N3"},{w:"紅葉",f:"こうよう",m:"Lá đỏ",lvl:"N2"},{w:"落ち葉",f:"おちば",m:"Lá rụng",lvl:"N2"},{w:"千葉",f:"ちば",m:"Chiba",lvl:"N3"}]},
             "忘":{hanviet:"VONG",meanMain:"Quên",kun:"わす.れる",on:"ボウ",radicals:"Tâm(心)",tipImg:"Tim chết **quên**.",soundStory:"WASU: Quên quá.",combo:"TIM CHẾT QUÊN QUÁ VONG.",words:[{w:"忘れる",f:"わすれる",m:"Quên",lvl:"N5"},{w:"忘れ物",f:"わすれもの",m:"Đồ để quên",lvl:"N5"},{w:"忘年会",f:"ぼうねんかい",m:"Tất niên",lvl:"N3"},{w:"備忘録",f:"びぼうろく",m:"Sổ",lvl:"N1"},{w:"忘恩",f:"ぼうおん",m:"Vô ơn",lvl:"N1"}]},
             "会":{hanviet:"HỘI",meanMain:"Gặp",kun:"あ.う",on:"カイ",radicals:"Nhân(人)",tipImg:"Người **gặp**.",soundStory:"A: A gặp.",combo:"NGƯỜI GẶP A HỘI.",words:[{w:"会う",f:"あう",m:"Gặp",lvl:"N5"},{w:"会社",f:"かいしゃ",m:"Công ty",lvl:"N5"},{w:"会議",f:"かいぎ",m:"Cuộc họp",lvl:"N4"},{w:"会場",f:"かいじょう",m:"Hội trường",lvl:"N3"},{w:"忘年会",f:"ぼうねんかい",m:"Tất niên",lvl:"N3"}]},
@@ -492,6 +553,7 @@
             "呼":{hanviet:"HÔ",meanMain:"Gọi",kun:"よ.ぶ",on:"コ",radicals:"Khẩu(口)",tipImg:"Miệng **gọi**.",soundStory:"YO: Dô.",combo:"MIỆNG GỌI DÔ HÔ.",words:[{w:"呼ぶ",f:"よぶ",m:"Gọi",lvl:"N5"},{w:"呼吸",f:"こきゅう",m:"Hô hấp",lvl:"N2"},{w:"呼び出す",f:"よびだす",m:"Gọi ra",lvl:"N3"},{w:"歓呼",f:"かんこ",m:"Hoan hô",lvl:"N1"},{w:"点呼",f:"てんこ",m:"Điểm danh",lvl:"N1"}]},
             "持":{hanviet:"TRÌ",meanMain:"Cầm",kun:"も.つ",on:"ジ",radicals:"Thủ(扌)",tipImg:"Tay **cầm**.",soundStory:"MO: Mỏ.",combo:"TAY CẦM MỎ TRÌ.",words:[{w:"持つ",f:"もつ",m:"Cầm",lvl:"N5"},{w:"持ち物",f:"もちもの",m:"Đồ mang",lvl:"N4"},{w:"気持ち",f:"きもち",m:"Cảm giác",lvl:"N4"},{w:"支持",f:"しじ",m:"Hỗ trợ",lvl:"N3"},{w:"維持",f:"いじ",m:"Duy trì",lvl:"N2"}]},
             "迎":{hanviet:"NGHÊNH",meanMain:"Đón",kun:"むか.える",on:"ゲイ",radicals:"Xước(⻌)",tipImg:"Đi **đón**.",soundStory:"MUKA: Mụ cá.",combo:"ĐI ĐÓN MỤ CÁ NGHÊNH.",words:[{w:"迎える",f:"むかえる",m:"Đón",lvl:"N4"},{w:"歓迎",f:"かんげい",m:"Hoan nghênh",lvl:"N3"},{w:"送迎",f:"そうげい",m:"Đưa đón",lvl:"N2"},{w:"出迎え",f:"でむかえ",m:"Ra đón",lvl:"N2"},{w:"迎合",f:"げいごう",m:"Hùa theo",lvl:"N1"}]},
+            "行":{hanviet:"HÀNH",meanMain:"Đi",kun:"い.く",on:"コウ",radicals:"Hành(行)",tipImg:"Đường **đi**.",soundStory:"I: Í.",combo:"ĐƯỜNG ĐI Í HÀNH.",words:[{w:"行く",f:"いく",m:"Đi",lvl:"N5"},{w:"旅行",f:"りょこう",m:"Du lịch",lvl:"N5"},{w:"銀行",f:"ぎんこう",m:"Ngân hàng",lvl:"N5"},{w:"飛行機",f:"ひこうき",m:"Máy bay",lvl:"N4"},{w:"行動",f:"こうどう",m:"Hành động",lvl:"N3"}]},
             "来":{hanviet:"LAI",meanMain:"Đến",kun:"く.る",on:"ライ",radicals:"Mộc(木)",tipImg:"Cây **đến**.",soundStory:"KU: Khu.",combo:"CÂY ĐẾN KHU LAI.",words:[{w:"来る",f:"くる",m:"Đến",lvl:"N5"},{w:"来月",f:"らいげつ",m:"Tháng sau",lvl:"N5"},{w:"将来",f:"しょうらい",m:"Tương lai",lvl:"N4"},{w:"以来",f:"いらい",m:"Từ đó",lvl:"N3"},{w:"由来",f:"ゆらい",m:"Nguồn gốc",lvl:"N2"}]},
             "禁":{hanviet:"CẤM",meanMain:"Cấm",kun:"",on:"キン",radicals:"Lâm(林)",tipImg:"Rừng **cấm**.",soundStory:"KIN: Kín.",combo:"RỪNG CẤM KÍN CẤM.",words:[{w:"禁煙",f:"きんえん",m:"Cấm hút",lvl:"N4"},{w:"禁止",f:"きんし",m:"Cấm",lvl:"N3"},{w:"厳禁",f:"げんきん",m:"Nghiêm cấm",lvl:"N2"},{w:"禁物",f:"きんもつ",m:"Kiêng kỵ",lvl:"N1"},{w:"解禁",f:"かいきん",m:"Dỡ cấm",lvl:"N1"}]},
             "煙":{hanviet:"YÊN",meanMain:"Khói",kun:"けむり",on:"エン",radicals:"Hỏa(火)",tipImg:"Lửa **khói**.",soundStory:"KEMURI: Kẻ mù.",combo:"LỬA KHÓI KẺ MÙ YÊN.",words:[{w:"禁煙",f:"きんえん",m:"Cấm hút",lvl:"N4"},{w:"煙",f:"けむり",m:"Khói",lvl:"N3"},{w:"喫煙",f:"きつえん",m:"Hút thuốc",lvl:"N2"},{w:"煙突",f:"えんとつ",m:"Ống khói",lvl:"N1"},{w:"煙たい",f:"けむたい",m:"Ngột ngạt",lvl:"N1"}]},
@@ -617,22 +679,22 @@
             [{ k:'polite', l:'Lịch sự', t:word.conv.polite, v:word.conv.pVi, c:'indigo' }, 
              { k:'casual', l:'Thân mật', t:word.conv.casual, v:word.conv.cVi, c:'pink' }].forEach(row => {
                 if(!row.t) return;
-                const btnG = word.conv.gIds && word.conv.gIds.length > 0 ? `<button onclick="openGrammar('${word.conv.gIds.join(',')}', '${row.k}')" class="text-[10px] font-black text-${row.c}-600 bg-${row.c}-50 px-4 py-1.5 rounded-full border border-${row.c}-100 hover:bg-${row.c}-600 hover:text-white transition-all shadow-sm"><i class="fas fa-microscope mr-1"></i> PHÂN TÍCH</button>` : '';
+                const btnG = word.conv.gIds && word.conv.gIds.length > 0 ? `<button onclick="openGrammar('${word.conv.gIds.join(',')}', '${row.k}')" class="text-[10px] font-bold text-${row.c}-600 bg-${row.c}-50 px-4 py-1.5 rounded-full border border-${row.c}-100 hover:bg-${row.c}-600 hover:text-white transition-all shadow-sm"><i class="fas fa-microscope mr-1"></i> PHÂN TÍCH</button>` : '';
                 
                 container.innerHTML += `
-                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
                         <div class="flex justify-between items-center mb-4">
-                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1 rounded-lg">${row.l}</span>
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1 rounded-lg">${row.l}</span>
                             ${btnG}
                         </div>
                         <div class="flex justify-between items-start gap-4">
                             <div class="flex-1 cursor-pointer hover:text-indigo-600 transition-colors" onclick="speakText('${row.t}')">
-                                <div class="text-xl md:text-2xl ja-text font-black text-slate-800">${row.t}</div>
+                                <div class="text-xl md:text-2xl ja-text font-bold text-slate-800">${row.t}</div>
                                 <div class="text-sm md:text-base text-gray-500 italic mt-2 font-medium">${row.v}</div>
                             </div>
                             <button onclick="speakText('${row.t}')" class="w-12 h-12 rounded-full bg-${row.c}-50 text-${row.c}-500 hover:bg-${row.c}-100 flex items-center justify-center transition-colors flex-shrink-0"><i class="fas fa-volume-up text-xl"></i></button>
                         </div>
-                        <div class="mt-5 bg-gray-50 p-4 rounded-2xl flex items-center gap-3">
+                        <div class="mt-5 bg-gray-50 p-4 rounded-xl flex items-center gap-3">
                             <button id="mic-${word.STT}-${row.k}" onclick="startDictation('${word.STT}', '${row.k}', '${row.t.replace(/'/g, "\\'")}')" class="w-12 h-12 rounded-full bg-white border border-gray-200 text-gray-500 flex items-center justify-center transition-all shadow-sm"><i class="fas fa-microphone"></i></button>
                             <input type="text" id="input-${word.STT}-${row.k}" onkeypress="if(event.key === 'Enter') checkSentencePractice('${word.STT}', '${row.k}', '${row.t.replace(/'/g, "\\'")}')" class="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm ja-text outline-none shadow-inner focus:ring-2 focus:ring-indigo-400" placeholder="Nhập lại câu trên...">
                             <button onclick="checkSentencePractice('${word.STT}', '${row.k}', '${row.t.replace(/'/g, "\\'")}')" class="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg hover:bg-indigo-700 active:scale-95 transition-all flex-shrink-0"><i class="fas fa-paper-plane"></i></button>
@@ -649,12 +711,12 @@
             grid.innerHTML = Object.keys(grammarRepo).map(k => {
                 const g = grammarRepo[k];
                 return `
-                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group" onclick="openGrammar('${k}', 'polite')">
-                    <div class="font-black text-indigo-700 mb-2 flex items-center justify-between">
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group" onclick="openGrammar('${k}', 'polite')">
+                    <div class="font-bold text-indigo-700 mb-2 flex items-center justify-between">
                         <span>${g.title}</span>
                         <i class="fas fa-arrow-right text-gray-200 group-hover:text-indigo-400 transition-colors text-xs"></i>
                     </div>
-                    <code class="text-sm font-black bg-indigo-50 text-indigo-900 px-3 py-1 rounded-lg block mb-3 font-mono border border-indigo-100">${g.formula}</code>
+                    <code class="text-sm font-bold bg-indigo-50 text-indigo-900 px-3 py-1 rounded-lg block mb-3 font-mono border border-indigo-100">${g.formula}</code>
                     <p class="text-xs text-gray-500 font-medium line-clamp-2 leading-relaxed">${g.desc}</p>
                 </div>`;
             }).join('');
@@ -669,16 +731,16 @@
                 let breakdownHtml = '';
                 if(breakdown) {
                     breakdownHtml = `
-                    <div class="bg-white border-2 border-gray-50 rounded-3xl overflow-hidden mt-6">
-                        <div class="bg-gray-50 px-6 py-4 text-xs font-black text-gray-500 uppercase tracking-widest border-b border-gray-100">
+                    <div class="bg-white border-2 border-gray-50 rounded-2xl overflow-hidden mt-6">
+                        <div class="bg-gray-50 px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-gray-100">
                             <i class="fas fa-puzzle-piece mr-2"></i> Phân tích cấu trúc (${style === 'polite' ? 'Lịch sự' : 'Thân mật'})
                         </div>
                         <div class="p-3 space-y-2">
                             ${breakdown.map(b => `
-                                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-4 bg-slate-50/50 rounded-2xl border border-gray-100/50 hover:bg-indigo-50/30 transition-colors">
-                                    <div class="font-black ja-text text-indigo-700 text-xl">${b.part}</div>
+                                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-4 bg-slate-50/50 rounded-xl border border-gray-100/50 hover:bg-indigo-50/30 transition-colors">
+                                    <div class="font-bold ja-text text-indigo-700 text-xl">${b.part}</div>
                                     <div class="text-left sm:text-right mt-1 sm:mt-0">
-                                        <div class="text-[10px] text-gray-400 font-black uppercase tracking-wider mb-0.5">${b.func}</div>
+                                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">${b.func}</div>
                                         <div class="text-sm font-bold text-slate-700">${b.mean}</div>
                                     </div>
                                 </div>`).join('')}
@@ -688,15 +750,15 @@
 
                 return `
                     <div class="space-y-6">
-                        <div class="bg-indigo-600 text-white p-6 md:p-8 rounded-[2rem] shadow-xl relative overflow-hidden">
+                        <div class="bg-indigo-600 text-white p-6 md:p-8 rounded-2xl shadow-xl relative overflow-hidden">
                             <div class="absolute -right-4 -bottom-4 text-8xl text-indigo-500 opacity-30"><i class="fas fa-quote-right"></i></div>
-                            <div class="text-xs font-black text-indigo-200 uppercase tracking-widest mb-3 relative z-10">Cấu trúc tiêu chuẩn</div>
-                            <div class="text-2xl md:text-3xl font-black font-mono relative z-10">${g.formula}</div>
+                            <div class="text-xs font-bold text-indigo-200 uppercase tracking-widest mb-3 relative z-10">Cấu trúc tiêu chuẩn</div>
+                            <div class="text-2xl md:text-3xl font-bold font-mono relative z-10">${g.formula}</div>
                         </div>
                         ${breakdownHtml}
-                        <div class="bg-blue-50/80 p-6 md:p-8 rounded-[2rem] border border-blue-100 mt-6 relative">
+                        <div class="bg-blue-50/80 p-6 md:p-8 rounded-2xl border border-blue-100 mt-6 relative">
                             <div class="absolute -left-[3px] top-8 w-1.5 h-10 bg-blue-500 rounded-r-full"></div>
-                            <h5 class="text-sm font-black text-blue-800 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fas fa-lightbulb text-yellow-500 text-lg"></i> Bản chất logic</h5>
+                            <h5 class="text-sm font-bold text-blue-800 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fas fa-lightbulb text-yellow-500 text-lg"></i> Bản chất logic</h5>
                             <p class="text-blue-900 text-base md:text-lg leading-relaxed font-medium">${g.logic ? g.logic.replace(/\*\*(.*?)\*\*/g, '<b class="text-blue-700 bg-blue-100/50 px-1 rounded">$1</b>') : 'Đang cập nhật logic...'}</p>
                         </div>
                     </div>`;
@@ -709,7 +771,7 @@
             const kanjis = (vocabData[currentIndex].Kanji || "").match(/[\u4e00-\u9faf]/g);
             if(!kanjis) return;
             document.getElementById('strokeTabs').innerHTML = kanjis.map(k => `
-                <button onclick="loadKanjiDetail('${k}')" class="w-14 h-14 rounded-2xl border-2 font-black ja-text text-xl hover:bg-indigo-50 hover:border-indigo-300 transition-all text-gray-500 flex-shrink-0">${k}</button>
+                <button onclick="loadKanjiDetail('${k}')" class="w-12 h-12 md:w-14 md:h-14 rounded-xl border-2 font-bold ja-text text-xl hover:bg-indigo-50 hover:border-indigo-300 transition-all text-gray-500 flex-shrink-0">${k}</button>
             `).join('');
             showModal('strokeModal');
             loadKanjiDetail(kanjis[0]);
@@ -718,9 +780,9 @@
         async function loadKanjiDetail(k) {
             Array.from(document.getElementById('strokeTabs').children).forEach(btn => {
                 if(btn.innerText === k) {
-                    btn.className = "w-14 h-14 rounded-2xl border-2 font-black ja-text text-xl bg-indigo-600 border-indigo-600 text-white shadow-lg flex-shrink-0 scale-110 transition-all";
+                    btn.className = "w-12 h-12 md:w-14 md:h-14 rounded-xl border-2 font-bold ja-text text-xl bg-indigo-600 border-indigo-600 text-white shadow-lg flex-shrink-0 scale-110 transition-all";
                 } else {
-                    btn.className = "w-14 h-14 rounded-2xl border-2 font-black ja-text text-xl bg-white border-gray-200 text-gray-500 hover:bg-gray-50 flex-shrink-0 transition-all";
+                    btn.className = "w-12 h-12 md:w-14 md:h-14 rounded-xl border-2 font-bold ja-text text-xl bg-white border-gray-200 text-gray-500 hover:bg-gray-50 flex-shrink-0 transition-all";
                 }
             });
 
@@ -731,7 +793,11 @@
             const on = d.on || "-";
             const radicals = d.radicals || "Đang phân tích...";
             const tipImg = d.tipImg || "Đang cập nhật hình ảnh chiết tự.";
-            const soundStory = d.soundStory || "Đang cập nhật mẹo nhớ âm thanh.";
+            let soundStoryArr = [];
+            if(d.tipSoundKun) soundStoryArr.push(d.tipSoundKun);
+            if(d.tipSoundOn) soundStoryArr.push(d.tipSoundOn);
+            if(d.soundStory) soundStoryArr.push(d.soundStory); 
+            const soundStory = soundStoryArr.length > 0 ? soundStoryArr.join("<br><br>") : "Đang cập nhật mẹo nhớ âm thanh.";
             const combo = d.combo || "Đang cập nhật Combo 3-trong-1.";
             const fmt = str => str.replace(/\*\*(.*?)\*\*/g, '<b class="text-current bg-black/5 px-1.5 py-0.5 rounded">$1</b>');
 
@@ -747,21 +813,21 @@
             
             const words = d.words || [{w: k, f: k, m: meanMain, lvl: "N5"}]; 
             document.getElementById('detailWordsGrid').innerHTML = words.map(w => `
-                <div class="bg-white p-5 rounded-2xl border-2 border-gray-100 shadow-sm cursor-pointer hover:border-emerald-300 hover:shadow-md transition-all group relative overflow-hidden" onclick="revealCard(this, '${w.f || w.w}')">
+                <div class="bg-white p-4 rounded-xl border-2 border-gray-100 shadow-sm cursor-pointer hover:border-emerald-300 hover:shadow-md transition-all group relative overflow-hidden" onclick="revealCard(this, '${w.f || w.w}')">
                     <div class="flex items-center gap-3 mb-2 relative z-10">
-                        <span class="text-[10px] font-black px-2 py-1 rounded bg-emerald-100 text-emerald-800 shadow-sm">${w.lvl || 'N?'}</span>
-                        <span class="text-2xl font-black ja-text text-slate-800">${w.w}</span>
+                        <span class="text-[9px] font-bold px-2 py-1 rounded bg-emerald-100 text-emerald-800 shadow-sm">${w.lvl || 'N?'}</span>
+                        <span class="text-xl font-bold ja-text text-slate-800">${w.w}</span>
                     </div>
                     <div class="card-back opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out relative z-10">
                         <div class="border-t border-gray-100 pt-3 mt-2 flex justify-between items-center">
                             <div>
-                                <div class="text-lg font-black text-indigo-600 ja-text mb-0.5">${w.f || w.w}</div>
-                                <div class="text-sm font-bold text-gray-500">${w.m}</div>
+                                <div class="text-base font-bold text-indigo-600 ja-text mb-0.5">${w.f || w.w}</div>
+                                <div class="text-xs font-bold text-gray-500">${w.m}</div>
                             </div>
-                            <div class="w-10 h-10 bg-indigo-50 text-indigo-400 rounded-full flex items-center justify-center group-hover:text-indigo-600 transition-colors"><i class="fas fa-volume-up"></i></div>
+                            <div class="w-8 h-8 bg-indigo-50 text-indigo-400 rounded-full flex items-center justify-center group-hover:text-indigo-600 transition-colors"><i class="fas fa-volume-up"></i></div>
                         </div>
                     </div>
-                    <div class="card-front text-[11px] font-black text-slate-400 uppercase tracking-widest text-center py-2 bg-slate-50 rounded-xl mt-3 border border-dashed border-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors relative z-10">
+                    <div class="card-front text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center py-2 bg-slate-50 rounded-lg mt-3 border border-dashed border-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors relative z-10">
                         <i class="fas fa-hand-pointer mr-1"></i> Chạm để xem
                     </div>
                 </div>`).join('');
@@ -799,7 +865,7 @@
                 
                 doc.querySelectorAll('path').forEach((p, i) => {
                     const box = document.createElement('div');
-                    box.className = "w-12 h-12 md:w-14 md:h-14 border-2 border-gray-100 rounded-xl bg-white flex items-center justify-center p-1.5 shadow-sm";
+                    box.className = "w-10 h-10 md:w-12 md:h-12 border-2 border-gray-100 rounded-lg bg-white flex items-center justify-center p-1.5 shadow-sm";
                     const clone = doc.documentElement.cloneNode(true);
                     clone.querySelectorAll('path').forEach((cp, ci) => {
                         cp.style.opacity = ci <= i ? '1' : '0';
@@ -850,16 +916,29 @@
             if(correct) {
                 score += 10; 
                 fb.innerHTML = '<i class="fas fa-check-circle mr-2"></i> CHÍNH XÁC! +10 ĐIỂM'; 
-                fb.className = "mt-6 p-5 rounded-2xl font-black text-xl border-2 flex items-center justify-center animate-fade-in bg-emerald-50 text-emerald-600 border-emerald-200 shadow-inner";
+                fb.className = "mt-6 p-5 rounded-xl font-bold text-xl border-2 flex items-center justify-center animate-fade-in bg-emerald-50 text-emerald-600 border-emerald-200 shadow-inner";
                 speakText(currentQuizItem.Furigana);
             } else {
                 score = Math.max(0, score - 5); 
                 fb.innerHTML = `<i class="fas fa-times-circle mr-2"></i> SAI RỒI! ĐÁP ÁN: <span class="ja-text ml-2 text-2xl">${currentQuizItem.Furigana}</span>`; 
-                fb.className = "mt-6 p-5 rounded-2xl font-black text-xl border-2 flex items-center justify-center animate-fade-in bg-rose-50 text-rose-600 border-rose-200 shadow-inner";
+                fb.className = "mt-6 p-5 rounded-xl font-bold text-xl border-2 flex items-center justify-center animate-fade-in bg-rose-50 text-rose-600 border-rose-200 shadow-inner";
             }
-            document.getElementById('score-display').innerText = `ĐIỂM: ${score}`;
+            document.getElementById('score-display').innerText = score;
             document.getElementById('btn-check').classList.add('hidden');
             document.getElementById('btn-next').classList.remove('hidden');
+        }
+
+        let audioCtx = null;
+        function playSound(isC) {
+            if(!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            o.connect(g); g.connect(audioCtx.destination);
+            o.frequency.setValueAtTime(isC ? 880 : 200, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            o.start(); o.stop(audioCtx.currentTime + 0.3);
         }
 
         function checkSentencePractice(stt, type, target) {
@@ -867,8 +946,8 @@
             const clean = (s) => s.replace(/[\s　、。！？]/g, '').toLowerCase();
             const isC = clean(inp.value) === clean(target);
             fb.classList.remove('hidden', 'text-green-600', 'text-red-500'); inp.classList.remove('wrong-anim', 'border-green-400', 'border-red-400', 'bg-green-50', 'bg-red-50');
-            if(isC) { inp.classList.add('border-green-400', 'bg-green-50'); fb.classList.add('text-green-600'); fb.innerHTML = 'Tuyệt vời!'; speakText(target); }
-            else { inp.classList.add('border-red-400', 'bg-red-50', 'wrong-anim'); fb.classList.add('text-red-500'); fb.innerHTML = 'Thử lại nhé!'; }
+            if(isC) { inp.classList.add('border-green-400', 'bg-green-50'); fb.classList.add('text-green-600'); fb.innerHTML = 'Tuyệt vời!'; playSound(true); speakText(target); }
+            else { inp.classList.add('border-red-400', 'bg-red-50', 'wrong-anim'); fb.classList.add('text-red-500'); fb.innerHTML = 'Thử lại nhé!'; playSound(false); }
         }
 
         function startDictation(stt, type, target) {
@@ -914,13 +993,14 @@
         }
 
         function toggleBookmark() {
-            const s = vocabData[currentIndex].STT; const i = bookmarkedWords.indexOf(s);
+            const s = vocabData[currentIndex].STT; 
+            let bookmarkedWords = (JSON.parse(localStorage.getItem(DAY_KEY)) || []).map(Number);
+            const i = bookmarkedWords.indexOf(s);
             if(i > -1) bookmarkedWords.splice(i, 1); else bookmarkedWords.push(s);
             localStorage.setItem(DAY_KEY, JSON.stringify(bookmarkedWords)); 
             
             const isB = bookmarkedWords.includes(s);
             document.getElementById('btnBookmark').className = isB ? 'absolute top-6 right-6 w-8 h-8 flex items-center justify-center text-yellow-400 transition-colors z-10' : 'absolute top-6 right-6 w-8 h-8 flex items-center justify-center text-gray-300 hover:text-yellow-400 transition-colors z-10';
-            document.querySelectorAll(`.bookmark-icon-${s}`).forEach(icon => { icon.classList.toggle('hidden', !isB); });
             
             if(filterBookmarked) applyFilters();
         }
@@ -928,6 +1008,8 @@
         function applyFilters() {
             visibleIndices = [];
             const term = (document.getElementById('searchInput')?.value || "").toLowerCase();
+            let bookmarkedWords = (JSON.parse(localStorage.getItem(DAY_KEY)) || []).map(Number);
+
             document.querySelectorAll('#vocabList .vocab-item').forEach(el => {
                 const idx = parseInt(el.dataset.index);
                 const w = vocabData[idx];
