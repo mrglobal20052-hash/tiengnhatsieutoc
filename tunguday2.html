@@ -18,8 +18,8 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .vocab-item { transition: all 0.2s; border-left: 4px solid transparent; }
-        .vocab-item.active { background-color: #eef2ff; border-left-color: #4f46e5; color: #4338ca; padding-left: 0.75rem; }
+        .vocab-item { transition: all 0.2s; }
+        .vocab-item.active { background-color: #eef2ff; border-left: 4px solid #4f46e5; color: #4338ca; padding-left: 0.75rem; }
         
         .shadow-card { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s; }
         .shadow-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
@@ -41,6 +41,22 @@
         .stroke-grid-box::after { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: repeating-linear-gradient(to bottom, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); pointer-events: none; }
         .stroke-grid-box::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: repeating-linear-gradient(to right, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); pointer-events: none; }
         #strokeAnimContainer svg path { opacity: 0; }
+        
+        /* Auto Play animation */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .playing-anim { animation: pulse-ring 2s infinite; }
+        
+        /* Auto Play animation for header */
+        @keyframes pulse-ring-header {
+            0% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.5); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(244, 63, 94, 0); }
+            100% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+        }
+        .playing-anim-header { animation: pulse-ring-header 2s infinite; }
     </style>
 </head>
 <body class="flex flex-col text-slate-800">
@@ -51,26 +67,28 @@
                 <div class="flex items-center gap-3">
                     <i class="fas fa-torii-gate text-3xl text-pink-400 drop-shadow-md"></i>
                     <div>
-                        <h1 class="text-lg md:text-xl font-bold uppercase tracking-widest">AzaKanji Master</h1>
-                        <p class="text-[10px] md:text-xs text-indigo-200 font-bold uppercase tracking-wider">Ngày 2: Động từ & Sinh hoạt</p>
+                        <h1 class="text-lg font-bold uppercase tracking-widest">AzaKanji Master</h1>
+                        <p class="text-[10px] text-indigo-200 font-bold uppercase tracking-wider">Ngày 2: Động từ & Sinh hoạt</p>
                     </div>
                 </div>
-                <div class="md:hidden text-xs font-semibold bg-indigo-800 px-3 py-1 rounded-full border border-indigo-500/50" id="headerProgressMobile">0/87</div>
+                <div class="md:hidden bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold border border-indigo-600 shadow-inner" id="headerProgressMobile">0/87</div>
             </div>
             
-            <div class="flex items-center gap-3 w-full md:w-auto">
-                <div class="flex bg-indigo-900/50 rounded-lg p-1 w-full md:w-auto overflow-x-auto no-scrollbar shadow-inner gap-1">
-                    <button onclick="switchTab('learn')" id="tab-learn" class="tab-btn active flex-1 md:flex-none px-4 py-1.5 rounded-md text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap">
-                        <i class="fas fa-book-open text-xs"></i> Học Từ
-                    </button>
-                    <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn flex-1 md:flex-none px-4 py-1.5 rounded-md text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap">
-                        <i class="fas fa-keyboard text-xs"></i> Luyện Tập
-                    </button>
-                    <div class="w-px bg-indigo-600/50 mx-1"></div>
-                    <button onclick="openGrammarList()" class="tab-btn flex-1 md:flex-none px-4 py-1.5 rounded-md text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap">
-                        <i class="fas fa-scroll text-xs"></i> Cẩm Nang
-                    </button>
-                </div>
+            <div class="flex bg-indigo-900/50 rounded-xl p-1 w-full md:w-auto overflow-x-auto no-scrollbar shadow-inner gap-1">
+                <button onclick="toggleAutoPlay()" id="btnGlobalAutoPlay" class="flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap text-emerald-300 hover:bg-white/10">
+                    <i class="fas fa-play-circle"></i> Nghe
+                </button>
+                <div class="w-px bg-indigo-600/50 mx-1"></div>
+                <button onclick="switchTab('learn')" id="tab-learn" class="tab-btn active flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap">
+                    <i class="fas fa-book-open text-xs"></i> Học Từ
+                </button>
+                <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap">
+                    <i class="fas fa-keyboard text-xs"></i> Luyện Tập
+                </button>
+                <div class="w-px bg-indigo-600/50 mx-1"></div>
+                <button onclick="openGrammarList()" class="tab-btn flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap">
+                    <i class="fas fa-scroll text-xs"></i> Cẩm Nang
+                </button>
             </div>
         </div>
     </header>
@@ -83,7 +101,7 @@
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                     <input type="text" id="searchInput" placeholder="Tìm kiếm từ..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all outline-none font-medium">
                 </div>
-                <button id="btnFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50 flex-shrink-0">
+                <button id="btnFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-all hover:bg-gray-50 flex-shrink-0" title="Lọc từ đã lưu">
                     <i class="fas fa-star"></i>
                 </button>
             </div>
@@ -92,9 +110,9 @@
 
         <!-- MAIN CONTENT (LEARN) -->
         <main id="learn-section" class="flex-1 overflow-y-auto scroller bg-slate-50 p-4 md:p-8 pb-32 w-full scroll-smooth">
-            <div class="max-w-3xl mx-auto flex flex-col items-center animate-fade-in space-y-6">
+            <div class="max-w-3xl mx-auto space-y-6 animate-fade-in">
                 <!-- Word Card -->
-                <div class="w-full bg-white rounded-2xl p-6 shadow-sm border border-gray-200 relative overflow-hidden group">
+                <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-200 text-center relative overflow-hidden group">
                     <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-50 to-pink-50 rounded-bl-full -mr-8 -mt-8 z-0 opacity-60 transition-transform group-hover:scale-110 duration-700"></div>
                     
                     <div class="relative z-10 flex justify-center items-center mb-6">
@@ -109,22 +127,22 @@
                         <i class="fas fa-star text-lg"></i>
                     </button>
                     
-                    <div class="relative z-10 inline-block mb-4 text-center w-full">
-                        <h2 id="cardKanji" class="text-6xl md:text-7xl font-bold text-gray-800 ja-text tracking-tight cursor-pointer hover:text-indigo-700 transition-colors drop-shadow-sm inline-block" onclick="speakCurrent()">...</h2>
-                        <button id="strokeBtn" onclick="openStrokeModal()" class="absolute -right-8 md:-right-12 top-2 w-8 h-8 md:w-10 md:h-10 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center shadow-sm hover:bg-pink-200 hover:-translate-y-1 transition-all hidden" title="Phân tích Kanji 5 Bước">
-                            <i class="fas fa-pen-nib text-xs md:text-sm"></i>
+                    <div class="relative z-10 inline-block mb-4">
+                        <h2 id="cardKanji" class="text-6xl md:text-7xl font-bold text-gray-800 ja-text tracking-tight cursor-pointer hover:text-indigo-700 transition-colors drop-shadow-sm" onclick="speakCurrent()">...</h2>
+                        <button id="strokeBtn" onclick="openStrokeModal()" class="absolute -right-12 top-2 w-10 h-10 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center shadow-sm hover:bg-pink-200 hover:-translate-y-1 transition-all hidden" title="Phân tích Kanji 5 Bước">
+                            <i class="fas fa-pen-nib text-sm"></i>
                         </button>
                     </div>
                     <div class="relative z-10 flex flex-col items-center gap-1 cursor-pointer" onclick="speakCurrent()">
-                        <span id="cardFurigana" class="text-xl md:text-2xl text-indigo-600 font-bold ja-text">...</span>
-                        <span id="cardMeaning" class="text-lg md:text-xl text-gray-500 font-bold tracking-wide">...</span>
+                        <span id="cardFurigana" class="text-2xl text-indigo-600 font-bold ja-text">...</span>
+                        <span id="cardMeaning" class="text-lg text-gray-500 font-bold tracking-wide">...</span>
                     </div>
                 </div>
 
                 <!-- Sentences -->
                 <div class="w-full space-y-4">
                     <div class="flex items-center gap-2 px-1">
-                        <div class="bg-pink-100 text-pink-600 p-1.5 rounded-lg text-sm"><i class="fas fa-comments"></i></div>
+                        <div class="bg-pink-100 text-pink-600 p-2 rounded-lg text-sm"><i class="fas fa-comments"></i></div>
                         <h3 class="font-bold text-gray-700 text-lg">Ngữ cảnh & Phân tích</h3>
                     </div>
                     <div id="sentenceList" class="space-y-4"></div>
@@ -146,9 +164,9 @@
                             <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2"><i class="fas fa-graduation-cap"></i> Thử Thách</h2>
                             <p class="text-indigo-100 text-xs md:text-sm mt-1">Nhìn Kanji - Đoán Hiragana</p>
                         </div>
-                        <div class="text-right relative z-10 bg-white/10 p-2 md:p-3 rounded-xl backdrop-blur-sm">
+                        <div class="text-right relative z-10 bg-white/10 p-3 rounded-xl backdrop-blur-sm">
                             <div class="text-[10px] text-indigo-100 uppercase font-bold tracking-wider mb-1">Điểm số</div>
-                            <div class="text-2xl md:text-3xl font-bold font-mono leading-none" id="score-display">0</div>
+                            <div class="text-3xl font-bold font-mono leading-none" id="score-display">0</div>
                         </div>
                     </div>
                     
@@ -156,7 +174,7 @@
                         <div class="mb-8 relative">
                             <div class="text-xs text-gray-400 mb-3 uppercase font-bold tracking-widest">Từ này đọc là gì?</div>
                             <div id="quiz-kanji" class="text-6xl md:text-7xl ja-text font-bold text-gray-800 mb-4 transition-all inline-block drop-shadow-sm"></div>
-                            <div id="quiz-meaning" class="text-lg text-indigo-600 font-bold mb-2"></div>
+                            <div id="quiz-meaning" class="text-lg text-indigo-600 font-bold"></div>
                         </div>
                         
                         <div class="relative max-w-sm mx-auto mb-8">
@@ -172,10 +190,10 @@
                         </div>
                         
                         <div class="flex justify-center">
-                            <button id="btn-check" onclick="checkAnswer()" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-10 rounded-xl shadow-lg transition active:scale-95 text-lg flex items-center justify-center gap-2 mx-auto">
+                            <button id="btn-check" onclick="checkAnswer()" class="w-full max-w-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition active:scale-95 text-lg flex items-center justify-center gap-2">
                                 <i class="fas fa-check"></i> Kiểm Tra
                             </button>
-                            <button id="btn-next" onclick="nextQuestion()" class="hidden w-full md:w-auto bg-gray-800 hover:bg-gray-900 text-white font-bold py-3.5 px-10 rounded-xl shadow-lg transition active:scale-95 text-lg flex items-center justify-center gap-2 mx-auto">
+                            <button id="btn-next" onclick="nextQuestion()" class="hidden w-full max-w-xs bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg transition active:scale-95 text-lg flex items-center justify-center gap-2">
                                 Câu Tiếp Theo <i class="fas fa-arrow-right"></i>
                             </button>
                         </div>
@@ -186,26 +204,26 @@
     </div>
 
     <!-- MOBILE BOTTOM BAR -->
-    <div id="mobileBottomBar" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md px-4 py-3 pb-6 z-30 flex items-center justify-between gap-4 md:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] border-t border-gray-200">
-        <button onclick="prevWord()" class="w-12 h-12 rounded-xl bg-white border border-gray-200 text-gray-600 flex items-center justify-center shadow-sm active:bg-gray-50 active:scale-95 transition-all"><i class="fas fa-chevron-left text-lg"></i></button>
-        <button onclick="toggleDrawer()" class="flex-1 h-12 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center shadow-lg gap-2 active:scale-95 transition-all"><i class="fas fa-list-ul"></i> DANH SÁCH</button>
-        <button onclick="nextWord()" class="w-12 h-12 rounded-xl bg-white border border-gray-200 text-gray-600 flex items-center justify-center shadow-sm active:bg-gray-50 active:scale-95 transition-all"><i class="fas fa-chevron-right text-lg"></i></button>
+    <div id="mobileBottomBar" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md px-4 py-3 pb-6 z-30 flex items-center justify-between gap-4 md:hidden shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] border-t border-gray-100">
+        <button onclick="prevWord()" class="w-14 h-14 rounded-xl bg-white border-2 border-gray-100 text-gray-600 flex items-center justify-center shadow-sm active:bg-gray-50 active:scale-95 transition-all"><i class="fas fa-chevron-left text-lg"></i></button>
+        <button onclick="toggleDrawer()" class="flex-1 h-14 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center shadow-lg shadow-indigo-200 gap-2 active:scale-95 transition-all"><i class="fas fa-list-ul"></i> DANH SÁCH</button>
+        <button onclick="nextWord()" class="w-14 h-14 rounded-xl bg-white border-2 border-gray-100 text-gray-600 flex items-center justify-center shadow-sm active:bg-gray-50 active:scale-95 transition-all"><i class="fas fa-chevron-right text-lg"></i></button>
     </div>
     
     <!-- MOBILE DRAWER -->
     <div id="mobileDrawer" class="fixed inset-0 z-50 pointer-events-none md:hidden flex">
-        <div id="drawerBackdrop" class="absolute inset-0 bg-gray-900/50 opacity-0 transition-opacity duration-300" onclick="toggleDrawer()"></div>
-        <div id="drawerContent" class="relative w-72 bg-white h-full shadow-2xl transform -translate-x-full transition-transform duration-300 flex flex-col pointer-events-auto">
-            <div class="p-4 bg-indigo-700 text-white flex justify-between items-center">
-                <h2 class="font-bold text-base">Danh sách từ vựng</h2>
-                <button onclick="toggleDrawer()" class="w-8 h-8 rounded-full hover:bg-indigo-600 flex items-center justify-center transition-colors"><i class="fas fa-times"></i></button>
+        <div id="drawerBackdrop" class="absolute inset-0 bg-slate-900/60 opacity-0 transition-opacity duration-300" onclick="toggleDrawer()"></div>
+        <div id="drawerContent" class="relative w-[85%] max-w-sm bg-white h-full shadow-2xl transform -translate-x-full transition-transform duration-300 flex flex-col pointer-events-auto">
+            <div class="p-5 border-b border-gray-100 flex items-center justify-between bg-indigo-50">
+                <h3 class="font-bold text-lg text-indigo-900 flex items-center gap-2"><i class="fas fa-list"></i> Danh Sách Từ</h3>
+                <button onclick="toggleDrawer()" class="w-8 h-8 rounded-full hover:bg-white flex items-center justify-center text-gray-500 shadow-sm active:scale-95 transition-colors"><i class="fas fa-times"></i></button>
             </div>
-            <div class="p-4 border-b border-gray-100 bg-gray-50 flex gap-2">
+            <div class="p-4 border-b border-gray-100 flex gap-2 bg-gray-50">
                 <div class="bg-white rounded-xl flex items-center px-4 py-2 gap-2 focus-within:ring-2 focus-within:ring-indigo-500 transition-all flex-1 border border-gray-200">
                     <i class="fas fa-search text-gray-400 text-sm"></i>
                     <input type="text" id="mobileSearchInput" placeholder="Tìm nhanh..." class="w-full bg-transparent outline-none text-sm font-medium placeholder:text-gray-400">
                 </div>
-                <button id="btnMobileFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50 flex-shrink-0">
+                <button id="btnMobileFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50 flex-shrink-0" title="Lọc từ đã lưu">
                     <i class="fas fa-star"></i>
                 </button>
             </div>
@@ -215,7 +233,7 @@
 
     <!-- GRAMMAR LIST MODAL -->
     <div id="grammarListModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center px-4 py-6">
-        <div class="absolute inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity" onclick="closeModal('grammarListModal')"></div>
+        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" onclick="closeModal('grammarListModal')"></div>
         <div class="bg-white rounded-2xl w-full max-w-5xl relative z-10 shadow-2xl flex flex-col h-full max-h-[85vh] overflow-hidden">
             <div class="p-5 md:p-6 border-b flex justify-between items-center bg-gradient-to-r from-indigo-50 to-white">
                 <div class="flex items-center gap-3">
@@ -244,14 +262,16 @@
                 </h3>
                 <button onclick="closeModal('detailGrammarModal')" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors relative z-10"><i class="fas fa-times"></i></button>
             </div>
-            <div class="p-6 md:p-8 overflow-y-auto scroller space-y-6 bg-slate-50" id="dgContent"></div>
+            <div class="p-6 md:p-8 overflow-y-auto scroller space-y-6 bg-slate-50" id="dgContent">
+                <!-- Nội dung grammar detail sẽ được render ở đây bằng JS -->
+            </div>
         </div>
     </div>
 
     <!-- KANJI 5-STEP MODAL -->
     <div id="strokeModal" class="fixed inset-0 z-[80] hidden flex items-center justify-center px-4 py-6">
         <div class="absolute inset-0 bg-slate-900/95 backdrop-blur-sm transition-opacity" onclick="closeModal('strokeModal')"></div>
-        <div class="bg-white rounded-2xl w-full max-w-6xl relative z-10 shadow-2xl flex flex-col h-full max-h-[95vh] overflow-hidden">
+        <div class="bg-white rounded-2xl w-full max-w-5xl relative z-10 shadow-2xl flex flex-col h-full max-h-[95vh] overflow-hidden">
             <div class="p-4 md:p-5 border-b flex justify-between items-center bg-white">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-500 text-white rounded-xl flex items-center justify-center shadow-md shadow-pink-200">
@@ -371,6 +391,9 @@
             "nai_form": { title: "Phủ định", formula: "Vない", desc: "Không làm V.", ex: "全然わからない。", p_polite: [{part:"わかりません", func:"Phủ định dài", mean:"Không hiểu"}], p_casual: [{part:"わからない", func:"Phủ định ngắn", mean:"Chẳng hiểu"}], logic: "Dạng gốc của phủ định." }
         };
 
+        // ==========================================
+        // 2. VOCABULARY DATA FULL (DAY 2)
+        // ==========================================
         const vocabData = [
             { "STT": 1, "Kanji": "見ます", "Nghĩa": "xem, nhìn", "Furigana": "みます", "type": "verb", "conv": { "polite": "週末、映画を見に行きませんか。", "pVi": "Cuối tuần đi xem phim không?", "casual": "週末、映画見に行かない？", "cVi": "Cuối tuần đi xem phim hông?", "gIds": ["ni_iku", "mashou_ka"] } },
             { "STT": 2, "Kanji": "聞きます", "Nghĩa": "nghe, hỏi", "Furigana": "ききます", "type": "verb", "conv": { "polite": "先生に詳しいことを聞きました。", "pVi": "Đã hỏi giáo viên chi tiết.", "casual": "先生に詳しいこと聞いたよ。", "cVi": "Hỏi thầy chi tiết rồi.", "gIds": ["ta_form"] } },
@@ -383,7 +406,7 @@
             { "STT": 9, "Kanji": "遊びます", "Nghĩa": "chơi", "Furigana": "あそびます", "type": "verb", "conv": { "polite": "子供の頃、よく遊んだものです。", "pVi": "Hồi nhỏ hay chơi ở đây.", "casual": "子供の頃、よく遊んだものだ。", "cVi": "Hồi nhỏ hay chơi lắm.", "gIds": ["mono_da", "ta_form"] } },
             { "STT": 10, "Kanji": "持ちます", "Nghĩa": "cầm, mang", "Furigana": "もちます", "type": "verb", "conv": { "polite": "荷物を持ちましょうか。", "pVi": "Để tôi cầm hành lý nhé?", "casual": "荷物、持とうか？", "cVi": "Để tớ xách cho?", "gIds": ["mashou_ka", "volitional"] } },
             { "STT": 11, "Kanji": "運びます", "Nghĩa": "vận chuyển", "Furigana": "はこびます", "type": "verb", "conv": { "polite": "これを運んでください。", "pVi": "Xin hãy chuyển cái này.", "casual": "これ運んで。", "cVi": "Khiêng cái này đi.", "gIds": ["te_kudasai"] } },
-            { "STT": 12, "Kanji": "買います", "Nghĩa": "mua", "Furigana": "かいます", "type": "verb", "conv": { "polite": "高くても買います。", "pVi": "Dù đắt tôi sẽ mua.", "casual": "高くても買うよ。", "cVi": "Đắt mấy vẫn mua.", "gIds": ["temo"] } },
+            { "STT": 12, "Kanji": "買います", "Nghĩa": "mua", "Furigana": "かきます", "type": "verb", "conv": { "polite": "高くても買います。", "pVi": "Dù đắt tôi sẽ mua.", "casual": "高くても買うよ。", "cVi": "Đắt mấy vẫn mua.", "gIds": ["temo"] } },
             { "STT": 13, "Kanji": "売ります", "Nghĩa": "bán", "Furigana": "うります", "type": "verb", "conv": { "polite": "古い本を売っています。", "pVi": "Đang bán sách cũ.", "casual": "古い本売ってるよ。", "cVi": "Đang bán sách cũ đấy.", "gIds": ["te_iru"] } },
             { "STT": 14, "Kanji": "払います", "Nghĩa": "thanh toán", "Furigana": "はらいます", "type": "verb", "conv": { "polite": "カードで払ってもいいですか。", "pVi": "Tôi trả thẻ được không?", "casual": "カードで払ってもいい？", "cVi": "Trả thẻ được hông?", "gIds": ["te_mo_ii"] } },
             { "STT": 15, "Kanji": "乗ります", "Nghĩa": "lên xe", "Furigana": "のります", "type": "verb", "conv": { "polite": "バスに乗って会社に行きます。", "pVi": "Lên xe buýt đi làm.", "casual": "バスに乗って会社行く。", "cVi": "Bắt xe buýt đi làm.", "gIds": ["te_kudasai"] } },
@@ -418,7 +441,7 @@
             { "STT": 44, "Kanji": "先生", "Nghĩa": "giáo viên", "Furigana": "せんせい", "type": "noun", "conv": { "polite": "先生に聞いたらどうですか。", "pVi": "Thử hỏi giáo viên xem?", "casual": "先生に聞いたらどう？", "cVi": "Thử hỏi thầy xem?", "gIds": ["tara_dou"] } },
             { "STT": 45, "Kanji": "教師", "Nghĩa": "giáo viên", "Furigana": "きょうし", "type": "noun", "conv": { "polite": "彼は教師をしています。", "pVi": "Anh ấy làm giáo viên.", "casual": "彼は教師をしてるよ。", "cVi": "Anh ấy làm giáo viên đấy.", "gIds": ["te_iru"] } },
             { "STT": 46, "Kanji": "学生", "Nghĩa": "học sinh", "Furigana": "がくせい", "type": "noun", "conv": { "polite": "学生の頃、よく遊びました。", "pVi": "Thời học sinh hay đi chơi.", "casual": "学生の頃、よく遊んだものだ。", "cVi": "Hồi đi học hay chơi lắm.", "gIds": ["mono_da", "ta_form"] } },
-            { "STT": 47, "Kanji": "会社員", "Nghĩa": "nhân viên c.ty", "Furigana": "かいしゃいん", "type": "noun", "conv": { "polite": "会社員にならざるを得ない。", "pVi": "Đành phải làm nhân viên.", "casual": "会社員にならなきゃなんない。", "cVi": "Đành làm nhân viên thôi.", "gIds": ["zaru_wo_enai"] } },
+            { "STT": 47, "Kanji": "会社員", "Nghĩa": "nhân viên công ty", "Furigana": "かいしゃいん", "type": "noun", "conv": { "polite": "会社員にならざるを得ない。", "pVi": "Đành phải làm nhân viên.", "casual": "会社員にならなきゃなんない。", "cVi": "Đành làm nhân viên thôi.", "gIds": ["zaru_wo_enai"] } },
             { "STT": 48, "Kanji": "医者", "Nghĩa": "bác sĩ", "Furigana": "いしゃ", "type": "noun", "conv": { "polite": "医者に行かなくてはいけません。", "pVi": "Phải đi khám bác sĩ.", "casual": "医者に行かなくちゃ。", "cVi": "Phải đi bác sĩ thôi.", "gIds": ["nakucha"] } },
             { "STT": 49, "Kanji": "警察官", "Nghĩa": "cảnh sát", "Furigana": "けいさつかん", "type": "noun", "conv": { "polite": "警察官に道を聞きました。", "pVi": "Đã hỏi đường cảnh sát.", "casual": "警察官に道聞いた。", "cVi": "Tớ hỏi đường cảnh sát rồi.", "gIds": ["ta_form"] } },
             { "STT": 50, "Kanji": "エンジニア", "Nghĩa": "kỹ sư", "Furigana": "エンジニア", "type": "noun", "conv": { "polite": "エンジニアとして働いています。", "pVi": "Tôi đang làm kỹ sư.", "casual": "エンジニアとして働いてるよ。", "cVi": "Đang làm kỹ sư.", "gIds": ["te_iru"] } },
@@ -554,30 +577,34 @@
         let score = 0;
         let currentStrokeSvg = null;
         let currentQuizItem = null;
+        let bookmarkedWords = (JSON.parse(localStorage.getItem(DAY_KEY)) || []).map(Number);
+        let filterBookmarked = false;
+        let visibleIndices = [];
+        
+        // --- AUDIO & AUTO PLAY STATE ---
+        let isAutoPlaying = false;
+        let autoPlayTimer = null;
+        let currentAudio = null; // Dùng để quản lý luồng âm thanh dự phòng (Google TTS)
+
+        // Ép trình duyệt nạp danh sách giọng nói ngay từ đầu
+        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
 
         function init() {
+            window.speechSynthesis.getVoices(); // Kích hoạt Voice API
+            visibleIndices = vocabData.map((_, i) => i);
             renderList();
             renderGrammarMenu();
             loadWord(0);
             
             document.getElementById('searchInput').addEventListener('input', e => {
-                const q = e.target.value.toLowerCase();
-                document.querySelectorAll('#vocabList .vocab-item').forEach(el => {
-                    el.style.display = el.innerText.toLowerCase().includes(q) ? 'block' : 'none';
-                });
+                applyFilters();
             });
             
             const mSearch = document.getElementById('mobileSearchInput');
             if(mSearch) {
                 mSearch.addEventListener('input', e => {
                     document.getElementById('searchInput').value = e.target.value;
-                    const q = e.target.value.toLowerCase();
-                    document.querySelectorAll('#vocabList .vocab-item').forEach(el => {
-                        el.style.display = el.innerText.toLowerCase().includes(q) ? 'block' : 'none';
-                    });
-                    document.querySelectorAll('#mobileVocabList .vocab-item').forEach(el => {
-                        el.style.display = el.innerText.toLowerCase().includes(q) ? 'block' : 'none';
-                    });
+                    applyFilters();
                 });
             }
 
@@ -607,7 +634,6 @@
         }
 
         function renderList() {
-            let bookmarkedWords = (JSON.parse(localStorage.getItem(DAY_KEY)) || []).map(Number);
             const html = vocabData.map((item, i) => {
                 const isB = bookmarkedWords.includes(item.STT);
                 return `
@@ -625,7 +651,12 @@
             if(mList) mList.innerHTML = html;
         }
 
-        function loadWord(idx) {
+        function loadWord(idx, fromAutoPlay = false) {
+            // Hủy auto play nếu người dùng bấm thủ công
+            if (!fromAutoPlay && isAutoPlaying) {
+                toggleAutoPlay(); // Tắt AutoPlay chuẩn xác
+            }
+
             currentIndex = idx;
             const word = vocabData[idx];
             document.querySelectorAll('.vocab-item').forEach(el => el.classList.remove('active'));
@@ -633,19 +664,26 @@
                 el.classList.add('active');
             });
             
+            // Tự động scroll tới từ đang đọc trong danh sách
             const desktopActive = document.querySelector(`#vocabList .vocab-item[data-index="${idx}"]`);
             if(desktopActive) desktopActive.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            const mobileActive = document.querySelector(`#mobileVocabList .vocab-item[data-index="${idx}"]`);
+            if(mobileActive) mobileActive.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            // Tự động kéo nội dung học về đầu trang khi phát tự động
+            if(fromAutoPlay) {
+                document.getElementById('learn-section').scrollTo({top: 0, behavior: 'smooth'});
+            }
 
             const progressText = `${idx+1}/${vocabData.length}`;
             if(document.getElementById('mobileProgress')) document.getElementById('mobileProgress').innerText = progressText;
             if(document.getElementById('headerProgressMobile')) document.getElementById('headerProgressMobile').innerText = progressText;
-            
+
             document.getElementById('wordIndex').innerText = `#${String(word.STT).padStart(2, '0')}`;
             document.getElementById('cardKanji').innerText = word.Kanji || word.Furigana;
             document.getElementById('cardFurigana').innerText = word.Furigana;
             document.getElementById('cardMeaning').innerText = word.Nghĩa;
             
-            let bookmarkedWords = (JSON.parse(localStorage.getItem(DAY_KEY)) || []).map(Number);
             document.getElementById('btnBookmark').className = bookmarkedWords.includes(word.STT) ? 'absolute top-6 right-6 w-8 h-8 flex items-center justify-center text-yellow-400 transition-colors z-10' : 'absolute top-6 right-6 w-8 h-8 flex items-center justify-center text-gray-300 hover:text-yellow-400 transition-colors z-10';
 
             const kanjis = (word.Kanji || "").match(/[\u4e00-\u9faf]/g);
@@ -693,13 +731,160 @@
             });
         }
 
+        // --- BỘ LỌC TÌM GIỌNG ĐỌC BẢN ĐỊA ---
+        function getStrictVoice(langPrefix) {
+            const voices = window.speechSynthesis.getVoices();
+            if(!voices || voices.length === 0) return null;
+            
+            // Tìm tất cả giọng có mã ngôn ngữ bắt đầu bằng (vi hoặc ja)
+            const exact = voices.filter(v => v.lang.toLowerCase().startsWith(langPrefix));
+            if (exact.length > 0) {
+                // Ưu tiên các giọng có tên nhận diện rõ ràng bản địa
+                return exact.find(v => /google|premium|siri|linh|hoaimy|kyoko/i.test(v.name)) || exact[0];
+            }
+            return null;
+        }
+
+        function playAudioUrl(url) {
+            return new Promise((resolve) => {
+                if(currentAudio) { currentAudio.pause(); currentAudio = null; }
+                currentAudio = new Audio(url);
+                currentAudio.onended = () => { currentAudio = null; resolve(); };
+                currentAudio.onerror = () => { currentAudio = null; resolve(); }; // Bỏ qua lỗi để đọc tiếp
+                currentAudio.play().catch(e => { currentAudio = null; resolve(); });
+            });
+        }
+
+        // HÀM ĐỌC GIỌNG TRỌNG TÂM - GIẢI QUYẾT TRIỆT ĐỂ LỖI TIẾNG VIỆT
+        window.speakTextAsync = async function(text, lang = 'ja-JP', rate = 0.85) {
+            if (!text) return;
+            const langPrefix = lang.split('-')[0]; // 'vi' hoặc 'ja'
+            const nativeVoice = getStrictVoice(langPrefix);
+            
+            // GIẢI PHÁP TRIỆT ĐỂ: Nếu không có giọng chuẩn, Vượt rào dùng Google Translate API
+            if (!nativeVoice) {
+                const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=${langPrefix}&q=${encodeURIComponent(text)}`;
+                await playAudioUrl(url);
+                return;
+            }
+
+            // Nếu thiết bị CÓ cài sẵn giọng chuẩn thì dùng bình thường
+            return new Promise((resolve) => {
+                window.speechSynthesis.cancel();
+                setTimeout(() => {
+                    const u = new SpeechSynthesisUtterance(text);
+                    u.lang = lang;
+                    u.rate = rate;
+                    u.voice = nativeVoice;
+                    u.onend = resolve;
+                    u.onerror = resolve;
+                    window.speechSynthesis.speak(u);
+                }, 50); // Khoảng đệm để tránh gián đoạn
+            });
+        };
+
+        // Ghi đè hàm gọi tĩnh dùng trong các nút bấm
+        window.speakText = function(text, lang = 'ja-JP') {
+            speakTextAsync(text, lang, lang.startsWith('vi') ? 1.0 : 0.85);
+        };
+
+        // --- AUTO PLAY LOGIC MỚI BẰNG ASYNC/AWAIT ---
+        function toggleAutoPlay() {
+            isAutoPlaying = !isAutoPlaying;
+            updateAutoPlayUI();
+            
+            if (isAutoPlaying) {
+                // Ép chuyển sang màn hình Học Từ nếu đang ở màn hình khác
+                switchTab('learn');
+                
+                // Đóng Drawer (Menu điện thoại) nếu đang mở
+                const d = document.getElementById('mobileDrawer');
+                if(d && !d.classList.contains('pointer-events-none')) {
+                    toggleDrawer();
+                }
+
+                // Bắt đầu từ từ vựng hiện tại trong danh sách lọc
+                let startIdx = visibleIndices.indexOf(currentIndex);
+                if (startIdx === -1) startIdx = 0;
+                playSequence(startIdx);
+            } else {
+                // Xóa toàn bộ tàn dư âm thanh khi bấm dừng
+                window.speechSynthesis.cancel();
+                if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+                clearTimeout(autoPlayTimer);
+            }
+        }
+
+        function updateAutoPlayUI() {
+            const btn = document.getElementById('btnGlobalAutoPlay');
+            if(!btn) return;
+            if(isAutoPlaying) {
+                btn.innerHTML = '<i class="fas fa-stop-circle"></i> Dừng Nghe';
+                btn.className = "flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap bg-rose-500/20 text-rose-300 playing-anim-header shadow-inner";
+                btn.title = "Dừng nghe";
+            } else {
+                btn.innerHTML = '<i class="fas fa-play-circle"></i> Nghe';
+                btn.className = "flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap text-emerald-300 hover:bg-white/10";
+                btn.title = "Phát tự động";
+            }
+        }
+
+        async function playSequence(visibleListIndex) {
+            if (!isAutoPlaying || visibleListIndex >= visibleIndices.length) {
+                isAutoPlaying = false;
+                updateAutoPlayUI();
+                return;
+            }
+
+            const realIndex = visibleIndices[visibleListIndex];
+            loadWord(realIndex, true); 
+
+            const word = vocabData[realIndex];
+            
+            // Xây dựng danh sách phát
+            const playlist = [
+                { text: word.Furigana || word.Kanji, lang: 'ja-JP', rate: 0.85 },
+                { text: word.Nghĩa, lang: 'vi-VN', rate: 1.0 },
+            ];
+
+            // Thêm các câu ví dụ (Tiếng Nhật -> Tiếng Việt)
+            if (word.conv) {
+                if (word.conv.polite && word.conv.pVi) {
+                    playlist.push({ text: word.conv.polite, lang: 'ja-JP', rate: 0.85 });
+                    playlist.push({ text: word.conv.pVi, lang: 'vi-VN', rate: 1.0 });
+                } 
+                if (word.conv.casual && word.conv.cVi) {
+                    playlist.push({ text: word.conv.casual, lang: 'ja-JP', rate: 0.85 });
+                    playlist.push({ text: word.conv.cVi, lang: 'vi-VN', rate: 1.0 });
+                }
+            }
+
+            // Đọc tuần tự bằng Async/Await để đảm bảo không bị dính chữ
+            for (let i = 0; i < playlist.length; i++) {
+                if (!isAutoPlaying) break;
+                const item = playlist[i];
+                
+                await speakTextAsync(item.text, item.lang, item.rate);
+                
+                if (!isAutoPlaying) break;
+                // Nghỉ 0.6 giây giữa các ngôn ngữ/câu
+                await new Promise(r => setTimeout(r, 600)); 
+            }
+
+            if (isAutoPlaying) {
+                autoPlayTimer = setTimeout(() => {
+                    playSequence(visibleListIndex + 1);
+                }, 1000); // Tạm nghỉ 1s trước khi sang từ vựng tiếp theo
+            }
+        }
+
         // --- GRAMMAR UI ---
         function renderGrammarMenu() {
             const grid = document.getElementById('grammarGrid');
             grid.innerHTML = Object.keys(grammarRepo).map(k => {
                 const g = grammarRepo[k];
                 return `
-                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group" onclick="openGrammar('${k}', 'polite')">
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group" onclick="openGrammar('${k}', 'polite')">
                     <div class="font-bold text-indigo-700 mb-2 flex items-center justify-between">
                         <span>${g.title}</span>
                         <i class="fas fa-arrow-right text-gray-200 group-hover:text-indigo-400 transition-colors text-xs"></i>
@@ -719,13 +904,13 @@
                 let breakdownHtml = '';
                 if(breakdown) {
                     breakdownHtml = `
-                    <div class="bg-white border-2 border-gray-50 rounded-3xl overflow-hidden mt-6">
+                    <div class="bg-white border-2 border-gray-50 rounded-2xl overflow-hidden mt-6">
                         <div class="bg-gray-50 px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-gray-100">
                             <i class="fas fa-puzzle-piece mr-2"></i> Phân tích cấu trúc (${style === 'polite' ? 'Lịch sự' : 'Thân mật'})
                         </div>
                         <div class="p-3 space-y-2">
                             ${breakdown.map(b => `
-                                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-4 bg-slate-50/50 rounded-2xl border border-gray-100/50 hover:bg-indigo-50/30 transition-colors">
+                                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-4 bg-slate-50/50 rounded-xl border border-gray-100/50 hover:bg-indigo-50/30 transition-colors">
                                     <div class="font-bold ja-text text-indigo-700 text-xl">${b.part}</div>
                                     <div class="text-left sm:text-right mt-1 sm:mt-0">
                                         <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">${b.func}</div>
@@ -738,13 +923,13 @@
 
                 return `
                     <div class="space-y-6">
-                        <div class="bg-indigo-600 text-white p-6 md:p-8 rounded-[2rem] shadow-xl relative overflow-hidden">
+                        <div class="bg-indigo-600 text-white p-6 md:p-8 rounded-2xl shadow-xl relative overflow-hidden">
                             <div class="absolute -right-4 -bottom-4 text-8xl text-indigo-500 opacity-30"><i class="fas fa-quote-right"></i></div>
                             <div class="text-xs font-bold text-indigo-200 uppercase tracking-widest mb-3 relative z-10">Cấu trúc tiêu chuẩn</div>
                             <div class="text-2xl md:text-3xl font-bold font-mono relative z-10">${g.formula}</div>
                         </div>
                         ${breakdownHtml}
-                        <div class="bg-blue-50/80 p-6 md:p-8 rounded-[2rem] border border-blue-100 mt-6 relative">
+                        <div class="bg-blue-50/80 p-6 md:p-8 rounded-2xl border border-blue-100 mt-6 relative">
                             <div class="absolute -left-[3px] top-8 w-1.5 h-10 bg-blue-500 rounded-r-full"></div>
                             <h5 class="text-sm font-bold text-blue-800 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fas fa-lightbulb text-yellow-500 text-lg"></i> Bản chất logic</h5>
                             <p class="text-blue-900 text-base md:text-lg leading-relaxed font-medium">${g.logic ? g.logic.replace(/\*\*(.*?)\*\*/g, '<b class="text-blue-700 bg-blue-100/50 px-1 rounded">$1</b>') : 'Đang cập nhật logic...'}</p>
@@ -776,16 +961,18 @@
 
             let d = kanjiDetails[k] || {}; 
             const hanviet = d.hanviet || "?";
-            const meanMain = d.meanMain || "Đang cập nhật";
+            const meanMain = d.meanMain || d.mean || "Đang cập nhật";
             const kun = d.kun || "-";
             const on = d.on || "-";
             const radicals = d.radicals || "Đang phân tích...";
             const tipImg = d.tipImg || "Đang cập nhật hình ảnh chiết tự.";
+            
             let soundStoryArr = [];
-            if(d.tipSoundKun) soundStoryArr.push(d.tipSoundKun);
-            if(d.tipSoundOn) soundStoryArr.push(d.tipSoundOn);
+            if(d.tipSoundOn) soundStoryArr.push('<span class="font-bold text-[10px] bg-orange-200 px-1.5 py-0.5 rounded text-orange-800 mr-2">ON</span> ' + d.tipSoundOn);
+            if(d.tipSoundKun) soundStoryArr.push('<span class="font-bold text-[10px] bg-pink-200 px-1.5 py-0.5 rounded text-pink-800 mr-2">KUN</span> ' + d.tipSoundKun);
             if(d.soundStory) soundStoryArr.push(d.soundStory); 
             const soundStory = soundStoryArr.length > 0 ? soundStoryArr.join("<br><br>") : "Đang cập nhật mẹo nhớ âm thanh.";
+            
             const combo = d.combo || "Đang cập nhật Combo 3-trong-1.";
             const fmt = str => str.replace(/\*\*(.*?)\*\*/g, '<b class="text-current bg-black/5 px-1.5 py-0.5 rounded">$1</b>');
 
@@ -819,7 +1006,7 @@
                         <i class="fas fa-hand-pointer mr-1"></i> Chạm để xem
                     </div>
                 </div>`).join('');
-                
+            
             await drawStroke(k);
         }
 
@@ -882,7 +1069,7 @@
 
         // --- QUIZ LOGIC ---
         function nextQuestion() {
-            document.getElementById('feedback').classList.add('hidden');
+            document.getElementById('feedback-area').classList.add('hidden');
             document.getElementById('btn-check').classList.remove('hidden');
             document.getElementById('btn-next').classList.add('hidden');
             const inp = document.getElementById('quiz-input');
@@ -899,21 +1086,25 @@
             const ans = inp.value.trim(); if(!ans) return;
             inp.disabled = true;
             const correct = ans === currentQuizItem.Furigana;
-            const fb = document.getElementById('feedback');
+            const fb = document.getElementById('feedback-area');
             fb.classList.remove('hidden');
             if(correct) {
                 score += 10; 
-                fb.innerHTML = '<i class="fas fa-check-circle mr-2"></i> CHÍNH XÁC! +10 ĐIỂM'; 
-                fb.className = "mt-6 p-5 rounded-2xl font-bold text-xl border-2 flex items-center justify-center animate-fade-in bg-emerald-50 text-emerald-600 border-emerald-200 shadow-inner";
+                fb.innerHTML = '<div class="font-bold text-lg mb-2 flex items-center"><i class="fas fa-check-circle mr-2"></i> CHÍNH XÁC! +10 ĐIỂM</div>'; 
+                fb.className = "mt-6 p-5 rounded-xl border-2 animate-fade-in bg-emerald-50 text-emerald-600 border-emerald-200 shadow-inner";
                 speakText(currentQuizItem.Furigana);
             } else {
                 score = Math.max(0, score - 5); 
-                fb.innerHTML = `<i class="fas fa-times-circle mr-2"></i> SAI RỒI! ĐÁP ÁN: <span class="ja-text ml-2 text-2xl">${currentQuizItem.Furigana}</span>`; 
-                fb.className = "mt-6 p-5 rounded-2xl font-bold text-xl border-2 flex items-center justify-center animate-fade-in bg-rose-50 text-rose-600 border-rose-200 shadow-inner";
+                fb.innerHTML = `<div class="font-bold text-lg mb-2 flex items-center"><i class="fas fa-times-circle mr-2"></i> SAI RỒI!</div><div class="text-gray-700 flex items-center flex-wrap gap-2">Đáp án đúng: <span id="correct-answer" class="font-bold text-xl text-rose-600 px-3 py-1 bg-white border border-rose-100 rounded-lg ja-text shadow-sm">${currentQuizItem.Furigana}</span><button onclick="playQuizAudio()" class="text-gray-400 hover:text-rose-600 transition-colors w-8 h-8 rounded-full flex items-center justify-center hover:bg-white border border-transparent hover:border-gray-200"><i class="fas fa-volume-up"></i></button></div>`; 
+                fb.className = "mt-6 p-5 rounded-xl border-2 animate-fade-in bg-rose-50 text-rose-600 border-rose-200 shadow-inner";
             }
             document.getElementById('score-display').innerText = score;
             document.getElementById('btn-check').classList.add('hidden');
             document.getElementById('btn-next').classList.remove('hidden');
+        }
+        
+        window.playQuizAudio = function() {
+             if(currentQuizItem) speakText(currentQuizItem.Furigana);
         }
 
         let audioCtx = null;
@@ -1028,8 +1219,11 @@
             document.getElementById(id).classList.add('hidden'); 
             document.body.style.overflow = 'auto';
         }
-        function speakText(t) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'ja-JP'; u.rate = 0.85; window.speechSynthesis.speak(u); }
-        function speakCurrent() { speakText(vocabData[currentIndex].Kanji || vocabData[currentIndex].Furigana); }
+        window.openGrammarList = function() {
+            showModal('grammarListModal');
+        }
+        
+        window.speakCurrent = function() { speakText(vocabData[currentIndex].Kanji || vocabData[currentIndex].Furigana); }
 
         window.onload = init;
     </script>
