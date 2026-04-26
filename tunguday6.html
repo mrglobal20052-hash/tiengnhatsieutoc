@@ -41,6 +41,22 @@
         .stroke-grid-box::after { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: repeating-linear-gradient(to bottom, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); pointer-events: none; }
         .stroke-grid-box::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: repeating-linear-gradient(to right, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); pointer-events: none; }
         #strokeAnimContainer svg path { opacity: 0; }
+        
+        /* Auto Play animation */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .playing-anim { animation: pulse-ring 2s infinite; }
+        
+        /* Auto Play animation for header */
+        @keyframes pulse-ring-header {
+            0% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.5); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(244, 63, 94, 0); }
+            100% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+        }
+        .playing-anim-header { animation: pulse-ring-header 2s infinite; }
     </style>
 </head>
 <body class="flex flex-col text-slate-800">
@@ -59,6 +75,10 @@
             </div>
             
             <div class="flex bg-indigo-900/50 rounded-xl p-1 w-full md:w-auto overflow-x-auto no-scrollbar shadow-inner gap-1">
+                <button onclick="toggleAutoPlay()" id="btnGlobalAutoPlay" class="flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap text-emerald-300 hover:bg-white/10">
+                    <i class="fas fa-play-circle"></i> Nghe
+                </button>
+                <div class="w-px bg-indigo-600/50 mx-1"></div>
                 <button onclick="switchTab('learn')" id="tab-learn" class="tab-btn active flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap">
                     <i class="fas fa-book-open text-xs"></i> Học Từ
                 </button>
@@ -81,7 +101,7 @@
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                     <input type="text" id="searchInput" placeholder="Tìm kiếm từ..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 transition-all outline-none font-medium">
                 </div>
-                <button id="btnFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50 flex-shrink-0">
+                <button id="btnFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-all hover:bg-gray-50 flex-shrink-0" title="Lọc từ đã lưu">
                     <i class="fas fa-star"></i>
                 </button>
             </div>
@@ -203,7 +223,7 @@
                     <i class="fas fa-search text-gray-400 text-sm"></i>
                     <input type="text" id="mobileSearchInput" placeholder="Tìm nhanh..." class="w-full bg-transparent outline-none text-sm font-medium placeholder:text-gray-400">
                 </div>
-                <button id="btnMobileFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50 flex-shrink-0">
+                <button id="btnMobileFilterStar" onclick="toggleBookmarkFilter()" class="w-10 h-10 rounded-xl border border-gray-200 bg-white text-gray-400 flex items-center justify-center shadow-sm transition-colors hover:bg-gray-50 flex-shrink-0" title="Lọc từ đã lưu">
                     <i class="fas fa-star"></i>
                 </button>
             </div>
@@ -576,8 +596,17 @@
         let bookmarkedWords = (JSON.parse(localStorage.getItem(DAY_KEY)) || []).map(Number);
         let filterBookmarked = false;
         let visibleIndices = [];
+        
+        // --- AUDIO & AUTO PLAY STATE ---
+        let isAutoPlaying = false;
+        let autoPlayTimer = null;
+        let currentAudio = null; // Dùng để quản lý luồng âm thanh dự phòng (Google TTS)
+
+        // Ép trình duyệt nạp danh sách giọng nói ngay từ đầu
+        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
 
         function init() {
+            window.speechSynthesis.getVoices(); // Kích hoạt Voice API
             visibleIndices = vocabData.map((_, i) => i);
             renderList();
             renderGrammarMenu();
@@ -638,7 +667,12 @@
             if(mList) mList.innerHTML = html;
         }
 
-        function loadWord(idx) {
+        function loadWord(idx, fromAutoPlay = false) {
+            // Hủy auto play nếu người dùng bấm thủ công
+            if (!fromAutoPlay && isAutoPlaying) {
+                toggleAutoPlay(); // Tắt AutoPlay chuẩn xác
+            }
+
             currentIndex = idx;
             const word = vocabData[idx];
             document.querySelectorAll('.vocab-item').forEach(el => el.classList.remove('active'));
@@ -646,8 +680,16 @@
                 el.classList.add('active');
             });
             
+            // Tự động scroll tới từ đang đọc trong danh sách
             const desktopActive = document.querySelector(`#vocabList .vocab-item[data-index="${idx}"]`);
             if(desktopActive) desktopActive.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            const mobileActive = document.querySelector(`#mobileVocabList .vocab-item[data-index="${idx}"]`);
+            if(mobileActive) mobileActive.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            // Tự động kéo nội dung học về đầu trang khi phát tự động
+            if(fromAutoPlay) {
+                document.getElementById('learn-section').scrollTo({top: 0, behavior: 'smooth'});
+            }
 
             const progressText = `${idx+1}/${vocabData.length}`;
             if(document.getElementById('mobileProgress')) document.getElementById('mobileProgress').innerText = progressText;
@@ -703,6 +745,153 @@
                     </div>
                 `;
             });
+        }
+
+        // --- BỘ LỌC TÌM GIỌNG ĐỌC BẢN ĐỊA ---
+        function getStrictVoice(langPrefix) {
+            const voices = window.speechSynthesis.getVoices();
+            if(!voices || voices.length === 0) return null;
+            
+            // Tìm tất cả giọng có mã ngôn ngữ bắt đầu bằng (vi hoặc ja)
+            const exact = voices.filter(v => v.lang.toLowerCase().startsWith(langPrefix));
+            if (exact.length > 0) {
+                // Ưu tiên các giọng có tên nhận diện rõ ràng bản địa
+                return exact.find(v => /google|premium|siri|linh|hoaimy|kyoko/i.test(v.name)) || exact[0];
+            }
+            return null;
+        }
+
+        function playAudioUrl(url) {
+            return new Promise((resolve) => {
+                if(currentAudio) { currentAudio.pause(); currentAudio = null; }
+                currentAudio = new Audio(url);
+                currentAudio.onended = () => { currentAudio = null; resolve(); };
+                currentAudio.onerror = () => { currentAudio = null; resolve(); }; // Bỏ qua lỗi để đọc tiếp
+                currentAudio.play().catch(e => { currentAudio = null; resolve(); });
+            });
+        }
+
+        // HÀM ĐỌC GIỌNG TRỌNG TÂM - GIẢI QUYẾT TRIỆT ĐỂ LỖI TIẾNG VIỆT
+        window.speakTextAsync = async function(text, lang = 'ja-JP', rate = 0.85) {
+            if (!text) return;
+            const langPrefix = lang.split('-')[0]; // 'vi' hoặc 'ja'
+            const nativeVoice = getStrictVoice(langPrefix);
+            
+            // GIẢI PHÁP TRIỆT ĐỂ: Nếu không có giọng chuẩn, Vượt rào dùng Google Translate API
+            if (!nativeVoice) {
+                const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=${langPrefix}&q=${encodeURIComponent(text)}`;
+                await playAudioUrl(url);
+                return;
+            }
+
+            // Nếu thiết bị CÓ cài sẵn giọng chuẩn thì dùng bình thường
+            return new Promise((resolve) => {
+                window.speechSynthesis.cancel();
+                setTimeout(() => {
+                    const u = new SpeechSynthesisUtterance(text);
+                    u.lang = lang;
+                    u.rate = rate;
+                    u.voice = nativeVoice;
+                    u.onend = resolve;
+                    u.onerror = resolve;
+                    window.speechSynthesis.speak(u);
+                }, 50); // Khoảng đệm để tránh gián đoạn
+            });
+        };
+
+        // Ghi đè hàm gọi tĩnh dùng trong các nút bấm
+        window.speakText = function(text, lang = 'ja-JP') {
+            speakTextAsync(text, lang, lang.startsWith('vi') ? 1.0 : 0.85);
+        };
+
+        // --- AUTO PLAY LOGIC MỚI BẰNG ASYNC/AWAIT ---
+        function toggleAutoPlay() {
+            isAutoPlaying = !isAutoPlaying;
+            updateAutoPlayUI();
+            
+            if (isAutoPlaying) {
+                // Ép chuyển sang màn hình Học Từ nếu đang ở màn hình khác
+                switchTab('learn');
+                
+                // Đóng Drawer (Menu điện thoại) nếu đang mở
+                const d = document.getElementById('mobileDrawer');
+                if(d && !d.classList.contains('pointer-events-none')) {
+                    toggleDrawer();
+                }
+
+                // Bắt đầu từ từ vựng hiện tại trong danh sách lọc
+                let startIdx = visibleIndices.indexOf(currentIndex);
+                if (startIdx === -1) startIdx = 0;
+                playSequence(startIdx);
+            } else {
+                // Xóa toàn bộ tàn dư âm thanh khi bấm dừng
+                window.speechSynthesis.cancel();
+                if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+                clearTimeout(autoPlayTimer);
+            }
+        }
+
+        function updateAutoPlayUI() {
+            const btn = document.getElementById('btnGlobalAutoPlay');
+            if(!btn) return;
+            if(isAutoPlaying) {
+                btn.innerHTML = '<i class="fas fa-stop-circle"></i> Dừng Nghe';
+                btn.className = "flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap bg-rose-500/20 text-rose-300 playing-anim-header shadow-inner";
+                btn.title = "Dừng nghe";
+            } else {
+                btn.innerHTML = '<i class="fas fa-play-circle"></i> Nghe';
+                btn.className = "flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap text-emerald-300 hover:bg-white/10";
+                btn.title = "Phát tự động";
+            }
+        }
+
+        async function playSequence(visibleListIndex) {
+            if (!isAutoPlaying || visibleListIndex >= visibleIndices.length) {
+                isAutoPlaying = false;
+                updateAutoPlayUI();
+                return;
+            }
+
+            const realIndex = visibleIndices[visibleListIndex];
+            loadWord(realIndex, true); 
+
+            const word = vocabData[realIndex];
+            
+            // Xây dựng danh sách phát
+            const playlist = [
+                { text: word.Furigana || word.Kanji, lang: 'ja-JP', rate: 0.85 },
+                { text: word.Nghĩa, lang: 'vi-VN', rate: 1.0 },
+            ];
+
+            // Thêm các câu ví dụ (Tiếng Nhật -> Tiếng Việt)
+            if (word.conv) {
+                if (word.conv.polite && word.conv.pVi) {
+                    playlist.push({ text: word.conv.polite, lang: 'ja-JP', rate: 0.85 });
+                    playlist.push({ text: word.conv.pVi, lang: 'vi-VN', rate: 1.0 });
+                } 
+                if (word.conv.casual && word.conv.cVi) {
+                    playlist.push({ text: word.conv.casual, lang: 'ja-JP', rate: 0.85 });
+                    playlist.push({ text: word.conv.cVi, lang: 'vi-VN', rate: 1.0 });
+                }
+            }
+
+            // Đọc tuần tự bằng Async/Await để đảm bảo không bị dính chữ
+            for (let i = 0; i < playlist.length; i++) {
+                if (!isAutoPlaying) break;
+                const item = playlist[i];
+                
+                await speakTextAsync(item.text, item.lang, item.rate);
+                
+                if (!isAutoPlaying) break;
+                // Nghỉ 0.6 giây giữa các ngôn ngữ/câu
+                await new Promise(r => setTimeout(r, 600)); 
+            }
+
+            if (isAutoPlaying) {
+                autoPlayTimer = setTimeout(() => {
+                    playSequence(visibleListIndex + 1);
+                }, 1000); // Tạm nghỉ 1s trước khi sang từ vựng tiếp theo
+            }
         }
 
         // --- GRAMMAR UI ---
@@ -831,7 +1020,7 @@
                         <i class="fas fa-hand-pointer mr-1"></i> Chạm để xem
                     </div>
                 </div>`).join('');
-                
+            
             await drawStroke(k);
         }
 
@@ -894,7 +1083,7 @@
 
         // --- QUIZ LOGIC ---
         function nextQuestion() {
-            document.getElementById('feedback').classList.add('hidden');
+            document.getElementById('feedback-area').classList.add('hidden');
             document.getElementById('btn-check').classList.remove('hidden');
             document.getElementById('btn-next').classList.add('hidden');
             const inp = document.getElementById('quiz-input');
@@ -911,21 +1100,25 @@
             const ans = inp.value.trim(); if(!ans) return;
             inp.disabled = true;
             const correct = ans === currentQuizItem.Furigana;
-            const fb = document.getElementById('feedback');
+            const fb = document.getElementById('feedback-area');
             fb.classList.remove('hidden');
             if(correct) {
                 score += 10; 
-                fb.innerHTML = '<i class="fas fa-check-circle mr-2"></i> CHÍNH XÁC! +10 ĐIỂM'; 
-                fb.className = "mt-6 p-5 rounded-xl font-bold text-xl border-2 flex items-center justify-center animate-fade-in bg-emerald-50 text-emerald-600 border-emerald-200 shadow-inner";
+                fb.innerHTML = '<div class="font-bold text-lg mb-2 flex items-center"><i class="fas fa-check-circle mr-2"></i> CHÍNH XÁC! +10 ĐIỂM</div>'; 
+                fb.className = "mt-6 p-5 rounded-xl border-2 animate-fade-in bg-emerald-50 text-emerald-600 border-emerald-200 shadow-inner";
                 speakText(currentQuizItem.Furigana);
             } else {
                 score = Math.max(0, score - 5); 
-                fb.innerHTML = `<i class="fas fa-times-circle mr-2"></i> SAI RỒI! ĐÁP ÁN: <span class="ja-text ml-2 text-2xl">${currentQuizItem.Furigana}</span>`; 
-                fb.className = "mt-6 p-5 rounded-xl font-bold text-xl border-2 flex items-center justify-center animate-fade-in bg-rose-50 text-rose-600 border-rose-200 shadow-inner";
+                fb.innerHTML = `<div class="font-bold text-lg mb-2 flex items-center"><i class="fas fa-times-circle mr-2"></i> SAI RỒI!</div><div class="text-gray-700 flex items-center flex-wrap gap-2">Đáp án đúng: <span id="correct-answer" class="font-bold text-xl text-rose-600 px-3 py-1 bg-white border border-rose-100 rounded-lg ja-text shadow-sm">${currentQuizItem.Furigana}</span><button onclick="playQuizAudio()" class="text-gray-400 hover:text-rose-600 transition-colors w-8 h-8 rounded-full flex items-center justify-center hover:bg-white border border-transparent hover:border-gray-200"><i class="fas fa-volume-up"></i></button></div>`; 
+                fb.className = "mt-6 p-5 rounded-xl border-2 animate-fade-in bg-rose-50 text-rose-600 border-rose-200 shadow-inner";
             }
             document.getElementById('score-display').innerText = score;
             document.getElementById('btn-check').classList.add('hidden');
             document.getElementById('btn-next').classList.remove('hidden');
+        }
+        
+        window.playQuizAudio = function() {
+             if(currentQuizItem) speakText(currentQuizItem.Furigana);
         }
 
         let audioCtx = null;
@@ -1040,8 +1233,11 @@
             document.getElementById(id).classList.add('hidden'); 
             document.body.style.overflow = 'auto';
         }
-        function speakText(t) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'ja-JP'; u.rate = 0.85; window.speechSynthesis.speak(u); }
-        function speakCurrent() { speakText(vocabData[currentIndex].Kanji || vocabData[currentIndex].Furigana); }
+        window.openGrammarList = function() {
+            showModal('grammarListModal');
+        }
+        
+        window.speakCurrent = function() { speakText(vocabData[currentIndex].Kanji || vocabData[currentIndex].Furigana); }
 
         window.onload = init;
     </script>
