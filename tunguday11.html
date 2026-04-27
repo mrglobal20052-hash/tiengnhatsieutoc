@@ -15,35 +15,25 @@
         .scroller::-webkit-scrollbar { width: 5px; height: 5px; }
         .scroller::-webkit-scrollbar-track { background: transparent; }
         .scroller::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
-        
         .vocab-item { transition: all 0.2s; }
         .vocab-item.active { background-color: #eef2ff; border-left: 4px solid #4f46e5; color: #4338ca; padding-left: 0.75rem; }
-        
         .shadow-card { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s; }
         .shadow-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-        
         .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-top: 1px solid rgba(255, 255, 255, 0.3); }
-        
         .tab-btn.active { background-color: white; color: #312e81; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); }
         .tab-btn { color: #a5b4fc; }
-        
         /* Animation Classes */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         .wrong-anim { animation: shake 0.3s ease-in-out; }
-        
         @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         .correct-anim { animation: pop 0.3s ease-in-out; }
-        
         .bookmark-anim { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-
         /* Stroke Order Styles */
         .stroke-grid-box { border: 1px solid #e5e7eb; background-color: white; position: relative; }
         .stroke-grid-box::after { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: repeating-linear-gradient(to bottom, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); pointer-events: none; }
         .stroke-grid-box::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: repeating-linear-gradient(to right, #ddd 0, #ddd 4px, transparent 4px, transparent 8px); pointer-events: none; }
-        
         /* Hide stroke paths initially */
         #strokeAnimContainer svg path { opacity: 0; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -51,27 +41,42 @@
     </style>
 </head>
 <body class="flex flex-col text-slate-800">
-
     <!-- HEADER -->
     <header class="bg-indigo-700 text-white shadow-lg flex-none z-40 relative">
         <div class="container mx-auto px-4 py-2 md:py-3">
             <div class="flex flex-col md:flex-row justify-between items-center gap-3">
-                <div class="flex items-center gap-3 cursor-pointer select-none w-full md:w-auto justify-between" onclick="location.reload()">
-                    <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 cursor-pointer select-none w-full md:w-auto justify-between">
+                    <div class="flex items-center gap-3" onclick="location.reload()">
                         <i class="fas fa-torii-gate text-3xl text-white"></i>
                         <div>
                             <h1 class="text-lg md:text-xl font-bold uppercase tracking-wider">AzaKanji Tango</h1>
                             <p class="text-[10px] md:text-xs text-indigo-200">Ngày 11: Xã hội & Hành động</p>
                         </div>
                     </div>
-                    <div class="md:hidden text-xs font-semibold bg-indigo-800 px-3 py-1 rounded-full border border-indigo-500/50"><span id="headerProgress">1/87</span></div>
+                    <div class="md:hidden text-xs font-semibold bg-indigo-800 px-3 py-1 rounded-full border border-indigo-500/50 flex-shrink-0"><span id="headerProgress">1/87</span></div>
                 </div>
-                <div class="flex items-center gap-3 w-full md:w-auto">
-                    <div class="flex bg-indigo-900/50 rounded-lg p-1 w-full md:w-auto overflow-x-auto no-scrollbar">
-                        <button onclick="switchTab('learn')" id="tab-learn" class="tab-btn active flex-1 md:flex-none px-4 py-1.5 rounded-md text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap"><i class="fas fa-book-open"></i> Học Từ</button>
-                        <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn flex-1 md:flex-none px-4 py-1.5 rounded-md text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap"><i class="fas fa-keyboard"></i> Kiểm Tra</button>
-                        <div class="w-px bg-indigo-600 mx-1"></div>
-                        <button onclick="openGrammarList()" class="tab-btn flex-1 md:flex-none px-4 py-1.5 rounded-md text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap"><i class="fas fa-scroll"></i> Cẩm Nang</button>
+                <div class="flex items-center w-full md:w-auto overflow-x-auto no-scrollbar pb-1 md:pb-0">
+                    <div class="flex items-center bg-indigo-900/40 rounded-xl p-1 w-max shadow-inner border border-indigo-800/50">
+                        <!-- Nút Tự động phát (Autoplay) -->
+                        <button id="btnAutoplay" onclick="toggleAutoplay()" class="flex-none px-3 md:px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-1.5 whitespace-nowrap text-emerald-400 hover:bg-indigo-800/50">
+                            <i class="fas fa-play-circle text-lg"></i> Nghe
+                        </button>
+                        
+                        <div class="w-px h-6 bg-indigo-700/60 mx-1 md:mx-2 flex-shrink-0"></div>
+                        
+                        <button onclick="switchTab('learn')" id="tab-learn" class="tab-btn active flex-none px-3 md:px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-1.5 whitespace-nowrap hover:text-white">
+                            <i class="fas fa-book-open"></i> Học Từ
+                        </button>
+                        
+                        <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn flex-none px-3 md:px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-1.5 whitespace-nowrap text-indigo-200 hover:text-white hover:bg-indigo-800/30">
+                            <i class="fas fa-keyboard"></i> Luyện Tập
+                        </button>
+                        
+                        <div class="w-px h-6 bg-indigo-700/60 mx-1 md:mx-2 flex-shrink-0"></div>
+                        
+                        <button onclick="openGrammarList()" class="tab-btn flex-none px-3 md:px-4 py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-1.5 whitespace-nowrap text-indigo-200 hover:text-white hover:bg-indigo-800/30">
+                            <i class="fas fa-scroll"></i> Cẩm Nang
+                        </button>
                     </div>
                 </div>
             </div>
@@ -338,6 +343,20 @@
     </div>
 
     <script>
+        // --- Custom Toast UI to replace alert() ---
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-xl shadow-2xl z-[100] text-sm font-bold text-white transition-all duration-300 flex items-center gap-2 ${isError ? 'bg-red-600' : 'bg-green-600'}`;
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-info-circle'} text-lg"></i> <span>${message}</span>`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translate(-50%, -20px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
         // --- 1. GRAMMAR REPO (N5 - N3) ---
         const grammarRepo = {
             "hou_ga_ii": { title: "Nên/Không nên", formula: "Vた/Vない + ほうがいい", desc: "N4: Đưa ra lời khuyên.", ex: "早く寝たほうがいいです。" },
@@ -479,69 +498,69 @@
 
         // --- 3. KANJI DETAILS (Tips & Mnemonics) ---
         const kanjiDetails = {
-            "泥": { hanviet: "NÊ", mean: "Bùn", on: "デイ", kun: "どろ", radicals: "Thủy (氵) + Ni (尼)", tipImg: "Nước (氵) hòa với đất thành bùn.", tipSoundOn: "**Dei** bùn.", tipSoundKun: "**Doro** bùn.", words: [{w:"泥棒 (どろぼう)", m:"Kẻ trộm"}, {w:"泥 (どろ)", m:"Bùn"}] },
-            "棒": { hanviet: "BỔNG", mean: "Gậy", on: "ボウ", kun: "", radicals: "Mộc (木) + Phụng (奉)", tipImg: "Cây gậy gỗ (木) dâng lên (奉).", tipSoundOn: "Doro**bou** gậy.", tipSoundKun: "", words: [{w:"泥棒 (どろぼう)", m:"Kẻ trộm"}, {w:"鉄棒 (てつぼう)", m:"Xà đơn"}] },
-            "警": { hanviet: "CẢNH", mean: "Cảnh báo", on: "ケイ", kun: "", radicals: "Ngôn (言) + Kính (敬)", tipImg: "Lời nói (言) kính (敬) trọng cảnh báo.", tipSoundOn: "**Kei**kan cảnh sát.", tipSoundKun: "", words: [{w:"警官 (けいかん)", m:"Cảnh sát"}, {w:"警告 (けいこく)", m:"Cảnh cáo"}] },
-            "官": { hanviet: "QUAN", mean: "Quan chức", on: "カン", kun: "", radicals: "Miên (宀)", tipImg: "Quan đội mũ trong nhà.", tipSoundOn: "Kei**kan** quan.", tipSoundKun: "", words: [{w:"警官 (けいかん)", m:"Cảnh sát"}, {w:"外交官 (がいこうかん)", m:"Nhà ngoại giao"}] },
-            "建": { hanviet: "KIẾN", mean: "Xây dựng", on: "ケン", kun: "た.てる", radicals: "Dẫn (廴) + Duật (聿)", tipImg: "Tay cầm bút (聿) vẽ bản đồ xây dựng.", tipSoundOn: "**Ken**chiku kiến trúc.", tipSoundKun: "**Ta**teru xây.", words: [{w:"建築家 (けんちくか)", m:"Kiến trúc sư"}, {w:"建物 (たてもの)", m:"Tòa nhà"}] },
-            "築": { hanviet: "TRÚC", mean: "Kiến trúc", on: "チク", kun: "きず.く", radicals: "Trúc (竹) + Công (工) + Phàm (凡) + Mộc (木)", tipImg: "Dùng tre (竹) gỗ (木) xây kiến trúc.", tipSoundOn: "Ken**chiku** kiến trúc.", tipSoundKun: "**Kizu**ku xây dựng.", words: [{w:"建築家 (けんちくか)", m:"Kiến trúc sư"}] },
-            "科": { hanviet: "KHOA", mean: "Khoa học", on: "カ", kun: "", radicals: "Hòa (禾) + Đấu (斗)", tipImg: "Cân đong lúa (禾) bằng đấu (斗) là khoa học.", tipSoundOn: "**Ka**gaku khoa học.", tipSoundKun: "", words: [{w:"科学者 (かがくしゃ)", m:"Nhà khoa học"}, {w:"教科書 (きょうかしょ)", m:"Sách giáo khoa"}] },
-            "学": { hanviet: "HỌC", mean: "Học", on: "ガク", kun: "まな.ぶ", radicals: "Tử (子)", tipImg: "Đứa trẻ đội mũ đi học.", tipSoundOn: "Ka**gaku** khoa học.", tipSoundKun: "**Mana**bu học.", words: [{w:"科学者 (かがくしゃ)", m:"Nhà khoa học"}, {w:"学生 (がくせい)", m:"Học sinh"}] },
-            "埋": { hanviet: "MAI", mean: "Chôn/Lấp", on: "マイ", kun: "う.める", radicals: "Thổ (土) + Lý (里)", tipImg: "Chôn dưới đất (土) trong làng (里).", tipSoundOn: "**Mai**sou mai táng.", tipSoundKun: "**U**meru chôn.", words: [{w:"埋め立てる (うめたてる)", m:"Lấp (biển)"}, {w:"埋まる (うまる)", m:"Bị lấp"}] },
-            "立": { hanviet: "LẬP", mean: "Đứng", on: "リツ", kun: "た.つ", radicals: "Lập (立)", tipImg: "Người đứng trên mặt đất.", tipSoundOn: "Kou**ritsu** công lập.", tipSoundKun: "**Ta**teru lập.", words: [{w:"埋め立てる (うめたてる)", m:"Lấp"}, {w:"立ちます (たちます)", m:"Đứng"}] },
-            "技": { hanviet: "KỸ", mean: "Kỹ thuật", on: "ギ", kun: "わざ", radicals: "Thủ (扌) + Chi (支)", tipImg: "Tay (扌) khéo léo chi (支) tiết.", tipSoundOn: "**Gi**jutsu kỹ thuật.", tipSoundKun: "**Waza** kỹ năng.", words: [{w:"技術 (ぎじゅつ)", m:"Kỹ thuật"}, {w:"技 (わざ)", m:"Chiêu thức"}] },
-            "術": { hanviet: "THUẬT", mean: "Nghệ thuật", on: "ジュツ", kun: "", radicals: "Hành (行) + Thuật (朮)", tipImg: "Đi (彳) đường trồng cây (朮).", tipSoundOn: "Gi**jutsu** kỹ thuật.", tipSoundKun: "", words: [{w:"技術 (ぎじゅつ)", m:"Kỹ thuật"}, {w:"手術 (しゅじゅつ)", m:"Phẫu thuật"}] },
-            "土": { hanviet: "THổ", mean: "Đất", on: "ド", kun: "つち", radicals: "Thổ (土)", tipImg: "Cây mọc trên đất.", tipSoundOn: "**To**chi đất đai.", tipSoundKun: "**Tsuchi** đất.", words: [{w:"土地 (とち)", m:"Đất đai"}, {w:"土曜日 (どようび)", m:"Thứ bảy"}] },
-            "地": { hanviet: "ĐỊA", mean: "Đất", on: "チ, ジ", kun: "", radicals: "Thổ (土) + Dã (也)", tipImg: "Đất (土) có bọ cạp (也).", tipSoundOn: "To**chi** đất đai.", tipSoundKun: "", words: [{w:"土地 (とち)", m:"Đất đai"}, {w:"地下 (ちか)", m:"Dưới đất"}] },
-            "騒": { hanviet: "TAO", mean: "Ồn ào", on: "ソウ", kun: "さわ.ぐ", radicals: "Mã (馬) + Trùng (蚤)", tipImg: "Ngựa (馬) bị bọ chét (蚤) cắn làm ồn.", tipSoundOn: "**Sou**on tiếng ồn.", tipSoundKun: "**Sawa**gu làm ồn.", words: [{w:"騒音 (そうおん)", m:"Tiếng ồn"}, {w:"騒ぎます (さわぎます)", m:"Làm ồn"}] },
-            "音": { hanviet: "ÂM", mean: "Âm thanh", on: "オン", kun: "おと", radicals: "Âm (音)", tipImg: "Đứng (立) nói ngày (日) tạo âm thanh.", tipSoundOn: "Sou**on** tiếng ồn.", tipSoundKun: "**Oto** âm thanh.", words: [{w:"騒音 (そうおん)", m:"Tiếng ồn"}, {w:"音楽 (おんがく)", m:"Âm nhạc"}] },
-            "使": { hanviet: "SỬ", mean: "Sử dụng", on: "シ", kun: "つか.う", radicals: "Nhân (亻) + Lại (吏)", tipImg: "Người (亻) sai lại (吏) dịch.", tipSoundOn: "**Shi**you sử dụng.", tipSoundKun: "**Tsuka**u dùng.", words: [{w:"使用 (しよう)", m:"Sử dụng"}, {w:"使います (つかいます)", m:"Dùng"}] },
-            "用": { hanviet: "DỤNG", mean: "Dùng", on: "ヨウ", kun: "もち.いる", radicals: "Dụng (用)", tipImg: "Cái hàng rào gỗ.", tipSoundOn: "Shi**you** sử dụng.", tipSoundKun: "**Mochi**iru dùng.", words: [{w:"使用 (しよう)", m:"Sử dụng"}, {w:"用意 (ようい)", m:"Chuẩn bị"}] },
-            "間": { hanviet: "GIAN", mean: "Ở giữa", on: "カン", kun: "あいだ", radicals: "Môn (門) + Nhật (日)", tipImg: "Mặt trời (日) ở giữa cửa (門).", tipSoundOn: "Se**ken** thế gian.", tipSoundKun: "**Aida** giữa.", words: [{w:"世間 (せけん)", m:"Thế gian"}, {w:"時間 (じかん)", m:"Thời gian"}] },
-            "豪": { hanviet: "HÀO", mean: "Hào hoa", on: "ゴウ", kun: "", radicals: "Thỉ (豕)", tipImg: "Con lợn (豕) đội mũ cao (高) hào hoa.", tipSoundOn: "**Gou**ka hào hoa.", tipSoundKun: "", words: [{w:"豪華 (ごうか)", m:"Sang trọng"}, {w:"富豪 (ふごう)", m:"Phú ông"}] },
-            "華": { hanviet: "HOA", mean: "Hoa lệ", on: "カ", kun: "はな", radicals: "Thảo (艹)", tipImg: "Hoa (艹) nở rực rỡ.", tipSoundOn: "Gou**ka** hào hoa.", tipSoundKun: "**Hana**yakana hoa lệ.", words: [{w:"豪華 (ごうか)", m:"Sang trọng"}, {w:"中華 (ちゅうか)", m:"Trung Hoa"}] },
-            "彫": { hanviet: "ĐIÊU", mean: "Điêu khắc", on: "チョウ", kun: "ほ.る", radicals: "Chu (周) + Sam (彡)", tipImg: "Dùng tóc (彡) điêu khắc chu (周) vi.", tipSoundOn: "**Chou**koku điêu khắc.", tipSoundKun: "**Ho**ru khắc.", words: [{w:"彫刻 (ちょうこく)", m:"Điêu khắc"}, {w:"彫ります (ほります)", m:"Khắc"}] },
-            "刻": { hanviet: "KHẮC", mean: "Khắc", on: "コク", kun: "きざ.む", radicals: "Đao (刂) + Hợi (亥)", tipImg: "Dùng dao (刂) khắc con heo (亥).", tipSoundOn: "Chou**koku** điêu khắc.", tipSoundKun: "**Kiza**mu thái.", words: [{w:"彫刻 (ちょうこく)", m:"Điêu khắc"}, {w:"遅刻 (ちこく)", m:"Đến muộn"}] },
-            "眠": { hanviet: "MIÊN", mean: "Ngủ", on: "ミン", kun: "ねむ.る", radicals: "Mục (目) + Dân (民)", tipImg: "Mắt (目) dân (民) chúng buồn ngủ.", tipSoundOn: "Sui**min** giấc ngủ.", tipSoundKun: "**Nemu**ru ngủ.", words: [{w:"眠ります (ねむります)", m:"Ngủ"}, {w:"眠い (ねむい)", m:"Buồn ngủ"}] },
-            "仲": { hanviet: "TRỌNG", mean: "Quan hệ", on: "チュウ", kun: "なか", radicals: "Nhân (亻) + Trung (中)", tipImg: "Người (亻) đứng giữa (中) hòa giải.", tipSoundOn: "**Chuu**sai trọng tài.", tipSoundKun: "**Naka**ma đồng nghiệp.", words: [{w:"仲間 (なかま)", m:"Bạn bè/Đồng nghiệp"}, {w:"仲良し (なかよし)", m:"Thân thiết"}] },
-            "鼠": { hanviet: "THỬ", mean: "Chuột", on: "ソ", kun: "ねずみ", radicals: "Thử (鼠)", tipImg: "Hình con chuột.", tipSoundOn: "**So**kei chuột bẹn.", tipSoundKun: "**Nezumi** chuột.", words: [{w:"鼠 (ねずみ)", m:"Con chuột"}] },
-            "匹": { hanviet: "THẤT", mean: "Đếm con vật", on: "ヒツ", kun: "ひき", radicals: "Phủ (匚) + Nhân (儿)", tipImg: "Bốn (四) con vật trong chuồng.", tipSoundOn: "**Hitsu**teki đối thủ.", tipSoundKun: "Ip**piki** một con.", words: [{w:"一匹 (いっぴき)", m:"Một con"}] },
-            "育": { hanviet: "DỤC", mean: "Nuôi dạy", on: "イク", kun: "そだ.てる", radicals: "Nhục (月)", tipImg: "Nuôi con lớn (亠) bằng thịt (月).", tipSoundOn: "Kyou**iku** giáo dục.", tipSoundKun: "**Soda**teru nuôi.", words: [{w:"育てます (そだてます)", m:"Nuôi dưỡng"}, {w:"教育 (きょういく)", m:"Giáo dục"}] },
-            "亡": { hanviet: "VONG", mean: "Chết/Mất", on: "ボウ", kun: "な.くなる", radicals: "Đầu (亠)", tipImg: "Người chết đội nón.", tipSoundOn: "Shi**bou** tử vong.", tipSoundKun: "**Na**kunaru mất.", words: [{w:"死亡 (しぼう)", m:"Tử vong"}, {w:"亡くなります (なくなります)", m:"Mất/Qua đời"}] },
-            "籍": { hanviet: "TỊCH", mean: "Hộ tịch", on: "セキ", kun: "", radicals: "Trúc (竹) + Tích (耤)", tipImg: "Sổ sách tre (竹) ghi tích (耤) cũ.", tipSoundOn: "Koku**seki** quốc tịch.", tipSoundKun: "", words: [{w:"国籍 (こくせき)", m:"Quốc tịch"}, {w:"戸籍 (こせき)", m:"Hộ khẩu"}] },
-            "比": { hanviet: "TỶ", mean: "So sánh", on: "ヒ", kun: "くら.べる", radicals: "Tỷ (比)", tipImg: "Hai người đứng so sánh nhau.", tipSoundOn: "**Hi**kaku so sánh.", tipSoundKun: "**Kura**beru so sánh.", words: [{w:"比べます (くらべます)", m:"So sánh"}, {w:"比較 (ひかく)", m:"So sánh"}] },
-            "際": { hanviet: "TẾ", mean: "Quốc tế/Dịp", on: "サイ", kun: "きわ", radicals: "Phụ (阝) + Tế (祭)", tipImg: "Gò đất (阝) làm lễ tế (祭).", tipSoundOn: "Koku**sai** quốc tế.", tipSoundKun: "**Kiwa** mép.", words: [{w:"国際 (こくさい)", m:"Quốc tế"}, {w:"交際 (こうさい)", m:"Giao du"}] },
-            "支": { hanviet: "CHI", mean: "Chi nhánh/Hỗ trợ", on: "シ", kun: "ささ.える", radicals: "Chi (支)", tipImg: "Tay cầm cành cây.", tipSoundOn: "**Shi**sha chi nhánh.", tipSoundKun: "**Sasa**eru nâng đỡ.", words: [{w:"支社 (ししゃ)", m:"Chi nhánh"}, {w:"支店 (してん)", m:"Cửa hàng chi nhánh"}] },
-            "企": { hanviet: "XÍ", mean: "Xí nghiệp", on: "キ", kun: "くわだ.てる", radicals: "Nhân (人) + Chỉ (止)", tipImg: "Người (人) dừng (止) lại lập kế hoạch.", tipSoundOn: "**Ki**gyou xí nghiệp.", tipSoundKun: "**Kuwada**teru lên kế hoạch.", words: [{w:"企業 (きぎょう)", m:"Doanh nghiệp"}, {w:"企画 (きかく)", m:"Kế hoạch"}] },
-            "展": { hanviet: "TRIỂN", mean: "Triển khai", on: "テン", kun: "", radicals: "Thi (尸)", tipImg: "Mở rộng xác (尸) quần áo.", tipSoundOn: "Hat**ten** phát triển.", tipSoundKun: "", words: [{w:"発展 (はってん)", m:"Phát triển"}, {w:"展覧会 (てんらんかい)", m:"Triển lãm"}] },
-            "景": { hanviet: "CẢNH", mean: "Phong cảnh", on: "ケイ", kun: "", radicals: "Nhật (日) + Kinh (京)", tipImg: "Mặt trời (日) chiếu kinh (京) đô.", tipSoundOn: "**Kei**shiki phong cảnh.", tipSoundKun: "", words: [{w:"景色 (けしき)", m:"Phong cảnh"}, {w:"景気 (けいき)", m:"Tình hình kinh tế"}] },
-            "宗": { hanviet: "TÔNG", mean: "Tôn giáo", on: "シュウ", kun: "むね", radicals: "Miên (宀) + Thị (示)", tipImg: "Thờ cúng (示) trong nhà (宀).", tipSoundOn: "**Shuu**kyou tôn giáo.", tipSoundKun: "**Mune** tôn chỉ.", words: [{w:"宗教 (しゅうきょう)", m:"Tôn giáo"}] },
-            "届": { hanviet: "GIỚI", mean: "Gửi đến", on: "カイ", kun: "とど.く", radicals: "Thi (尸) + Do (由)", tipImg: "Do (由) xác (尸) nhận gửi.", tipSoundOn: "To**do**ku gửi đến.", tipSoundKun: "**Todo**keru chuyển đến.", words: [{w:"届きます (とどきます)", m:"Được gửi đến"}, {w:"届けます (とどけます)", m:"Chuyển đến"}] },
-            "掻": { hanviet: "TAO", mean: "Gãi", on: "ソウ", kun: "か.く", radicals: "Thủ (扌)", tipImg: "Tay (扌) gãi ngứa.", tipSoundOn: "**Ka**ku gãi.", tipSoundKun: "**Ka**ku gãi.", words: [{w:"掻きます (かきます)", m:"Gãi"}] },
-            "掴": { hanviet: "QUẶC", mean: "Tóm/Nắm", on: "カク", kun: "つか.む", radicals: "Thủ (扌) + Quốc (国)", tipImg: "Tay (扌) nắm lấy đất nước (国).", tipSoundOn: "**Tsuka**mu nắm.", tipSoundKun: "**Tsuka**mu nắm bắt.", words: [{w:"掴みます (つかみます)", m:"Nắm bắt"}] },
-            "握": { hanviet: "ÁC", mean: "Nắm tay", on: "アク", kun: "にぎ.る", radicals: "Thủ (扌) + Ốc (屋)", tipImg: "Tay (扌) nắm chặt mái nhà (屋).", tipSoundOn: "**Aku**shu bắt tay.", tipSoundKun: "**Nigi**ru nắm.", words: [{w:"握ります (にぎります)", m:"Nắm (tay)"}, {w:"握手 (あくしゅ)", m:"Bắt tay"}] },
-            "近": { hanviet: "CẬN", mean: "Gần", on: "キン", kun: "ちか.い", radicals: "Xước (⻌) + Cân (斤)", tipImg: "Rìu (斤) đi (⻌) đến gần.", tipSoundOn: "**Kin**jo hàng xóm.", tipSoundKun: "**Chika**zuku đến gần.", words: [{w:"近づきます (ちかづきます)", m:"Đến gần"}, {w:"近い (ちかい)", m:"Gần"}] },
-            "知": { hanviet: "TRI", mean: "Biết", on: "チ", kun: "し.る", radicals: "Thỉ (矢) + Khẩu (口)", tipImg: "Miệng (口) nói tên (矢) là biết.", tipSoundOn: "**Chi**shiki tri thức.", tipSoundKun: "**Shi**riau quen biết.", words: [{w:"知り合います (しりあいます)", m:"Quen biết"}, {w:"知ります (しります)", m:"Biết"}] },
-            "不": { hanviet: "BẤT", mean: "Không", on: "フ", kun: "", radicals: "Nhất (一)", tipImg: "Rễ cây không mọc lên được.", tipSoundOn: "**Fu**to đột nhiên.", tipSoundKun: "", words: [{w:"不図 (ふと)", m:"Đột nhiên"}, {w:"不安 (ふあん)", m:"Bất an"}] },
-            "例": { hanviet: "LỆ", mean: "Ví dụ", on: "レイ", kun: "たと.える", radicals: "Nhân (亻) + Liệt (列)", tipImg: "Người (亻) xếp hàng (列) làm ví dụ.", tipSoundOn: "Hi**rei** tỷ lệ.", tipSoundKun: "**Tato**eba ví dụ.", words: [{w:"比例 (ひれい)", m:"Tỷ lệ"}, {w:"例文 (れいぶん)", m:"Câu ví dụ"}] },
-            "財": { hanviet: "TÀI", mean: "Tiền tài", on: "ザイ", kun: "", radicals: "Bối (貝) + Tài (才)", tipImg: "Tiền (貝) là tài (才) sản.", tipSoundOn: "**Zai**san tài sản.", tipSoundKun: "", words: [{w:"財産 (ざいさん)", m:"Tài sản"}, {w:"財布 (さいふ)", m:"Ví"}] },
-            "足": { hanviet: "TÚC", mean: "Chân/Đủ", on: "ソク", kun: "あし, た.す", radicals: "Túc (足)", tipImg: "Hình cái chân.", tipSoundOn: "En**soku** dã ngoại.", tipSoundKun: "**Ta**su cộng/thêm.", words: [{w:"足します (たします)", m:"Thêm vào"}, {w:"足 (あし)", m:"Chân"}] },
-            "薄": { hanviet: "BẠC", mean: "Mỏng/Nhạt", on: "ハク", kun: "うす.い", radicals: "Thảo (艹) + Phổ (溥)", tipImg: "Cỏ (艹) mọc mỏng ven nước.", tipSoundOn: "Haku**mei** bạc mệnh.", tipSoundKun: "**Usu**i nhạt.", words: [{w:"薄い (うすい)", m:"Nhạt/Mỏng"}] },
-            "増": { hanviet: "TĂNG", mean: "Tăng lên", on: "ゾウ", kun: "ふ.える", radicals: "Thổ (土) + Tăng (曽)", tipImg: "Đất (土) từng (曽) tăng lên.", tipSoundOn: "**Zou**ka tăng gia.", tipSoundKun: "**Fu**eru tăng.", words: [{w:"増えます (ふえます)", m:"Tăng lên"}, {w:"増やします (ふやします)", m:"Làm tăng"}] },
-            "減": { hanviet: "GIẢM", mean: "Giảm đi", on: "ゲン", kun: "へ.る", radicals: "Thủy (氵) + Hàm (咸)", tipImg: "Nước (氵) mặn (咸) giảm đi.", tipSoundOn: "**Gen**shou giảm thiểu.", tipSoundKun: "**He**ru giảm.", words: [{w:"減ります (へります)", m:"Giảm đi"}, {w:"減らします (へらします)", m:"Làm giảm"}] },
-            "譲": { hanviet: "NHƯỢNG", mean: "Nhường", on: "ジョウ", kun: "ゆず.る", radicals: "Ngôn (言) + Tương (襄)", tipImg: "Lời nói (言) khiêm nhường (襄).", tipSoundOn: "**Jou**ho nhượng bộ.", tipSoundKun: "**Yuzu**ru nhường.", words: [{w:"譲ります (ゆずります)", m:"Nhường"}] },
-            "助": { hanviet: "TRỢ", mean: "Giúp đỡ", on: "ジョ", kun: "たす.ける", radicals: "Lực (力) + Thả (且)", tipImg: "Dùng sức (力) và (且) giúp đỡ.", tipSoundOn: "**Jo**shu trợ thủ.", tipSoundKun: "**Tasu**keru giúp.", words: [{w:"助かります (たすかります)", m:"Được giúp"}, {w:"助けます (たすけます)", m:"Giúp đỡ"}] },
-            "虐": { hanviet: "NGƯỢC", mean: "Ngược đãi", on: "ギャク", kun: "いじ.める", radicals: "Hổ (虍)", tipImg: "Hổ (虍) ngược đãi người.", tipSoundOn: "**Gyaku**tai ngược đãi.", tipSoundKun: "**Iji**meru bắt nạt.", words: [{w:"虐めます (いじめます)", m:"Bắt nạt"}] },
-            "騙": { hanviet: "PHIẾN", mean: "Lừa gạt", on: "ヘン", kun: "だま.す", radicals: "Mã (馬) + Biển (扁)", tipImg: "Ngựa (馬) nhỏ (扁) lừa người.", tipSoundOn: "**Dama**su lừa.", tipSoundKun: "**Dama**su lừa gạt.", words: [{w:"騙します (だまします)", m:"Lừa gạt"}] },
-            "神": { hanviet: "THẦN", mean: "Thần thánh", on: "シン", kun: "かみ", radicals: "Kỳ (礻) + Thân (申)", tipImg: "Thần (礻) nói (申).", tipSoundOn: "**Shin**kei thần kinh.", tipSoundKun: "**Mega**mi nữ thần.", words: [{w:"女神 (めがみ)", m:"Nữ thần"}, {w:"神社 (じんじゃ)", m:"Đền thờ"}] },
-            "盗": { hanviet: "ĐẠO", mean: "Trộm cướp", on: "トウ", kun: "ぬす.む", radicals: "Mãnh (皿) + Thứ (次)", tipImg: "Lấy trộm đồ thứ (次) trong đĩa (皿).", tipSoundOn: "Gou**tou** cường đạo.", tipSoundKun: "**Nusu**mu ăn trộm.", words: [{w:"盗みます (ぬすみます)", m:"Ăn trộm"}] },
-            "留": { hanviet: "LƯU", mean: "Lưu lại", on: "リュウ", kun: "と.める", radicals: "Điền (田) + Mâu (卯)", tipImg: "Ở lại ruộng (田).", tipSoundOn: "**Ru**su vắng nhà.", tipSoundKun: "**To**meru dừng.", words: [{w:"留守中 (るすちゅう)", m:"Khi vắng nhà"}, {w:"留学 (りゅうがく)", m:"Du học"}] },
-            "守": { hanviet: "THỦ", mean: "Bảo vệ/Giữ", on: "シュ", kun: "まも.る", radicals: "Miên (宀) + Thốn (寸)", tipImg: "Trong nhà (宀) giữ tấc (寸) đất.", tipSoundOn: "Ru**su** vắng nhà.", tipSoundKun: "**Mamo**ru bảo vệ.", words: [{w:"留守 (るす)", m:"Vắng nhà"}, {w:"守ります (まもります)", m:"Tuân thủ"}] },
-            "刺": { hanviet: "THÍCH", mean: "Đâm/Chọc", on: "シ", kun: "さ.す", radicals: "Đao (刂) + Thích (刺 - phần trái)", tipImg: "Dùng dao (刂) đâm.", tipSoundOn: "**Shi**geki kích thích.", tipSoundKun: "**Sa**su đâm/đốt.", words: [{w:"刺さります (ささります)", m:"Mắc/Hóc"}, {w:"刺します (さします)", m:"Đâm/Đốt"}] },
-            "殺": { hanviet: "SÁT", mean: "Giết", on: "サツ", kun: "ころ.す", radicals: "Thù (殳) + Sát (杀)", tipImg: "Tay cầm thù (殳) giết.", tipSoundOn: "**Satsu**jin sát nhân.", tipSoundKun: "**Koro**su giết.", words: [{w:"殺します (ころします)", m:"Giết"}] },
-            "振": { hanviet: "CHẤN", mean: "Vẫy/Rung", on: "シン", kun: "ふ.る", radicals: "Thủ (扌) + Thần (辰)", tipImg: "Tay (扌) làm chấn (辰) động.", tipSoundOn: "**Shin**dou chấn động.", tipSoundKun: "**Fu**ru vẫy.", words: [{w:"振ります (ふります)", m:"Vẫy tay"}] },
-            "捲": { hanviet: "QUYỂN", mean: "Cuộn/Xắn", on: "ケン", kun: "めく.る", radicals: "Thủ (扌) + Quyển (卷)", tipImg: "Tay (扌) cuộn tròn (卷).", tipSoundOn: "**Ken** quyển.", tipSoundKun: "**Meku**ru xắn/lật.", words: [{w:"捲ります (めくります)", m:"Xắn/Lật"}] },
-            "隠": { hanviet: "ẨN", mean: "Ẩn nấp", on: "イン", kun: "かく.す", radicals: "Phụ (阝)", tipImg: "Nấp sau gò đất (阝).", tipSoundOn: "**In**kyo ẩn cư.", tipSoundKun: "**Kaku**reru ẩn nấp.", words: [{w:"隠れます (かくれます)", m:"Ẩn nấp"}, {w:"隠します (かくします)", m:"Che giấu"}] }
+            "泥": { hanviet: "NÊ", mean: "Bùn", on: "デイ", kun: "どろ", radicals: "Thủy (氵) + Ni (尼)", tipImg: "Nước (氵) hòa với đất thành bùn.", tipSoundOn: "**Dei** bùn.", tipSoundKun: "**Doro** bùn.", words: [{w:"泥棒 (どろぼう)", m:"Kẻ trộm"}, {w:"泥 (どろ)", m:"Bùn"}, {w:"泥水 (どろみず)", m:"Nước bùn"}, {w:"泥沼 (どろぬま)", m:"Đầm lầy"}, {w:"泥酔 (でいすい)", m:"Say bí tỉ"}] },
+            "棒": { hanviet: "BỔNG", mean: "Gậy", on: "ボウ", kun: "", radicals: "Mộc (木) + Phụng (奉)", tipImg: "Cây gậy gỗ (木) dâng lên (奉).", tipSoundOn: "Doro**bou** gậy.", tipSoundKun: "", words: [{w:"泥棒 (どろぼう)", m:"Kẻ trộm"}, {w:"鉄棒 (てつぼう)", m:"Xà đơn"}, {w:"棒 (ぼう)", m:"Gậy"}, {w:"相棒 (あいぼう)", m:"Đối tác"}, {w:"綿棒 (めんぼう)", m:"Tăm bông"}] },
+            "警": { hanviet: "CẢNH", mean: "Cảnh báo", on: "ケイ", kun: "", radicals: "Ngôn (言) + Kính (敬)", tipImg: "Lời nói (言) kính (敬) trọng cảnh báo.", tipSoundOn: "**Kei**kan cảnh sát.", tipSoundKun: "", words: [{w:"警官 (けいかん)", m:"Cảnh sát"}, {w:"警告 (けいこく)", m:"Cảnh cáo"}, {w:"警察 (けいさつ)", m:"Cảnh sát"}, {w:"警報 (けいほう)", m:"Cảnh báo"}, {w:"警備 (けいび)", m:"Bảo vệ"}] },
+            "官": { hanviet: "QUAN", mean: "Quan chức", on: "カン", kun: "", radicals: "Miên (宀)", tipImg: "Quan đội mũ trong nhà.", tipSoundOn: "Kei**kan** quan.", tipSoundKun: "", words: [{w:"警官 (けいかん)", m:"Cảnh sát"}, {w:"外交官 (がいこうかん)", m:"Nhà ngoại giao"}, {w:"器官 (きかん)", m:"Cơ quan (cơ thể)"}, {w:"官僚 (かんりょう)", m:"Quan liêu"}, {w:"裁判官 (さいばんかん)", m:"Thẩm phán"}] },
+            "建": { hanviet: "KIẾN", mean: "Xây dựng", on: "ケン", kun: "た.てる", radicals: "Dẫn (廴) + Duật (聿)", tipImg: "Tay cầm bút (聿) vẽ bản đồ xây dựng.", tipSoundOn: "**Ken**chiku kiến trúc.", tipSoundKun: "**Ta**teru xây.", words: [{w:"建築 (けんちく)", m:"Kiến trúc"}, {w:"建物 (たてもの)", m:"Tòa nhà"}, {w:"建築家 (けんちくか)", m:"Kiến trúc sư"}, {w:"建設 (けんせつ)", m:"Xây dựng"}, {w:"建てる (たてる)", m:"Xây cất"}] },
+            "築": { hanviet: "TRÚC", mean: "Kiến trúc", on: "チク", kun: "きず.く", radicals: "Trúc (竹) + Công (工) + Phàm (凡) + Mộc (木)", tipImg: "Dùng tre (竹) gỗ (木) xây kiến trúc.", tipSoundOn: "Ken**chiku** kiến trúc.", tipSoundKun: "**Kizu**ku xây dựng.", words: [{w:"建築 (けんちく)", m:"Kiến trúc"}, {w:"築く (きずく)", m:"Xây dựng/Tạo lập"}, {w:"新築 (しんちく)", m:"Xây mới"}, {w:"建築家 (けんちくか)", m:"Kiến trúc sư"}, {w:"改築 (かいちく)", m:"Cải tạo/Xây lại"}] },
+            "科": { hanviet: "KHOA", mean: "Khoa học", on: "カ", kun: "", radicals: "Hòa (禾) + Đấu (斗)", tipImg: "Cân đong lúa (禾) bằng đấu (斗) là khoa học.", tipSoundOn: "**Ka**gaku khoa học.", tipSoundKun: "", words: [{w:"科学 (かがく)", m:"Khoa học"}, {w:"科学者 (かがくしゃ)", m:"Nhà khoa học"}, {w:"教科書 (きょうかしょ)", m:"SGK"}, {w:"科目 (かもく)", m:"Môn học"}, {w:"内科 (ないか)", m:"Nội khoa"}] },
+            "学": { hanviet: "HỌC", mean: "Học", on: "ガク", kun: "まな.ぶ", radicals: "Tử (子)", tipImg: "Đứa trẻ đội mũ đi học.", tipSoundOn: "Ka**gaku** khoa học.", tipSoundKun: "**Mana**bu học.", words: [{w:"科学者 (かがくしゃ)", m:"Nhà khoa học"}, {w:"学生 (がくせい)", m:"Học sinh"}, {w:"学校 (がっこう)", m:"Trường học"}, {w:"学ぶ (まなぶ)", m:"Học hỏi"}, {w:"大学 (だいがく)", m:"Đại học"}] },
+            "埋": { hanviet: "MAI", mean: "Chôn/Lấp", on: "マイ", kun: "う.める", radicals: "Thổ (土) + Lý (里)", tipImg: "Chôn dưới đất (土) trong làng (里).", tipSoundOn: "**Mai**sou mai táng.", tipSoundKun: "**U**meru chôn.", words: [{w:"埋め立てる (うめたてる)", m:"Lấp (biển)"}, {w:"埋まる (うまる)", m:"Bị lấp"}, {w:"埋める (うめる)", m:"Chôn lấp"}, {w:"埋蔵 (まいぞう)", m:"Chôn giấu"}, {w:"埋葬 (まいそう)", m:"Mai táng"}] },
+            "立": { hanviet: "LẬP", mean: "Đứng", on: "リツ", kun: "た.つ", radicals: "Lập (立)", tipImg: "Người đứng trên mặt đất.", tipSoundOn: "Kou**ritsu** công lập.", tipSoundKun: "**Ta**teru lập.", words: [{w:"埋め立てる (うめたてる)", m:"Lấp"}, {w:"立つ (たつ)", m:"Đứng"}, {w:"独立 (どくりつ)", m:"Độc lập"}, {w:"立場 (たちば)", m:"Lập trường"}, {w:"目立つ (めだつ)", m:"Nổi bật"}] },
+            "技": { hanviet: "KỸ", mean: "Kỹ thuật", on: "ギ", kun: "わざ", radicals: "Thủ (扌) + Chi (支)", tipImg: "Tay (扌) khéo léo chi (支) tiết.", tipSoundOn: "**Gi**jutsu kỹ thuật.", tipSoundKun: "**Waza** kỹ năng.", words: [{w:"技術 (ぎじゅつ)", m:"Kỹ thuật"}, {w:"技 (わざ)", m:"Chiêu thức"}, {w:"演技 (えんぎ)", m:"Diễn xuất"}, {w:"競技 (きょうぎ)", m:"Thi đấu"}, {w:"特技 (とくぎ)", m:"Sở trường"}] },
+            "術": { hanviet: "THUẬT", mean: "Nghệ thuật", on: "ジュツ", kun: "", radicals: "Hành (行) + Thuật (朮)", tipImg: "Đi (彳) đường trồng cây (朮).", tipSoundOn: "Gi**jutsu** kỹ thuật.", tipSoundKun: "", words: [{w:"技術 (ぎじゅつ)", m:"Kỹ thuật"}, {w:"手術 (しゅじゅつ)", m:"Phẫu thuật"}, {w:"美術 (びじゅつ)", m:"Mỹ thuật"}, {w:"芸術 (げいじゅつ)", m:"Nghệ thuật"}, {w:"魔術 (まじゅつ)", m:"Ma thuật"}] },
+            "土": { hanviet: "THổ", mean: "Đất", on: "ド", kun: "つち", radicals: "Thổ (土)", tipImg: "Cây mọc trên đất.", tipSoundOn: "**To**chi đất đai.", tipSoundKun: "**Tsuchi** đất.", words: [{w:"土地 (とち)", m:"Đất đai"}, {w:"土曜日 (どようび)", m:"Thứ 7"}, {w:"土 (つち)", m:"Đất"}, {w:"お土産 (おみやげ)", m:"Đặc sản"}, {w:"粘土 (ねんど)", m:"Đất sét"}] },
+            "地": { hanviet: "ĐỊA", mean: "Đất", on: "チ, ジ", kun: "", radicals: "Thổ (土) + Dã (也)", tipImg: "Đất (土) có bọ cạp (也).", tipSoundOn: "To**chi** đất đai.", tipSoundKun: "", words: [{w:"土地 (とち)", m:"Đất đai"}, {w:"地下 (ちか)", m:"Dưới đất"}, {w:"地震 (じしん)", m:"Động đất"}, {w:"地図 (ちず)", m:"Bản đồ"}, {w:"地球 (ちきゅう)", m:"Trái đất"}] },
+            "騒": { hanviet: "TAO", mean: "Ồn ào", on: "ソウ", kun: "さわ.ぐ", radicals: "Mã (馬) + Trùng (蚤)", tipImg: "Ngựa (馬) bị bọ chét (蚤) cắn làm ồn.", tipSoundOn: "**Sou**on tiếng ồn.", tipSoundKun: "**Sawa**gu làm ồn.", words: [{w:"騒音 (そうおん)", m:"Tiếng ồn"}, {w:"騒ぐ (さわぐ)", m:"Làm ồn"}, {w:"騒ぎ (さわぎ)", m:"Sự ồn ào/Rắc rối"}, {w:"騒々しい (そうぞうしい)", m:"Ồn ào"}, {w:"物騒 (ぶっそう)", m:"Nguy hiểm/Loạn lạc"}] },
+            "音": { hanviet: "ÂM", mean: "Âm thanh", on: "オン", kun: "おと", radicals: "Âm (音)", tipImg: "Đứng (立) nói ngày (日) tạo âm thanh.", tipSoundOn: "Sou**on** tiếng ồn.", tipSoundKun: "**Oto** âm thanh.", words: [{w:"騒音 (そうおん)", m:"Tiếng ồn"}, {w:"音楽 (おんがく)", m:"Âm nhạc"}, {w:"音 (おと)", m:"Âm thanh"}, {w:"発音 (はつおん)", m:"Phát âm"}, {w:"足音 (あしおと)", m:"Tiếng bước chân"}] },
+            "使": { hanviet: "SỬ", mean: "Sử dụng", on: "シ", kun: "つか.う", radicals: "Nhân (亻) + Lại (吏)", tipImg: "Người (亻) sai lại (吏) dịch.", tipSoundOn: "**Shi**you sử dụng.", tipSoundKun: "**Tsuka**u dùng.", words: [{w:"使用 (しよう)", m:"Sử dụng"}, {w:"使う (つかう)", m:"Dùng"}, {w:"大使館 (たいしかん)", m:"Đại sứ quán"}, {w:"天使 (てんし)", m:"Thiên thần"}, {w:"使い方 (つかいかた)", m:"Cách sử dụng"}] },
+            "用": { hanviet: "DỤNG", mean: "Dùng", on: "ヨウ", kun: "もち.いる", radicals: "Dụng (用)", tipImg: "Cái hàng rào gỗ.", tipSoundOn: "Shi**you** sử dụng.", tipSoundKun: "**Mochi**iru dùng.", words: [{w:"使用 (しよう)", m:"Sử dụng"}, {w:"用意 (ようい)", m:"Chuẩn bị"}, {w:"用事 (ようじ)", m:"Việc bận"}, {w:"利用 (りよう)", m:"Sử dụng"}, {w:"費用 (ひよう)", m:"Chi phí"}] },
+            "間": { hanviet: "GIAN", mean: "Ở giữa", on: "カン", kun: "あいだ", radicals: "Môn (門) + Nhật (日)", tipImg: "Mặt trời (日) ở giữa cửa (門).", tipSoundOn: "Se**ken** thế gian.", tipSoundKun: "**Aida** giữa.", words: [{w:"世間 (せけん)", m:"Thế gian"}, {w:"時間 (じかん)", m:"Thời gian"}, {w:"間 (あいだ)", m:"Ở giữa"}, {w:"期間 (きかん)", m:"Thời hạn"}, {w:"人間 (にんげん)", m:"Con người"}] },
+            "豪": { hanviet: "HÀO", mean: "Hào hoa", on: "ゴウ", kun: "", radicals: "Thỉ (豕)", tipImg: "Con lợn (豕) đội mũ cao (高) hào hoa.", tipSoundOn: "**Gou**ka hào hoa.", tipSoundKun: "", words: [{w:"豪華 (ごうか)", m:"Sang trọng"}, {w:"豪雨 (ごうう)", m:"Mưa lớn"}, {w:"富豪 (ふごう)", m:"Phú ông"}, {w:"豪快 (ごうかい)", m:"Sảng khoái"}, {w:"豪州 (ごうしゅう)", m:"Úc"}] },
+            "華": { hanviet: "HOA", mean: "Hoa lệ", on: "カ", kun: "はな", radicals: "Thảo (艹)", tipImg: "Hoa (艹) nở rực rỡ.", tipSoundOn: "Gou**ka** hào hoa.", tipSoundKun: "**Hana**yakana hoa lệ.", words: [{w:"豪華 (ごうか)", m:"Sang trọng"}, {w:"中華 (ちゅうか)", m:"Trung Hoa"}, {w:"華やか (はなやか)", m:"Lộng lẫy"}, {w:"華道 (かどう)", m:"Hoa đạo"}, {w:"華々しい (はなばなしい)", m:"Rực rỡ"}] },
+            "彫": { hanviet: "ĐIÊU", mean: "Điêu khắc", on: "チョウ", kun: "ほ.る", radicals: "Chu (周) + Sam (彡)", tipImg: "Dùng tóc (彡) điêu khắc chu (周) vi.", tipSoundOn: "**Chou**koku điêu khắc.", tipSoundKun: "**Ho**ru khắc.", words: [{w:"彫刻 (ちょうこく)", m:"Điêu khắc"}, {w:"彫る (ほる)", m:"Khắc"}, {w:"木彫り (きぼり)", m:"Khắc gỗ"}, {w:"彫像 (ちょうぞう)", m:"Tượng điêu khắc"}, {w:"彫刻家 (ちょうこくか)", m:"Nhà điêu khắc"}] },
+            "刻": { hanviet: "KHẮC", mean: "Khắc", on: "コク", kun: "きざ.む", radicals: "Đao (刂) + Hợi (亥)", tipImg: "Dùng dao (刂) khắc con heo (亥).", tipSoundOn: "Chou**koku** điêu khắc.", tipSoundKun: "**Kiza**mu thái.", words: [{w:"彫刻 (ちょうこく)", m:"Điêu khắc"}, {w:"遅刻 (ちこく)", m:"Đến muộn"}, {w:"刻む (きざむ)", m:"Thái/Khắc"}, {w:"時刻 (じこく)", m:"Thời khắc"}, {w:"深刻 (しんこく)", m:"Nghiêm trọng"}] },
+            "眠": { hanviet: "MIÊN", mean: "Ngủ", on: "ミン", kun: "ねむ.る", radicals: "Mục (目) + Dân (民)", tipImg: "Mắt (目) dân (民) chúng buồn ngủ.", tipSoundOn: "Sui**min** giấc ngủ.", tipSoundKun: "**Nemu**ru ngủ.", words: [{w:"眠る (ねむる)", m:"Ngủ"}, {w:"眠い (ねむい)", m:"Buồn ngủ"}, {w:"睡眠 (すいみん)", m:"Giấc ngủ"}, {w:"居眠り (いねむり)", m:"Ngủ gật"}, {w:"不眠症 (ふみんしょう)", m:"Bệnh mất ngủ"}] },
+            "仲": { hanviet: "TRỌNG", mean: "Quan hệ", on: "チュウ", kun: "なか", radicals: "Nhân (亻) + Trung (中)", tipImg: "Người (亻) đứng giữa (中) hòa giải.", tipSoundOn: "**Chuu**sai trọng tài.", tipSoundKun: "**Naka**ma đồng nghiệp.", words: [{w:"仲間 (なかま)", m:"Bạn bè/Đồng nghiệp"}, {w:"仲良し (なかよし)", m:"Thân thiết"}, {w:"仲 (なか)", m:"Mối quan hệ"}, {w:"仲直り (なかなおり)", m:"Làm hòa"}, {w:"仲介 (ちゅうかい)", m:"Môi giới"}] },
+            "鼠": { hanviet: "THỬ", mean: "Chuột", on: "ソ", kun: "ねずみ", radicals: "Thử (鼠)", tipImg: "Hình con chuột.", tipSoundOn: "**So**kei chuột bẹn.", tipSoundKun: "**Nezumi** chuột.", words: [{w:"鼠 (ねずみ)", m:"Con chuột"}, {w:"鼠色 (ねずみいろ)", m:"Màu xám"}, {w:"野鼠 (のねずみ)", m:"Chuột đồng"}, {w:"白鼠 (しろねずみ)", m:"Chuột bạch"}, {w:"殺鼠剤 (さっそざい)", m:"Thuốc diệt chuột"}] },
+            "匹": { hanviet: "THẤT", mean: "Đếm con vật", on: "ヒツ", kun: "ひき", radicals: "Phủ (匚) + Nhân (儿)", tipImg: "Bốn (四) con vật trong chuồng.", tipSoundOn: "**Hitsu**teki đối thủ.", tipSoundKun: "Ip**piki** một con.", words: [{w:"一匹 (いっぴき)", m:"Một con"}, {w:"匹敵 (ひってき)", m:"Sánh ngang"}, {w:"数匹 (すうひき)", m:"Vài con"}, {w:"犬一匹 (いぬいっぴき)", m:"Một con chó"}, {w:"猫二匹 (ねこにひき)", m:"Hai con mèo"}] },
+            "育": { hanviet: "DỤC", mean: "Nuôi dạy", on: "イク", kun: "そだ.てる", radicals: "Nhục (月)", tipImg: "Nuôi con lớn (亠) bằng thịt (月).", tipSoundOn: "Kyou**iku** giáo dục.", tipSoundKun: "**Soda**teru nuôi.", words: [{w:"育てる (そだてる)", m:"Nuôi dưỡng"}, {w:"教育 (きょういく)", m:"Giáo dục"}, {w:"育つ (そだつ)", m:"Lớn lên"}, {w:"体育 (たいいく)", m:"Thể dục"}, {w:"育成 (いくせい)", m:"Nuôi dưỡng/Đào tạo"}] },
+            "亡": { hanviet: "VONG", mean: "Chết/Mất", on: "ボウ", kun: "な.くなる", radicals: "Đầu (亠)", tipImg: "Người chết đội nón.", tipSoundOn: "Shi**bou** tử vong.", tipSoundKun: "**Na**kunaru mất.", words: [{w:"死亡 (しぼう)", m:"Tử vong"}, {w:"亡くなる (なくなる)", m:"Mất/Qua đời"}, {w:"亡命 (ぼうめい)", m:"Tị nạn"}, {w:"逃亡 (とうぼう)", m:"Chạy trốn"}, {w:"未亡人 (みぼうじん)", m:"Quả phụ"}] },
+            "籍": { hanviet: "TỊCH", mean: "Hộ tịch", on: "セキ", kun: "", radicals: "Trúc (竹) + Tích (耤)", tipImg: "Sổ sách tre (竹) ghi tích (耤) cũ.", tipSoundOn: "Koku**seki** quốc tịch.", tipSoundKun: "", words: [{w:"国籍 (こくせき)", m:"Quốc tịch"}, {w:"戸籍 (こせき)", m:"Hộ khẩu"}, {w:"書籍 (しょせき)", m:"Sách vở"}, {w:"本籍 (ほんせき)", m:"Nguyên quán"}, {w:"除籍 (じょせき)", m:"Xóa tên"}] },
+            "比": { hanviet: "TỶ", mean: "So sánh", on: "ヒ", kun: "くら.べる", radicals: "Tỷ (比)", tipImg: "Hai người đứng so sánh nhau.", tipSoundOn: "**Hi**kaku so sánh.", tipSoundKun: "**Kura**beru so sánh.", words: [{w:"比べる (くらべる)", m:"So sánh"}, {w:"比較 (ひかく)", m:"So sánh"}, {w:"比例 (ひれい)", m:"Tỷ lệ"}, {w:"対比 (たいひ)", m:"Đối chiếu"}, {w:"恵比寿 (えびす)", m:"Thần Ebisu"}] },
+            "際": { hanviet: "TẾ", mean: "Quốc tế/Dịp", on: "サイ", kun: "きわ", radicals: "Phụ (阝) + Tế (祭)", tipImg: "Gò đất (阝) làm lễ tế (祭).", tipSoundOn: "Koku**sai** quốc tế.", tipSoundKun: "**Kiwa** mép.", words: [{w:"国際 (こくさい)", m:"Quốc tế"}, {w:"交際 (こうさい)", m:"Giao du"}, {w:"実際 (じっさい)", m:"Thực tế"}, {w:"際 (きわ)", m:"Rìa/Lúc"}, {w:"窓際 (まどぎわ)", m:"Cạnh cửa sổ"}] },
+            "支": { hanviet: "CHI", mean: "Chi nhánh/Hỗ trợ", on: "シ", kun: "ささ.える", radicals: "Chi (支)", tipImg: "Tay cầm cành cây.", tipSoundOn: "**Shi**sha chi nhánh.", tipSoundKun: "**Sasa**eru nâng đỡ.", words: [{w:"支社 (ししゃ)", m:"Chi nhánh"}, {w:"支店 (してん)", m:"Cửa hàng chi nhánh"}, {w:"支える (ささえる)", m:"Nâng đỡ"}, {w:"支払う (しはらう)", m:"Chi trả"}, {w:"支援 (しえん)", m:"Hỗ trợ"}] },
+            "企": { hanviet: "XÍ", mean: "Xí nghiệp", on: "キ", kun: "くわだ.てる", radicals: "Nhân (人) + Chỉ (止)", tipImg: "Người (人) dừng (止) lại lập kế hoạch.", tipSoundOn: "**Ki**gyou xí nghiệp.", tipSoundKun: "**Kuwada**teru lên kế hoạch.", words: [{w:"企業 (きぎょう)", m:"Doanh nghiệp"}, {w:"企画 (きかく)", m:"Kế hoạch"}, {w:"企てる (くわだてる)", m:"Lên kế hoạch"}, {w:"中小企業 (ちゅうしょうきぎょう)", m:"DNTN vừa và nhỏ"}, {w:"大企業 (だいきぎょう)", m:"Doanh nghiệp lớn"}] },
+            "展": { hanviet: "TRIỂN", mean: "Triển khai", on: "テン", kun: "", radicals: "Thi (尸)", tipImg: "Mở rộng xác (尸) quần áo.", tipSoundOn: "Hat**ten** phát triển.", tipSoundKun: "", words: [{w:"発展 (はってん)", m:"Phát triển"}, {w:"展覧会 (てんらんかい)", m:"Triển lãm"}, {w:"展開 (てんかい)", m:"Triển khai"}, {w:"展示 (てんじ)", m:"Trưng bày"}, {w:"進展 (しんてん)", m:"Tiến triển"}] },
+            "景": { hanviet: "CẢNH", mean: "Phong cảnh", on: "ケイ", kun: "", radicals: "Nhật (日) + Kinh (京)", tipImg: "Mặt trời (日) chiếu kinh (京) đô.", tipSoundOn: "**Kei**shiki phong cảnh.", tipSoundKun: "", words: [{w:"景色 (けしき)", m:"Phong cảnh"}, {w:"景気 (けいき)", m:"Tình hình kinh tế"}, {w:"背景 (はいけい)", m:"Bối cảnh"}, {w:"風景 (ふうけい)", m:"Phong cảnh"}, {w:"夜景 (やけい)", m:"Cảnh đêm"}] },
+            "宗": { hanviet: "TÔNG", mean: "Tôn giáo", on: "シュウ", kun: "むね", radicals: "Miên (宀) + Thị (示)", tipImg: "Thờ cúng (示) trong nhà (宀).", tipSoundOn: "**Shuu**kyou tôn giáo.", tipSoundKun: "**Mune** tôn chỉ.", words: [{w:"宗教 (しゅうきょう)", m:"Tôn giáo"}, {w:"宗派 (しゅうは)", m:"Tông phái"}, {w:"改宗 (かいしゅう)", m:"Cải đạo"}, {w:"祖宗 (そそう)", m:"Tổ tông"}, {w:"新興宗教 (しんこうしゅうきょう)", m:"Tôn giáo mới"}] },
+            "届": { hanviet: "GIỚI", mean: "Gửi đến", on: "カイ", kun: "とど.く", radicals: "Thi (尸) + Do (由)", tipImg: "Do (由) xác (尸) nhận gửi.", tipSoundOn: "To**do**ku gửi đến.", tipSoundKun: "**Todo**keru chuyển đến.", words: [{w:"届く (とどく)", m:"Được gửi đến"}, {w:"届ける (とどける)", m:"Chuyển đến"}, {w:"欠席届 (けっせきとどけ)", m:"Đơn xin vắng"}, {w:"届け出 (とどけで)", m:"Báo cáo"}, {w:"婚姻届 (こんいんとどけ)", m:"Đăng ký kết hôn"}] },
+            "掻": { hanviet: "TAO", mean: "Gãi", on: "ソウ", kun: "か.く", radicals: "Thủ (扌)", tipImg: "Tay (扌) gãi ngứa.", tipSoundOn: "**Ka**ku gãi.", tipSoundKun: "**Ka**ku gãi.", words: [{w:"掻く (かく)", m:"Gãi"}, {w:"掻き集める (かきあつめる)", m:"Gom lại"}, {w:"掻き回す (かきまわす)", m:"Khuấy"}, {w:"耳掻き (みみかき)", m:"Lấy ráy tai"}, {w:"寝汗を掻く (ねあせをかく)", m:"Đổ mồ hôi trộm"}] },
+            "掴": { hanviet: "QUẶC", mean: "Tóm/Nắm", on: "カク", kun: "つか.む", radicals: "Thủ (扌) + Quốc (国)", tipImg: "Tay (扌) nắm lấy đất nước (国).", tipSoundOn: "**Tsuka**mu nắm.", tipSoundKun: "**Tsuka**mu nắm bắt.", words: [{w:"掴む (つかむ)", m:"Nắm bắt"}, {w:"掴まる (つかまる)", m:"Bị tóm/Nắm chặt"}, {w:"鷲掴み (わしづかみ)", m:"Nắm chặt"}, {w:"掴み取る (つかみとる)", m:"Chộp lấy"}, {w:"心を掴む (こころをつかむ)", m:"Chiếm được trái tim"}] },
+            "握": { hanviet: "ÁC", mean: "Nắm tay", on: "アク", kun: "にぎ.る", radicals: "Thủ (扌) + Ốc (屋)", tipImg: "Tay (扌) nắm chặt mái nhà (屋).", tipSoundOn: "**Aku**shu bắt tay.", tipSoundKun: "**Nigi**ru nắm.", words: [{w:"握る (にぎる)", m:"Nắm (tay)"}, {w:"握手 (あくしゅ)", m:"Bắt tay"}, {w:"把握 (はあく)", m:"Nắm bắt (tình hình)"}, {w:"握力 (あくりょく)", m:"Lực nắm"}, {w:"お握り (おにぎり)", m:"Cơm nắm"}] },
+            "近": { hanviet: "CẬN", mean: "Gần", on: "キン", kun: "ちか.い", radicals: "Xước (⻌) + Cân (斤)", tipImg: "Rìu (斤) đi (⻌) đến gần.", tipSoundOn: "**Kin**jo hàng xóm.", tipSoundKun: "**Chika**zuku đến gần.", words: [{w:"近づく (ちかづく)", m:"Đến gần"}, {w:"近い (ちかい)", m:"Gần"}, {w:"近所 (きんじょ)", m:"Hàng xóm"}, {w:"最近 (さいきん)", m:"Gần đây"}, {w:"近辺 (きんぺん)", m:"Vùng lân cận"}] },
+            "知": { hanviet: "TRI", mean: "Biết", on: "チ", kun: "し.る", radicals: "Thỉ (矢) + Khẩu (口)", tipImg: "Miệng (口) nói tên (矢) là biết.", tipSoundOn: "**Chi**shiki tri thức.", tipSoundKun: "**Shi**riau quen biết.", words: [{w:"知る (しる)", m:"Biết"}, {w:"知り合う (しりあう)", m:"Quen biết"}, {w:"知識 (ちしき)", m:"Tri thức"}, {w:"知らせる (しらせる)", m:"Thông báo"}, {w:"知人 (ちじん)", m:"Người quen"}] },
+            "不": { hanviet: "BẤT", mean: "Không", on: "フ", kun: "", radicals: "Nhất (一)", tipImg: "Rễ cây không mọc lên được.", tipSoundOn: "**Fu**to đột nhiên.", tipSoundKun: "", words: [{w:"不図 (ふと)", m:"Đột nhiên"}, {w:"不安 (ふあん)", m:"Bất an"}, {w:"不便 (ふべん)", m:"Bất tiện"}, {w:"不足 (ふそく)", m:"Thiếu sót"}, {w:"不思議 (ふしぎ)", m:"Kỳ lạ"}] },
+            "例": { hanviet: "LỆ", mean: "Ví dụ", on: "レイ", kun: "たと.える", radicals: "Nhân (亻) + Liệt (列)", tipImg: "Người (亻) xếp hàng (列) làm ví dụ.", tipSoundOn: "Hi**rei** tỷ lệ.", tipSoundKun: "**Tato**eba ví dụ.", words: [{w:"比例 (ひれい)", m:"Tỷ lệ"}, {w:"例文 (れいぶん)", m:"Câu ví dụ"}, {w:"例外 (れいがい)", m:"Ngoại lệ"}, {w:"例えば (たとえば)", m:"Ví dụ như"}, {w:"例 (れい)", m:"Ví dụ"}] },
+            "財": { hanviet: "TÀI", mean: "Tiền tài", on: "ザイ", kun: "", radicals: "Bối (貝) + Tài (才)", tipImg: "Tiền (貝) là tài (才) sản.", tipSoundOn: "**Zai**san tài sản.", tipSoundKun: "", words: [{w:"財産 (ざいさん)", m:"Tài sản"}, {w:"財布 (さいふ)", m:"Ví"}, {w:"財政 (ざいせい)", m:"Tài chính"}, {w:"文化財 (ぶんかざい)", m:"Di sản văn hóa"}, {w:"財閥 (ざいばつ)", m:"Tài phiệt"}] },
+            "足": { hanviet: "TÚC", mean: "Chân/Đủ", on: "ソク", kun: "あし, た.す", radicals: "Túc (足)", tipImg: "Hình cái chân.", tipSoundOn: "En**soku** dã ngoại.", tipSoundKun: "**Ta**su cộng/thêm.", words: [{w:"足す (たす)", m:"Thêm/Cộng"}, {w:"足 (あし)", m:"Chân"}, {w:"足りる (たりる)", m:"Đủ"}, {w:"遠足 (えんそく)", m:"Dã ngoại"}, {w:"不足 (ふそく)", m:"Thiếu"}] },
+            "薄": { hanviet: "BẠC", mean: "Mỏng/Nhạt", on: "ハク", kun: "うす.い", radicals: "Thảo (艹) + Phổ (溥)", tipImg: "Cỏ (艹) mọc mỏng ven nước.", tipSoundOn: "Haku**mei** bạc mệnh.", tipSoundKun: "**Usu**i nhạt.", words: [{w:"薄い (うすい)", m:"Nhạt/Mỏng"}, {w:"薄める (うすめる)", m:"Làm nhạt"}, {w:"希薄 (きはく)", m:"Mỏng manh/Ít ỏi"}, {w:"薄暗い (うすぐらい)", m:"Mờ ảo"}, {w:"薄着 (うすぎ)", m:"Ăn mặc mỏng"}] },
+            "増": { hanviet: "TĂNG", mean: "Tăng lên", on: "ゾウ", kun: "ふ.える", radicals: "Thổ (土) + Tăng (曽)", tipImg: "Đất (土) từng (曽) tăng lên.", tipSoundOn: "**Zou**ka tăng gia.", tipSoundKun: "**Fu**eru tăng.", words: [{w:"増える (ふえる)", m:"Tăng lên"}, {w:"増やす (ふやす)", m:"Làm tăng"}, {w:"増加 (ぞうか)", m:"Gia tăng"}, {w:"増収 (ぞうしゅう)", m:"Tăng thu nhập"}, {w:"急増 (きゅうぞう)", m:"Tăng đột ngột"}] },
+            "減": { hanviet: "GIẢM", mean: "Giảm đi", on: "ゲン", kun: "へ.る", radicals: "Thủy (氵) + Hàm (咸)", tipImg: "Nước (氵) mặn (咸) giảm đi.", tipSoundOn: "**Gen**shou giảm thiểu.", tipSoundKun: "**He**ru giảm.", words: [{w:"減る (へる)", m:"Giảm đi"}, {w:"減らす (へらす)", m:"Làm giảm"}, {w:"減少 (げんしょう)", m:"Giảm thiểu"}, {w:"加減 (かげん)", m:"Gia giảm"}, {w:"半減 (はんげん)", m:"Giảm một nửa"}] },
+            "譲": { hanviet: "NHƯỢNG", mean: "Nhường", on: "ジョウ", kun: "ゆず.る", radicals: "Ngôn (言) + Tương (襄)", tipImg: "Lời nói (言) khiêm nhường (襄).", tipSoundOn: "**Jou**ho nhượng bộ.", tipSoundKun: "**Yuzu**ru nhường.", words: [{w:"譲る (ゆずる)", m:"Nhường"}, {w:"譲歩 (じょうほ)", m:"Nhượng bộ"}, {w:"譲渡 (じょうと)", m:"Chuyển nhượng"}, {w:"譲り合い (ゆずりあい)", m:"Nhường nhịn nhau"}, {w:"親譲り (おやゆずり)", m:"Được thừa hưởng"}] },
+            "助": { hanviet: "TRỢ", mean: "Giúp đỡ", on: "ジョ", kun: "たす.ける", radicals: "Lực (力) + Thả (且)", tipImg: "Dùng sức (力) và (且) giúp đỡ.", tipSoundOn: "**Jo**shu trợ thủ.", tipSoundKun: "**Tasu**keru giúp.", words: [{w:"助かる (たすかる)", m:"Được cứu/Được giúp"}, {w:"助ける (たすける)", m:"Giúp đỡ"}, {w:"助手 (じょしゅ)", m:"Trợ thủ"}, {w:"補助 (ほじょ)", m:"Bổ trợ/Viện trợ"}, {w:"助言 (じょげん)", m:"Lời khuyên"}] },
+            "虐": { hanviet: "NGƯỢC", mean: "Ngược đãi", on: "ギャク", kun: "いじ.める", radicals: "Hổ (虍)", tipImg: "Hổ (虍) ngược đãi người.", tipSoundOn: "**Gyaku**tai ngược đãi.", tipSoundKun: "**Iji**meru bắt nạt.", words: [{w:"虐める (いじめる)", m:"Bắt nạt"}, {w:"虐待 (ぎゃくたい)", m:"Ngược đãi"}, {w:"虐殺 (ぎゃくさつ)", m:"Tàn sát"}, {w:"残虐 (ざんぎゃく)", m:"Tàn ác"}, {w:"自虐 (じぎゃく)", m:"Tự hành hạ/Tự trào"}] },
+            "騙": { hanviet: "PHIẾN", mean: "Lừa gạt", on: "ヘン", kun: "だま.す", radicals: "Mã (馬) + Biển (扁)", tipImg: "Ngựa (馬) nhỏ (扁) lừa người.", tipSoundOn: "**Dama**su lừa.", tipSoundKun: "**Dama**su lừa gạt.", words: [{w:"騙す (だます)", m:"Lừa gạt"}, {w:"騙り (かたり)", m:"Sự lừa gạt"}, {w:"騙される (だまされる)", m:"Bị lừa"}, {w:"詐欺に騙される (さぎにだまされる)", m:"Bị lừa đảo"}, {w:"子供を騙す (こどもをだます)", m:"Lừa trẻ con"}] },
+            "神": { hanviet: "THẦN", mean: "Thần thánh", on: "シン", kun: "かみ", radicals: "Kỳ (礻) + Thân (申)", tipImg: "Thần (礻) nói (申).", tipSoundOn: "**Shin**kei thần kinh.", tipSoundKun: "**Mega**mi nữ thần.", words: [{w:"女神 (めがみ)", m:"Nữ thần"}, {w:"神社 (じんじゃ)", m:"Đền thờ"}, {w:"神経 (しんけい)", m:"Thần kinh"}, {w:"精神 (せいしん)", m:"Tinh thần"}, {w:"神様 (かみさま)", m:"Thần thánh"}] },
+            "盗": { hanviet: "ĐẠO", mean: "Trộm cướp", on: "トウ", kun: "ぬす.む", radicals: "Mãnh (皿) + Thứ (次)", tipImg: "Lấy trộm đồ thứ (次) trong đĩa (皿).", tipSoundOn: "Gou**tou** cường đạo.", tipSoundKun: "**Nusu**mu ăn trộm.", words: [{w:"盗む (ぬすむ)", m:"Ăn trộm"}, {w:"強盗 (ごうとう)", m:"Cường đạo/Ăn cướp"}, {w:"盗難 (とうなん)", m:"Vụ trộm"}, {w:"盗賊 (とうぞく)", m:"Đạo tặc"}, {w:"盗聴 (とうちょう)", m:"Nghe lén"}] },
+            "留": { hanviet: "LƯU", mean: "Lưu lại", on: "リュウ", kun: "と.める", radicals: "Điền (田) + Mâu (卯)", tipImg: "Ở lại ruộng (田).", tipSoundOn: "**Ru**su vắng nhà.", tipSoundKun: "**To**meru dừng.", words: [{w:"留守中 (るすちゅう)", m:"Khi vắng nhà"}, {w:"留学 (りゅうがく)", m:"Du học"}, {w:"留まる (とどまる)", m:"Dừng lại/Lưu lại"}, {w:"保留 (ほりゅう)", m:"Bảo lưu"}, {w:"書留 (かきとめ)", m:"Thư bảo đảm"}] },
+            "守": { hanviet: "THỦ", mean: "Bảo vệ/Giữ", on: "シュ", kun: "まも.る", radicals: "Miên (宀) + Thốn (寸)", tipImg: "Trong nhà (宀) giữ tấc (寸) đất.", tipSoundOn: "Ru**su** vắng nhà.", tipSoundKun: "**Mamo**ru bảo vệ.", words: [{w:"守る (まもる)", m:"Bảo vệ/Tuân thủ"}, {w:"お守り (おまもり)", m:"Bùa hộ mệnh"}, {w:"保守 (ほしゅ)", m:"Bảo thủ"}, {w:"留守 (るす)", m:"Vắng nhà"}, {w:"守備 (しゅび)", m:"Phòng thủ"}] },
+            "刺": { hanviet: "THÍCH", mean: "Đâm/Chọc", on: "シ", kun: "さ.す", radicals: "Đao (刂) + Thích (刺 - phần trái)", tipImg: "Dùng dao (刂) đâm.", tipSoundOn: "**Shi**geki kích thích.", tipSoundKun: "**Sa**su đâm/đốt.", words: [{w:"刺さる (ささる)", m:"Mắc/Hóc"}, {w:"刺す (さす)", m:"Đâm/Chọc/Đốt"}, {w:"刺激 (しげき)", m:"Kích thích"}, {w:"名刺 (めいし)", m:"Danh thiếp"}, {w:"刺身 (さしみ)", m:"Sashimi"}] },
+            "殺": { hanviet: "SÁT", mean: "Giết", on: "サツ", kun: "ころ.す", radicals: "Thù (殳) + Sát (杀)", tipImg: "Tay cầm thù (殳) giết.", tipSoundOn: "**Satsu**jin sát nhân.", tipSoundKun: "**Koro**su giết.", words: [{w:"殺す (ころす)", m:"Giết"}, {w:"殺人 (さつじん)", m:"Sát nhân"}, {w:"自殺 (じさつ)", m:"Tự sát"}, {w:"殺菌 (さっきん)", m:"Sát khuẩn"}, {w:"殺到 (さっとう)", m:"Ồn ạt kéo đến"}] },
+            "振": { hanviet: "CHẤN", mean: "Vẫy/Rung", on: "シン", kun: "ふ.る", radicals: "Thủ (扌) + Thần (辰)", tipImg: "Tay (扌) làm chấn (辰) động.", tipSoundOn: "**Shin**dou chấn động.", tipSoundKun: "**Fu**ru vẫy.", words: [{w:"振る (ふる)", m:"Vẫy (tay)"}, {w:"振動 (しんどう)", m:"Chấn động"}, {w:"振り向く (ふりむく)", m:"Ngoảnh lại"}, {w:"振り返る (ふりかえる)", m:"Nhìn lại"}, {w:"振る舞う (ふるまう)", m:"Cư xử"}] },
+            "捲": { hanviet: "QUYỂN", mean: "Cuộn/Xắn", on: "ケン", kun: "めく.る", radicals: "Thủ (扌) + Quyển (卷)", tipImg: "Tay (扌) cuộn tròn (卷).", tipSoundOn: "**Ken** quyển.", tipSoundKun: "**Meku**ru xắn/lật.", words: [{w:"捲る (めくる)", m:"Xắn/Lật"}, {w:"席捲 (せっけん)", m:"Cuốn phăng/Chinh phục"}, {w:"捲り上げる (めくりあげる)", m:"Xắn lên"}, {w:"ページを捲る (ページをめくる)", m:"Lật trang"}, {w:"袖を捲る (そでをめくる)", m:"Xắn tay áo"}] },
+            "隠": { hanviet: "ẨN", mean: "Ẩn nấp", on: "イン", kun: "かく.す", radicals: "Phụ (阝)", tipImg: "Nấp sau gò đất (阝).", tipSoundOn: "**In**kyo ẩn cư.", tipSoundKun: "**Kaku**reru ẩn nấp.", words: [{w:"隠れる (かくれる)", m:"Ẩn nấp"}, {w:"隠す (かくす)", m:"Che giấu"}, {w:"隠居 (いんきょ)", m:"Ẩn cư"}, {w:"隠し事 (かくしごと)", m:"Chuyện giấu giếm"}, {w:"隠喩 (いんゆ)", m:"Ẩn dụ"}] }
         };
 
         // --- 4. APP LOGIC ---
@@ -552,6 +571,7 @@
         let strokeCache = {}; // Cache cho nét viết
         let bookmarkedWords = JSON.parse(localStorage.getItem('azakanji_bookmarks_day11')) || []; // Đổi key cho Day 11
         let filterBookmarked = false; // Trạng thái lọc từ khó
+        let isAutoplaying = false; // Trạng thái phát tự động
 
         function init() {
             renderList();
@@ -642,14 +662,28 @@
             if (listM) listM.innerHTML = html;
         }
 
-        function loadWord(idx) {
+        function loadWord(idx, fromAutoplay = false) {
+            // Nếu click chọn từ thủ công mà đang autoplay -> dừng autoplay
+            if (!fromAutoplay && isAutoplaying) {
+                isAutoplaying = false;
+                stopAllAudio();
+                const btn = document.getElementById('btnAutoplay');
+                btn.innerHTML = '<i class="fas fa-play-circle text-lg"></i> Nghe';
+                btn.classList.replace('text-red-400', 'text-emerald-400');
+            }
+
             currentIndex = idx; 
             const word = vocabData[idx];
             document.querySelectorAll('.vocab-item').forEach(el => el.classList.remove('active'));
             document.querySelectorAll(`.vocab-item[data-index="${idx}"]`).forEach(el => el.classList.add('active'));
             
+            // Auto scroll sidebar
             const activeItem = document.querySelector(`.vocab-item[data-index="${idx}"]`);
             if (activeItem) activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            // Auto scroll top main view
+            const learnSection = document.getElementById('learn-section');
+            if (learnSection) learnSection.scrollTo({ top: 0, behavior: 'smooth' });
 
             document.getElementById('headerProgress').innerText = `${idx+1}/${vocabData.length}`;
             document.getElementById('wordIndex').innerText = `#${word.STT}`;
@@ -728,7 +762,6 @@
             });
         }
 
-        // Cập nhật hàm xử lý giải thích ngữ pháp để bắt lỗi tốt hơn
         function openExplan(idsStr) {
             const ids = idsStr.split(','); 
             const f = document.getElementById('dgFormula'); 
@@ -822,9 +855,8 @@
                 document.getElementById('detailRadicals').innerText = d.radicals || '...';
                 
                 const fmt = s => s.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-gray-900">$1</span>');
-                document.getElementById('detailTipImg').innerHTML = fmt(d.tipImg || ''); 
+                document.getElementById('detailTipImg').innerHTML = fmt(d.tipImg || '');
                 
-                // Hiển thị phần mẹo nhớ âm thanh tương thích với mọi loại data
                 if (d.tipSound) {
                     document.getElementById('tipSoundGeneric').innerHTML = fmt(d.tipSound);
                     document.getElementById('tipSoundGeneric').classList.remove('hidden');
@@ -871,7 +903,7 @@
                     const r = await fetch(`https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg/kanji/${getKanjiHex(k)}.svg`);
                     if(!r.ok) throw new Error();
                     svgText = await r.text();
-                    strokeCache[k] = svgText; // Lưu vào cache để tải nhanh lần sau
+                    strokeCache[k] = svgText; 
                 }
                 
                 const parser = new DOMParser();
@@ -914,7 +946,206 @@
         }
 
         function getKanjiHex(k) { return k.charCodeAt(0).toString(16).padStart(5, '0'); }
-        function speakText(t) { if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(t); u.lang = 'ja-JP'; u.rate = 0.9; speechSynthesis.speak(u); } }
+
+        // --- AUTOPLAY & SPEECH FUNCTIONALITY ---
+        let viVoice = null;
+        let jaVoice = null;
+        let useViFallback = false;
+        let currentFallbackAudio = null;
+
+        function stopAllAudio() {
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            if (currentFallbackAudio) {
+                currentFallbackAudio.pause();
+                currentFallbackAudio = null;
+            }
+        }
+
+        // Hàm tìm kiếm và nạp giọng đọc chuẩn
+        function initVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            // Ưu tiên tìm giọng Google (nghe tự nhiên nhất) hoặc giọng native có chứa mã ngôn ngữ
+            jaVoice = voices.find(v => v.lang === 'ja-JP' && v.name.includes('Google')) || voices.find(v => v.lang.includes('ja'));
+            
+            // Lọc SIÊU CHẶT CHẼ giọng Tiếng Việt
+            const viVoices = voices.filter(v => v.lang === 'vi-VN' || v.lang.includes('vi'));
+            if (viVoices.length > 0) {
+                viVoice = viVoices.find(v => v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Linh')) || viVoices[0];
+                useViFallback = false;
+            } else {
+                viVoice = null;
+                useViFallback = true; // Kích hoạt trợ thủ Google Translate API
+            }
+        }
+
+        // Kích hoạt tìm giọng (Cần thiết cho Chrome)
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = initVoices;
+            initVoices();
+        }
+
+        // Trợ thủ đắc lực: Google Translate TTS API
+        function playFallbackTTS(text, langCode, resolve) {
+            if (currentFallbackAudio) {
+                currentFallbackAudio.pause();
+            }
+            const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=${langCode}&client=gtx`;
+            currentFallbackAudio = new Audio(url);
+            
+            if (resolve) {
+                currentFallbackAudio.onended = () => { currentFallbackAudio = null; resolve(); };
+                currentFallbackAudio.onerror = () => { currentFallbackAudio = null; resolve(); };
+            }
+            
+            currentFallbackAudio.play().catch(e => {
+                console.error("Lỗi phát âm thanh dự phòng:", e);
+                currentFallbackAudio = null;
+                if (resolve) resolve();
+            });
+        }
+
+        function speakText(t, lang = 'ja-JP', rate = 0.9) { 
+            if (lang === 'vi-VN' && useViFallback) {
+                playFallbackTTS(t, 'vi', null);
+                return;
+            }
+            
+            if ('speechSynthesis' in window) { 
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(t); 
+                u.lang = lang; 
+                u.rate = rate; 
+                if (lang === 'ja-JP' && jaVoice) u.voice = jaVoice;
+                if (lang === 'vi-VN' && viVoice) u.voice = viVoice;
+                speechSynthesis.speak(u); 
+            } else {
+                playFallbackTTS(t, lang === 'ja-JP' ? 'ja' : 'vi', null);
+            }
+        }
+
+        function speakTextAsync(text, lang = 'ja-JP', rate = 0.9) {
+            return new Promise(resolve => {
+                if (lang === 'vi-VN' && useViFallback) {
+                    playFallbackTTS(text, 'vi', resolve);
+                    return;
+                }
+                
+                if (!('speechSynthesis' in window)) {
+                    playFallbackTTS(text, lang === 'ja-JP' ? 'ja' : 'vi', resolve);
+                    return;
+                }
+                
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = lang;
+                u.rate = rate;
+                
+                if (lang === 'ja-JP' && jaVoice) u.voice = jaVoice;
+                if (lang === 'vi-VN' && viVoice) u.voice = viVoice;
+                
+                let isResolved = false;
+                const finish = () => {
+                    if(!isResolved) {
+                        isResolved = true;
+                        resolve();
+                    }
+                };
+                
+                u.onend = finish;
+                u.onerror = finish;
+                
+                speechSynthesis.speak(u);
+                
+                // Fallback timeout in case onend doesn't fire (browser bug)
+                setTimeout(finish, text.length * 300 + 3000);
+            });
+        }
+
+        async function toggleAutoplay() {
+            const btn = document.getElementById('btnAutoplay');
+            if (isAutoplaying) {
+                // STOP AUTOPLAY
+                isAutoplaying = false;
+                stopAllAudio();
+                btn.innerHTML = '<i class="fas fa-play-circle text-lg"></i> Nghe';
+                btn.classList.replace('text-red-400', 'text-emerald-400');
+            } else {
+                // START AUTOPLAY
+                isAutoplaying = true;
+                btn.innerHTML = '<i class="fas fa-stop-circle text-lg"></i> Dừng Nghe';
+                btn.classList.replace('text-emerald-400', 'text-red-400');
+                
+                // UI Management
+                switchTab('learn');
+                if(!document.getElementById('mobileDrawer').classList.contains('pointer-events-none')) {
+                    toggleDrawer();
+                }
+                
+                // Bắt đầu vòng lặp
+                await runAutoplayLoop();
+            }
+        }
+
+        async function runAutoplayLoop() {
+            while (isAutoplaying && currentIndex < vocabData.length) {
+                // Tải từ vựng mới (gọi với tham số fromAutoplay=true để không bị dừng)
+                loadWord(currentIndex, true);
+                const word = vocabData[currentIndex];
+                
+                // Nghỉ 0.5s trước khi đọc
+                await new Promise(r => setTimeout(r, 500));
+                if (!isAutoplaying) break;
+
+                // 1. Tiếng Nhật: Từ vựng (Furigana)
+                await speakTextAsync(word.Furigana, 'ja-JP', 0.9);
+                if (!isAutoplaying) break;
+                await new Promise(r => setTimeout(r, 400));
+                
+                // 2. Tiếng Việt: Nghĩa từ vựng
+                await speakTextAsync(word.Nghĩa, 'vi-VN', 1.0);
+                if (!isAutoplaying) break;
+                await new Promise(r => setTimeout(r, 800));
+
+                if (word.conv) {
+                    // 3. Tiếng Nhật: Ví dụ lịch sự
+                    if (word.conv.polite) {
+                        await speakTextAsync(word.conv.polite, 'ja-JP', 0.9);
+                        if (!isAutoplaying) break;
+                        await new Promise(r => setTimeout(r, 400));
+
+                        // 4. Tiếng Việt: Nghĩa ví dụ lịch sự
+                        await speakTextAsync(word.conv.pVi, 'vi-VN', 1.0);
+                        if (!isAutoplaying) break;
+                        await new Promise(r => setTimeout(r, 800));
+                    }
+                    
+                    // 5. Tiếng Nhật: Ví dụ thân mật
+                    if (word.conv.casual) {
+                        await speakTextAsync(word.conv.casual, 'ja-JP', 0.9);
+                        if (!isAutoplaying) break;
+                        await new Promise(r => setTimeout(r, 400));
+
+                        // 6. Tiếng Việt: Nghĩa ví dụ thân mật
+                        await speakTextAsync(word.conv.cVi, 'vi-VN', 1.0);
+                        if (!isAutoplaying) break;
+                        await new Promise(r => setTimeout(r, 1200)); // Nghỉ lâu hơn xíu trước khi sang từ mới
+                    }
+                }
+
+                if (isAutoplaying) {
+                    currentIndex++;
+                }
+            }
+            
+            // Hoàn thành vòng lặp (Đến từ cuối cùng)
+            if (isAutoplaying && currentIndex >= vocabData.length) {
+                isAutoplaying = false;
+                const btn = document.getElementById('btnAutoplay');
+                btn.innerHTML = '<i class="fas fa-play-circle text-lg"></i> Nghe';
+                btn.classList.replace('text-red-400', 'text-emerald-400');
+            }
+        }
+
         function speakCurrent() { speakText(vocabData[currentIndex].Furigana); }
         
         function toggleDrawer() { 
@@ -976,7 +1207,6 @@
             gain.connect(audioCtx.destination);
 
             if (isCorrect) {
-                // Âm thanh Ting! (Đúng)
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
                 osc.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1); 
@@ -985,7 +1215,6 @@
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.3);
             } else {
-                // Âm thanh Bíp (Sai)
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(150, audioCtx.currentTime);
                 gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
@@ -996,7 +1225,6 @@
         }
 
         function normalizeJapanese(str) {
-            // Loại bỏ khoảng trắng, dấu câu tiếng Nhật để so sánh dễ hơn
             return str.replace(/[\s　、。！？！？「」『』（）]/g, '');
         }
 
@@ -1027,7 +1255,7 @@
         function startDictation(stt, type, targetSentence) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
-                alert("Trình duyệt của bạn hiện không hỗ trợ nhận diện giọng nói. Hãy dùng trình duyệt Chrome hoặc Safari nhé!");
+                showToast("Trình duyệt của bạn hiện không hỗ trợ nhận diện giọng nói. Hãy dùng trình duyệt Chrome hoặc Safari nhé!", true);
                 return;
             }
             
@@ -1039,7 +1267,6 @@
             const inputEl = document.getElementById(`input-${stt}-${type}`);
             const micBtn = document.getElementById(`mic-${stt}-${type}`);
 
-            // Reset trạng thái
             inputEl.value = 'Đang nghe...';
             inputEl.classList.remove('bg-green-50', 'bg-red-50', 'text-green-700', 'text-red-700');
             micBtn.classList.add('animate-pulse', 'bg-red-100', 'text-red-600', 'border-red-300');
@@ -1052,7 +1279,7 @@
 
             recognition.onerror = function(event) {
                 inputEl.value = '';
-                alert("Lỗi thu âm: " + event.error);
+                showToast("Lỗi thu âm: " + event.error, true);
             };
 
             recognition.onend = function() {
@@ -1079,27 +1306,22 @@
                 btn.classList.add('bookmark-anim');
             }
             
-            // Lưu vào LocalStorage
             localStorage.setItem('azakanji_bookmarks_day11', JSON.stringify(bookmarkedWords));
             
-            // Cập nhật icon sao trên danh sách bên trái/drawer
             document.querySelectorAll(`.bookmark-icon-${word.STT}`).forEach(icon => {
                 if (idx > -1) icon.classList.add('hidden');
                 else icon.classList.remove('hidden');
             });
 
-            // Nếu đang bật chế độ lọc mà bỏ đánh dấu, cập nhật lại danh sách ngay lập tức
             if (filterBookmarked) applyFilters();
         }
 
         // Bổ sung phím tắt điều hướng cho Thể Trí tập trung
         document.addEventListener('keydown', (e) => {
-            // Không kích hoạt nếu đang gõ chữ hoặc mở Pop-up
             if (document.activeElement.tagName === 'INPUT') return;
             const modals = ['grammarListModal', 'detailGrammarModal', 'strokeModal'];
             if (modals.some(id => !document.getElementById(id).classList.contains('hidden'))) return;
             
-            // Chỉ hoạt động khi ở tab Học từ
             if (!document.getElementById('learn-section').classList.contains('hidden')) {
                 if (e.key === 'ArrowRight') nextWord();
                 if (e.key === 'ArrowLeft') prevWord();
@@ -1127,6 +1349,7 @@
         window.toggleBookmark = toggleBookmark;
         window.checkSentencePractice = checkSentencePractice;
         window.startDictation = startDictation;
+        window.toggleAutoplay = toggleAutoplay;
 
         document.addEventListener('DOMContentLoaded', init);
     </script>
