@@ -1,0 +1,2199 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Flashcard Kanji - Phương Pháp AZATANGO</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#1e293b',
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            overflow-y: scroll;
+        }
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        /* Tối ưu hóa thanh cuộn */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white antialiased">
+
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+                <div class="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <span id="level-badge" class="text-white font-black text-lg tracking-tight">N3</span>
+                </div>
+                <div>
+                    <h1 class="font-black text-lg leading-tight text-white tracking-wide">AZATANGO Kanji Pro</h1>
+                    <p class="text-[10px] text-indigo-400 font-semibold uppercase tracking-wider">Học Chữ Hán Thông Minh</p>
+                </div>
+            </div>
+            
+            <nav class="hidden lg:flex space-x-1 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center">
+                    <i class="fa-solid fa-chart-pie mr-2 text-sm"></i>Tổng quan
+                </button>
+                <button onclick="switchTab('flashcard')" id="nav-flashcard" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center">
+                    <i class="fa-solid fa-clone mr-2 text-sm"></i>Flashcard 3D
+                </button>
+                <button onclick="switchTab('quiz')" id="nav-quiz" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center">
+                    <i class="fa-solid fa-circle-question mr-2 text-sm"></i>Trắc nghiệm
+                </button>
+                <button onclick="switchTab('writing')" id="nav-writing" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center">
+                    <i class="fa-solid fa-keyboard mr-2 text-sm"></i>Luyện gõ
+                </button>
+                <button onclick="switchTab('dictionary')" id="nav-dictionary" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center">
+                    <i class="fa-solid fa-book-open mr-2 text-sm"></i>Tra cứu (<span id="dict-count">0</span> chữ)
+                </button>
+            </nav>
+
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleAudioSettings()" class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 text-slate-300 transition-all flex items-center justify-center shadow-inner" title="Cài đặt giọng đọc">
+                    <i class="fa-solid fa-sliders text-sm"></i>
+                </button>
+                <span id="voice-indicator" class="hidden md:inline-flex items-center px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs font-bold border border-emerald-500/20">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>TTS Sẵn Sàng
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <div class="lg:hidden bg-slate-900 border-b border-slate-800 p-2 flex justify-around overflow-x-auto whitespace-nowrap sticky top-16 z-40 shadow-md">
+        <button onclick="switchTab('dashboard')" id="m-nav-dashboard" class="flex flex-col items-center p-2 text-xs font-semibold min-w-[72px] rounded-xl transition-all">
+            <i class="fa-solid fa-chart-pie text-lg mb-1"></i>Tổng quan
+        </button>
+        <button onclick="switchTab('flashcard')" id="m-nav-flashcard" class="flex flex-col items-center p-2 text-xs font-semibold min-w-[72px] rounded-xl transition-all">
+            <i class="fa-solid fa-clone text-lg mb-1"></i>Flashcard
+        </button>
+        <button onclick="switchTab('quiz')" id="m-nav-quiz" class="flex flex-col items-center p-2 text-xs font-semibold min-w-[72px] rounded-xl transition-all">
+            <i class="fa-solid fa-circle-question text-lg mb-1"></i>Trắc nghiệm
+        </button>
+        <button onclick="switchTab('writing')" id="m-nav-writing" class="flex flex-col items-center p-2 text-xs font-semibold min-w-[72px] rounded-xl transition-all">
+            <i class="fa-solid fa-keyboard text-lg mb-1"></i>Luyện gõ
+        </button>
+        <button onclick="switchTab('dictionary')" id="m-nav-dictionary" class="flex flex-col items-center p-2 text-xs font-semibold min-w-[72px] rounded-xl transition-all">
+            <i class="fa-solid fa-book-open text-lg mb-1"></i>Tra cứu
+        </button>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="confirm-modal" class="hidden fixed inset-0 z-[110] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+            <h3 class="text-lg font-bold text-white mb-2 flex items-center" id="confirm-title">
+                <i class="fa-solid fa-triangle-exclamation text-amber-500 mr-2.5"></i>Xác nhận
+            </h3>
+            <p class="text-sm text-slate-300 mb-6 leading-relaxed" id="confirm-message">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+            <div class="flex space-x-3">
+                <button onclick="closeCustomConfirm(false)" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold text-xs text-slate-300 transition-colors border border-slate-700">Hủy bỏ</button>
+                <button onclick="closeCustomConfirm(true)" class="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 rounded-xl font-bold text-xs text-white transition-colors shadow-lg shadow-indigo-500/20">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Settings Modal -->
+    <div id="audio-settings-modal" class="hidden fixed inset-0 z-[100] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+            <button onclick="toggleAudioSettings()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center"><i class="fa-solid fa-volume-high text-indigo-400 mr-2.5"></i>Cài đặt âm thanh (TTS)</h3>
+            <div class="space-y-4 text-sm">
+                <div>
+                    <label class="block text-slate-400 mb-1.5 font-medium">Chọn giọng đọc tiếng Nhật:</label>
+                    <select id="voice-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                        <option value="Google 日本語">Google 日本語 (ja-JP)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1.5 font-medium flex justify-between">
+                        <span>Tốc độ đọc (Speed):</span>
+                        <span id="speed-val" class="text-indigo-400 font-bold">1x</span>
+                    </label>
+                    <input type="range" id="speech-rate" min="0.5" max="1.5" step="0.1" value="1" class="w-full accent-indigo-500" oninput="document.getElementById('speed-val').innerText = this.value + 'x'">
+                </div>
+                <div class="flex space-x-2 pt-2">
+                    <button onclick="testSpeech()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 rounded-xl font-semibold transition-all">
+                        Nghe thử giọng mẫu
+                    </button>
+                </div>
+                <p class="text-[11px] text-slate-500 italic leading-relaxed">Lưu ý: Chất lượng phụ thuộc vào bộ tổng hợp giọng nói Nhật ngữ được cài sẵn trên trình duyệt và thiết bị của bạn.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-[999] transform bg-slate-900 border border-slate-800 border-l-4 border-indigo-500 px-5 py-3.5 rounded-xl shadow-2xl transition-all duration-300 pointer-events-none flex items-center space-x-3 opacity-0 translate-y-10">
+        <i class="fa-solid fa-circle-info text-indigo-400" id="toast-icon"></i>
+        <span id="toast-text" class="text-sm font-semibold text-slate-200">Thông báo mẫu!</span>
+    </div>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+
+        <!-- ==================== TAB 1: DASHBOARD ==================== -->
+        <div id="tab-dashboard" class="space-y-6">
+            <div class="bg-gradient-to-r from-indigo-950 via-slate-900 to-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+                <div class="absolute -right-20 -top-20 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl"></div>
+                <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-4 z-10">
+                    <div>
+                        <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center flex-wrap gap-3">
+                            <span>Lộ Trình Học Kanji Trực Quan</span>
+                            <select id="level-select" onchange="changeLevel(this.value)" class="bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold border-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="N3" selected>Trình độ N3</option>
+                                <option value="N5">Trình độ N5</option>
+                                <option value="N4">Trình độ N4</option>
+                                <option value="N2">Trình độ N2</option>
+                                <option value="N1">Trình độ N1</option>
+                            </select>
+                        </h2>
+                        <p class="text-slate-400 text-sm mt-1 max-w-xl">Nắm vững cách viết, Hán Việt, cách đọc On/Kun và mở rộng vốn từ vựng bằng phương pháp Lặp lại ngắt quãng khoa học.</p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <button onclick="switchTab('flashcard')" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-indigo-500/25 active:scale-95 transition-all flex items-center justify-center space-x-2">
+                            <span>Bắt Đầu Học Ngay</span>
+                            <i class="fa-solid fa-circle-play"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 flex items-center space-x-4 shadow-lg">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-slate-300">
+                        <i class="fa-solid fa-fingerprint text-xl text-indigo-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Tổng số Kanji</p>
+                        <p class="text-2xl font-black text-white mt-0.5" id="total-words-count">0</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 flex items-center space-x-4 shadow-lg">
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-slate-300">
+                        <i class="fa-solid fa-star-half-stroke text-xl text-amber-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Đang ôn tập</p>
+                        <p class="text-2xl font-black text-white mt-0.5" id="learning-words-count">0</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 flex items-center space-x-4 shadow-lg">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-slate-300">
+                        <i class="fa-solid fa-circle-check text-xl text-emerald-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Đã thuộc làu</p>
+                        <p class="text-2xl font-black text-white mt-0.5" id="mastered-words-count">0</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 flex items-center space-x-4 shadow-lg">
+                    <div class="w-12 h-12 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-slate-300">
+                        <i class="fa-solid fa-clock text-xl text-pink-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Chưa học (Mới)</p>
+                        <p class="text-2xl font-black text-white mt-0.5" id="new-words-count">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Cấu hình học -->
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+                    <h3 class="text-base font-bold text-white flex items-center tracking-wide">
+                        <i class="fa-solid fa-sliders text-indigo-400 mr-2.5"></i>Cấu Hình Khoảng Học
+                    </h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">Hãy chọn khoảng giới hạn Số Thứ Tự (STT) dưới đây để phân nhỏ lượng chữ Hán cần học mỗi ngày, tối ưu hóa khả năng hấp thụ kiến thức.</p>
+                    
+                    <div class="space-y-4 pt-2">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">STT Bắt đầu:</label>
+                                <input type="number" id="filter-start" value="1" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white font-semibold focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">STT Kết thúc:</label>
+                                <input type="number" id="filter-end" value="12" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white font-semibold focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm">
+                            </div>
+                        </div>
+
+                        <div class="pt-1">
+                            <button onclick="applyRangeFilter()" class="w-full bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white py-3 rounded-xl text-xs font-bold transition-all border border-indigo-500/30 uppercase tracking-wider">
+                                <i class="fa-solid fa-filter mr-1.5"></i>Áp dụng khoảng học
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800 space-y-2">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Khoảng học gợi ý:</p>
+                        <div class="flex flex-wrap gap-2" id="quick-range-container">
+                            <!-- JS Generator -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vòng tiến trình học tập -->
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between shadow-xl">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center tracking-wide">
+                            <i class="fa-solid fa-gauge-high text-emerald-400 mr-2.5"></i>Tiến Trình Chữ Hán
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">Tỉ lệ hoàn thành mục tiêu "Thuộc lòng" chữ Hán trong danh sách đã chọn lọc.</p>
+                    </div>
+
+                    <div class="flex items-center justify-center py-6">
+                        <div class="relative w-36 h-36">
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#0f172a" stroke-width="8"></circle>
+                                <circle id="progress-circle" cx="50" cy="50" r="40" fill="transparent" stroke="#6366f1" stroke-width="8" stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" class="transition-all duration-1000"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-3xl font-black text-white" id="progress-percent">0%</span>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Thuộc làu</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-center text-xs text-slate-500 leading-relaxed">Mẹo: Nhấn <strong class="text-emerald-400 font-semibold">Đã thuộc (3)</strong> khi lật thẻ để đánh dấu hoàn thành ôn tập chữ Hán đó.</p>
+                </div>
+
+                <!-- Phương pháp khoa học -->
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+                    <h3 class="text-base font-bold text-white flex items-center tracking-wide">
+                        <i class="fa-solid fa-brain text-pink-400 mr-2.5"></i>Phương Pháp Học Trực Quan
+                    </h3>
+                    
+                    <div class="space-y-3 text-xs leading-relaxed text-slate-300">
+                        <div class="flex space-x-3">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center font-bold">1</div>
+                            <p><strong class="text-white">Kiểm tra chủ động (Active Recall):</strong> Nhìn vào chữ Hán, tự nhớ lại âm Hán Việt và nghĩa trước khi lật thẻ.</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center font-bold">2</div>
+                            <p><strong class="text-white">Mở rộng 5 từ liên quan:</strong> Thấu hiểu cách ghép Hán tự với nhau thông qua danh sách 5 từ vựng mở rộng đính kèm phía sau.</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold">3</div>
+                            <p><strong class="text-white">Luyện âm thanh song song:</strong> Bấm loa nghe phát âm chuẩn On/Kun để liên kết âm thanh trực quan.</p>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-800/80">
+                            <button onclick="resetAllProgress()" class="text-rose-400 hover:text-rose-300 font-bold flex items-center text-[11px] uppercase tracking-wider transition-colors">
+                                <i class="fa-solid fa-trash-can mr-2"></i>Đặt lại toàn bộ tiến trình
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 2: FLASHCARD VIEW ==================== -->
+        <div id="tab-flashcard" class="hidden space-y-6">
+            <div class="max-w-xl mx-auto space-y-6 relative">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs bg-slate-900 px-4 py-3 rounded-2xl border border-slate-800 shadow-lg">
+                    <span class="text-slate-400 font-semibold">Tiến độ tệp đã lọc: <strong class="text-indigo-400" id="card-index-indicator">0/0</strong></span>
+                    <div class="flex flex-wrap items-center gap-4">
+                        <label class="flex items-center space-x-1.5 cursor-pointer select-none font-semibold">
+                            <input type="checkbox" id="only-unlearned" class="rounded-lg bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0 focus:ring-offset-0 w-4 h-4 cursor-pointer" onchange="toggleOnlyUnlearned(this.checked)">
+                            <span>Chỉ chữ chưa thuộc</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer select-none font-semibold">
+                            <input type="checkbox" id="auto-play-sound" class="rounded-lg bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0 focus:ring-offset-0 w-4 h-4 cursor-pointer">
+                            <span>Tự phát âm</span>
+                        </label>
+                        <button onclick="shuffleCurrentDeck()" class="text-slate-400 hover:text-white transition-colors flex items-center font-semibold">
+                            <i class="fa-solid fa-shuffle mr-1.5"></i>Trộn thẻ
+                        </button>
+                    </div>
+                </div>
+
+                <div class="relative min-h-[380px] sm:min-h-[480px] flex items-center justify-center">
+                    
+                    <!-- Nút mũi tên lùi thẻ -->
+                    <button onclick="navigateFlashcard(-1); event.stopPropagation();" class="absolute left-[-56px] lg:left-[-72px] top-1/2 -translate-y-1/2 hidden sm:flex w-12 h-12 rounded-full bg-slate-900/95 hover:bg-indigo-600 border border-slate-800 hover:border-indigo-500 hover:text-white text-slate-400 items-center justify-center transition-all shadow-xl hover:scale-110 z-20" title="Chuyển thẻ trước đó (Phím ←)">
+                        <i class="fa-solid fa-chevron-left text-lg"></i>
+                    </button>
+
+                    <!-- Khung thẻ flashcard lật 3D -->
+                    <div class="perspective-1000 w-full h-96 sm:h-[450px] cursor-pointer relative" onclick="handleCardClick(event)" ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event)" ontouchend="handleTouchEnd(event)">
+                        <div id="flashcard-inner" class="w-full h-full transform-style-3d transition-transform duration-500 relative rounded-2xl shadow-2xl border border-slate-800">
+                            
+                            <!-- MẶT TRƯỚC (Đã loại bỏ hoàn toàn text phụ gây mất tập trung theo hình ảnh mẫu) -->
+                            <div class="absolute inset-0 backface-hidden bg-slate-900 rounded-2xl p-6 flex flex-col justify-between">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[10px] font-bold bg-indigo-500/10 text-indigo-400 px-3 py-1.5 rounded-xl border border-indigo-500/20" id="card-tag-stt">STT: --</span>
+                                    <button onclick="speakTextEvent(event, 'kanji')" class="w-10 h-10 rounded-full bg-slate-950 border border-slate-800 hover:bg-slate-800 text-indigo-400 flex items-center justify-center transition-all shadow-md" title="Đọc phát âm chữ Hán">
+                                        <i class="fa-solid fa-volume-high text-base"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="text-center space-y-4 my-auto">
+                                    <h2 class="text-8xl sm:text-9xl font-black text-white tracking-wide" id="card-front-kanji">--</h2>
+                                </div>
+
+                                <div class="text-center text-[10px] text-slate-500 font-semibold uppercase tracking-wider animate-pulse">
+                                    <i class="fa-solid fa-hand-pointer mr-1"></i>Chạm để lật | Vuốt để chuyển thẻ
+                                </div>
+                            </div>
+
+                            <!-- MẶT SAU (Giao diện tích hợp Loa phát âm biệt lập và mẹo nhớ phân tách bộ thủ) -->
+                            <div class="absolute inset-0 backface-hidden rotate-y-180 bg-slate-900 rounded-2xl p-6 flex flex-col justify-between border-2 border-indigo-500/20 overflow-hidden">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[10px] font-bold bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-xl border border-emerald-500/20" id="card-tag-stt-back">STT: --</span>
+                                    <div class="flex space-x-2">
+                                        <button onclick="speakTextEvent(event, 'kanji')" class="w-8 h-8 rounded-full bg-slate-950 border border-slate-800 hover:bg-slate-800 text-indigo-400 flex items-center justify-center transition-all" title="Phát âm chữ Hán">
+                                            <i class="fa-solid fa-volume-high text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-3 overflow-y-auto max-h-[82%] pr-1 text-left scrollbar-thin">
+                                    <div class="text-center">
+                                        <h3 class="text-4xl font-black text-white tracking-wide" id="card-back-kanji">--</h3>
+                                        <span class="text-xs font-black tracking-widest text-indigo-400 uppercase" id="card-back-hanviet">--</span>
+                                        <p class="text-sm text-slate-300 font-bold mt-1" id="card-back-meaning">--</p>
+                                    </div>
+
+                                    <!-- Onyomi & Kunyomi (Tích hợp Loa phát âm trực tiếp vào từng thẻ như image_a6bce6.png) -->
+                                    <div class="grid grid-cols-2 gap-2 pt-1">
+                                        <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                                            <div>
+                                                <span class="text-[8px] font-black text-slate-500 uppercase tracking-wider block">Onyomi (Âm Ôn):</span>
+                                                <p class="text-xs text-slate-100 font-bold mt-0.5" id="card-back-onyomi">--</p>
+                                            </div>
+                                            <button onclick="speakOnyomiEvent(event)" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 text-indigo-400 flex items-center justify-center transition-all" title="Phát âm âm Ôn">
+                                                <i class="fa-solid fa-volume-high text-[10px]"></i>
+                                            </button>
+                                        </div>
+                                        <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
+                                            <div>
+                                                <span class="text-[8px] font-black text-slate-500 uppercase tracking-wider block">Kunyomi (Âm Huấn):</span>
+                                                <p class="text-xs text-slate-100 font-bold mt-0.5" id="card-back-kunyomi">--</p>
+                                            </div>
+                                            <button onclick="speakKunyomiEvent(event)" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 text-indigo-400 flex items-center justify-center transition-all" title="Phát âm âm Huấn">
+                                                <i class="fa-solid fa-volume-high text-[10px]"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Mẹo ghi nhớ phân tách bộ thủ -->
+                                    <div class="bg-indigo-950/40 p-3.5 rounded-xl border border-indigo-500/20 space-y-1">
+                                        <span class="text-[9px] font-black text-indigo-400 uppercase tracking-wider block flex items-center">
+                                            <i class="fa-solid fa-lightbulb mr-1.5 text-indigo-400"></i>Mẹo ghi nhớ & Phân tách bộ thủ:
+                                        </span>
+                                        <p class="text-xs text-slate-200 leading-relaxed" id="card-back-mnemonic">--</p>
+                                    </div>
+
+                                    <!-- 5 Từ vựng liên quan rộng mở (Đã sửa lỗi Romaji và bao gồm Hán Việt chi tiết) -->
+                                    <div class="pt-2 border-t border-slate-800/80">
+                                        <span class="text-[9px] font-black text-amber-400 uppercase tracking-wider block mb-1.5"><i class="fa-solid fa-book-bookmark mr-1"></i>5 Từ vựng liên quan (Đọc chuẩn xác):</span>
+                                        <div id="card-back-vocab-list" class="space-y-1.5">
+                                            <!-- JS Renders 5 Vocabs -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="text-center text-[10px] text-slate-500 font-semibold tracking-wider uppercase mt-1">
+                                    Chạm nhẹ để xoay lại mặt trước
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nút mũi tên chuyển tiếp -->
+                    <button onclick="navigateFlashcard(1); event.stopPropagation();" class="absolute right-[-56px] lg:right-[-72px] top-1/2 -translate-y-1/2 hidden sm:flex w-12 h-12 rounded-full bg-slate-900/95 hover:bg-indigo-600 border border-slate-800 hover:border-indigo-500 hover:text-white text-slate-400 items-center justify-center transition-all shadow-xl hover:scale-110 z-20" title="Chuyển tệp tiếp theo (Phím →)">
+                        <i class="fa-solid fa-chevron-right text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Phím chuyển hướng di động -->
+                <div class="flex sm:hidden justify-between items-center gap-3">
+                    <button onclick="navigateFlashcard(-1)" class="flex-1 py-3 bg-slate-900 hover:bg-slate-850 text-slate-200 font-bold rounded-xl border border-slate-800 flex items-center justify-center space-x-2 active:scale-95 transition-all shadow-md">
+                        <i class="fa-solid fa-chevron-left text-xs text-indigo-400"></i>
+                        <span>Kanji trước</span>
+                    </button>
+                    <button onclick="navigateFlashcard(1)" class="flex-1 py-3 bg-slate-900 hover:bg-slate-850 text-slate-200 font-bold rounded-xl border border-slate-800 flex items-center justify-center space-x-2 active:scale-95 transition-all shadow-md">
+                        <span>Kanji sau</span>
+                        <i class="fa-solid fa-chevron-right text-xs text-indigo-400"></i>
+                    </button>
+                </div>
+
+                <!-- Đánh giá mức độ học tập -->
+                <div class="space-y-3 pt-2">
+                    <p class="text-center text-xs text-slate-400 font-semibold">Đánh giá mức độ ghi nhớ chữ Hán (Spaced Repetition):</p>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="rateWord(1)" class="py-3 px-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-rose-600/10 active:scale-95 transition-all flex flex-col items-center justify-center">
+                            <span>Chưa nhớ (1)</span>
+                            <span class="text-[9px] opacity-75 font-normal mt-1">Lặp lại sớm</span>
+                        </button>
+                        <button onclick="rateWord(2)" class="py-3 px-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-amber-600/10 active:scale-95 transition-all flex flex-col items-center justify-center">
+                            <span>Tàm tạm (2)</span>
+                            <span class="text-[9px] opacity-75 font-normal mt-1">Lặp lại vừa</span>
+                        </button>
+                        <button onclick="rateWord(3)" class="py-3 px-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-emerald-600/10 active:scale-95 transition-all flex flex-col items-center justify-center">
+                            <span>Đã thuộc (3)</span>
+                            <span class="text-[9px] opacity-75 font-normal mt-1">Hoàn thành</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Phím tắt hướng dẫn -->
+                <div class="hidden sm:block text-center text-[11px] text-slate-500 font-medium">
+                    <kbd class="px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg">←</kbd> / <kbd class="px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg">→</kbd>: Chuyển thẻ &nbsp;|&nbsp;
+                    <kbd class="px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg">Space</kbd>: Lật thẻ &nbsp;|&nbsp; 
+                    <kbd class="px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg">1</kbd>, <kbd class="px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg">2</kbd>, <kbd class="px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg">3</kbd>: Đánh giá nhanh
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 3: QUIZ MODE ==================== -->
+        <div id="tab-quiz" class="hidden space-y-6">
+            <div class="max-w-xl mx-auto space-y-6">
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex justify-between items-center text-xs font-semibold shadow-lg">
+                    <div>
+                        <span class="text-slate-400">Câu hỏi:</span>
+                        <strong class="text-indigo-400 ml-1.5" id="quiz-progress-text">1/10</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400">Đúng:</span>
+                        <strong class="text-emerald-400 ml-1.5" id="quiz-score-text">0/0</strong>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 text-center space-y-6 shadow-xl relative overflow-hidden">
+                    <div class="absolute -right-16 -top-16 w-36 h-36 bg-indigo-500/5 rounded-full blur-2xl"></div>
+                    <button onclick="speakQuizWord()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-slate-950 border border-slate-800 hover:bg-slate-800 text-indigo-400 flex items-center justify-center transition-all shadow">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+
+                    <div class="space-y-2 relative z-10">
+                        <span class="text-xs font-black tracking-widest text-indigo-400 uppercase">Hãy xác định nghĩa đúng của Kanji sau:</span>
+                        <h2 class="text-6xl font-black text-white" id="quiz-question-word">--</h2>
+                    </div>
+
+                    <div class="space-y-3 pt-4 text-left relative z-10">
+                        <button onclick="checkQuizAnswer(0)" id="quiz-option-0" class="w-full text-slate-200 bg-slate-950 hover:bg-slate-800 border border-slate-800/80 rounded-xl p-4 font-semibold text-xs sm:text-sm transition-all text-left flex items-center justify-between active:scale-[0.99]">
+                            <span id="quiz-option-text-0">--</span>
+                            <span class="text-xs text-slate-500 bg-slate-900 px-2 py-1 rounded-lg">A</span>
+                        </button>
+                        <button onclick="checkQuizAnswer(1)" id="quiz-option-1" class="w-full text-slate-200 bg-slate-950 hover:bg-slate-800 border border-slate-800/80 rounded-xl p-4 font-semibold text-xs sm:text-sm transition-all text-left flex items-center justify-between active:scale-[0.99]">
+                            <span id="quiz-option-text-1">--</span>
+                            <span class="text-xs text-slate-500 bg-slate-900 px-2 py-1 rounded-lg">B</span>
+                        </button>
+                        <button onclick="checkQuizAnswer(2)" id="quiz-option-2" class="w-full text-slate-200 bg-slate-950 hover:bg-slate-800 border border-slate-800/80 rounded-xl p-4 font-semibold text-xs sm:text-sm transition-all text-left flex items-center justify-between active:scale-[0.99]">
+                            <span id="quiz-option-text-2">--</span>
+                            <span class="text-xs text-slate-500 bg-slate-900 px-2 py-1 rounded-lg">C</span>
+                        </button>
+                        <button onclick="checkQuizAnswer(3)" id="quiz-option-3" class="w-full text-slate-200 bg-slate-950 hover:bg-slate-800 border border-slate-800/80 rounded-xl p-4 font-semibold text-xs sm:text-sm transition-all text-left flex items-center justify-between active:scale-[0.99]">
+                            <span id="quiz-option-text-3">--</span>
+                            <span class="text-xs text-slate-500 bg-slate-900 px-2 py-1 rounded-lg">D</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="nextQuizQuestion()" id="quiz-next-btn" class="hidden px-6 py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 active:scale-95 transition-all text-xs uppercase tracking-wider">
+                        Câu kế tiếp <i class="fa-solid fa-arrow-right ml-1.5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 4: WRITING MODE ==================== -->
+        <div id="tab-writing" class="hidden space-y-6">
+            <div class="max-w-xl mx-auto space-y-6">
+                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-2 shadow-lg">
+                    <h3 class="font-bold text-white text-base flex items-center"><i class="fa-solid fa-keyboard text-amber-400 mr-2.5"></i>Luyện gõ Hán Việt</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">Hãy nhập chính xác cách đọc âm Hán Việt (viết HOA có dấu hoặc không dấu, ví dụ: "TỰ" hoặc "TU") của chữ Kanji hiển thị phía dưới để rèn luyện phản xạ nhớ mặt chữ.</p>
+                </div>
+
+                <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 text-center space-y-6 shadow-xl relative overflow-hidden">
+                    <div class="space-y-1">
+                        <h2 class="text-7xl sm:text-8xl font-black text-white" id="write-question-kanji">--</h2>
+                        <p class="text-slate-300 font-semibold text-sm" id="write-question-meaning">Nghĩa: --</p>
+                    </div>
+
+                    <div class="space-y-4 pt-4">
+                        <div class="relative">
+                            <input type="text" id="write-user-input" autocomplete="off" placeholder="Nhập âm Hán Việt của chữ trên..." class="w-full text-center bg-slate-950 border border-slate-800 rounded-xl py-4 px-4 text-white text-lg font-bold placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" onkeydown="handleWritingKeyDown(event)">
+                        </div>
+                        
+                        <div id="write-feedback-box" class="hidden p-4 rounded-xl text-left space-y-2 border">
+                            <div class="flex items-center space-x-2">
+                                <i class="text-lg" id="write-feedback-icon"></i>
+                                <span class="font-bold text-sm" id="write-feedback-title">Chính xác!</span>
+                            </div>
+                            <p class="text-xs" id="write-feedback-detail"></p>
+                        </div>
+
+                        <div id="write-extra-info" class="hidden p-4 bg-slate-950 border border-slate-800 rounded-xl text-left space-y-2">
+                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Từ vựng điển hình đi kèm:</p>
+                            <div id="write-vocab-highlight" class="space-y-1"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <button onclick="skipWritingWord()" class="text-xs font-bold text-slate-400 hover:text-white transition-colors uppercase tracking-wider">
+                        Bỏ qua chữ này
+                    </button>
+                    <button onclick="checkWritingAnswer()" id="write-action-btn" class="px-6 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 active:scale-95 transition-all text-xs uppercase tracking-wider">
+                        Kiểm tra kết quả
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 5: DICTIONARY / SPREADSHEET IMPORTER ==================== -->
+        <div id="tab-dictionary" class="hidden space-y-6">
+            
+            <!-- EXCEL / GOOGLE SHEETS IMPORTER BOX -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-dashed border-indigo-500/40 space-y-4 shadow-xl">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 bg-emerald-600/20 rounded-lg flex items-center justify-center text-emerald-400">
+                        <i class="fa-solid fa-file-excel text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-base">Trình Nhập Dữ Liệu Tự Do (N5, N4, N3, N2, N1)</h3>
+                        <p class="text-xs text-slate-400">Bôi đen bảng trên Google Sheets, Copy (Ctrl+C) và Paste (Ctrl+V) trực tiếp vào ô bên dưới.</p>
+                    </div>
+                </div>
+                <textarea id="tsv-import-textarea" rows="4" placeholder="Định dạng cột dán:&#10;STT \t Trình độ \t Chữ Hán \t Hán Việt \t Ý nghĩa \t Onyomi \t Kunyomi \t Mẹo ghi nhớ \t Từ vựng 1 \t Từ vựng 2 \t Từ vựng 3 \t Từ vựng 4 \t Từ vựng 5&#10;&#10;* Trong đó cột Từ vựng 1-5 ghi theo định dạng: Từ ghép|Hán Việt|Cách đọc|Nghĩa (Ví dụ: 次回|THỨ HỒI|じかい|Lần sau)" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-300 font-mono focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 placeholder-slate-700"></textarea>
+                <div class="flex flex-wrap gap-2.5 justify-between items-center">
+                    <p class="text-[10px] text-slate-500 italic max-w-sm">Hệ thống sẽ tự động ghép dồn (Smart Merge), không ghi đè dữ liệu cấp độ khác và tự động tối ưu hóa phát âm!</p>
+                    <div class="flex space-x-2">
+                        <button onclick="restoreDefaultDatabase()" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-850 text-slate-300 font-bold text-xs rounded-xl shadow border border-slate-800 active:scale-95 transition-all">
+                            <i class="fa-solid fa-rotate-left mr-1.5"></i>Khôi phục dữ liệu gốc
+                        </button>
+                        <button onclick="importTSV()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/10 active:scale-95 transition-all">
+                            <i class="fa-solid fa-file-import mr-1.5"></i>Nạp dữ liệu từ Bảng tính
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row gap-4 items-center justify-between shadow-lg">
+                <div class="relative w-full md:max-w-md">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" id="dict-search" oninput="filterDictionary()" placeholder="Nhập chữ Hán, Hán Việt, cách đọc hoặc nghĩa..." class="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-xs sm:text-sm font-semibold">
+                </div>
+                
+                <div class="flex space-x-2 w-full md:w-auto">
+                    <select id="dict-filter-status" onchange="filterDictionary()" class="bg-slate-950 text-slate-200 border border-slate-800 rounded-xl p-3 text-xs flex-1 md:flex-initial focus:outline-none font-semibold">
+                        <option value="all">Tất cả trạng thái</option>
+                        <option value="new">Chưa học</option>
+                        <option value="learning">Đang ôn tập</option>
+                        <option value="mastered">Đã thuộc làu</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="dictionary-container">
+                <!-- JS Render -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer bản quyền -->
+    <footer class="border-t border-slate-900 bg-slate-950 py-8 mt-12 text-center text-[11px] text-slate-500 space-y-1.5">
+        <p>© 2026 Học viện Tiếng Nhật AZATANGO Kanji. Đồng hành hỗ trợ thi đỗ mục tiêu JLPT.</p>
+        <p>Hệ thống tự động đồng bộ hóa trên các phân hệ thiết bị học di động và máy tính cá nhân.</p>
+    </footer>
+
+    <!-- ==================== SCRIPT XỬ LÝ CHÍNH & CƠ SỞ DỮ LIỆU KANJI N3 TOÀN BỘ ==================== -->
+    <script>
+        const KANJI_DATABASE = [
+            {
+                id: 1,
+                level: "N3",
+                kanji: "次",
+                hanviet: "THỨ/THỬ",
+                meaning: "Tiếp theo, kế tiếp, thứ tự",
+                onyomi: "ジ, シ",
+                kunyomi: "つぎ, つぐ",
+                mnemonic: "Gồm bộ <strong>Băng (冫)</strong> và chữ <strong>Khiếm (欠)</strong>.<br>💡 <em>Mẹo nhớ:</em> Người tiếp theo (THỨ) bị thiếu thốn (Khiếm 欠) lạnh buốt đến mức đóng băng (Băng 冫).",
+                vocab: [
+                    { word: "次", hanviet: "THỨ", reading: "つぎ", meaning: "Kế tiếp, tiếp theo" },
+                    { word: "次回", hanviet: "THỨ HỒI", reading: "じかい", meaning: "Lần sau" },
+                    { word: "目次", hanviet: "MỤC THỨ", reading: "もくじ", meaning: "Mục lục" },
+                    { word: "次女", hanviet: "THỨ NỮ", reading: "じじょ", meaning: "Con gái thứ hai" },
+                    { word: "次第に", hanviet: "THỨ ĐỆ", reading: "しだいに", meaning: "Dần dần, từng bước" }
+                ]
+            },
+            {
+                id: 2,
+                level: "N3",
+                kanji: "組",
+                hanviet: "TỔ",
+                meaning: "Tổ chức, bộ, cặp, tập hợp",
+                onyomi: "ソ",
+                kunyomi: "くむ, くみ",
+                mnemonic: "Gồm bộ <strong>Mịch (糸)</strong> và chữ <strong>Thả (且)</strong>.<br>💡 <em>Mẹo nhớ:</em> Tổ chức (TỔ) dùng sợi chỉ (Mịch 糸) liên kết chặt chẽ mọi người lại với nhau hơn nữa (Thả 且).",
+                vocab: [
+                    { word: "組む", hanviet: "TỔ", reading: "くむ", meaning: "Lắp ghép, hợp tác" },
+                    { word: "番組", hanviet: "PHIÊN TỔ", reading: "ばんぐみ", meaning: "Chương trình TV" },
+                    { word: "組織", hanviet: "TỔ CHỨC", reading: "そしき", meaning: "Tổ chức, cấu trúc" },
+                    { word: "組合", hanviet: "TỔ HỢP", reading: "くみあい", meaning: "Nghiệp đoàn, công đoàn" },
+                    { word: "一組", hanviet: "NHẤT TỔ", reading: "ひとくみ", meaning: "Một cặp, một nhóm" }
+                ]
+            },
+            {
+                id: 3,
+                level: "N3",
+                kanji: "助",
+                hanviet: "TRỢ",
+                meaning: "Trợ giúp, cứu giúp",
+                onyomi: "ジョ",
+                kunyomi: "たすける, たすかる",
+                mnemonic: "Gồm chữ <strong>Thả (且)</strong> và bộ <strong>Lực (力)</strong>.<br>💡 <em>Mẹo nhớ:</em> Muốn trợ giúp (TRỢ) cho ai đó thì cần phải sử dụng sức lực (Lực 力) nhiều hơn nữa (Thả 且).",
+                vocab: [
+                    { word: "助ける", hanviet: "TRỢ", reading: "たすける", meaning: "Giúp đỡ, cứu giúp" },
+                    { word: "助かる", hanviet: "TRỢ", reading: "たすかる", meaning: "Được cứu, có ích" },
+                    { word: "助手", hanviet: "TRỢ THỦ", reading: "じょしゅ", meaning: "Trợ thủ, trợ giảng" },
+                    { word: "救助", hanviet: "CỨU TRỢ", reading: "きゅうじょ", meaning: "Cứu hộ, cứu trợ" },
+                    { word: "助詞", hanviet: "TRỢ TỪ", reading: "じょし", meaning: "Trợ từ" }
+                ]
+            },
+            {
+                id: 4,
+                level: "N3",
+                kanji: "査",
+                hanviet: "TRA",
+                meaning: "Điều tra, kiểm tra, khảo sát",
+                onyomi: "サ",
+                kunyomi: "しらべる",
+                mnemonic: "Gồm bộ <strong>Mộc (木)</strong> và chữ <strong>Thả (且)</strong>.<br>💡 <em>Mẹo nhớ:</em> Điều tra (TRA) bằng cách leo lên cây gỗ (Mộc 木) để tìm thêm các chứng cứ khác nữa (Thả 且).",
+                vocab: [
+                    { word: "調査", hanviet: "ĐIỀU TRA", reading: "ちょうさ", meaning: "Điều tra, khảo sát" },
+                    { word: "検査", hanviet: "KIỂM TRA", reading: "けんさ", meaning: "Kiểm tra y tế / máy móc" },
+                    { word: "審査", hanviet: "THẨM TRA", reading: "しんさ", meaning: "Thẩm định, xét duyệt" },
+                    { word: "査読", hanviet: "TRA ĐỘC", reading: "さどく", meaning: "Hiệu đính, duyệt bài viết" },
+                    { word: "査証", hanviet: "TRA CHỨNG", reading: "さしょう", meaning: "Thị thực, Visa" }
+                ]
+            },
+            {
+                id: 5,
+                level: "N3",
+                kanji: "商",
+                hanviet: "THƯƠNG",
+                meaning: "Thương mại, buôn bán",
+                onyomi: "ショウ",
+                kunyomi: "あきなう",
+                mnemonic: "Gồm bộ <strong>Đầu (亠)</strong>, chữ <strong>Quynh (冂)</strong>, chữ <strong>Bát (八)</strong> và bộ <strong>Khẩu (口)</strong>.<br>💡 <em>Mẹo nhớ:</em> Người làm THƯƠNG mại buôn bán ở ngoài thành (Quynh 冂), tám (Bát 八) người dùng miệng (Khẩu 口) thương lượng giá cả.",
+                vocab: [
+                    { word: "商売", hanviet: "THƯƠNG MẠI", reading: "しょうばい", meaning: "Kinh doanh, buôn bán" },
+                    { word: "商品", hanviet: "THƯƠNG PHẨM", reading: "しょうひん", meaning: "Sản phẩm, hàng hóa" },
+                    { word: "商業", hanviet: "THƯƠNG NGHIỆP", reading: "しょうぎょう", meaning: "Thương nghiệp" },
+                    { word: "商人", hanviet: "THƯƠNG NHÂN", reading: "しょうにん", meaning: "Thương nhân" },
+                    { word: "商社", hanviet: "THƯƠNG XÃ", reading: "しょうしゃ", meaning: "Công ty thương mại" }
+                ]
+            },
+            {
+                id: 6,
+                level: "N3",
+                kanji: "欧",
+                hanviet: "ÂU",
+                meaning: "Châu Âu, phía tây",
+                onyomi: "オウ",
+                kunyomi: "-",
+                mnemonic: "Gồm bộ <strong>Khu (区)</strong> và chữ <strong>Khiếm (欠)</strong>.<br>💡 <em>Mẹo nhớ:</em> Vùng châu Âu là khu vực (Khu 区) còn nhiều thiếu thốn (Khiếm 欠) thời xưa.",
+                vocab: [
+                    { word: "欧米", hanviet: "ÂU MỸ", reading: "おうべい", meaning: "Âu Mỹ" },
+                    { word: "欧州", hanviet: "ÂU CHÂU", reading: "おうしゅう", meaning: "Châu Âu" },
+                    { word: "北欧", hanviet: "BẮC ÂU", reading: "ほくおう", meaning: "Bắc Âu" },
+                    { word: "欧化", hanviet: "ÂU HÓA", reading: "おうか", meaning: "Âu hóa" },
+                    { word: "東欧", hanviet: "ĐÔNG ÂU", reading: "とうおう", meaning: "Đông Âu" }
+                ]
+            },
+            {
+                id: 7,
+                level: "N3",
+                kanji: "復",
+                hanviet: "PHỤC",
+                meaning: "Hồi phục, quay lại",
+                onyomi: "フク",
+                kunyomi: "また",
+                mnemonic: "Gồm bộ <strong>Xích (彳)</strong>, chữ <strong>Tịch (夕)</strong>, bộ <strong>Truy (夊)</strong> và bộ <strong>Nhật (日)</strong>.<br>💡 <em>Mẹo nhớ:</em> Người bước đi (Xích 彳) quay về (PHỤC) tìm lại ánh mặt trời (Nhật 日) lúc hoàng hôn chiều tà (Tịch 夕).",
+                vocab: [
+                    { word: "復習", hanviet: "PHỤC TẬP", reading: "ふくしゅう", meaning: "Ôn tập" },
+                    { word: "回復", hanviet: "HỒI PHỤC", reading: "かいふく", meaning: "Hồi phục sức khỏe" },
+                    { word: "往復", hanviet: "VÃNG PHỤC", reading: "おうふく", meaning: "Khứ hồi, đi khứ hồi" },
+                    { word: "復旧", hanviet: "PHỤC CỰU", reading: "ふっきゅう", meaning: "Khôi phục lại hiện trạng" },
+                    { word: "復興", hanviet: "PHỤC HƯNG", reading: "ふっこう", meaning: "Phục hưng, tái thiết" }
+                ]
+            },
+            {
+                id: 8,
+                level: "N3",
+                kanji: "複",
+                hanviet: "PHỨC",
+                meaning: "Trùng lặp, phức tạp, kép",
+                onyomi: "フク",
+                kunyomi: "-",
+                mnemonic: "Gồm bộ <strong>Y (衤)</strong> và chữ <strong>Phục (復)</strong>.<br>💡 <em>Mẹo nhớ:</em> Trang phục, quần áo (Y 衤) xếp lồng chồng chất lặp đi lặp lại (Phục 復) tạo nên sự PHỨC tạp.",
+                vocab: [
+                    { word: "複雑", hanviet: "PHỨC TẠP", reading: "ふくざつ", meaning: "Phức tạp" },
+                    { word: "複数", hanviet: "PHỨC SỐ", reading: "ふくすう", meaning: "Số nhiều, phức số" },
+                    { word: "複製", hanviet: "PHỨC CHẾ", reading: "ふくせい", meaning: "Bản sao, nhân bản" },
+                    { word: "重複", hanviet: "TRỌNG PHỨC", reading: "ちょうふく", meaning: "Trùng lặp, lặp lại" },
+                    { word: "複合", hanviet: "PHỨC HỢP", reading: "ふくごう", meaning: "Phức hợp, kết hợp" }
+                ]
+            },
+            {
+                id: 9,
+                level: "N3",
+                kanji: "取",
+                hanviet: "THỦ",
+                meaning: "Lấy, giành được, tóm lấy",
+                onyomi: "シュ",
+                kunyomi: "とる",
+                mnemonic: "Gồm bộ <strong>Nhĩ (耳)</strong> và bộ <strong>Hựu (又)</strong>.<br>💡 <em>Mẹo nhớ:</em> Dùng tay (Hựu 又) túm lấy tai (Nhĩ 耳) để giành lấy, đoạt lấy (THỦ).",
+                vocab: [
+                    { word: "取る", hanviet: "THỦ", reading: "とる", meaning: "Lấy, cầm lấy" },
+                    { word: "受け取る", hanviet: "THỤ THỦ", reading: "うけとる", meaning: "Nhận lấy, thu nhận" },
+                    { word: "取り消す", hanviet: "THỦ TIÊU", reading: "とりけす", meaning: "Hủy bỏ, rút lại" },
+                    { word: "取得", hanviet: "THỦ ĐẮC", reading: "しゅとく", meaning: "Thu được, giành lấy" },
+                    { word: "取引", hanviet: "THỦ DẪN", reading: "とりひき", meaning: "Giao dịch, mua bán" }
+                ]
+            },
+            {
+                id: 10,
+                level: "N3",
+                kanji: "最",
+                hanviet: "TỐI",
+                meaning: "Nhất, tột cùng, vô cùng",
+                onyomi: "サイ",
+                kunyomi: "mottomo",
+                mnemonic: "Gồm bộ <strong>Viết (曰)</strong> và chữ <strong>Thủ (取)</strong>.<br>💡 <em>Mẹo nhớ:</em> Muốn chiếm đoạt lấy (Thủ 取) thứ tốt nhất (TỐI) thì phải nói (Viết 曰) ra kế hoạch rõ ràng.",
+                vocab: [
+                    { word: "最も", hanviet: "TỐI", reading: "もっとも", meaning: "Nhất, vô cùng" },
+                    { word: "最初", hanviet: "TỐI SƠ", reading: "さいしょ", meaning: "Đầu tiên" },
+                    { word: "最後", hanviet: "TỐI HẬU", reading: "さいご", meaning: "Cuối cùng" },
+                    { word: "最高", hanviet: "TỐI CAO", reading: "さいこう", meaning: "Tuyệt vời nhất" },
+                    { word: "最近", hanviet: "TỐI CẬN", reading: "さいきん", meaning: "Gần đây" }
+                ]
+            },
+            {
+                id: 11,
+                level: "N3",
+                kanji: "棒",
+                hanviet: "BỔNG",
+                meaning: "Cái gậy, thanh gỗ, nét gạch",
+                onyomi: "ボウ",
+                kunyomi: "-",
+                mnemonic: "Gồm bộ <strong>Mộc (木)</strong> và chữ <strong>Phụng (奉)</strong>.<br>💡 <em>Mẹo nhớ:</em> Cung kính dâng phụng (Phụng 奉) một cây gậy bằng gỗ (Mộc 木) quý.",
+                vocab: [
+                    { word: "棒", hanviet: "BỔNG", reading: "ぼう", meaning: "Cái gậy, thanh dài" },
+                    { word: "泥棒", hanviet: "NÊ BỔNG", reading: "どろぼう", meaning: "Kẻ trộm" },
+                    { word: "鉄棒", hanviet: "THIẾT BỔNG", reading: "てつぼう", meaning: "Xà đơn, xà kim loại" },
+                    { word: "綿棒", hanviet: "MIÊN BỔNG", reading: "めんぼう", meaning: "Tăm bông" },
+                    { word: "相棒", hanviet: "TƯƠNG BỔNG", reading: "あいぼう", meaning: "Cộng sự, bạn đời" }
+                ]
+            },
+            {
+                id: 12,
+                level: "N3",
+                kanji: "祭",
+                hanviet: "TẾ",
+                meaning: "Lễ hội, thờ cúng",
+                onyomi: "サイ",
+                kunyomi: "まつる, まつり",
+                mnemonic: "Gồm bộ <strong>Nhục (月)</strong>, bộ <strong>Hựu (又)</strong> và bộ <strong>Thị (示)</strong>.<br>💡 <em>Mẹo nhớ:</em> Lễ cúng tế (TẾ) dùng tay (Hựu 又) dâng thịt (Nhục 月/bộ nguyệt biến thể) lên bàn thờ thần linh (Thị 示).",
+                vocab: [
+                    { word: "祭り", hanviet: "TẾ", reading: "まつり", meaning: "Lễ hội" },
+                    { word: "祭る", hanviet: "TẾ", reading: "まつる", meaning: "Thờ cúng, tôn thờ" },
+                    { word: "文化祭", hanviet: "VĂN HÓA TẾ", reading: "ぶんかさい", meaning: "Lễ hội văn hóa trường học" },
+                    { word: "学園祭", hanviet: "HỌC VIÊN TẾ", reading: "がくえんさい", meaning: "Lễ hội trường" },
+                    { word: "冠婚葬祭", hanviet: "QUAN HÔN TÁNG TẾ", reading: "かんこんそうさい", meaning: "Nghi lễ hiếu hỷ phát sinh" }
+                ]
+            },
+            {
+                id: 13,
+                level: "N3",
+                kanji: "悩",
+                hanviet: "NÃO",
+                meaning: "Khổ não, lo nghĩ, đau đầu",
+                onyomi: "ノウ",
+                kunyomi: "なやむ",
+                mnemonic: "Gồm bộ <strong>Tâm (忄)</strong> và chữ <strong>Não (脳)</strong> đã giản lược.<br>💡 <em>Mẹo nhớ:</em> Khi tâm (忄) có nhiều lo toan, bộ não sẽ cực kỳ KHỔ NÃO (悩).",
+                vocab: [
+                    { word: "悩む", hanviet: "NÃO", reading: "なやむ", meaning: "Lo nghĩ, trăn trở" },
+                    { word: "悩み", hanviet: "NÃO", reading: "なやみ", meaning: "Nỗi khổ tâm, lo lắng" },
+                    { word: "苦悩", hanviet: "KHỔ NÃO", reading: "くのう", meaning: "Khổ não, đau khổ" },
+                    { word: "悩ます", hanviet: "NÃO", reading: "なやます", meaning: "Làm phiền lòng, gây đau đầu" },
+                    { word: "煩悩", hanviet: "PHIỀN NÃO", reading: "ぼんのう", meaning: "Phiền não trong tâm trí" }
+                ]
+            },
+            {
+                id: 14,
+                level: "N3",
+                kanji: "勝",
+                hanviet: "THẮNG",
+                meaning: "Chiến thắng, thắng cuộc",
+                onyomi: "ショウ",
+                kunyomi: "かつ",
+                mnemonic: "Gồm bộ <strong>Nguyệt (月)</strong>, bộ <strong>Chấn (力)</strong> và bộ <strong>Kỳ (𣏋)</strong>.<br>💡 <em>Mẹo nhớ:</em> Muốn giành chiến thắng (THẮNG), một tháng (Nguyệt 月) cần phải tập trung toàn lực (Lực 力) rèn luyện.",
+                vocab: [
+                    { word: "勝つ", hanviet: "THẮNG", reading: "かつ", meaning: "Thắng, chiến thắng" },
+                    { word: "決勝", hanviet: "QUYẾT THẮNG", reading: "けっしょう", meaning: "Trận chung kết" },
+                    { word: "勝負", hanviet: "THẮNG BẠI", reading: "しょうぶ", meaning: "Trận đấu, thắng thua" },
+                    { word: "勝利", hanviet: "THẮNG LỢI", reading: "しょうり", meaning: "Thắng lợi, thắng cuộc" },
+                    { word: "勝手", hanviet: "THẮNG THỦ", reading: "かって", meaning: "Tự tiện, ích kỷ" }
+                ]
+            },
+            {
+                id: 15,
+                level: "N3",
+                kanji: "階",
+                hanviet: "GIAI",
+                meaning: "Giai cấp, tầng lầu, bậc thang",
+                onyomi: "カイ",
+                kunyomi: "-",
+                mnemonic: "Gồm bộ <strong>Phụ (阝)</strong> và chữ <strong>Giai (皆)</strong>.<br>💡 <em>Mẹo nhớ:</em> Mọi người (Giai 皆) đều phải leo lên bậc thang đất (Phụ 阝) để phân định giai cấp (GIAI).",
+                vocab: [
+                    { word: "階段", hanviet: "GIAI ĐOẠN", reading: "かいだん", meaning: "Cầu thang lầu" },
+                    { word: "三階", hanviet: "TAM GIAI", reading: "さんがい", meaning: "Tầng ba" },
+                    { word: "階級", hanviet: "GIAI CẤP", reading: "かいきゅう", meaning: "Giai cấp, cấp bậc" },
+                    { word: "段階", hanviet: "ĐOẠN GIAI", reading: "だんかい", meaning: "Giai đoạn, thời kỳ" },
+                    { word: "一階", hanviet: "NHẤT GIAI", reading: "いっかい", meaning: "Tầng một" }
+                ]
+            },
+            {
+                id: 16,
+                level: "N3",
+                kanji: "労",
+                hanviet: "LAO",
+                meaning: "Lao động, mệt mỏi, khó nhọc",
+                onyomi: "ロウ",
+                kunyomi: "ねぎらう",
+                mnemonic: "Gồm chữ <strong>Doanh (営)</strong> đã giản lược bên trên và bộ <strong>Lực (力)</strong>.<br>💡 <em>Mẹo nhớ:</em> Muốn xây dựng doanh nghiệp thành công, cần bỏ sức lực (Lực 力) lao động (LAO) khó nhọc.",
+                vocab: [
+                    { word: "労働", hanviet: "LAO ĐỘNG", reading: "ろうどう", meaning: "Lao động, việc làm" },
+                    { word: "苦労", hanviet: "KHỔ LAO", reading: "くろう", meaning: "Khó khăn, gian khổ" },
+                    { word: "疲労", hanviet: "BÌ LAO", reading: "ひろう", meaning: "Mệt mỏi, kiệt sức" },
+                    { word: "心労", hanviet: "TÂM LAO", reading: "しんろう", meaning: "Lo lắng, lao tâm khổ tứ" },
+                    { word: "労力", hanviet: "LAO LỰC", reading: "ろうりょく", meaning: "Sức lực lao động" }
+                ]
+            },
+            {
+                id: 17,
+                level: "N3",
+                kanji: "豆",
+                hanviet: "ĐẬU",
+                meaning: "Hạt đậu, nhỏ bé",
+                onyomi: "トウ, ズ",
+                kunyomi: "まめ",
+                mnemonic: "Hình ảnh tượng hình của <strong>Cái đỉnh đựng thức ăn</strong> chứa đầy hạt đậu (ĐẬU).",
+                vocab: [
+                    { word: "豆", hanviet: "ĐẬU", reading: "まめ", meaning: "Hạt đậu, hạt đỗ" },
+                    { word: "大豆", hanviet: "ĐẠI ĐẬU", reading: "だいず", meaning: "Đậu nành, đậu tương" },
+                    { word: "豆腐", hanviet: "ĐẬU HŨ", reading: "とうふ", meaning: "Đậu phụ, đậu hũ" },
+                    { word: "納豆", hanviet: "NẠP ĐẬU", reading: "なっとう", meaning: "Đậu Natto lên men" },
+                    { word: "小豆", hanviet: "TIỂU ĐẬU", reading: "あずき", meaning: "Đậu đỏ" }
+                ]
+            },
+            {
+                id: 18,
+                level: "N3",
+                kanji: "頭",
+                hanviet: "ĐẦU",
+                meaning: "Cái đầu, đầu não, lượng từ đếm con vật to",
+                onyomi: "トウ, ズ, ト",
+                kunyomi: "あたま, かしら",
+                mnemonic: "Gồm chữ <strong>Đậu (豆)</strong> và bộ <strong>Hiệt (頁)</strong>.<br>💡 <em>Mẹo nhớ:</em> Cái đầu (ĐẦU) của người đỗ đạt (Trang giấy Hiệt 頁) thì tròn trịa như hạt đậu (Đậu 豆).",
+                vocab: [
+                    { word: "頭", hanviet: "ĐẦU", reading: "あたま", meaning: "Cái đầu, trí óc" },
+                    { word: "頭痛", hanviet: "ĐẦU THỐNG", reading: "ずつう", meaning: "Đau đầu" },
+                    { word: "頭数", hanviet: "ĐẦU SỐ", reading: "あたまかず", meaning: "Số lượng người đầu người" },
+                    { word: "口頭", hanviet: "KHẨU ĐẦU", reading: "こうとう", meaning: "Bằng lời nói, truyền miệng" },
+                    { word: "一頭", hanviet: "NHẤT ĐẦU", reading: "いっとう", meaning: "Một con (thú lớn như bò, ngựa)" }
+                ]
+            },
+            {
+                id: 19,
+                level: "N3",
+                kanji: "登",
+                hanviet: "ĐĂNG",
+                meaning: "Leo lên, trèo, đăng ký",
+                onyomi: "トウ, ト",
+                kunyomi: "のぼる",
+                mnemonic: "Gồm bộ <strong>Bát (癶)</strong> và bộ <strong>Đậu (豆)</strong>.<br>💡 <em>Mẹo nhớ:</em> Leo núi (ĐĂNG) bằng đôi chân sải bước (Bát 癶) dốc sức mang theo rổ đậu (Đậu 豆).",
+                vocab: [
+                    { word: "登る", hanviet: "ĐĂNG", reading: "のぼる", meaning: "Leo, trèo núi" },
+                    { word: "登山", hanviet: "ĐĂNG SƠN", reading: "とざん", meaning: "Leo núi" },
+                    { word: "登録", hanviet: "ĐĂNG LỤC", reading: "とうろく", meaning: "Đăng ký, ghi danh" },
+                    { word: "登場", hanviet: "ĐĂNG TRƯỜNG", reading: "とうじょう", meaning: "Xuất hiện, ra sân" },
+                    { word: "登校", hanviet: "ĐĂNG HIỆU", reading: "とうこう", meaning: "Đến trường học" }
+                ]
+            },
+            {
+                id: 20,
+                level: "N3",
+                kanji: "喜",
+                hanviet: "HỶ",
+                meaning: "Vui mừng, hạnh phúc",
+                onyomi: "キ",
+                kunyomi: "よろこぶ, よろこび",
+                mnemonic: "Gồm chữ <strong>Cát (吉)</strong> và bộ <strong>Khẩu (口)</strong>.<br>💡 <em>Mẹo nhớ:</em> Nghe tin cát tường (Cát 吉) thì mở miệng (Khẩu 口) cười vui mừng (HỶ).",
+                vocab: [
+                    { word: "喜ぶ", hanviet: "HỶ", reading: "よろこぶ", meaning: "Vui mừng, hân hoan" },
+                    { word: "喜び", hanviet: "HỶ", reading: "よろこび", meaning: "Niềm vui, hạnh phúc" },
+                    { word: "喜劇", hanviet: "HỶ KỊCH", reading: "きげき", meaning: "Kịch hài, hài kịch" },
+                    { word: "大喜び", hanviet: "ĐẠI HỶ", reading: "おおよろこび", meaning: "Vô cùng vui sướng" },
+                    { word: "歓喜", hanviet: "HOAN HỶ", reading: "かんき", meaning: "Hoan hỷ, mừng rỡ" }
+                ]
+            },
+            {
+                id: 21,
+                level: "N3",
+                kanji: "突",
+                hanviet: "ĐỘT",
+                meaning: "Đâm, chọc, đột ngột, đột phá",
+                onyomi: "トツ, トチ",
+                kunyomi: "つく",
+                mnemonic: "Gồm bộ <strong>Huyệt (穴)</strong> và chữ <strong>Khuyển (犬)</strong>.<br>💡 <em>Mẹo nhớ:</em> Con chó (Khuyển 犬) đột ngột (ĐỘT) từ trong hang (Huyệt 穴) lao vút ra ngoài.",
+                vocab: [
+                    { word: "突く", hanviet: "ĐỘT", reading: "つく", meaning: "Đâm, chọc, va chạm" },
+                    { word: "突然", hanviet: "ĐỘT NHIÊN", reading: "とつぜん", meaning: "Đột nhiên, bất ngờ" },
+                    { word: "衝突", hanviet: "XUNG ĐỘT", reading: "しょうとつ", meaning: "Xung đột, va chạm xe" },
+                    { word: "突進", hanviet: "ĐỘT TIẾN", reading: "とっしん", meaning: "Lao lên phía trước, đột tiến" },
+                    { word: "突破", hanviet: "ĐỘT PHÁ", reading: "とっぱ", meaning: "Đột phá, vượt qua ranh giới" }
+                ]
+            },
+            {
+                id: 22,
+                level: "N3",
+                kanji: "涙",
+                hanviet: "LỆ",
+                meaning: "Nước mắt, lệ rơi",
+                onyomi: "ルイ",
+                kunyomi: "なみだ",
+                mnemonic: "Gồm bộ <strong>Thủy (氵)</strong> và chữ <strong>Lệ (戻)</strong>.<br>💡 <em>Mẹo nhớ:</em> Khi quay về (Lệ 戻) ngôi nhà cũ, dòng nước mắt (Thủy 氵) lại nghẹn ngào rơi lệ (LỆ).",
+                vocab: [
+                    { word: "涙", hanviet: "LỆ", reading: "なみだ", meaning: "Nước mắt" },
+                    { word: "涙ぐむ", hanviet: "LỆ", reading: "なみだぐむ", meaning: "Nghẹn ngào nước mắt, rơm rớm lệ" },
+                    { word: "涙雨", hanviet: "LỆ VŨ", reading: "なみだあめ", meaning: "Mưa rào nhẹ, giọt mưa như dòng nước mắt" },
+                    { word: "一滴の涙", hanviet: "NHẤT TÍCH LỆ", reading: "いってきのなみだ", meaning: "Một giọt nước mắt" },
+                    { word: "落涙", hanviet: "LẠC LỆ", reading: "らくるい", meaning: "Lệ rơi, rụng lệ" }
+                ]
+            },
+            {
+                id: 23,
+                level: "N3",
+                kanji: "機",
+                hanviet: "CƠ",
+                meaning: "Cơ hội, máy móc, cơ quan",
+                onyomi: "キ",
+                kunyomi: "はた",
+                mnemonic: "Gồm bộ <strong>Mộc (木)</strong> và chữ <strong>Ki (幾)</strong>.<br>💡 <em>Mẹo nhớ:</em> Chiếc máy dệt bằng gỗ (Mộc 木) cần một vài (Ki 幾) bánh răng để vận hành guồng máy (CƠ).",
+                vocab: [
+                    { word: "機械", hanviet: "CƠ GIỚI", reading: "きかい", meaning: "Máy móc" },
+                    { word: "機会", hanviet: "CƠ HỘI", reading: "きかい", meaning: "Cơ hội, thời cơ" },
+                    { word: "飛行機", hanviet: "PHI HÀNH CƠ", reading: "ひこうき", meaning: "Máy bay" },
+                    { word: "機嫌", hanviet: "CƠ HIỀM", reading: "きげん", meaning: "Sắc mặt, tâm trạng" },
+                    { word: "危機", hanviet: "NGUY CƠ", reading: "きき", meaning: "Nguy cơ, khủng hoảng" }
+                ]
+            },
+            {
+                id: 24,
+                level: "N3",
+                kanji: "暖",
+                hanviet: "NOÃN",
+                meaning: "Ấm áp (nhiệt độ, thời tiết)",
+                onyomi: "ダン",
+                kunyomi: "あたたかい, あたたまる",
+                mnemonic: "Gồm bộ <strong>Nhật (日)</strong> và chữ <strong>Viện (爰)</strong>.<br>💡 <em>Mẹo nhớ:</em> Ánh mặt trời (Nhật 日) chiếu sáng làm thời tiết trở nên ấm áp (NOÃN).",
+                vocab: [
+                    { word: "暖かい", hanviet: "NOÃN", reading: "あたたかい", meaning: "Ấm áp (thời tiết)" },
+                    { word: "暖房", hanviet: "NOÃN PHÒNG", reading: "だんぼう", meaning: "Lò sưởi, máy sưởi" },
+                    { word: "温暖", hanviet: "ÔN NOÃN", reading: "おんだん", meaning: "Ấm áp, ôn đới" },
+                    { word: "暖冬", hanviet: "NOÃN ĐÔNG", reading: "だんとう", meaning: "Mùa đông ấm áp" },
+                    { word: "暖まる", hanviet: "NOÃN", reading: "あたたまる", meaning: "Ấm lên, sưởi ấm" }
+                ]
+            },
+            {
+                id: 25,
+                level: "N3",
+                kanji: "机",
+                hanviet: "KỶ",
+                meaning: "Cái bàn gỗ học tập",
+                onyomi: "キ",
+                kunyomi: "つくえ",
+                mnemonic: "Gồm bộ <strong>Mộc (木)</strong> và chữ <strong>Kỷ (几)</strong>.<br>💡 <em>Mẹo nhớ:</em> Chiếc bàn học (KỶ) cổ xưa được dựng hoàn toàn từ gỗ (Mộc 木).",
+                vocab: [
+                    { word: "机", hanviet: "KỶ", reading: "つくえ", meaning: "Cái bàn" },
+                    { word: "机上", hanviet: "KỶ THƯỢNG", reading: "きじょう", meaning: "Trên bàn học, mang tính lý thuyết suông" },
+                    { word: "学習机", hanviet: "HỌC TẬP KỶ", reading: "がくしゅうづくえ", meaning: "Bàn học tập" },
+                    { word: "机の引き出し", hanviet: "KỶ DẪN XUẤT", reading: "つくえのひきだし", meaning: "Ngăn kéo của bàn" },
+                    { word: "一脚の机", hanviet: "NHẤT CƯỚC KỶ", reading: "いっきゃくのつくえ", meaning: "Một chiếc bàn" }
+                ]
+            },
+            {
+                id: 26,
+                level: "N3",
+                kanji: "築",
+                hanviet: "TRÚC",
+                meaning: "Xây dựng, kiến trúc",
+                onyomi: "チク",
+                kunyomi: "きずく",
+                mnemonic: "Gồm bộ <strong>Trúc (竹)</strong>, chữ <strong>Phàm (凡)</strong> và bộ <strong>Mộc (木)</strong>.<br>💡 <em>Mẹo nhớ:</em> Xây dựng (TRÚC) nhà ngày xưa cần dùng tre trúc (Trúc 竹) và gỗ cây (Mộc 木) làm cột chống.",
+                vocab: [
+                    { word: "築く", hanviet: "TRÚC", reading: "きずく", meaning: "Xây dựng, kiến thiết" },
+                    { word: "建築", hanviet: "KIẾN TRÚC", reading: "けんちく", meaning: "Kiến trúc, xây dựng nhà cửa" },
+                    { word: "築地", hanviet: "TRÚC ĐỊA", reading: "つきじ", meaning: "Vùng đất đắp, địa danh Tsukiji nổi tiếng" },
+                    { word: "新築", hanviet: "TÂN TRÚC", reading: "しんちく", meaning: "Nhà mới xây" },
+                    { word: "改築", hanviet: "CẢI TRÚC", reading: "かいちく", meaning: "Sửa sang, xây lại nhà" }
+                ]
+            },
+            {
+                id: 27,
+                level: "N3",
+                kanji: "枚",
+                hanviet: "MAI",
+                meaning: "Tờ, tấm, lượng từ đếm vật mỏng dẹt",
+                onyomi: "マイ, バイ",
+                kunyomi: "-",
+                mnemonic: "Gồm bộ <strong>Mộc (木)</strong> và chữ <strong>Phốc (攵)</strong>.<br>💡 <em>Mẹo nhớ:</em> Dùng roi (Phốc 攵) xẻ thân cây gỗ (Mộc 木) thành từng tấm mỏng dẹt (MAI).",
+                vocab: [
+                    { word: "一枚", hanviet: "NHẤT MAI", reading: "いちまい", meaning: "Một tờ, một tấm" },
+                    { word: "枚数", hanviet: "MAI SỐ", reading: "まいすう", meaning: "Số tờ, số tấm" },
+                    { word: "千枚", hanviet: "THIÊN MAI", reading: "せんまい", meaning: "Một nghìn tờ" },
+                    { word: "二枚目", hanviet: "NHỊ MAI MỤC", reading: "にまいめ", meaning: "Anh chàng đẹp trai thanh lịch" },
+                    { word: "枚数計", hanviet: "MAI SỐ KẾ", reading: "まいすうけい", meaning: "Bộ đếm số lượng tờ" }
+                ]
+            },
+            {
+                id: 28,
+                level: "N3",
+                kanji: "燃",
+                hanviet: "NHIÊN",
+                meaning: "Cháy, thiêu đốt, bùng cháy",
+                onyomi: "ネン",
+                kunyomi: "もえる, もやす",
+                mnemonic: "Gồm bộ <strong>Hỏa (火)</strong> và chữ <strong>Nhiên (然)</strong>.<br>💡 <em>Mẹo nhớ:</em> Lửa (Hỏa 火) bùng cháy mãnh liệt một cách tự nhiên (Nhiên 然).",
+                vocab: [
+                    { word: "燃える", hanviet: "NHIÊN", reading: "もえる", meaning: "Cháy, bốc hỏa" },
+                    { word: "燃やす", hanviet: "NHIÊN", reading: "もやす", meaning: "Thiêu đốt, làm cháy" },
+                    { word: "燃料", hanviet: "NHIÊN LIỆU", reading: "ねんりょう", meaning: "Nhiên liệu, chất đốt" },
+                    { word: "燃焼", hanviet: "NHIÊN THIÊU", reading: "ねんしょう", meaning: "Sự đốt cháy, thiêu đốt" },
+                    { word: "不燃ゴミ", hanviet: "BẤT NHIÊN", reading: "ふねんごみ", meaning: "Rác không cháy được" }
+                ]
+            },
+            {
+                id: 29,
+                level: "N3",
+                kanji: "易",
+                hanviet: "DỊCH/DỊ",
+                meaning: "Dễ dàng, giao dịch, trao đổi",
+                onyomi: "エキ, イ",
+                kunyomi: "やさしい",
+                mnemonic: "Hình ảnh tượng hình của <strong>Con thằn lằn biến màu</strong> biến đổi dễ dàng.",
+                vocab: [
+                    { word: "易しい", hanviet: "DỊ", reading: "やさしい", meaning: "Dễ dàng, đơn giản" },
+                    { word: "貿易", hanviet: "MẬU DỊCH", reading: "ぼうえき", meaning: "Mậu dịch, thương mại quốc tế" },
+                    { word: "容易な", hanviet: "DUNG DỊ", reading: "よういな", meaning: "Dễ dàng, đơn giản" },
+                    { word: "簡易", hanviet: "GIẢN DỊ", reading: "かんい", meaning: "Giản dị, đơn giản hóa" },
+                    { word: "安易な", hanviet: "AN DỊ", reading: "あんいな", meaning: "Dễ dãi, quá đơn giản" }
+                ]
+            },
+            {
+                id: 30,
+                level: "N3",
+                kanji: "探",
+                hanviet: "THÁM",
+                meaning: "Tìm kiếm, do thám, điều tra",
+                onyomi: "タン",
+                kunyomi: "さがす, さぐる",
+                mnemonic: "Gồm bộ <strong>Thủ (扌)</strong> và chữ <strong>Thám (罙)</strong>.<br>💡 <em>Mẹo nhớ:</em> Dùng bàn tay (Thủ 扌) lần mò sâu trong hang tối để tìm kiếm (THÁM).",
+                vocab: [
+                    { word: "探す", hanviet: "THÁM", reading: "さがす", meaning: "Tìm kiếm (vật bị mất)" },
+                    { word: "探る", hanviet: "THÁM", reading: "さがる", meaning: "Lần mò, rà soát, điều tra" },
+                    { word: "探偵", hanviet: "THÁM TRINH", reading: "たんてい", meaning: "Thám tử tư" },
+                    { word: "探求", hanviet: "THÁM CẦU", reading: "たんきゅう", meaning: "Mưu cầu, tìm kiếm nghiên cứu" },
+                    { word: "探検", hanviet: "THÁM KIỂM", reading: "たんけん", meaning: "Thám hiểm vùng đất lạ" }
+                ]
+            }
+        ];
+    </script>
+
+    <script>
+        let appState = {
+            currentTab: 'dashboard',
+            currentLevel: 'N3',
+            fullVocab: [], // Danh sách chữ Hán gốc
+            vocabList: [], // Danh sách chữ Hán sau khi áp dụng bộ lọc Level & STT
+            learningStatus: {}, // Lưu SRS: 1=Mới, 2=Đang học, 3=Thuộc làu
+            
+            cardCurrentIndex: 0,
+            cardIsFlipped: false,
+            
+            quizCurrentIndex: 0,
+            quizScore: 0,
+            quizQuestions: [],
+            
+            writeCurrentWord: null,
+            writeIsChecked: false,
+            
+            filterStart: 1,
+            filterEnd: 30,
+            
+            speechVoice: null,
+            speechRate: 1.0,
+            autoPlaySound: false,
+            onlyUnlearned: false
+        };
+
+        let touchStartX = 0;
+        let isSwiping = false;
+        let confirmCallback = null;
+
+        // Khởi chạy ứng dụng
+        window.onload = function() {
+            initApp();
+        };
+
+        function initApp() {
+            // Kiểm tra và khôi phục CSDL từ LocalStorage nếu có phiên bản tùy chỉnh, ngược lại dùng mặc định
+            const savedKanjiDb = localStorage.getItem('azatango_custom_kanji_db');
+            if (savedKanjiDb) {
+                try {
+                    appState.fullVocab = JSON.parse(savedKanjiDb);
+                } catch(e) {
+                    appState.fullVocab = JSON.parse(JSON.stringify(KANJI_DATABASE));
+                }
+            } else {
+                appState.fullVocab = JSON.parse(JSON.stringify(KANJI_DATABASE));
+            }
+
+            // Đồng bộ tiến trình SRS
+            const savedStatus = localStorage.getItem('kanji_vocab_srs_status');
+            if (savedStatus) {
+                appState.learningStatus = JSON.parse(savedStatus);
+            } else {
+                appState.fullVocab.forEach(item => {
+                    appState.learningStatus[item.id] = 1; 
+                });
+                saveProgress();
+            }
+
+            // Đồng bộ tùy chọn bộ lọc học tập
+            const savedOnlyUnlearned = localStorage.getItem('kanji_vocab_only_unlearned');
+            if (savedOnlyUnlearned) {
+                appState.onlyUnlearned = (savedOnlyUnlearned === 'true');
+                const unlearnedCheckbox = document.getElementById('only-unlearned');
+                if (unlearnedCheckbox) unlearnedCheckbox.checked = appState.onlyUnlearned;
+            }
+
+            const savedAutoPlay = localStorage.getItem('kanji_vocab_autoplay');
+            if (savedAutoPlay) {
+                appState.autoPlaySound = (savedAutoPlay === 'true');
+                const autoplayCheckbox = document.getElementById('auto-play-sound');
+                if (autoplayCheckbox) autoplayCheckbox.checked = appState.autoPlaySound;
+            }
+
+            setLevelLimits();
+            initSpeechSynthesis();
+
+            document.addEventListener('keydown', handleGlobalKeydown);
+
+            switchTab('dashboard');
+        }
+
+        // Đặt lại ranh giới STT dựa trên trình độ chữ Hán
+        function setLevelLimits() {
+            const levelKanji = appState.fullVocab.filter(item => item.level === appState.currentLevel);
+            const total = levelKanji.length;
+
+            if (total > 0) {
+                appState.filterStart = 1;
+                appState.filterEnd = total;
+                document.getElementById('filter-start').value = 1;
+                document.getElementById('filter-end').value = total;
+            }
+            updateFilterLimitsInput();
+            applyRangeFilter();
+        }
+
+        function changeLevel(level) {
+            appState.currentLevel = level;
+            document.getElementById('level-badge').innerText = level;
+            document.getElementById('level-select').value = level;
+            setLevelLimits();
+            showToast(`Đã chuyển sang chữ Hán trình độ ${level}`, 'fa-layer-group');
+        }
+
+        function updateFilterLimitsInput() {
+            const levelKanji = appState.fullVocab.filter(item => item.level === appState.currentLevel);
+            const maxSTT = levelKanji.length;
+            const fStart = document.getElementById('filter-start');
+            const fEnd = document.getElementById('filter-end');
+            
+            fStart.max = maxSTT;
+            fEnd.max = maxSTT;
+
+            document.getElementById('dict-count').innerText = maxSTT;
+            setupQuickRanges(maxSTT);
+        }
+
+        function setupQuickRanges(maxSTT) {
+            const container = document.getElementById('quick-range-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const chunkSize = 10;
+            let currentStart = 1;
+
+            while (currentStart <= maxSTT) {
+                let currentEnd = Math.min(currentStart + chunkSize - 1, maxSTT);
+                const s = currentStart;
+                const e = currentEnd;
+
+                const btn = document.createElement('button');
+                btn.className = "px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-300 hover:bg-slate-800 hover:border-slate-700 font-bold transition-all";
+                btn.innerText = `Từ ${s} - ${e}`;
+                btn.onclick = function() { setQuickRange(s, e); };
+
+                container.appendChild(btn);
+                currentStart += chunkSize;
+            }
+        }
+
+        function setQuickRange(start, end) {
+            document.getElementById('filter-start').value = start;
+            document.getElementById('filter-end').value = end;
+            applyRangeFilter();
+            showToast(`Đã áp dụng khoảng học từ STT ${start} - ${end}`, "fa-filter");
+        }
+
+        function saveProgress() {
+            localStorage.setItem('kanji_vocab_srs_status', JSON.stringify(appState.learningStatus));
+            updateDashboardStats();
+        }
+
+        function importTSV() {
+            const rawText = document.getElementById('tsv-import-textarea').value.trim();
+            if (!rawText) {
+                showToast("Vui lòng dán dữ liệu bảng tính trước!", "fa-triangle-exclamation");
+                return;
+            }
+
+            const lines = rawText.split(/\r?\n/);
+            const imported = [];
+            let errorCount = 0;
+
+            lines.forEach((line, index) => {
+                const cleanLine = line.trim();
+                if (!cleanLine) return;
+
+                if (index === 0 && (cleanLine.includes("STT") || cleanLine.includes("Chữ Hán") || cleanLine.includes("Onyomi"))) {
+                    return;
+                }
+
+                const cols = cleanLine.split('\t');
+                if (cols.length >= 8) {
+                    const id = parseInt(cols[0].trim()) || (index + 1);
+                    const level = cols[1].trim().toUpperCase();
+                    const kanji = cols[2].trim();
+                    const hanviet = cols[3].trim();
+                    const meaning = cols[4].trim();
+                    const onyomi = cols[5].trim();
+                    const kunyomi = cols[6].trim();
+                    const mnemonic = cols[7].trim();
+
+                    const vocab = [];
+                    for (let i = 8; i < 13; i++) {
+                        if (cols[i] && cols[i].trim() !== '-' && cols[i].trim() !== '') {
+                            const parts = cols[i].split('|');
+                            if (parts.length >= 3) {
+                                vocab.push({
+                                    word: parts[0] ? parts[0].trim() : '',
+                                    hanviet: parts[1] ? parts[1].trim() : '',
+                                    reading: parts[2] ? parts[2].trim() : '',
+                                    meaning: parts[3] ? parts[3].trim() : ''
+                                });
+                            }
+                        }
+                    }
+
+                    imported.push({
+                        id: id,
+                        level: level,
+                        kanji: kanji,
+                        hanviet: hanviet,
+                        meaning: meaning,
+                        onyomi: onyomi,
+                        kunyomi: kunyomi,
+                        mnemonic: mnemonic,
+                        vocab: vocab
+                    });
+                } else {
+                    errorCount++;
+                }
+            });
+
+            if (imported.length > 0) {
+                let finalDb = [];
+                const savedKanjiDb = localStorage.getItem('azatango_custom_kanji_db');
+                if (savedKanjiDb) {
+                    try {
+                        const parsedDb = JSON.parse(savedKanjiDb);
+                        const importedLevels = [...new Set(imported.map(item => item.level))];
+                        const keptDb = parsedDb.filter(item => !importedLevels.includes(item.level));
+                        finalDb = [...keptDb, ...imported];
+                    } catch(e) {
+                        finalDb = [...imported];
+                    }
+                } else {
+                    finalDb = [...imported];
+                }
+
+                finalDb.sort((a, b) => {
+                    if (a.level !== b.level) return a.level.localeCompare(b.level);
+                    return a.id - b.id;
+                });
+
+                finalDb.forEach((item, idx) => {
+                    item.id = idx + 1;
+                });
+
+                localStorage.setItem('azatango_custom_kanji_db', JSON.stringify(finalDb));
+                showToast(`Nạp thành công ${imported.length} chữ Hán mới vào cơ sở dữ liệu!`, "fa-file-import");
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                showCustomConfirm("Lỗi định dạng", "Không tìm thấy cấu trúc cột Tab dán hợp lệ. Bạn nhớ bôi đen toàn bộ các dòng cột trên Drive rồi thử lại nhé!", null);
+            }
+        }
+
+        function restoreDefaultDatabase() {
+            showCustomConfirm(
+                "Khôi phục dữ liệu gốc",
+                "Hành động này sẽ xóa sạch kho dữ liệu tùy biến đã import của bạn và khôi phục tệp Kanji mặc định. Tiến trình ôn tập SRS vẫn được giữ nguyên. Tiếp tục?",
+                function() {
+                    localStorage.removeItem('azatango_custom_kanji_db');
+                    showToast("Đang phục hồi...", "fa-rotate-left");
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                }
+            );
+        }
+
+        function applyRangeFilter() {
+            const startVal = parseInt(document.getElementById('filter-start').value) || 1;
+            const endVal = parseInt(document.getElementById('filter-end').value) || 12;
+
+            appState.filterStart = startVal;
+            appState.filterEnd = endVal;
+
+            const levelKanji = appState.fullVocab.filter(item => item.level === appState.currentLevel);
+            let filteredQueue = levelKanji.filter((item, index) => {
+                const currentSTT = index + 1;
+                return currentSTT >= startVal && currentSTT <= endVal;
+            });
+
+            if (appState.onlyUnlearned) {
+                filteredQueue = filteredQueue.filter(item => (appState.learningStatus[item.id] || 1) !== 3);
+            }
+
+            appState.vocabList = filteredQueue;
+
+            if (appState.cardCurrentIndex >= appState.vocabList.length) {
+                appState.cardCurrentIndex = 0;
+            }
+
+            updateDashboardStats();
+            
+            if (appState.currentTab === 'flashcard') {
+                renderCurrentFlashcard();
+            }
+        }
+
+        function toggleOnlyUnlearned(checked) {
+            appState.onlyUnlearned = checked;
+            localStorage.setItem('kanji_vocab_only_unlearned', checked);
+            applyRangeFilter();
+            showToast(checked ? "Đã bật: Chỉ hiển thị chữ chưa thuộc" : "Đã tắt: Hiển thị tất cả chữ Hán", "fa-filter");
+        }
+
+        function updateDashboardStats() {
+            const levelKanji = appState.fullVocab.filter(item => item.level === appState.currentLevel);
+            const total = levelKanji.length;
+
+            let learning = 0;
+            let mastered = 0;
+            let news = 0;
+
+            levelKanji.forEach(item => {
+                const status = appState.learningStatus[item.id] || 1;
+                if (status === 1) news++;
+                else if (status === 2) learning++;
+                else if (status === 3) mastered++;
+            });
+
+            document.getElementById('total-words-count').innerText = total;
+            document.getElementById('learning-words-count').innerText = learning;
+            document.getElementById('mastered-words-count').innerText = mastered;
+            document.getElementById('new-words-count').innerText = news;
+
+            const percent = total > 0 ? Math.round((mastered / total) * 100) : 0;
+            document.getElementById('progress-percent').innerText = percent + '%';
+            
+            const circle = document.getElementById('progress-circle');
+            if (circle) {
+                const offset = 251.2 - (percent / 100) * 251.2;
+                circle.style.strokeDashoffset = offset;
+            }
+        }
+
+        // ==================== HỆ THỐNG PHÁT ÂM TTS ====================
+        function initSpeechSynthesis() {
+            if ('speechSynthesis' in window) {
+                let voices = window.speechSynthesis.getVoices();
+                populateVoiceList(voices);
+                if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                    window.speechSynthesis.onvoiceschanged = () => {
+                        populateVoiceList(window.speechSynthesis.getVoices());
+                    };
+                }
+            } else {
+                document.getElementById('voice-indicator').className = "hidden md:inline-flex items-center px-3 py-1.5 rounded-xl bg-rose-500/10 text-rose-400 text-xs font-bold border border-rose-500/20";
+                document.getElementById('voice-indicator').innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-400 mr-2"></span>TTS Lỗi`;
+            }
+        }
+
+        function populateVoiceList(voices) {
+            const select = document.getElementById('voice-select');
+            if (!select) return;
+            select.innerHTML = '';
+
+            const jaVoices = voices.filter(v => v.lang.toLowerCase().includes('ja'));
+
+            if (jaVoices.length > 0) {
+                jaVoices.forEach((voice, index) => {
+                    const option = document.createElement('option');
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    option.value = voice.name;
+                    if (index === 0) {
+                        appState.speechVoice = voice;
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
+                document.getElementById('voice-indicator').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>TTS Sẵn Sàng`;
+            } else {
+                const defaultOption = document.createElement('option');
+                defaultOption.textContent = "Sử dụng giọng mặc định hệ thống";
+                select.appendChild(defaultOption);
+                if (voices.length > 0) {
+                    appState.speechVoice = voices[0];
+                }
+            }
+        }
+
+        function toggleAudioSettings() {
+            document.getElementById('audio-settings-modal').classList.toggle('hidden');
+        }
+
+        function testSpeech() {
+            speakJapanese("あざたんご、漢字の勉強は面白いです。");
+        }
+
+        function speakJapanese(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                const select = document.getElementById('voice-select');
+                if (select && select.value) {
+                    const voices = window.speechSynthesis.getVoices();
+                    const selectedVoice = voices.find(v => v.name === select.value);
+                    if (selectedVoice) {
+                        utterance.voice = selectedVoice;
+                    }
+                } else if (appState.speechVoice) {
+                    utterance.voice = appState.speechVoice;
+                }
+
+                utterance.lang = 'ja-JP';
+                utterance.rate = parseFloat(document.getElementById('speech-rate').value) || 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function switchTab(tabId) {
+            const tabs = ['dashboard', 'flashcard', 'quiz', 'writing', 'dictionary'];
+            tabs.forEach(t => {
+                const element = document.getElementById(`tab-${t}`);
+                if (element) element.classList.add('hidden');
+                
+                const navBtn = document.getElementById(`nav-${t}`);
+                if (navBtn) {
+                    navBtn.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center text-slate-400 hover:text-white";
+                }
+                
+                const mNavBtn = document.getElementById(`m-nav-${t}`);
+                if (mNavBtn) {
+                    mNavBtn.className = "flex flex-col items-center p-2 text-xs font-semibold min-w-[72px] rounded-xl transition-all text-slate-400";
+                }
+            });
+
+            const activeTab = document.getElementById(`tab-${tabId}`);
+            if (activeTab) activeTab.classList.remove('hidden');
+
+            const activeNavBtn = document.getElementById(`nav-${tabId}`);
+            if (activeNavBtn) {
+                activeNavBtn.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center bg-indigo-600 text-white shadow-lg shadow-indigo-500/20";
+            }
+
+            const activeMNavBtn = document.getElementById(`m-nav-${tabId}`);
+            if (activeMNavBtn) {
+                activeMNavBtn.className = "flex flex-col items-center p-2 text-xs font-bold min-w-[72px] rounded-xl transition-all text-indigo-400 bg-slate-950/60";
+            }
+
+            appState.currentTab = tabId;
+
+            if (tabId === 'flashcard') {
+                appState.cardIsFlipped = false;
+                document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+                renderCurrentFlashcard();
+            } else if (tabId === 'quiz') {
+                startQuizMode();
+            } else if (tabId === 'writing') {
+                startWritingMode();
+            } else if (tabId === 'dictionary') {
+                filterDictionary();
+            }
+        }
+
+        // ==================== TAB 2: FLASHCARD VIEW LOGICS ====================
+        function handleCardClick(e) {
+            if (isSwiping) {
+                isSwiping = false;
+                return;
+            }
+            if (e.target.closest('button') || e.target.closest('i')) {
+                return;
+            }
+            flipCard();
+        }
+
+        function flipCard() {
+            appState.cardIsFlipped = !appState.cardIsFlipped;
+            const inner = document.getElementById('flashcard-inner');
+            if (appState.cardIsFlipped) {
+                inner.classList.add('rotate-y-180');
+            } else {
+                inner.classList.remove('rotate-y-180');
+            }
+        }
+
+        function speakTextEvent(event, type, customText = null) {
+            if (event) event.stopPropagation();
+            if (customText) {
+                speakJapanese(customText);
+                return;
+            }
+            const currentWord = appState.vocabList[appState.cardCurrentIndex];
+            if (!currentWord) return;
+
+            if (type === 'kanji') {
+                speakJapanese(currentWord.kanji);
+            }
+        }
+
+        function speakOnyomiEvent(event) {
+            if (event) event.stopPropagation();
+            const currentWord = appState.vocabList[appState.cardCurrentIndex];
+            if (!currentWord || currentWord.onyomi === '-') return;
+            const cleanOn = currentWord.onyomi.replace(/, /g, " 、 ");
+            speakJapanese(cleanOn);
+        }
+
+        function speakKunyomiEvent(event) {
+            if (event) event.stopPropagation();
+            const currentWord = appState.vocabList[appState.cardCurrentIndex];
+            if (!currentWord || currentWord.kunyomi === '-') return;
+            const cleanKun = currentWord.kunyomi.replace(/, /g, " 、 ");
+            speakJapanese(cleanKun);
+        }
+
+        function speakVocabEvent(event, reading) {
+            if (event) event.stopPropagation();
+            speakJapanese(reading);
+        }
+
+        function handleTouchStart(e) {
+            touchStartX = e.touches[0].clientX;
+            isSwiping = false;
+        }
+
+        function handleTouchMove(e) {
+            if (!touchStartX) return;
+            const diffX = e.touches[0].clientX - touchStartX;
+            if (Math.abs(diffX) > 15) {
+                isSwiping = true;
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (!touchStartX) return;
+            const diffX = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(diffX) > 50) {
+                if (diffX > 0) {
+                    navigateFlashcard(-1); 
+                } else {
+                    navigateFlashcard(1);  
+                }
+            }
+            touchStartX = 0;
+        }
+
+        function navigateFlashcard(direction) {
+            if (appState.vocabList.length === 0) return;
+
+            appState.cardIsFlipped = false;
+            document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+
+            setTimeout(() => {
+                appState.cardCurrentIndex += direction;
+
+                if (appState.cardCurrentIndex >= appState.vocabList.length) {
+                    appState.cardCurrentIndex = 0;
+                    showToast("Đã hết tệp học! Quay lại từ đầu.", "fa-arrows-spin");
+                } else if (appState.cardCurrentIndex < 0) {
+                    appState.cardCurrentIndex = appState.vocabList.length - 1;
+                    showToast("Xem chữ cuối cùng của tệp.", "fa-arrows-spin");
+                }
+
+                renderCurrentFlashcard();
+            }, 150);
+        }
+
+        function renderCurrentFlashcard() {
+            if (appState.vocabList.length === 0) {
+                document.getElementById('card-front-kanji').innerText = "Trống";
+                document.getElementById('card-back-kanji').innerText = "Trống";
+                document.getElementById('card-index-indicator').innerText = "0/0";
+                return;
+            }
+
+            const word = appState.vocabList[appState.cardCurrentIndex];
+            document.getElementById('card-index-indicator').innerText = `${appState.cardCurrentIndex + 1}/${appState.vocabList.length}`;
+            
+            document.getElementById('card-tag-stt').innerText = `STT: ${word.id}`;
+            document.getElementById('card-tag-stt-back').innerText = `STT: ${word.id}`;
+
+            document.getElementById('card-front-kanji').innerText = word.kanji;
+            document.getElementById('card-back-kanji').innerText = word.kanji;
+            document.getElementById('card-back-hanviet').innerText = word.hanviet;
+            document.getElementById('card-back-meaning').innerText = word.meaning;
+            document.getElementById('card-back-onyomi').innerText = word.onyomi;
+            document.getElementById('card-back-kunyomi').innerText = word.kunyomi;
+
+            document.getElementById('card-back-mnemonic').innerHTML = word.mnemonic || "Chưa có mẹo nhớ chi tiết cho chữ Hán này. Hãy nạp qua Google Sheets để lưu cấu trúc.";
+
+            const vocabContainer = document.getElementById('card-back-vocab-list');
+            vocabContainer.innerHTML = '';
+
+            if (word.vocab && word.vocab.length > 0) {
+                word.vocab.forEach(v => {
+                    const row = document.createElement('div');
+                    row.className = "flex items-center justify-between p-2 rounded-xl bg-slate-950/40 border border-slate-800 hover:border-indigo-500/20 transition-all";
+                    row.innerHTML = `
+                        <div class="flex-1 pr-1.5">
+                            <div class="flex items-center flex-wrap gap-1.5">
+                                <strong class="text-white text-sm font-bold">${v.word}</strong>
+                                <span class="text-[9px] bg-slate-800 text-indigo-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">${v.hanviet}</span>
+                                <span class="text-xs text-slate-400 font-medium font-mono">(${v.reading})</span>
+                            </div>
+                            <p class="text-xs text-slate-300 mt-0.5">${v.meaning}</p>
+                        </div>
+                        <button onclick="speakVocabEvent(event, '${v.reading}')" class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 text-indigo-400 flex items-center justify-center transition-all flex-shrink-0" title="Phát âm từ vựng">
+                            <i class="fa-solid fa-volume-high text-[10px]"></i>
+                        </button>
+                    `;
+                    vocabContainer.appendChild(row);
+                });
+            } else {
+                vocabContainer.innerHTML = `<p class="text-slate-500 italic text-[11px] text-center py-2">Không có từ vựng đi kèm.</p>`;
+            }
+
+            if (appState.autoPlaySound && !appState.cardIsFlipped) {
+                speakJapanese(word.kanji);
+            }
+        }
+
+        function rateWord(rating) {
+            if (appState.vocabList.length === 0) return;
+            const currentWord = appState.vocabList[appState.cardCurrentIndex];
+
+            if (rating === 1) {
+                appState.learningStatus[currentWord.id] = 2; 
+                showToast(`Đã lưu trạng thái: Cần học lại.`, "fa-clock");
+            } else if (rating === 2) {
+                appState.learningStatus[currentWord.id] = 2; 
+                showToast(`Đã đánh giá: Tàm tạm.`, "fa-star-half-stroke");
+            } else if (rating === 3) {
+                appState.learningStatus[currentWord.id] = 3; 
+                showToast(`Tuyệt vời! Bạn đã thuộc làu chữ Hán này.`, "fa-circle-check");
+            }
+
+            saveProgress();
+
+            if (appState.onlyUnlearned && rating === 3) {
+                applyRangeFilter();
+            } else {
+                navigateFlashcard(1);
+            }
+        }
+
+        // ==================== TAB 3: QUIZ MODE LOGICS ====================
+        function startQuizMode() {
+            if (appState.vocabList.length < 4) {
+                showToast("Bạn cần chọn khoảng có ít nhất 4 chữ Hán để tạo câu hỏi trắc nghiệm!", "fa-triangle-exclamation");
+                switchTab('dashboard');
+                return;
+            }
+
+            appState.quizCurrentIndex = 0;
+            appState.quizScore = 0;
+            appState.quizQuestions = [];
+
+            let listCopy = [...appState.vocabList];
+            listCopy.sort(() => Math.random() - 0.5);
+            const numQuestions = Math.min(10, listCopy.length);
+
+            for (let i = 0; i < numQuestions; i++) {
+                const target = listCopy[i];
+                let distractors = appState.fullVocab.filter(x => x.id !== target.id);
+                distractors.sort(() => Math.random() - 0.5);
+
+                const choices = [
+                    { text: target.meaning, isCorrect: true, origin: target },
+                    { text: distractors[0].meaning, isCorrect: false },
+                    { text: distractors[1].meaning, isCorrect: false },
+                    { text: distractors[2].meaning, isCorrect: false }
+                ];
+
+                choices.sort(() => Math.random() - 0.5);
+
+                appState.quizQuestions.push({
+                    target: target,
+                    choices: choices
+                });
+            }
+
+            renderQuizQuestion();
+        }
+
+        function renderQuizQuestion() {
+            if (appState.quizQuestions.length === 0) return;
+            const q = appState.quizQuestions[appState.quizCurrentIndex];
+
+            document.getElementById('quiz-progress-text').innerText = `${appState.quizCurrentIndex + 1}/${appState.quizQuestions.length}`;
+            document.getElementById('quiz-score-text').innerText = `${appState.quizScore}/${appState.quizQuestions.length}`;
+            document.getElementById('quiz-question-word').innerText = q.target.kanji;
+            document.getElementById('quiz-next-btn').classList.add('hidden');
+
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`quiz-option-${i}`);
+                const span = document.getElementById(`quiz-option-text-${i}`);
+                span.innerText = q.choices[i].text;
+                btn.disabled = false;
+                btn.className = "w-full text-slate-200 bg-slate-950 hover:bg-slate-800 border border-slate-800/80 rounded-xl p-4 font-semibold text-xs sm:text-sm transition-all text-left flex items-center justify-between active:scale-[0.99]";
+            }
+
+            if (appState.autoPlaySound) {
+                speakJapanese(q.target.kanji);
+            }
+        }
+
+        function speakQuizWord() {
+            if (appState.quizQuestions.length === 0) return;
+            const q = appState.quizQuestions[appState.quizCurrentIndex];
+            speakJapanese(q.target.kanji);
+        }
+
+        function checkQuizAnswer(idx) {
+            const q = appState.quizQuestions[appState.quizCurrentIndex];
+            
+            for (let i = 0; i < 4; i++) {
+                document.getElementById(`quiz-option-${i}`).disabled = true;
+            }
+
+            const chosen = q.choices[idx];
+            const correctIdx = q.choices.findIndex(x => x.isCorrect);
+
+            if (chosen.isCorrect) {
+                appState.quizScore++;
+                document.getElementById(`quiz-option-${idx}`).className = "w-full text-white bg-emerald-600 border-2 border-emerald-400 rounded-xl p-4 font-bold text-xs sm:text-sm transition-all text-left flex items-center justify-between";
+                showToast("Bạn đã trả lời chính xác!", "fa-circle-check");
+                appState.learningStatus[q.target.id] = 3; 
+            } else {
+                document.getElementById(`quiz-option-${idx}`).className = "w-full text-white bg-rose-600 border-2 border-rose-400 rounded-xl p-4 font-bold text-xs sm:text-sm transition-all text-left flex items-center justify-between";
+                document.getElementById(`quiz-option-${correctIdx}`).className = "w-full text-white bg-emerald-600 border-2 border-emerald-400 rounded-xl p-4 font-bold text-xs sm:text-sm transition-all text-left flex items-center justify-between animate-pulse";
+                showToast("Lựa chọn chưa đúng. Cố gắng lên nhé!", "fa-circle-xmark");
+                appState.learningStatus[q.target.id] = 2; 
+            }
+
+            saveProgress();
+            document.getElementById('quiz-score-text').innerText = `${appState.quizScore}/${appState.quizQuestions.length}`;
+            document.getElementById('quiz-next-btn').classList.remove('hidden');
+        }
+
+        function nextQuizQuestion() {
+            appState.quizCurrentIndex++;
+            if (appState.quizCurrentIndex >= appState.quizQuestions.length) {
+                showToast(`Kết thúc trắc nghiệm! Đúng ${appState.quizScore}/${appState.quizQuestions.length} câu.`, "fa-trophy");
+                setTimeout(() => {
+                    switchTab('dashboard');
+                }, 2000);
+            } else {
+                renderQuizQuestion();
+            }
+        }
+
+        // ==================== TAB 4: WRITING REFLEX LOGICS ====================
+        function startWritingMode() {
+            if (appState.vocabList.length === 0) {
+                showToast("Vui lòng thiết lập khoảng học hợp lệ trước!", "fa-triangle-exclamation");
+                switchTab('dashboard');
+                return;
+            }
+
+            const randIdx = Math.floor(Math.random() * appState.vocabList.length);
+            appState.writeCurrentWord = appState.vocabList[randIdx];
+            appState.writeIsChecked = false;
+
+            document.getElementById('write-user-input').value = '';
+            document.getElementById('write-user-input').disabled = false;
+            document.getElementById('write-user-input').className = "w-full text-center bg-slate-950 border border-slate-800 rounded-xl py-4 px-4 text-white text-lg font-bold placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500";
+            
+            document.getElementById('write-feedback-box').classList.add('hidden');
+            document.getElementById('write-extra-info').classList.add('hidden');
+            document.getElementById('write-action-btn').innerText = "Kiểm tra kết quả";
+
+            document.getElementById('write-question-kanji').innerText = appState.writeCurrentWord.kanji;
+            document.getElementById('write-question-meaning').innerText = `Nghĩa: ${appState.writeCurrentWord.meaning}`;
+
+            if (appState.autoPlaySound) {
+                speakJapanese(appState.writeCurrentWord.kanji);
+            }
+
+            setTimeout(() => {
+                document.getElementById('write-user-input').focus();
+            }, 100);
+        }
+
+        function handleWritingKeyDown(e) {
+            if (e.key === 'Enter') {
+                if (appState.writeIsChecked) {
+                    startWritingMode();
+                } else {
+                    checkWritingAnswer();
+                }
+            }
+        }
+
+        function checkWritingAnswer() {
+            if (!appState.writeCurrentWord) return;
+
+            if (appState.writeIsChecked) {
+                startWritingMode();
+                return;
+            }
+
+            const input = document.getElementById('write-user-input').value.trim().toUpperCase();
+            
+            const normalizeString = (str) => {
+                return str.normalize("NFD")
+                          .replace(/[\u0300-\u036f]/g, "")
+                          .replace(/Đ/g, "D")
+                          .replace(/[^A-Z]/g, "")
+                          .toUpperCase();
+            };
+
+            const dbHanVietClean = normalizeString(appState.writeCurrentWord.hanviet);
+            const userHanVietClean = normalizeString(input);
+
+            const isCorrect = (input === appState.writeCurrentWord.hanviet.toUpperCase()) || 
+                              (userHanVietClean === dbHanVietClean);
+
+            appState.writeIsChecked = true;
+
+            const fBox = document.getElementById('write-feedback-box');
+            const fIcon = document.getElementById('write-feedback-icon');
+            const fTitle = document.getElementById('write-feedback-title');
+            const fDetail = document.getElementById('write-feedback-detail');
+            const inputField = document.getElementById('write-user-input');
+
+            fBox.classList.remove('hidden');
+            inputField.disabled = true;
+
+            if (isCorrect) {
+                fBox.className = "p-4 rounded-xl text-left space-y-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/25";
+                fIcon.className = "fa-solid fa-circle-check text-emerald-400";
+                fTitle.innerText = "Tuyệt vời, chính xác!";
+                fDetail.innerHTML = `Chữ <strong class="text-white">${appState.writeCurrentWord.kanji}</strong> có âm Hán Việt là: <strong class="text-white text-base">${appState.writeCurrentWord.hanviet}</strong>`;
+                inputField.className = "w-full text-center bg-emerald-950/20 border-2 border-emerald-500 rounded-xl py-4 px-4 text-emerald-400 text-lg font-bold";
+                speakJapanese(appState.writeCurrentWord.kanji);
+                appState.learningStatus[appState.writeCurrentWord.id] = 3;
+            } else {
+                fBox.className = "p-4 rounded-xl text-left space-y-2 bg-rose-500/10 text-rose-400 border border-rose-500/25";
+                fIcon.className = "fa-solid fa-circle-xmark text-rose-400";
+                fTitle.innerText = "Chưa chính xác rồi!";
+                fDetail.innerHTML = `Đáp án đúng là: <strong class="text-white text-base">${appState.writeCurrentWord.hanviet}</strong>`;
+                inputField.className = "w-full text-center bg-rose-950/20 border-2 border-rose-500 rounded-xl py-4 px-4 text-rose-400 text-lg font-bold";
+                appState.learningStatus[appState.writeCurrentWord.id] = 2;
+            }
+
+            saveProgress();
+
+            const extraInfo = document.getElementById('write-extra-info');
+            const extraList = document.getElementById('write-vocab-highlight');
+            extraList.innerHTML = '';
+            
+            if (appState.writeCurrentWord.vocab && appState.writeCurrentWord.vocab.length > 0) {
+                extraInfo.classList.remove('hidden');
+                appState.writeCurrentWord.vocab.slice(0, 3).forEach(v => {
+                    const el = document.createElement('p');
+                    el.className = "text-xs text-slate-300";
+                    el.innerHTML = `• <strong class="text-white">${v.word}</strong> (${v.hanviet} - ${v.reading}): ${v.meaning}`;
+                    extraList.appendChild(el);
+                });
+            }
+
+            document.getElementById('write-action-btn').innerText = "Tiếp tục thử thách";
+        }
+
+        function skipWritingWord() {
+            startWritingMode();
+            showToast("Đã đổi chữ Hán khác.", "fa-forward");
+        }
+
+        // ==================== TAB 5: DICTIONARY LOGICS ====================
+        function filterDictionary() {
+            const container = document.getElementById('dictionary-container');
+            if (!container) return;
+
+            const query = document.getElementById('dict-search').value.toLowerCase().trim();
+            const statusFilter = document.getElementById('dict-filter-status').value;
+
+            container.innerHTML = '';
+
+            const levelKanji = appState.fullVocab.filter(item => item.level === appState.currentLevel);
+
+            const filtered = levelKanji.filter(item => {
+                const matchesSearch = 
+                    item.kanji.toLowerCase().includes(query) ||
+                    item.hanviet.toLowerCase().includes(query) ||
+                    item.meaning.toLowerCase().includes(query) ||
+                    item.onyomi.toLowerCase().includes(query) ||
+                    item.kunyomi.toLowerCase().includes(query);
+
+                const status = appState.learningStatus[item.id] || 1;
+                let matchesStatus = true;
+                if (statusFilter === 'new') matchesStatus = (status === 1);
+                else if (statusFilter === 'learning') matchesStatus = (status === 2);
+                else if (statusFilter === 'mastered') matchesStatus = (status === 3);
+
+                return matchesSearch && matchesStatus;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-slate-500">
+                        <i class="fa-solid fa-magnifying-glass text-4xl mb-3 block"></i>
+                        Không tìm thấy chữ Hán nào phù hợp điều kiện.
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                const status = appState.learningStatus[item.id] || 1;
+                
+                let badge = '';
+                if (status === 1) {
+                    badge = '<span class="text-[9px] bg-slate-800 text-slate-400 font-bold px-2.5 py-1 rounded-lg border border-slate-700">Mới</span>';
+                } else if (status === 2) {
+                    badge = '<span class="text-[9px] bg-amber-500/10 text-amber-400 font-bold px-2.5 py-1 rounded-lg border border-amber-500/20">Đang học</span>';
+                } else if (status === 3) {
+                    badge = '<span class="text-[9px] bg-emerald-500/10 text-emerald-400 font-bold px-2.5 py-1 rounded-lg border border-emerald-500/20">Thuộc lòng</span>';
+                }
+
+                card.className = "bg-slate-900 p-5 rounded-2xl border border-slate-800 hover:border-indigo-500/30 transition-all flex flex-col justify-between space-y-4 shadow-lg";
+                
+                let vocabHTML = '';
+                if (item.vocab && item.vocab.length > 0) {
+                    item.vocab.forEach(v => {
+                        vocabHTML += `
+                            <p class="text-[11px] text-slate-300 leading-relaxed">
+                                • <strong class="text-white">${v.word}</strong> [${v.hanviet}] (${v.reading}): ${v.meaning}
+                            </p>
+                        `;
+                    });
+                } else {
+                    vocabHTML = '<p class="text-[11px] text-slate-500 italic">Chưa có ví dụ.</p>';
+                }
+
+                card.innerHTML = `
+                    <div class="space-y-3 text-left">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-500">STT: ${item.id}</span>
+                            <div class="flex items-center space-x-2">
+                                ${badge}
+                                <button onclick="speakJapanese('${item.kanji}')" class="w-8 h-8 rounded-full bg-slate-950 border border-slate-800 hover:bg-slate-800 text-indigo-400 flex items-center justify-center transition-colors">
+                                    <i class="fa-solid fa-volume-high text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="text-xs font-bold text-slate-400 block">${item.hanviet}</span>
+                            <h4 class="text-3xl font-black text-white leading-tight mt-0.5">${item.kanji}</h4>
+                            <p class="text-sm text-slate-300 font-semibold mt-1">${item.meaning}</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
+                            <div class="bg-slate-950/60 p-2  rounded-lg border border-slate-800/60">
+                                <span class="text-[8px] font-bold text-slate-500 block uppercase">Onyomi:</span>
+                                <span class="text-xs text-slate-200 font-bold">${item.onyomi}</span>
+                            </div>
+                            <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800/60">
+                                <span class="text-[8px] font-bold text-slate-500 block uppercase">Kunyomi:</span>
+                                <span class="text-xs text-slate-200 font-bold">${item.kunyomi}</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-indigo-950/20 p-3 rounded-xl border border-indigo-500/10 space-y-1">
+                            <span class="text-[8px] font-bold text-indigo-400 block uppercase flex items-center"><i class="fa-solid fa-lightbulb mr-1 text-indigo-400"></i>Mẹo ghi nhớ:</span>
+                            <p class="text-xs text-slate-300 leading-relaxed">${item.mnemonic || "Chưa có mẹo nhớ chi tiết."}</p>
+                        </div>
+
+                        <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
+                            <span class="text-[9px] font-bold text-amber-400 uppercase tracking-widest block">5 Từ vựng ví dụ ghép:</span>
+                            <div class="space-y-1">
+                                ${vocabHTML}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ==================== BINDINGS TIỆN ÍCH KHÁC ====================
+        function handleGlobalKeydown(e) {
+            if (appState.currentTab !== 'flashcard' || appState.vocabList.length === 0) return;
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT' || document.activeElement.tagName === 'TEXTAREA') return;
+
+            if (e.code === 'Space') {
+                e.preventDefault();
+                flipCard();
+            } else if (e.key === 'ArrowRight') {
+                navigateFlashcard(1);
+            } else if (e.key === 'ArrowLeft') {
+                navigateFlashcard(-1);
+            } else if (e.key === '1') {
+                rateWord(1);
+            } else if (e.key === '2') {
+                rateWord(2);
+            } else if (e.key === '3') {
+                rateWord(3);
+            }
+        }
+
+        function showCustomConfirm(title, message, callback) {
+            document.getElementById('confirm-title').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-500 mr-2.5"></i>${title}`;
+            document.getElementById('confirm-message').innerText = message;
+            confirmCallback = callback;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function closeCustomConfirm(isOk) {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            if (isOk && confirmCallback) {
+                confirmCallback();
+            }
+            confirmCallback = null;
+        }
+
+        function showToast(text, iconClass = "fa-circle-info") {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toast-text');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastText.innerText = text;
+            toastIcon.className = `fa-solid ${iconClass} text-indigo-400`;
+
+            toast.classList.remove('opacity-0', 'translate-y-10');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-10');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
