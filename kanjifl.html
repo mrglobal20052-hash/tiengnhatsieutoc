@@ -65,21 +65,19 @@
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white antialiased">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white antialiased font-sans">
 
     <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
-                <div class="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                    <span id="level-badge" class="text-white font-black text-lg tracking-tight">N3</span>
-                </div>
-                <div>
-                    <h1 class="font-black text-lg leading-tight text-white tracking-wide">AZATANGO Kanji Pro</h1>
+		<i class="fas fa-torii-gate text-3xl text-white-400"></i>                   
+             <div>
+                    <h1 class="font-black text-lg leading-tight text-white tracking-wide">AZAKANJI Pro</h1>
                     <p class="text-[10px] text-indigo-400 font-semibold uppercase tracking-wider">Học Chữ Hán Thông Minh</p>
                 </div>
             </div>
             
-            <nav class="hidden lg:flex space-x-1 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+            <nav class="hidden lg:flex space-x-1 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
                 <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center">
                     <i class="fa-solid fa-chart-pie mr-2 text-sm"></i>Tổng quan
                 </button>
@@ -168,6 +166,72 @@
                 </div>
                 <p class="text-[11px] text-slate-500 italic leading-relaxed">Lưu ý: Chất lượng phụ thuộc vào bộ tổng hợp giọng nói Nhật ngữ được cài sẵn trên trình duyệt và thiết bị của bạn.</p>
             </div>
+        </div>
+    </div>
+
+    <!-- Writing Stroke Guide Modal -->
+    <div id="writing-guide-modal" class="hidden fixed inset-0 z-[120] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl p-6 shadow-2xl relative flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            
+            <!-- Modal Header -->
+            <div class="bg-sky-600 text-white px-6 py-4 rounded-t-2xl flex justify-between items-center -mx-6 -mt-6 mb-5 shadow-md">
+                <h3 class="text-base sm:text-lg font-black flex items-center">
+                    <i class="fa-solid fa-file-signature mr-2.5"></i>Tập Viết: 
+                    <span id="write-modal-title-kanji" class="text-2xl ml-2 font-black text-yellow-300 font-mono">頭</span>
+                </h3>
+                <button onclick="closeWritingModal()" class="w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 text-white flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- Loading indicator -->
+            <div id="writing-guide-modal-loading" class="py-16 flex flex-col items-center justify-center space-y-4">
+                <div class="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-sm text-slate-400 font-medium">Đang khởi tạo hướng dẫn nét viết...</p>
+            </div>
+
+            <!-- Modal Content Layout -->
+            <div id="writing-guide-modal-content" class="hidden flex-1 overflow-y-auto space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start pb-2">
+                    
+                    <!-- Cột trái: MÔ PHỎNG NÉT VẼ VÀ BẢNG VẼ TƯƠNG TÁC -->
+                    <div class="md:col-span-5 flex flex-col items-center space-y-3">
+                        <span class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center">
+                            <i class="fa-solid fa-wand-magic-sparkles text-sky-400 mr-2 animate-pulse"></i>Mô Phỏng & Tập Viết Đè
+                        </span>
+                        
+                        <!-- Stroke animation & practice drawing container -->
+                        <div class="relative w-72 h-72 sm:w-80 sm:h-80 mx-auto border-2 border-slate-800 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center shadow-inner">
+                            <!-- Dashed Grid Lines and animated SVG Paths -->
+                            <div id="stroke-simulation-svg-container" class="absolute inset-0 pointer-events-none p-4"></div>
+                            <!-- Live practice layer -->
+                            <canvas id="writing-practice-canvas" class="absolute inset-0 z-10 cursor-crosshair"></canvas>
+                        </div>
+                        
+                        <p class="text-[10px] text-slate-400 italic text-center max-w-xs">Mẹo: Bạn có thể dùng chuột hoặc ngón tay viết trực tiếp đè lên khung mô phỏng để thực hành.</p>
+                        
+                        <button onclick="clearWritingCanvas()" class="px-5 py-2.5 bg-slate-950 hover:bg-slate-850 text-slate-300 font-bold text-xs rounded-xl border border-slate-800 hover:border-slate-700 transition-colors flex items-center space-x-1.5 active:scale-95 shadow-md">
+                            <i class="fa-solid fa-rotate-left text-sky-400"></i>
+                            <span>Viết lại / Phát lại nét</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Cột phải: THỨ TỰ TỪNG NÉT VẼ TUẦN TỰ -->
+                    <div class="md:col-span-7 space-y-3">
+                        <span class="text-xs font-black text-slate-400 uppercase tracking-widest block text-left">
+                            <i class="fa-solid fa-list-ol text-indigo-400 mr-2"></i>Thứ Tự Nét Vẽ (Từng Bước)
+                        </span>
+                        
+                        <div class="bg-slate-950/60 rounded-2xl p-4 border border-slate-800/80 max-h-[350px] overflow-y-auto">
+                            <div class="grid grid-cols-4 sm:grid-cols-5 gap-3" id="stroke-steps-container">
+                                <!-- Dynamic sequence cells -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
         </div>
     </div>
 
@@ -350,7 +414,7 @@
                             <span>Chỉ chữ chưa thuộc</span>
                         </label>
                         <label class="flex items-center space-x-1.5 cursor-pointer select-none font-semibold">
-                            <input type="checkbox" id="auto-play-sound" class="rounded-lg bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0 focus:ring-offset-0 w-4 h-4 cursor-pointer">
+                            <input type="checkbox" id="auto-play-sound" class="rounded-lg bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0 focus:ring-offset-0 w-4 h-4 cursor-pointer" onchange="toggleAutoPlaySound(this.checked)">
                             <span>Tự phát âm</span>
                         </label>
                         <button onclick="shuffleCurrentDeck()" class="text-slate-400 hover:text-white transition-colors flex items-center font-semibold">
@@ -370,7 +434,7 @@
                     <div class="perspective-1000 w-full h-96 sm:h-[450px] cursor-pointer relative" onclick="handleCardClick(event)" ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event)" ontouchend="handleTouchEnd(event)">
                         <div id="flashcard-inner" class="w-full h-full transform-style-3d transition-transform duration-500 relative rounded-2xl shadow-2xl border border-slate-800">
                             
-                            <!-- MẶT TRƯỚC (Đã loại bỏ hoàn toàn text phụ gây mất tập trung theo hình ảnh mẫu) -->
+                            <!-- MẶT TRƯỚC -->
                             <div class="absolute inset-0 backface-hidden bg-slate-900 rounded-2xl p-6 flex flex-col justify-between">
                                 <div class="flex justify-between items-center">
                                     <span class="text-[10px] font-bold bg-indigo-500/10 text-indigo-400 px-3 py-1.5 rounded-xl border border-indigo-500/20" id="card-tag-stt">STT: --</span>
@@ -388,25 +452,26 @@
                                 </div>
                             </div>
 
-                            <!-- MẶT SAU (Giao diện tích hợp Loa phát âm biệt lập và mẹo nhớ phân tách bộ thủ) -->
+                            <!-- MẶT SAU (Tích hợp Nút Cây Bút viết chữ tương tự Hình 3 thay cho nút loa cũ) -->
                             <div class="absolute inset-0 backface-hidden rotate-y-180 bg-slate-900 rounded-2xl p-6 flex flex-col justify-between border-2 border-indigo-500/20 overflow-hidden">
                                 <div class="flex justify-between items-center">
                                     <span class="text-[10px] font-bold bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-xl border border-emerald-500/20" id="card-tag-stt-back">STT: --</span>
                                     <div class="flex space-x-2">
-                                        <button onclick="speakTextEvent(event, 'kanji')" class="w-8 h-8 rounded-full bg-slate-950 border border-slate-800 hover:bg-slate-800 text-indigo-400 flex items-center justify-center transition-all" title="Phát âm chữ Hán">
-                                            <i class="fa-solid fa-volume-high text-xs"></i>
+                                        <!-- Pen nib icon (White circle, Sky Blue text & shadow based on Image 3) -->
+                                        <button onclick="openWritingModalEvent(event)" class="w-9 h-9 rounded-full bg-white text-sky-500 hover:bg-sky-50 hover:text-sky-600 flex items-center justify-center transition-all shadow-lg border border-sky-100" title="Xem sơ đồ tập viết từng nét">
+                                            <i class="fa-solid fa-pen-nib text-sm"></i>
                                         </button>
                                     </div>
                                 </div>
 
-                                <div class="space-y-3 overflow-y-auto max-h-[82%] pr-1 text-left scrollbar-thin">
+                                <div class="space-y-3 overflow-y-auto max-h-[78%] pr-1.5 text-left scrollbar-thin">
                                     <div class="text-center">
-                                        <h3 class="text-4xl font-black text-white tracking-wide" id="card-back-kanji">--</h3>
+                                        <h3 class="text-4xl font-black text-white tracking-wide animate-fade" id="card-back-kanji">--</h3>
                                         <span class="text-xs font-black tracking-widest text-indigo-400 uppercase" id="card-back-hanviet">--</span>
                                         <p class="text-sm text-slate-300 font-bold mt-1" id="card-back-meaning">--</p>
                                     </div>
 
-                                    <!-- Onyomi & Kunyomi (Tích hợp Loa phát âm trực tiếp vào từng thẻ như image_a6bce6.png) -->
+                                    <!-- Onyomi & Kunyomi -->
                                     <div class="grid grid-cols-2 gap-2 pt-1">
                                         <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
                                             <div>
@@ -436,11 +501,11 @@
                                         <p class="text-xs text-slate-200 leading-relaxed" id="card-back-mnemonic">--</p>
                                     </div>
 
-                                    <!-- 5 Từ vựng liên quan rộng mở (Đã sửa lỗi Romaji và bao gồm Hán Việt chi tiết) -->
+                                    <!-- 5 Từ vựng liên quan (Giao diện cải tiến chữ to rõ dễ đọc trên di động theo Hình 5) -->
                                     <div class="pt-2 border-t border-slate-800/80">
-                                        <span class="text-[9px] font-black text-amber-400 uppercase tracking-wider block mb-1.5"><i class="fa-solid fa-book-bookmark mr-1"></i>5 Từ vựng liên quan (Đọc chuẩn xác):</span>
-                                        <div id="card-back-vocab-list" class="space-y-1.5">
-                                            <!-- JS Renders 5 Vocabs -->
+                                        <span class="text-[9px] font-black text-amber-400 uppercase tracking-wider block mb-2"><i class="fa-solid fa-book-bookmark mr-1"></i>5 Từ vựng liên quan (Đọc chuẩn xác):</span>
+                                        <div id="card-back-vocab-list" class="space-y-3">
+                                            <!-- JS Renders 5 Vocabs with larger layout -->
                                         </div>
                                     </div>
                                 </div>
@@ -671,7 +736,7 @@
                     { word: "次回", hanviet: "THỨ HỒI", reading: "じかい", meaning: "Lần sau" },
                     { word: "目次", hanviet: "MỤC THỨ", reading: "もくじ", meaning: "Mục lục" },
                     { word: "次女", hanviet: "THỨ NỮ", reading: "じじょ", meaning: "Con gái thứ hai" },
-                    { word: "次第に", hanviet: "THỨ ĐỆ", reading: "しだいに", meaning: "Dần dần, từng bước" }
+                    { word: "次第に", hanviet: "THỨ ĐỆ", reading: "しđãいに", meaning: "Dần dần, từng bước" }
                 ]
             },
             {
@@ -874,7 +939,7 @@
                     { word: "悩む", hanviet: "NÃO", reading: "なやむ", meaning: "Lo nghĩ, trăn trở" },
                     { word: "悩み", hanviet: "NÃO", reading: "なやみ", meaning: "Nỗi khổ tâm, lo lắng" },
                     { word: "苦悩", hanviet: "KHỔ NÃO", reading: "くのう", meaning: "Khổ não, đau khổ" },
-                    { word: "悩ます", hanviet: "NÃO", reading: "なやます", meaning: "Làm phiền lòng, gây đau đầu" },
+                    { word: "悩masu", hanviet: "NÃO", reading: "なやます", meaning: "Làm phiền lòng, gây đau đầu" },
                     { word: "煩悩", hanviet: "PHIỀN NÃO", reading: "ぼんのう", meaning: "Phiền não trong tâm trí" }
                 ]
             },
@@ -926,7 +991,7 @@
                     { word: "苦労", hanviet: "KHỔ LAO", reading: "くろう", meaning: "Khó khăn, gian khổ" },
                     { word: "疲労", hanviet: "BÌ LAO", reading: "ひろう", meaning: "Mệt mỏi, kiệt sức" },
                     { word: "心労", hanviet: "TÂM LAO", reading: "しんろう", meaning: "Lo lắng, lao tâm khổ tứ" },
-                    { word: "労力", hanviet: "LAO LỰC", reading: "ろうりょく", meaning: "Sức lực lao động" }
+                    { word: "労力", hanviet: "LAO LỰC", reading: "ろうryoku", meaning: "Sức lực lao động" }
                 ]
             },
             {
@@ -1008,7 +1073,7 @@
                 mnemonic: "Gồm bộ <strong>Huyệt (穴)</strong> và chữ <strong>Khuyển (犬)</strong>.<br>💡 <em>Mẹo nhớ:</em> Con chó (Khuyển 犬) đột ngột (ĐỘT) từ trong hang (Huyệt 穴) lao vút ra ngoài.",
                 vocab: [
                     { word: "突く", hanviet: "ĐỘT", reading: "つく", meaning: "Đâm, chọc, va chạm" },
-                    { word: "突然", hanviet: "ĐỘT NHIÊN", reading: "とつぜん", meaning: "Đột nhiên, bất ngờ" },
+                    { word: "突然", hanviet: "ĐỘT NHIÊN", reading: "toつぜん", meaning: "Đột nhiên, bất ngờ" },
                     { word: "衝突", hanviet: "XUNG ĐỘT", reading: "しょうとつ", meaning: "Xung đột, va chạm xe" },
                     { word: "突進", hanviet: "ĐỘT TIẾN", reading: "とっしん", meaning: "Lao lên phía trước, đột tiến" },
                     { word: "突破", hanviet: "ĐỘT PHÁ", reading: "とっぱ", meaning: "Đột phá, vượt qua ranh giới" }
@@ -1140,7 +1205,7 @@
                 hanviet: "DỊCH/DỊ",
                 meaning: "Dễ dàng, giao dịch, trao đổi",
                 onyomi: "エキ, イ",
-                kunyomi: "やさしい",
+                kunyomi: "やasしい",
                 mnemonic: "Hình ảnh tượng hình của <strong>Con thằn lằn biến màu</strong> biến đổi dễ dàng.",
                 vocab: [
                     { word: "易しい", hanviet: "DỊ", reading: "やさしい", meaning: "Dễ dàng, đơn giản" },
@@ -1161,10 +1226,10 @@
                 mnemonic: "Gồm bộ <strong>Thủ (扌)</strong> và chữ <strong>Thám (罙)</strong>.<br>💡 <em>Mẹo nhớ:</em> Dùng bàn tay (Thủ 扌) lần mò sâu trong hang tối để tìm kiếm (THÁM).",
                 vocab: [
                     { word: "探す", hanviet: "THÁM", reading: "さがす", meaning: "Tìm kiếm (vật bị mất)" },
-                    { word: "探る", hanviet: "THÁM", reading: "さがる", meaning: "Lần mò, rà soát, điều tra" },
+                    { word: "探る", hanviet: "THÁM", reading: "さぐる", meaning: "Lần mò, rà soát, điều tra" },
                     { word: "探偵", hanviet: "THÁM TRINH", reading: "たんてい", meaning: "Thám tử tư" },
                     { word: "探求", hanviet: "THÁM CẦU", reading: "たんきゅう", meaning: "Mưu cầu, tìm kiếm nghiên cứu" },
-                    { word: "探検", hanviet: "THÁM KIỂM", reading: "たんけん", meaning: "Thám hiểm vùng đất lạ" }
+                    { word: "探ken", hanviet: "THÁM KIỂM", reading: "たんけん", meaning: "Thám hiểm vùng đất lạ" }
                 ]
             }
         ];
@@ -1196,6 +1261,14 @@
             autoPlaySound: false,
             onlyUnlearned: false
         };
+
+        // Biến vẽ Canvas / Hoạt họa nét viết
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let canvasCtx = null;
+        let simAnimationTimeouts = [];
+        let simAnimationTimer = null;
 
         let touchStartX = 0;
         let isSwiping = false;
@@ -1472,6 +1545,12 @@
             showToast(checked ? "Đã bật: Chỉ hiển thị chữ chưa thuộc" : "Đã tắt: Hiển thị tất cả chữ Hán", "fa-filter");
         }
 
+        function toggleAutoPlaySound(checked) {
+            appState.autoPlaySound = checked;
+            localStorage.setItem('kanji_vocab_autoplay', checked);
+            showToast(checked ? "Đã bật tự động phát âm" : "Đã tắt tự động phát âm", "fa-volume-high");
+        }
+
         function updateDashboardStats() {
             const levelKanji = appState.fullVocab.filter(item => item.level === appState.currentLevel);
             const total = levelKanji.length;
@@ -1577,6 +1656,45 @@
             }
         }
 
+        function playKunyomiAudio() {
+            const currentWord = appState.vocabList[appState.cardCurrentIndex];
+            if (!currentWord) return;
+            
+            // Nếu Kunyomi có tồn tại và hợp lệ, phát âm Kunyomi, ngược lại phát âm chữ Hán gốc
+            if (currentWord.kunyomi && currentWord.kunyomi !== '-') {
+                const cleanKun = currentWord.kunyomi.replace(/, /g, " 、 ");
+                speakJapanese(cleanKun);
+            } else {
+                speakJapanese(currentWord.kanji);
+            }
+        }
+
+        function shuffleCurrentDeck() {
+            if (appState.vocabList.length <= 1) return;
+            appState.vocabList.sort(() => Math.random() - 0.5);
+            appState.cardCurrentIndex = 0;
+            appState.cardIsFlipped = false;
+            document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+            renderCurrentFlashcard();
+            showToast("Đã trộn ngẫu nhiên danh sách thẻ!", "fa-shuffle");
+        }
+
+        function resetAllProgress() {
+            showCustomConfirm(
+                "Xác nhận đặt lại",
+                "Hành động này sẽ xóa sạch toàn bộ tiến trình thuộc lòng và lịch sử học tập SRS của bạn. Bạn có muốn tiếp tục?",
+                function() {
+                    appState.learningStatus = {};
+                    appState.fullVocab.forEach(item => {
+                        appState.learningStatus[item.id] = 1;
+                    });
+                    saveProgress();
+                    applyRangeFilter();
+                    showToast("Đã xóa sạch tiến trình học tập!", "fa-trash-can");
+                }
+            );
+        }
+
         function switchTab(tabId) {
             const tabs = ['dashboard', 'flashcard', 'quiz', 'writing', 'dictionary'];
             tabs.forEach(t => {
@@ -1639,8 +1757,15 @@
             const inner = document.getElementById('flashcard-inner');
             if (appState.cardIsFlipped) {
                 inner.classList.add('rotate-y-180');
+                // Khi check tự phát âm và lật thẻ ra mặt sau -> Mặc định phát âm Kunyomi
+                if (appState.autoPlaySound) {
+                    playKunyomiAudio();
+                }
             } else {
                 inner.classList.remove('rotate-y-180');
+                if (appState.autoPlaySound) {
+                    speakJapanese(appState.vocabList[appState.cardCurrentIndex].kanji);
+                }
             }
         }
 
@@ -1749,24 +1874,25 @@
 
             document.getElementById('card-back-mnemonic').innerHTML = word.mnemonic || "Chưa có mẹo nhớ chi tiết cho chữ Hán này. Hãy nạp qua Google Sheets để lưu cấu trúc.";
 
+            // Kết xuất danh sách từ vựng liên quan với kích thước chữ to rõ phục vụ di động (Hình 5)
             const vocabContainer = document.getElementById('card-back-vocab-list');
             vocabContainer.innerHTML = '';
 
             if (word.vocab && word.vocab.length > 0) {
                 word.vocab.forEach(v => {
                     const row = document.createElement('div');
-                    row.className = "flex items-center justify-between p-2 rounded-xl bg-slate-950/40 border border-slate-800 hover:border-indigo-500/20 transition-all";
+                    row.className = "flex items-center justify-between p-3.5 sm:p-4 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-indigo-500/20 hover:bg-slate-900/60 transition-all shadow-sm";
                     row.innerHTML = `
-                        <div class="flex-1 pr-1.5">
-                            <div class="flex items-center flex-wrap gap-1.5">
-                                <strong class="text-white text-sm font-bold">${v.word}</strong>
-                                <span class="text-[9px] bg-slate-800 text-indigo-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">${v.hanviet}</span>
-                                <span class="text-xs text-slate-400 font-medium font-mono">(${v.reading})</span>
+                        <div class="flex-1 pr-3">
+                            <div class="flex items-baseline flex-wrap gap-2">
+                                <strong class="text-white text-lg sm:text-xl font-black tracking-wide">${v.word}</strong>
+                                <span class="text-[10px] sm:text-xs bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-2 py-0.5 rounded-lg font-bold uppercase tracking-wider">${v.hanviet}</span>
+                                <span class="text-xs sm:text-sm text-slate-400 font-bold font-mono">（${v.reading}）</span>
                             </div>
-                            <p class="text-xs text-slate-300 mt-0.5">${v.meaning}</p>
+                            <p class="text-sm sm:text-base text-slate-200 mt-1.5 font-medium leading-relaxed">${v.meaning}</p>
                         </div>
-                        <button onclick="speakVocabEvent(event, '${v.reading}')" class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 text-indigo-400 flex items-center justify-center transition-all flex-shrink-0" title="Phát âm từ vựng">
-                            <i class="fa-solid fa-volume-high text-[10px]"></i>
+                        <button onclick="speakVocabEvent(event, '${v.reading}')" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 text-indigo-400 flex items-center justify-center transition-all flex-shrink-0 shadow-md" title="Phát âm từ vựng">
+                            <i class="fa-solid fa-volume-high text-xs sm:text-sm"></i>
                         </button>
                     `;
                     vocabContainer.appendChild(row);
@@ -1802,6 +1928,316 @@
             } else {
                 navigateFlashcard(1);
             }
+        }
+
+        // ==================== LOGICS MODAL TẬP VIẾT KANJI (STROKE ORDER & PRACTICE DRAWING) ====================
+        function openWritingModalEvent(event) {
+            if (event) event.stopPropagation();
+            const currentWord = appState.vocabList[appState.cardCurrentIndex];
+            if (!currentWord) return;
+            
+            document.getElementById('write-modal-title-kanji').innerText = currentWord.kanji;
+            document.getElementById('writing-guide-modal').classList.remove('hidden');
+            
+            loadKanjiStrokeOrder(currentWord.kanji);
+        }
+
+        function closeWritingModal() {
+            clearSimulationAnimation();
+            document.getElementById('writing-guide-modal').classList.add('hidden');
+        }
+
+        async function loadKanjiStrokeOrder(kanjiChar) {
+            const modalContent = document.getElementById('writing-guide-modal-content');
+            const modalLoading = document.getElementById('writing-guide-modal-loading');
+            
+            modalLoading.classList.remove('hidden');
+            modalContent.classList.add('hidden');
+            
+            try {
+                // Chuyển mã ký tự Kanji sang mã Unicode Hex 5 ký tự (KanjiVG Format)
+                const hex = kanjiChar.charCodeAt(0).toString(16).padStart(5, '0');
+                const url = `https://cdn.jsdelivr.net/gh/kanjivg/kanjivg@master/kanji/${hex}.svg`;
+                
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Không phản hồi dịch vụ");
+                
+                const svgText = await response.text();
+                
+                // Parse SVG gốc
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(svgText, "image/svg+xml");
+                const originalSvg = doc.querySelector('svg');
+                if (!originalSvg) throw new Error("Định dạng nét SVG lỗi");
+                
+                // Cấu hình khung mô phỏng chính
+                const simContainer = document.getElementById('stroke-simulation-svg-container');
+                simContainer.innerHTML = '';
+                
+                const simSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                simSvg.setAttribute("viewBox", "0 0 109 109");
+                simSvg.className.baseVal = "w-full h-full";
+                
+                // Lưới chéo 2x2 cho khung viết chữ
+                simSvg.innerHTML = `
+                    <line x1="54.5" y1="0" x2="54.5" y2="109" stroke="#334155" stroke-dasharray="3,3" stroke-width="1.2" />
+                    <line x1="0" y1="54.5" x2="109" y2="54.5" stroke="#334155" stroke-dasharray="3,3" stroke-width="1.2" />
+                `;
+                
+                // Lấy ra danh sách các thẻ đường vẽ nét của Kanji
+                const paths = Array.from(originalSvg.querySelectorAll('path'));
+                const clonedPaths = paths.map((p, idx) => {
+                    const clone = p.cloneNode(true);
+                    clone.setAttribute("stroke", "#f8fafc"); // Nét chính màu trắng khi hoàn tất
+                    clone.setAttribute("stroke-width", "4");
+                    clone.setAttribute("fill", "none");
+                    clone.setAttribute("stroke-linecap", "round");
+                    clone.setAttribute("stroke-linejoin", "round");
+                    clone.id = `sim-path-${idx}`;
+                    simSvg.appendChild(clone);
+                    return clone;
+                });
+                
+                // Trích xuất số chỉ thứ tự nét (stroke labels)
+                const texts = Array.from(originalSvg.querySelectorAll('text'));
+                texts.forEach(t => {
+                    const clone = t.cloneNode(true);
+                    clone.setAttribute("fill", "#fbbf24"); // Thứ tự nét màu vàng rực rỡ
+                    clone.setAttribute("font-size", "8");
+                    clone.setAttribute("font-weight", "900");
+                    simSvg.appendChild(clone);
+                });
+                
+                simContainer.appendChild(simSvg);
+                
+                // Tạo sơ đồ thứ tự nét từng bước (cumulative grid cells)
+                const stepsContainer = document.getElementById('stroke-steps-container');
+                stepsContainer.innerHTML = '';
+                
+                for (let i = 0; i < paths.length; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = "bg-slate-950 rounded-xl p-2 border border-slate-800 flex flex-col items-center justify-between relative aspect-square group hover:border-sky-500/50 transition-colors";
+                    
+                    // Thẻ số thứ tự bước vẽ
+                    const badge = document.createElement('span');
+                    badge.className = "absolute top-1.5 left-1.5 bg-slate-800 text-slate-300 text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border border-slate-700 shadow-inner";
+                    badge.innerText = i + 1;
+                    cell.appendChild(badge);
+                    
+                    const cellSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    cellSvg.setAttribute("viewBox", "0 0 109 109");
+                    cellSvg.className.baseVal = "w-full h-full p-1";
+                    
+                    // Lưới 2x2 thu nhỏ
+                    cellSvg.innerHTML = `
+                        <line x1="54.5" y1="0" x2="54.5" y2="109" stroke="#1e293b" stroke-dasharray="2,2" stroke-width="0.8" />
+                        <line x1="0" y1="54.5" x2="109" y2="54.5" stroke="#1e293b" stroke-dasharray="2,2" stroke-width="0.8" />
+                    `;
+                    
+                    // Vẽ các nét lũy tiến từ nét 1 đến nét thứ i
+                    for (let j = 0; j <= i; j++) {
+                        const stepPath = paths[j].cloneNode(true);
+                        stepPath.setAttribute("fill", "none");
+                        stepPath.setAttribute("stroke-linecap", "round");
+                        stepPath.setAttribute("stroke-linejoin", "round");
+                        
+                        if (j === i) {
+                            // Nét vẽ hiện tại: Highlight màu xanh dương rực rỡ và dày hơn (theo Hình 4)
+                            stepPath.setAttribute("stroke", "#0ea5e9");
+                            stepPath.setAttribute("stroke-width", "5.5");
+                        } else {
+                            // Các nét vẽ trước đó: màu xám mờ để dễ theo dõi sự thay đổi
+                            stepPath.setAttribute("stroke", "#475569");
+                            stepPath.setAttribute("stroke-width", "3.2");
+                        }
+                        cellSvg.appendChild(stepPath);
+                    }
+                    
+                    cell.appendChild(cellSvg);
+                    stepsContainer.appendChild(cell);
+                }
+                
+                // Kích hoạt hoạt họa nét viết tự động tuần tự
+                animateSimulationPaths(clonedPaths);
+                
+                // Đồng bộ bảng vẽ Canvas tập viết tương tác
+                setupWritingCanvas();
+                
+                modalLoading.classList.add('hidden');
+                modalContent.classList.remove('hidden');
+                
+            } catch (err) {
+                console.warn("Không thể tải sơ đồ KanjiVG:", err);
+                renderWritingFallback(kanjiChar);
+            }
+        }
+
+        function clearSimulationAnimation() {
+            if (simAnimationTimer) clearInterval(simAnimationTimer);
+            simAnimationTimeouts.forEach(t => clearTimeout(t));
+            simAnimationTimeouts = [];
+        }
+
+        function animateSimulationPaths(paths) {
+            clearSimulationAnimation();
+            
+            function runSequence() {
+                // Đặt lại các nét ẩn mờ dạng outline để làm khuôn mẫu định hướng cho người học
+                paths.forEach(p => {
+                    p.style.transition = 'none';
+                    p.style.strokeDasharray = 'none';
+                    p.style.strokeDashoffset = 'none';
+                    p.style.opacity = '0.15';
+                    p.setAttribute("stroke", "#334155"); 
+                });
+                
+                let currentIdx = 0;
+                
+                function drawNext() {
+                    if (currentIdx >= paths.length) {
+                        // Vẽ xong toàn bộ chữ -> Chờ 1.8s và lặp lại hiệu ứng
+                        const loopT = setTimeout(() => {
+                            runSequence();
+                        }, 1800);
+                        simAnimationTimeouts.push(loopT);
+                        return;
+                    }
+                    
+                    const p = paths[currentIdx];
+                    p.setAttribute("stroke", "#38bdf8"); // Nét hiện tại vẽ bằng màu xanh neon sáng
+                    p.style.opacity = '1';
+                    
+                    const length = p.getTotalLength();
+                    p.style.strokeDasharray = length;
+                    p.style.strokeDashoffset = length;
+                    p.getBoundingClientRect(); // Trực quan hóa thay đổi hình học
+                    
+                    const speed = Math.max(180, length * 4.2); // Tính toán tốc độ viết tự nhiên
+                    p.style.transition = `stroke-dashoffset ${speed}ms linear, stroke 200ms ease`;
+                    p.style.strokeDashoffset = '0';
+                    
+                    const nextT = setTimeout(() => {
+                        p.setAttribute("stroke", "#f8fafc"); // Hoàn thành nét thì chuyển sang màu trắng nguyên bản
+                        currentIdx++;
+                        drawNext();
+                    }, speed + 120);
+                    
+                    simAnimationTimeouts.push(nextT);
+                }
+                
+                drawNext();
+            }
+            
+            runSequence();
+        }
+
+        function setupWritingCanvas() {
+            const canvas = document.getElementById('writing-practice-canvas');
+            if (!canvas) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width || 320;
+            canvas.height = rect.height || 320;
+            
+            canvasCtx = canvas.getContext('2d');
+            canvasCtx.strokeStyle = '#0ea5e9'; // Cọ vẽ màu xanh dương tương tự hình 3
+            canvasCtx.lineWidth = 4.8;
+            canvasCtx.lineCap = 'round';
+            canvasCtx.lineJoin = 'round';
+            
+            // Xử lý vẽ bằng chuột trên máy tính
+            canvas.onmousedown = (e) => {
+                isDrawing = true;
+                const coords = getCanvasCoords(e, canvas);
+                lastX = coords.x;
+                lastY = coords.y;
+            };
+            
+            canvas.onmousemove = (e) => {
+                if (!isDrawing) return;
+                const coords = getCanvasCoords(e, canvas);
+                drawBrushLine(coords.x, coords.y);
+            };
+            
+            window.addEventListener('mouseup', () => { isDrawing = false; });
+            
+            // Xử lý vẽ cảm ứng trên thiết bị di động
+            canvas.ontouchstart = (e) => {
+                e.preventDefault();
+                isDrawing = true;
+                const touch = e.touches[0];
+                const coords = getCanvasCoords(touch, canvas);
+                lastX = coords.x;
+                lastY = coords.y;
+            };
+            
+            canvas.ontouchmove = (e) => {
+                e.preventDefault();
+                if (!isDrawing) return;
+                const touch = e.touches[0];
+                const coords = getCanvasCoords(touch, canvas);
+                drawBrushLine(coords.x, coords.y);
+            };
+            
+            canvas.ontouchend = () => { isDrawing = false; };
+        }
+
+        function getCanvasCoords(e, canvas) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX !== undefined ? e.clientX : (e.touches ? e.touches[0].clientX : 0);
+            const clientY = e.clientY !== undefined ? e.clientY : (e.touches ? e.touches[0].clientY : 0);
+            
+            return {
+                x: (clientX - rect.left) * (canvas.width / rect.width),
+                y: (clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
+
+        function drawBrushLine(x, y) {
+            if (!canvasCtx) return;
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(lastX, lastY);
+            canvasCtx.lineTo(x, y);
+            canvasCtx.stroke();
+            lastX = x;
+            lastY = y;
+        }
+
+        function clearWritingCanvas() {
+            const canvas = document.getElementById('writing-practice-canvas');
+            if (canvas && canvasCtx) {
+                canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            // Tải lại hiệu ứng hoạt họa vẽ nét
+            const paths = Array.from(document.querySelectorAll('#stroke-simulation-svg-container path'));
+            if (paths.length > 0) {
+                animateSimulationPaths(paths);
+            }
+            showToast("Đã dọn sạch bảng vẽ!", "fa-rotate-left");
+        }
+
+        function renderWritingFallback(kanjiChar) {
+            // Hiển thị chữ Hán lớn tĩnh làm khuôn khi thiết bị ngoại tuyến (offline)
+            const simContainer = document.getElementById('stroke-simulation-svg-container');
+            simContainer.innerHTML = `
+                <div class="flex flex-col items-center justify-center w-full h-full text-slate-500 p-4 text-center select-none">
+                    <span class="text-9xl font-black text-slate-800 tracking-wide">${kanjiChar}</span>
+                    <p class="text-xs text-slate-400 mt-2">Vẽ tự do trực tiếp lên ô bảng vẽ phía trên.</p>
+                </div>
+            `;
+            
+            const stepsContainer = document.getElementById('stroke-steps-container');
+            stepsContainer.innerHTML = `
+                <div class="col-span-full py-8 text-center text-slate-500 text-xs">
+                    <i class="fa-solid fa-wifi text-xl mb-2 block text-indigo-400/60 animate-pulse"></i>
+                    Vui lòng kết nối Internet để trải nghiệm phân tách nét tự động chuẩn xác nhất.
+                </div>
+            `;
+            
+            setupWritingCanvas();
+            document.getElementById('writing-guide-modal-loading').classList.add('hidden');
+            document.getElementById('writing-guide-modal-content').classList.remove('hidden');
         }
 
         // ==================== TAB 3: QUIZ MODE LOGICS ====================
@@ -2086,9 +2522,14 @@
                 if (item.vocab && item.vocab.length > 0) {
                     item.vocab.forEach(v => {
                         vocabHTML += `
-                            <p class="text-[11px] text-slate-300 leading-relaxed">
-                                • <strong class="text-white">${v.word}</strong> [${v.hanviet}] (${v.reading}): ${v.meaning}
-                            </p>
+                            <div class="p-2.5 rounded-xl bg-slate-950/40 border border-slate-800/80 mb-2">
+                                <div class="flex items-baseline flex-wrap gap-1.5">
+                                    <strong class="text-white text-base font-bold">${v.word}</strong>
+                                    <span class="text-[9px] bg-slate-800 text-indigo-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">${v.hanviet}</span>
+                                    <span class="text-xs text-slate-400 font-semibold font-mono">（${v.reading}）</span>
+                                </div>
+                                <p class="text-xs sm:text-sm text-slate-200 mt-1 font-medium">${v.meaning}</p>
+                            </div>
                         `;
                     });
                 } else {
@@ -2130,7 +2571,7 @@
                         </div>
 
                         <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
-                            <span class="text-[9px] font-bold text-amber-400 uppercase tracking-widest block">5 Từ vựng ví dụ ghép:</span>
+                            <span class="text-[9px] font-bold text-amber-400 uppercase tracking-widest block">Từ vựng ví dụ ghép:</span>
                             <div class="space-y-1">
                                 ${vocabHTML}
                             </div>
@@ -2145,6 +2586,12 @@
         function handleGlobalKeydown(e) {
             if (appState.currentTab !== 'flashcard' || appState.vocabList.length === 0) return;
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT' || document.activeElement.tagName === 'TEXTAREA') return;
+
+            // Kiểm tra xem có bất kỳ modal nào đang mở không, nếu có thì chặn phím tắt điều hướng flashcard
+            const writingModalOpen = !document.getElementById('writing-guide-modal').classList.contains('hidden');
+            const confirmModalOpen = !document.getElementById('confirm-modal').classList.contains('hidden');
+            const audioModalOpen = !document.getElementById('audio-settings-modal').classList.contains('hidden');
+            if (writingModalOpen || confirmModalOpen || audioModalOpen) return;
 
             if (e.code === 'Space') {
                 e.preventDefault();
