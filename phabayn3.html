@@ -1,0 +1,3184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bí kíp Tinh Hoa N3 - Siêu Flashcard 3D & Luyện Đề JLPT</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif;
+            background: radial-gradient(circle at top right, #fdf4f5 0%, #f1f5f9 100%);
+        }
+        
+        /* Premium custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* 3D Flip Card Styles */
+        .perspective-1500 {
+            perspective: 1500px;
+        }
+        
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+        }
+        
+        /* The magical flip trigger class */
+        .flip-card-inner.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden; /* Safari */
+            backface-visibility: hidden;
+            border-radius: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+
+        /* Furigana layout adjustments */
+        ruby {
+            ruby-position: over;
+        }
+        rt {
+            font-size: 0.52em;
+            color: #ef4444;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            padding-bottom: 0.15em;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-rose-100 selection:text-rose-900">
+
+    <!-- Top-level Navigation & Voice/Mode Selector -->
+    <header class="bg-white/80 backdrop-blur-md border-b border-slate-100 py-3.5 px-6 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <!-- Brand Logo and Subtext -->
+            <div class="flex items-center space-x-3.5">
+                <div class="bg-gradient-to-tr from-rose-500 to-red-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center font-extrabold text-2xl shadow-md shadow-rose-500/20">
+                    N3
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+                        BÍ KÍP TINH HOA N3 <span class="text-xs font-bold text-rose-500 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded-full">Bản Phòng Thi Đậu 100%</span>
+                    </h1>
+                    <p class="text-xs text-slate-500 font-medium">Spaced Repetition • Chế độ Trắc nghiệm Mondai • Luyện Đề Bẫy</p>
+                </div>
+            </div>
+
+            <!-- Voice settings and Controls -->
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="voice-status" class="text-xs font-bold text-slate-600">Đang tìm giọng...</span>
+                </div>
+                
+                <div class="flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+                    <label class="text-xs font-bold text-slate-600 flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-gauge-high"></i> Tốc độ:
+                        <select id="voice-speed" onchange="updateVoiceSpeed()" class="bg-transparent font-bold text-rose-600 outline-none cursor-pointer">
+                            <option value="0.75">Chậm (0.75)</option>
+                            <option value="0.9" selected>Vừa phải (0.9)</option>
+                            <option value="1.0">Chuẩn (1.0)</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main App Container -->
+    <main class="max-w-7xl mx-auto w-full px-4 py-6 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- SIDEBAR: Leitner Progress, Categories, Search (Columns: 4) -->
+        <div class="lg:col-span-4 space-y-6">
+            
+            <!-- Study Mode Switcher Widget -->
+            <div class="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-3xl p-5 text-white shadow-lg">
+                <h3 class="font-bold text-xs tracking-widest text-indigo-200 uppercase mb-3 flex items-center gap-1.5">
+                    <i class="fa-solid fa-graduation-cap"></i> CHẾ ĐỘ HỌC TẬP
+                </h3>
+                <div class="grid grid-cols-3 gap-1 bg-white/10 p-1 rounded-2xl">
+                    <button id="mode-btn-flashcard" onclick="switchStudyMode('flashcard')" class="py-2.5 text-[10px] font-bold rounded-xl transition-all duration-200 bg-white text-slate-900 shadow">
+                        <i class="fa-regular fa-clone"></i> Thẻ 3D
+                    </button>
+                    <button id="mode-btn-mondai" onclick="switchStudyMode('mondai')" class="py-2.5 text-[10px] font-bold rounded-xl transition-all duration-200 text-indigo-100 hover:bg-white/5">
+                        <i class="fa-solid fa-circle-question text-amber-400"></i> Luyện Đề
+                    </button>
+                    <button id="mode-btn-riki" onclick="switchStudyMode('riki')" class="py-2.5 text-[10px] font-bold rounded-xl transition-all duration-200 text-indigo-100 hover:bg-white/5">
+                        <i class="fa-solid fa-triangle-exclamation text-rose-400"></i> Phá Bẫy
+                    </button>
+                </div>
+                <p id="mode-desc" class="text-[11px] text-indigo-200 mt-3 font-medium">
+                    <i class="fa-solid fa-info-circle"></i> Chế độ Thẻ 3D giúp ghi nhớ nhanh mặt chữ, ngữ nghĩa và mẹo nhớ độc quyền.
+                </p>
+            </div>
+            
+            <!-- Spaced Repetition Box Stats -->
+            <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+                <h3 class="font-extrabold text-slate-800 mb-4 flex items-center gap-2 text-md">
+                    <i class="fa-solid fa-boxes-stacked text-indigo-500 text-lg"></i> HỘP GHI NHỚ LEITNER
+                </h3>
+                
+                <div class="grid grid-cols-3 gap-2.5 mb-4">
+                    <!-- Box 1 Button -->
+                    <button onclick="selectBoxFilter(1)" id="box-btn-1" class="box-selector group flex flex-col justify-between p-3 rounded-2xl border border-rose-100 bg-rose-50/40 text-left transition duration-200">
+                        <span class="text-xs font-bold text-rose-600">Hộp 1</span>
+                        <div class="flex items-baseline gap-1 mt-1">
+                            <span id="box-count-1" class="text-2xl font-black text-rose-700">0</span>
+                            <span class="text-[10px] font-bold text-rose-500">thẻ</span>
+                        </div>
+                        <span class="text-[9px] font-semibold text-rose-400 mt-1 block">Chưa thuộc</span>
+                    </button>
+                    <!-- Box 2 Button -->
+                    <button onclick="selectBoxFilter(2)" id="box-btn-2" class="box-selector group flex flex-col justify-between p-3 rounded-2xl border border-slate-100 bg-white text-left transition duration-200 hover:border-amber-400">
+                        <span class="text-xs font-bold text-slate-500 group-hover:text-amber-600 transition">Hộp 2</span>
+                        <div class="flex items-baseline gap-1 mt-1">
+                            <span id="box-count-2" class="text-2xl font-black text-slate-700 group-hover:text-amber-700 transition">0</span>
+                            <span class="text-[10px] font-bold text-slate-400">thẻ</span>
+                        </div>
+                        <span class="text-[9px] font-semibold text-slate-400 mt-1 block">Đang học</span>
+                    </button>
+                    <!-- Box 3 Button -->
+                    <button onclick="selectBoxFilter(3)" id="box-btn-3" class="box-selector group flex flex-col justify-between p-3 rounded-2xl border border-slate-100 bg-white text-left transition duration-200 hover:border-emerald-400">
+                        <span class="text-xs font-bold text-slate-500 group-hover:text-emerald-600 transition">Hộp 3</span>
+                        <div class="flex items-baseline gap-1 mt-1">
+                            <span id="box-count-3" class="text-2xl font-black text-slate-700 group-hover:text-emerald-700 transition">0</span>
+                            <span class="text-[10px] font-bold text-slate-400">thẻ</span>
+                        </div>
+                        <span class="text-[9px] font-semibold text-slate-400 mt-1 block">Đã thuộc</span>
+                    </button>
+                </div>
+
+                <!-- Overall Progress Visualization -->
+                <div class="space-y-2 pt-2 border-t border-slate-100">
+                    <div class="flex justify-between items-center text-xs font-bold">
+                        <span class="text-slate-500">Tiến độ thành thạo N3:</span>
+                        <span id="mastery-percent" class="text-emerald-600 font-extrabold text-sm">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                        <div id="mastery-progress-bar" class="bg-gradient-to-r from-rose-500 via-amber-500 to-emerald-500 h-full w-0 transition-all duration-500 rounded-full"></div>
+                    </div>
+                </div>
+
+                <button onclick="resetLeitnerProgress()" class="w-full mt-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 text-xs font-bold rounded-xl border border-slate-100 transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-arrows-rotate"></i> Reset tất cả hộp về mặc định
+                </button>
+            </div>
+
+            <!-- Smart Search Bar -->
+            <div class="bg-white rounded-3xl p-4 border border-slate-100 shadow-sm">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="search-input" oninput="handleSearch()" placeholder="Tìm từ, nghĩa hoặc ví dụ..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-100 focus:border-rose-400 focus:bg-white text-sm font-semibold rounded-2xl outline-none transition">
+                </div>
+            </div>
+
+            <!-- Category Sidebar Navigation -->
+            <div id="sidebar-categories" class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+                <h3 class="font-extrabold text-slate-800 mb-3 flex items-center gap-2 text-md">
+                    <i class="fa-solid fa-layer-group text-rose-500"></i> PHÂN NHÓM BÍ KÍP
+                </h3>
+                <div class="space-y-1.5 max-h-[340px] overflow-y-auto pr-1">
+                    <button onclick="selectCategory('all')" id="cat-btn-all" class="cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-extrabold text-rose-600 bg-rose-50 border border-rose-100/50 transition">
+                        🌟 TẤT CẢ 10 NHÓM (90 BÍ KÍP)
+                    </button>
+                    <button onclick="selectCategory('cat-1')" id="cat-btn-cat-1" class="cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition flex items-center justify-between">
+                        <span>1) Trạng từ dễ nhầm</span> <span class="bg-slate-100 text-slate-500 font-bold px-1.5 py-0.5 rounded text-[10px]">8 thẻ</span>
+                    </button>
+                    <button onclick="selectCategory('cat-2')" id="cat-btn-cat-2" class="cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition flex items-center justify-between">
+                        <span>2) Đồng âm - gần nghĩa "Tăng/Giảm"</span> <span class="bg-slate-100 text-slate-500 font-bold px-1.5 py-0.5 rounded text-[10px]">12 thẻ</span>
+                    </button>
+                    <button onclick="selectCategory('cat-3')" id="cat-btn-cat-3" class="cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition flex items-center justify-between">
+                        <span>3) Từ Katakana N3</span> <span class="bg-slate-100 text-slate-500 font-bold px-1.5 py-0.5 rounded text-[10px]">10 thẻ</span>
+                    </button>
+                    <button onclick="selectCategory('cat-4')" id="cat-btn-cat-4" class="cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition flex items-center justify-between">
+                        <span>4) Cụm cố định JLPT</span> <span class="bg-slate-100 text-slate-500 font-bold px-1.5 py-0.5 rounded text-[10px]">20 thẻ</span>
+                    </button>
+                    <button onclick="selectCategory('cat-5')" id="cat-btn-cat-5" class="cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition flex items-center justify-between">
+                        <span>5) Từ trái nghĩa dễ lẫn</span> <span class="bg-slate-100 text-slate-500 font-bold px-1.5 py-0.5 rounded text-[10px]">7 thẻ</span>
+                    </button>
+                    <button onclick="selectCategory('cat-6')" id="cat-btn-cat-6" class="cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition flex items-center justify-between">
+                        <span>6) Từ chỉ mức độ - lượng</span> <span class="bg-slate-100 text-slate-500 font-bold px-1.5 py-0.5 rounded text-[10px]">8 thẻ</span>
+                    </button>
+                    <button onclick="selectCategory('cat-7')" id="cat-btn-cat-7" class="cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition flex items-center justify-between">
+                        <span>7) Phương hướng & Hướng đi</span> <span class="bg-slate-100 text-slate-500 font-bold px-1.5 py-0.5 rounded text-[10px]">6 thẻ</span>
+                    </button>
+                    <button onclick="selectCategory('cat-8')" id="cat-btn-cat-8" class="cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition flex items-center justify-between">
+                        <span>8) Từ chỉ cảm xúc N3</span> <span class="bg-slate-100 text-slate-500 font-bold px-1.5 py-0.5 rounded text-[10px]">7 thẻ</span>
+                    </button>
+                    <button onclick="selectCategory('cat-9')" id="cat-btn-cat-9" class="cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition flex items-center justify-between">
+                        <span>9) Từ chỉ hiện tượng cơ thể</span> <span class="bg-slate-100 text-slate-500 font-bold px-1.5 py-0.5 rounded text-[10px]">6 thẻ</span>
+                    </button>
+                    <button onclick="selectCategory('cat-10')" id="cat-btn-cat-10" class="cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition flex items-center justify-between">
+                        <span>10) Bẫy ngữ pháp N3</span> <span class="bg-slate-100 text-slate-500 font-bold px-1.5 py-0.5 rounded text-[10px]">6 thẻ</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sidebar Filter by Riki Days (Visible only in Riki Mode) -->
+            <div id="sidebar-riki-selector" class="hidden bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+                <h3 class="font-extrabold text-slate-800 mb-3 flex items-center gap-2 text-md">
+                    <i class="fa-solid fa-triangle-exclamation text-rose-500 animate-pulse"></i> PHÂN BUỔI BẪY
+                </h3>
+                <div class="space-y-1.5 max-h-[300px] overflow-y-auto pr-1">
+                    <select id="riki-session-select" onchange="changeRikiSession()" class="w-full bg-slate-50 border border-slate-100 p-2.5 rounded-xl text-xs font-bold text-slate-700 outline-none">
+                        <option value="all">💥 Xem tất cả (50 câu bẫy)</option>
+                        <option value="1">Buổi 1 (Trạng từ/Quán dụng)</option>
+                        <option value="2">Buổi 2 (Tự/Tha động từ/Katakana)</option>
+                        <option value="3">Buổi 3 (Dễ nhầm lẫn cơ bản)</option>
+                        <option value="4">Buổi 4 (Bẫy trạng ngữ thời gian)</option>
+                        <option value="5">Buổi 5 (Động từ bẫy cấu trúc)</option>
+                        <option value="6">Buổi 6 (Ngữ cảnh tiêu cực)</option>
+                        <option value="7">Buổi 7 (Sắc thái ý chí)</option>
+                        <option value="8">Buổi 8 (Thể bị động sai khiến)</option>
+                        <option value="9">Buổi 9 (Sắc thái phủ định kép)</option>
+                        <option value="10">Buổi 10 (Hệ quả ngữ cảnh bẫy)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLAY AREA: Flashcard Canvas & Controls (Columns: 8) -->
+        <div class="lg:col-span-8 flex flex-col justify-between space-y-6">
+            
+            <!-- Filter badges and Toggle Play Settings -->
+            <div class="bg-white rounded-2xl px-5 py-3.5 border border-slate-100 shadow-sm flex flex-wrap justify-between items-center gap-4">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span id="current-group-badge" class="text-xs bg-rose-50 text-rose-600 font-extrabold px-3 py-1.5 rounded-full border border-rose-100">
+                        Tất cả 10 nhóm
+                    </span>
+                    <span id="current-box-badge" class="text-xs bg-slate-50 text-slate-600 font-bold px-3 py-1.5 rounded-full border border-slate-100">
+                        Mọi Hộp
+                    </span>
+                    <span id="search-count-badge" class="hidden text-xs bg-indigo-50 text-indigo-600 font-bold px-3 py-1.5 rounded-full border border-indigo-100 animate-pulse">
+                        Đang tìm kiếm...
+                    </span>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <label class="inline-flex items-center cursor-pointer text-xs font-bold text-slate-600 select-none">
+                        <input type="checkbox" id="auto-play-voice" class="sr-only peer" checked>
+                        <div class="relative w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:width-4 after:transition-all peer-checked:bg-rose-500"></div>
+                        <span class="ms-2 flex items-center gap-1 text-slate-500">
+                            <i class="fa-solid fa-volume-high text-rose-500"></i> Tự động phát âm Nhật
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- The Flashcard Study Panel -->
+            <div id="flashcard-panel" class="relative w-full h-[510px] perspective-1500 select-none">
+                <div id="flashcard" onclick="toggleCard()" class="flip-card-inner w-full h-full cursor-pointer">
+                    
+                    <!-- FRONT SIDE OF CARD -->
+                    <div class="flip-card-front p-8 bg-gradient-to-br from-white to-rose-50/10 border-2 border-slate-100">
+                        <!-- Card Header -->
+                        <div class="flex justify-between items-start">
+                            <div class="flex flex-col gap-1 text-left">
+                                <span id="card-front-cat" class="text-[10px] font-extrabold text-rose-500 uppercase tracking-widest bg-rose-50 border border-rose-100/50 px-3 py-1.5 rounded-xl w-fit">NHÓM TRẠNG TỰ</span>
+                                <!-- N3 Mondai Category Target Indicator -->
+                                <span id="card-front-mondai-tag" class="text-[9px] font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100/50 px-2.5 py-1 rounded-lg w-fit mt-1">
+                                    🎯 Đề thi: Mondai 3 - Điền từ
+                                </span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="event.stopPropagation(); playVoice('vocab')" class="w-10 h-10 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center border border-rose-100/40 transition shadow-sm" title="Nghe từ vựng">
+                                    <i class="fa-solid fa-volume-high text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Card Core Word Content -->
+                        <div class="text-center my-auto py-4">
+                            <h2 id="card-front-word" class="text-5xl md:text-6xl font-black text-slate-800 tracking-wide mb-6">
+                                <ruby>ぐっすり<rt></rt></ruby>
+                            </h2>
+                            <p id="card-front-romaji" class="text-xs font-semibold text-slate-400 tracking-widest uppercase mb-2"></p>
+                            <p class="text-xs text-slate-400 italic font-semibold flex items-center justify-center gap-1">
+                                <span>Ấn</span> <kbd class="px-1.5 py-0.5 bg-slate-100 border rounded text-[10px]">Space</kbd> <span>hoặc nhấp thẻ để xem nghĩa & ví dụ</span>
+                            </p>
+                        </div>
+
+                        <!-- Card Footer Memory Helper -->
+                        <div class="bg-amber-50/80 rounded-2xl p-4 border border-amber-100/40 flex items-center gap-3.5 text-left" onclick="event.stopPropagation()">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-extrabold shrink-0 shadow-sm shadow-amber-500/20 text-lg">💡</div>
+                            <div>
+                                <h4 class="text-[10px] font-extrabold text-amber-700 uppercase tracking-widest">Mẹo nhớ nhanh</h4>
+                                <p id="card-front-tip" class="text-sm font-bold text-amber-950 mt-0.5">“G” = “Giấc ngủ”</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BACK SIDE OF CARD -->
+                    <div class="flip-card-back p-8 bg-white border-2 border-slate-200">
+                        <!-- Card Header -->
+                        <div class="flex justify-between items-start text-left">
+                            <div class="flex flex-col gap-1">
+                                <div class="flex items-center gap-1.5">
+                                    <span id="card-back-cat" class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl">NHÓM TRẠNG TỰ</span>
+                                    <span id="card-back-box-badge" class="text-[10px] font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-1.5 rounded-xl">Hộp 1</span>
+                                </div>
+                                <span id="card-back-grammar-tag" class="text-[9px] font-extrabold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md mt-1 w-fit">
+                                    [Trạng từ bổ nghĩa]
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Main Content (Scrollable to prevent overflows) -->
+                        <div class="my-auto overflow-y-auto max-h-[300px] text-left space-y-4 pr-1 mt-3">
+                            
+                            <!-- Display Japanese Vocab on Back Side -->
+                            <div class="border-b border-slate-100 pb-3 flex justify-between items-center" onclick="event.stopPropagation()">
+                                <div>
+                                    <span class="text-[9px] font-extrabold text-indigo-500 uppercase tracking-widest block mb-0.5">Từ vựng đang học</span>
+                                    <h3 id="card-back-word" class="text-3xl font-black text-slate-800 tracking-wide">
+                                        <ruby>ぐっすり<rt></rt></ruby>
+                                    </h3>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="playVoice('vocab')" class="w-10 h-10 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center border border-rose-100 transition shadow-sm" title="Nghe phát âm">
+                                        <i class="fa-solid fa-volume-high text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Vietnamese explanation -->
+                            <div class="relative group" onclick="event.stopPropagation()">
+                                <span class="text-[10px] font-extrabold text-rose-500 uppercase tracking-widest block mb-0.5">Giải Nghĩa Chi Tiết</span>
+                                <p id="card-back-meaning" class="text-md font-bold text-slate-800 leading-snug">ngủ sâu, ngủ ngon, không tỉnh giữa chừng.</p>
+                            </div>
+
+                            <!-- Native Example and Audio -->
+                            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 relative group/ex" onclick="event.stopPropagation()">
+                                <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1">Ví Dụ Chuẩn N3</span>
+                                <p id="card-back-example-jp" class="text-md font-extrabold text-slate-800 tracking-wide">ぐっすり寝ていた。</p>
+                                <p id="card-back-example-vi" class="text-xs font-bold text-slate-500 mt-1">→ Tôi đã ngủ say.</p>
+                                <button onclick="playVoice('example')" class="absolute top-4 right-4 w-7 h-7 rounded-full bg-slate-200/60 hover:bg-rose-500 hover:text-white text-slate-600 flex items-center justify-center transition duration-200" title="Nghe câu ví dụ">
+                                    <i class="fa-solid fa-headphones text-[10px]"></i>
+                                </button>
+                            </div>
+
+                            <!-- Trap/Pitfall Highlight -->
+                            <div id="card-back-trap-container" class="bg-rose-50 border border-rose-100/50 rounded-2xl p-3.5 text-rose-950 flex items-start gap-2" onclick="event.stopPropagation()">
+                                <i class="fa-solid fa-circle-exclamation text-rose-500 mt-0.5 text-sm shrink-0"></i>
+                                <div>
+                                    <span class="text-[10px] font-extrabold text-rose-600 uppercase tracking-widest block">Chú Ý Bẫy JLPT</span>
+                                    <p id="card-back-trap" class="text-xs font-bold mt-0.5 leading-relaxed">Không dùng cho ăn uống làm việc. Không nhầm với ゆっくり.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Memory Tip Re-indicator -->
+                        <div class="bg-amber-50/60 border border-amber-100/50 rounded-2xl p-3" onclick="event.stopPropagation()">
+                            <p class="text-xs font-bold text-amber-900"><i class="fa-solid fa-lightbulb text-amber-500 mr-1.5"></i> Mẹo nhớ: <span id="card-back-tip" class="font-extrabold">“G” = “Giấc ngủ”</span></p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- The JLPT Mondai Practice Panel (Hidden by default, shown when toggled) -->
+            <div id="mondai-panel" class="hidden w-full h-[510px] bg-white rounded-3xl border-2 border-indigo-100 p-6 flex flex-col justify-between shadow-md">
+                <!-- Question Header -->
+                <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] font-extrabold text-white uppercase tracking-wider bg-indigo-600 px-3 py-1.5 rounded-xl">
+                            JLPT N3 MONDAI PRACTICE
+                        </span>
+                        <span id="quiz-tag-type" class="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-1 rounded-lg">
+                            Mondai 3 - Điền từ
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-slate-500">
+                        <i class="fa-solid fa-circle-info"></i> Luyện ngữ cảnh
+                    </div>
+                </div>
+
+                <!-- Question Core -->
+                <div class="my-auto py-4 text-center space-y-6">
+                    <span class="text-[10px] font-bold text-slate-400 tracking-widest uppercase block mb-1">Điền vào chỗ trống thích hợp:</span>
+                    <h3 id="quiz-question-text" class="text-2xl md:text-3xl font-black text-slate-800 tracking-wide leading-relaxed">
+                        昨日は疲れて <span class="text-indigo-600 underline font-black decoration-dashed px-3">______</span> 寝た。
+                    </h3>
+                    <p id="quiz-question-meaning" class="text-xs font-bold text-slate-500 italic">
+                        → (Gợi ý nghĩa: Hôm qua mệt quá nên tôi ngủ thiếp đi ngon lành.)
+                    </p>
+                </div>
+
+                <!-- Answer Options (4 Choices) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+                    <button onclick="checkQuizAnswer(0)" id="choice-0" class="quiz-choice-btn group w-full text-left p-4 rounded-2xl border border-slate-200 hover:border-indigo-400 bg-slate-50/50 hover:bg-indigo-50/30 transition flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-7 h-7 rounded-lg bg-slate-200 text-slate-600 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center font-extrabold text-xs">1</span>
+                            <span id="choice-text-0" class="text-sm font-extrabold text-slate-800">ぐっすり</span>
+                        </div>
+                        <i class="fa-regular fa-circle text-slate-300 group-hover:text-indigo-400"></i>
+                    </button>
+                    <button onclick="checkQuizAnswer(1)" id="choice-1" class="quiz-choice-btn group w-full text-left p-4 rounded-2xl border border-slate-200 hover:border-indigo-400 bg-slate-50/50 hover:bg-indigo-50/30 transition flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-7 h-7 rounded-lg bg-slate-200 text-slate-600 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center font-extrabold text-xs">2</span>
+                            <span id="choice-text-1" class="text-sm font-extrabold text-slate-800">すっきり</span>
+                        </div>
+                        <i class="fa-regular fa-circle text-slate-300 group-hover:text-indigo-400"></i>
+                    </button>
+                    <button onclick="checkQuizAnswer(2)" id="choice-2" class="quiz-choice-btn group w-full text-left p-4 rounded-2xl border border-slate-200 hover:border-indigo-400 bg-slate-50/50 hover:bg-indigo-50/30 transition flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-7 h-7 rounded-lg bg-slate-200 text-slate-600 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center font-extrabold text-xs">3</span>
+                            <span id="choice-text-2" class="text-sm font-extrabold text-slate-800">うっかり</span>
+                        </div>
+                        <i class="fa-regular fa-circle text-slate-300 group-hover:text-indigo-400"></i>
+                    </button>
+                    <button onclick="checkQuizAnswer(3)" id="choice-3" class="quiz-choice-btn group w-full text-left p-4 rounded-2xl border border-slate-200 hover:border-indigo-400 bg-slate-50/50 hover:bg-indigo-50/30 transition flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-7 h-7 rounded-lg bg-slate-200 text-slate-600 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center font-extrabold text-xs">4</span>
+                            <span id="choice-text-3" class="text-sm font-extrabold text-slate-800">がっかり</span>
+                        </div>
+                        <i class="fa-regular fa-circle text-slate-300 group-hover:text-indigo-400"></i>
+                    </button>
+                </div>
+
+                <!-- Feedback Area -->
+                <div id="quiz-feedback-box" class="hidden p-3.5 rounded-2xl flex items-start gap-2.5 transition-all">
+                    <span id="feedback-icon" class="text-xl">💡</span>
+                    <div class="text-left">
+                        <h4 id="feedback-title" class="text-xs font-black uppercase tracking-wider">Học từ đáp án</h4>
+                        <p id="feedback-desc" class="text-xs font-semibold mt-0.5">Đáp án đúng là A. ぐっすり (ngủ ngon say giấc). Mẹo: "G" = "Giấc ngủ".</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Riki Trap Challenge Practice Panel -->
+            <div id="riki-panel" class="hidden w-full h-[510px] bg-white rounded-3xl border-2 border-rose-100 p-6 flex flex-col justify-between shadow-md overflow-y-auto">
+                <!-- Question Header -->
+                <div class="flex justify-between items-center pb-3 border-b border-rose-100">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-extrabold text-white uppercase tracking-wider bg-rose-600 px-3 py-1.5 rounded-xl">
+                            CÂU SAI KINH ĐIỂN
+                        </span>
+                        <span id="riki-session-tag" class="text-[9px] font-bold text-rose-700 bg-rose-50 border border-rose-100 px-2 py-1 rounded-lg">
+                            Buổi 1
+                        </span>
+                    </div>
+                    <div id="riki-score-badge" class="text-xs font-extrabold text-rose-600 bg-rose-50 px-3 py-1 rounded-full border border-rose-100">
+                        Đúng: 0 / 0
+                    </div>
+                </div>
+
+                <!-- Question Core -->
+                <div class="my-auto py-3 text-center space-y-4">
+                    <span class="text-[10px] font-bold text-slate-400 tracking-widest uppercase block">Mục tiêu: Đập tan cạm bẫy JLPT N3</span>
+                    <h3 id="riki-question-text" class="text-xl md:text-2xl font-black text-slate-800 tracking-wide leading-relaxed">
+                        けさは6時に目が(　　)。
+                    </h3>
+                </div>
+
+                <!-- Answer Options (4 Choices) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+                    <button onclick="checkRikiAnswer(0)" id="riki-choice-0" class="riki-choice-btn group w-full text-left p-3.5 rounded-2xl border border-slate-200 hover:border-rose-400 bg-slate-50/50 hover:bg-rose-50/30 transition flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-6 h-6 rounded-lg bg-slate-200 text-slate-600 group-hover:bg-rose-600 group-hover:text-white flex items-center justify-center font-extrabold text-xs">1</span>
+                            <span id="riki-choice-text-0" class="text-xs font-extrabold text-slate-800">あいた</span>
+                        </div>
+                        <i class="fa-regular fa-circle text-slate-300 group-hover:text-rose-400"></i>
+                    </button>
+                    <button onclick="checkRikiAnswer(1)" id="riki-choice-1" class="riki-choice-btn group w-full text-left p-3.5 rounded-2xl border border-slate-200 hover:border-rose-400 bg-slate-50/50 hover:bg-rose-50/30 transition flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-6 h-6 rounded-lg bg-slate-200 text-slate-600 group-hover:bg-rose-600 group-hover:text-white flex items-center justify-center font-extrabold text-xs">2</span>
+                            <span id="riki-choice-text-1" class="text-xs font-extrabold text-slate-800">さめた</span>
+                        </div>
+                        <i class="fa-regular fa-circle text-slate-300 group-hover:text-rose-400"></i>
+                    </button>
+                    <button onclick="checkRikiAnswer(2)" id="riki-choice-2" class="riki-choice-btn group w-full text-left p-3.5 rounded-2xl border border-slate-200 hover:border-rose-400 bg-slate-50/50 hover:bg-rose-50/30 transition flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-6 h-6 rounded-lg bg-slate-200 text-slate-600 group-hover:bg-rose-600 group-hover:text-white flex items-center justify-center font-extrabold text-xs">3</span>
+                            <span id="riki-choice-text-2" class="text-xs font-extrabold text-slate-800">ついた</span>
+                        </div>
+                        <i class="fa-regular fa-circle text-slate-300 group-hover:text-rose-400"></i>
+                    </button>
+                    <button onclick="checkRikiAnswer(3)" id="riki-choice-3" class="riki-choice-btn group w-full text-left p-3.5 rounded-2xl border border-slate-200 hover:border-rose-400 bg-slate-50/50 hover:bg-rose-50/30 transition flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-6 h-6 rounded-lg bg-slate-200 text-slate-600 group-hover:bg-rose-600 group-hover:text-white flex items-center justify-center font-extrabold text-xs">4</span>
+                            <span id="riki-choice-text-3" class="text-xs font-extrabold text-slate-800">ひらいた</span>
+                        </div>
+                        <i class="fa-regular fa-circle text-slate-300 group-hover:text-rose-400"></i>
+                    </button>
+                </div>
+
+                <!-- Detailed Explanation Area -->
+                <div id="riki-explanation-box" class="hidden p-3.5 rounded-2xl flex flex-col gap-1 transition-all">
+                    <div class="flex items-start gap-2.5">
+                        <span id="riki-exp-icon" class="text-xl">💡</span>
+                        <div class="text-left">
+                            <h4 id="riki-exp-title" class="text-xs font-black uppercase tracking-widest text-slate-800">Giải thích chi tiết bẫy</h4>
+                            <p id="riki-exp-desc" class="text-xs font-bold mt-1 leading-relaxed text-slate-600"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation controls & Leitner response buttons -->
+            <div class="space-y-4">
+                <!-- Leitner Response controls -->
+                <div id="leitner-controls-bar" class="grid grid-cols-2 gap-4">
+                    <button onclick="leitnerMark(false)" class="group bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white rounded-2xl py-3.5 px-5 shadow-lg shadow-rose-500/10 hover:shadow-rose-500/20 active:scale-[0.98] transition-all duration-200 flex flex-col items-center justify-center gap-0.5">
+                        <span class="font-bold text-md flex items-center gap-2">
+                            <i class="fa-solid fa-circle-xmark text-lg"></i> Chưa nhớ tốt
+                        </span>
+                        <span class="text-[10px] text-rose-100 font-semibold group-hover:underline">Về lại Hộp 1 (Học lại)</span>
+                    </button>
+                    <button onclick="leitnerMark(true)" class="group bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-2xl py-3.5 px-5 shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 active:scale-[0.98] transition-all duration-200 flex flex-col items-center justify-center gap-0.5">
+                        <span class="font-bold text-md flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-lg"></i> Nhớ rất tốt
+                        </span>
+                        <span class="text-[10px] text-emerald-100 font-semibold group-hover:underline">Lên hộp tiếp theo (Đã thuộc)</span>
+                    </button>
+                </div>
+
+                <!-- Footer Navigation Switcher -->
+                <div class="flex justify-between items-center px-4 bg-slate-50 py-3 rounded-2xl border border-slate-100">
+                    <button onclick="prevCard()" class="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> Trước
+                    </button>
+                    
+                    <span id="card-counter" class="text-xs font-black text-slate-500 tracking-wider">
+                        Thẻ 1 / 90
+                    </span>
+
+                    <button onclick="nextCard()" class="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition flex items-center gap-2">
+                        Tiếp <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Helper Footer Info -->
+    <footer class="bg-white border-t border-slate-100 py-4 px-6 text-center text-[11px] text-slate-400 mt-6">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div class="font-semibold text-slate-500">
+                <i class="fa-solid fa-keyboard mr-1"></i> Phím tắt: <kbd class="px-1.5 py-0.5 bg-slate-100 border rounded text-slate-500">Space</kbd> Lật thẻ • <kbd class="px-1.5 py-0.5 bg-slate-100 border rounded text-slate-500">←</kbd> Trước • <kbd class="px-1.5 py-0.5 bg-slate-100 border rounded text-slate-500">→</kbd> Tiếp • <kbd class="px-1.5 py-0.5 bg-slate-100 border rounded text-slate-500">1</kbd> Chưa nhớ • <kbd class="px-1.5 py-0.5 bg-slate-100 border rounded text-slate-500">2</kbd> Nhớ tốt
+            </div>
+            <div>
+                Bộ Giáo Trình Độc Quyền Học JLPT N3 Đỉnh Cao © 2026
+            </div>
+        </div>
+    </footer>
+
+    <!-- MASTER DATABASE OF 90 JLPT CARDS -->
+    <script>
+        const FLASHCARD_DATA = [
+            // --- NHÓM 1: TRẠNG TỪ DỄ NHẦM N3 (8 từ) ---
+            {
+                id: "n3-1-1",
+                cat: "cat-1",
+                catName: "1) Trạng từ dễ nhầm N3",
+                word: "ぐっすり",
+                wordFurigana: "ぐっすり",
+                meaning: "ngủ sâu, ngủ ngon, không tỉnh giữa chừng.",
+                tip: "“G” = “Giấc ngủ”",
+                exampleJp: "昨日は疲れてぐっすり寝tた。",
+                exampleVi: "Hôm qua mệt quá nên tôi đã ngủ say giấc.",
+                trap: "Chỉ dùng cho ngủ, không dùng cho ăn uống hay làm việc. Đừng nhầm với ゆっくり (từ từ).",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Trạng từ chỉ mức độ ngủ]"
+            },
+            {
+                id: "n3-1-2",
+                cat: "cat-1",
+                catName: "1) Trạng từ dễ nhầm N3",
+                word: "すっきり",
+                wordFurigana: "すっきり",
+                meaning: "sảng khoái, nhẹ nhõm, đầu óc thoải mái, vấn đề được giải quyết.",
+                tip: "“S” = “Sảng khoái”",
+                exampleJp: "頭がすっきりした。",
+                exampleVi: "Đầu óc đã trở nên sảng khoái, thoải mái.",
+                trap: "Không dùng để mô tả “ngủ say”.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Trạng từ trạng thái tinh thần]"
+            },
+            {
+                id: "n3-1-3",
+                cat: "cat-1",
+                catName: "1) Trạng từ dễ nhầm N3",
+                word: "がっかり",
+                wordFurigana: "がっかり",
+                meaning: "thất vọng, hụt hẫng vì kỳ vọng không như mong đợi.",
+                tip: "“Gakkari = Gục kỳ vọng”",
+                exampleJp: "試験に落ちてがっかりした。",
+                exampleVi: "Trượt kỳ thi nên thất vọng tràn trề.",
+                trap: "Không dùng để mô tả đồ vật hư hỏng.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Trạng từ chỉ cảm xúc thất vọng]"
+            },
+            {
+                id: "n3-1-4",
+                cat: "cat-1",
+                catName: "1) Trạng từ dễ nhầm N3",
+                word: "ぴったり",
+                wordFurigana: "ぴったり",
+                meaning: "vừa khít, vừa vặn (kích thước), hợp (người – vật), đúng thời điểm.",
+                tip: "“Pít lại = khít”",
+                exampleJp: "このズボンは私にぴったりだ。",
+                exampleVi: "Cái quần này vừa vặn khít với tôi.",
+                trap: "Đừng nhầm với すっかり (hoàn toàn).",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Trạng từ / Tính từ đuôi な]"
+            },
+            {
+                id: "n3-1-5",
+                cat: "cat-1",
+                catName: "1) Trạng từ dễ nhầm N3",
+                word: "たっぷり",
+                wordFurigana: "たっぷり",
+                meaning: "nhiều, đầy đủ, lượng lớn (thời gian, nước, đồ ăn).",
+                tip: "“Tấp đầy”",
+                exampleJp: "時間はたっぷりある。",
+                exampleVi: "Thời gian vẫn còn rất nhiều thoải mái.",
+                trap: "Dùng để nhấn mạnh sự sung túc, thừa thãi tích cực.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Trạng từ chỉ số lượng]"
+            },
+            {
+                id: "n3-1-6",
+                cat: "cat-1",
+                catName: "1) Trạng từ dễ nhầm N3",
+                word: "うっかり",
+                wordFurigana: "うっかり",
+                meaning: "vô ý, lỡ, sơ suất, quên, không chú ý.",
+                tip: "“U… quên mất”",
+                exampleJp: "約束をうっかり忘れてしまった。",
+                exampleVi: "Tôi đã lỡ quên mất lời hẹn mất rồi.",
+                trap: "Không dùng cho những hành động mang tính cố ý.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Trạng từ trạng thái vô ý]"
+            },
+            {
+                id: "n3-1-7",
+                cat: "cat-1",
+                catName: "1) Trạng từ dễ nhầm N3",
+                word: "はっきり",
+                wordFurigana: "はっきり",
+                meaning: "rõ ràng (âm thanh, hình ảnh, ý kiến).",
+                tip: "“Hắt sáng = rõ”",
+                exampleJp: "彼の声がはっきり聞こえる。",
+                exampleVi: "Nghe thấy rõ giọng nói của anh ấy.",
+                trap: "Thường bổ nghĩa cho động từ nhận thức hoặc giao tiếp.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Trạng từ chỉ mức độ rõ nét]"
+            },
+            {
+                id: "n3-1-8",
+                cat: "cat-1",
+                catName: "1) Trạng từ dễ nhầm N3",
+                word: "しっかり",
+                wordFurigana: "しっかり",
+                meaning: "chắc chắn, nghiêm túc, vững vàng, làm cẩn thận.",
+                tip: "“Siết chặt = chắc chắn”",
+                exampleJp: "しっかり勉強しなさい。",
+                exampleVi: "Hãy học hành cho nghiêm túc và chắc chắn vào.",
+                trap: "Mô tả tính cách hoặc cách làm việc kiên định.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Trạng từ trạng thái cẩn thận]"
+            },
+
+            // --- NHÓM 2: ĐỒNG ÂM - GẦN NGHĨA "TĂNG/GIẢM" (12 từ) ---
+            {
+                id: "n3-2-1",
+                cat: "cat-2",
+                catName: "2) Đồng âm - Gần nghĩa 'Tăng/Giảm'",
+                word: "増加",
+                wordFurigana: "ぞうか",
+                meaning: "Tăng về số lượng (dân số, số liệu đếm được).",
+                tip: "“加 = Thêm vào”",
+                exampleJp: "世界の人口はどんどん増加している。",
+                exampleVi: "Dân số thế giới đang tăng lên nhanh chóng.",
+                trap: "Chỉ dùng khi các đối tượng có thể đếm được bằng con số cụ thể.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Danh từ nhóm 3 - Tự động từ / が]"
+            },
+            {
+                id: "n3-2-2",
+                cat: "cat-2",
+                catName: "2) Đồng âm - Gần nghĩa 'Tăng/Giảm'",
+                word: "増大",
+                wordFurigana: "ぞうだい",
+                meaning: "Tăng về mức độ, quy mô, sức mạnh, những điều trừu tượng.",
+                tip: "“大 = Lớn mạnh”",
+                exampleJp: "将来への不安が増大してきた。",
+                exampleVi: "Nỗi bất an về tương lai ngày càng tăng lớn.",
+                trap: "Dùng cho sự lo lắng, nguy hiểm, áp lực, thế lực.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Danh từ nhóm 3 - Tự động từ / が]"
+            },
+            {
+                id: "n3-2-3",
+                cat: "cat-2",
+                catName: "2) Đồng âm - Gần nghĩa 'Tăng/Giảm'",
+                word: "増量",
+                wordFurigana: "ぞうりょう",
+                meaning: "Tăng khối lượng vật lý, liều thuốc, lượng hàng.",
+                tip: "“量 = Lượng”",
+                exampleJp: "薬 của量を増量してください。",
+                exampleVi: "Hãy tăng liều lượng thuốc lên giúp tôi.",
+                trap: "Thường dùng cho chất lỏng, cân nặng hoặc hàng hóa vật lý.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ nhóm 3 - Tha động từ / を]"
+            },
+            {
+                id: "n3-2-4",
+                cat: "cat-2",
+                catName: "2) Đồng âm - Gần nghĩa 'Tăng/Giảm'",
+                word: "増減",
+                wordFurigana: "ぞうげん",
+                meaning: "Tăng giảm thất thường, biến động.",
+                tip: "“減 = Giảm”",
+                exampleJp: "体重の増減が激しい。",
+                exampleVi: "Cân nặng tăng giảm thất thường.",
+                trap: "Dùng khi chỉ số dao động không ổn định.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ nhóm 3 - Tự động từ / が]"
+            },
+            {
+                id: "n3-2-5",
+                cat: "cat-2",
+                catName: "2) Đồng âm - Gần nghĩa 'Tăng/Giảm'",
+                word: "発達",
+                wordFurigana: "はったつ",
+                meaning: "Phát triển theo chiều sâu, hoàn thiện chức năng cơ thể, trí tuệ, khoa học.",
+                tip: "“達 = Đạt đến độ hoàn thiện”",
+                exampleJp: "技術が急速に発達した。",
+                exampleVi: "Công nghệ đã phát triển một cách nhanh chóng vượt bậc.",
+                trap: "Thường dùng cho sinh học, y tế hoặc nền tảng công nghệ.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Danh từ nhóm 3 - Tự động từ / が]"
+            },
+            {
+                id: "n3-2-6",
+                cat: "cat-2",
+                catName: "2) Đồng âm - Gần nghĩa 'Tăng/Giảm'",
+                word: "発展",
+                wordFurigana: "はってん",
+                meaning: "Phát triển mở rộng quy mô, lan rộng (kinh tế, xã hội, đô thị).",
+                tip: "“展 = Triển khai, mở rộng”",
+                exampleJp: "国の経済が発展している。",
+                exampleVi: "Kinh tế đất nước đang trên đà phát triển phồn vinh.",
+                trap: "Dùng cho các phạm vi lớn mang tính chính trị - xã hội.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Danh từ nhóm 3 - Tự động từ / が]"
+            },
+            {
+                id: "n3-2-7",
+                cat: "cat-2",
+                catName: "2) Đồng âm - Gần nghĩa 'Tăng/Giảm'",
+                word: "上昇",
+                wordFurigana: "じょうしょう",
+                meaning: "Tăng lên vượt bậc (nhiệt độ, giá cả, độ cao địa lý).",
+                tip: "“昇 = Thăng lên”",
+                exampleJp: "気温が上昇する。",
+                exampleVi: "Nhiệt độ môi trường tăng cao.",
+                trap: "Chỉ chuyển động hướng thẳng đứng của các chỉ số đo lường.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ nhóm 3 - Tự động từ / が]"
+            },
+            {
+                id: "n3-2-8",
+                cat: "cat-2",
+                catName: "2) Đồng âm - Gần nghĩa 'Tăng/Giảm'",
+                word: "上達",
+                wordFurigana: "じょうたつ",
+                meaning: "Tiến bộ rõ rệt về kỹ năng cá nhân, tay nghề hoặc ngoại ngữ.",
+                tip: "“達 = Đạt kỹ năng mới”",
+                exampleJp: "日本語が上達した。",
+                exampleVi: "Tiếng Nhật của tôi đã tiến bộ hơn hẳn.",
+                trap: "Không dùng cho sự phát triển của máy móc hay tổ chức.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Danh từ nhóm 3 - Tự động từ / が]"
+            },
+            {
+                id: "n3-2-9",
+                cat: "cat-2",
+                catName: "2) Đồng âm - Gần nghĩa 'Tăng/Giảm'",
+                word: "向上",
+                wordFurigana: "こうじょう",
+                meaning: "Cải thiện, nâng cao chất lượng cuộc sống, năng suất, ý thức.",
+                tip: "“向 = Hướng lên tiêu chuẩn cao”",
+                exampleJp: "生活の質が向上する。",
+                exampleVi: "Chất lượng cuộc sống đã được cải thiện rõ rệt.",
+                trap: "Đi kèm với các khái niệm trừu tượng tích cực.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ nhóm 3 - Tự động từ / が]"
+            },
+            {
+                id: "n3-2-10",
+                cat: "cat-2",
+                catName: "2) Đồng âm - Gần nghĩa 'Tăng/Giảm'",
+                word: "減少",
+                wordFurigana: "げんしょう",
+                meaning: "Giảm sút về mặt số lượng (dân số, số liệu đếm được).",
+                tip: "“少 = Thiếu, ít đi”",
+                exampleJp: "人口が減少している。",
+                exampleVi: "Dân số của khu vực đang bị sụt giảm dần.",
+                trap: "Từ trái nghĩa trực tiếp của 増加.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ nhóm 3 - Tự động từ / が]"
+            },
+            {
+                id: "n3-2-11",
+                cat: "cat-2",
+                catName: "2) Đồng âm - Gần nghĩa 'Tăng/Giảm'",
+                word: "低下",
+                wordFurigana: "ていか",
+                meaning: "Giảm về chất lượng, năng lực, mức độ hoặc nhiệt độ.",
+                tip: "“低 = Thấp xuống”",
+                exampleJp: "気温が低下する。",
+                exampleVi: "Nhiệt độ ngoài trời giảm sút.",
+                trap: "Thường mang nghĩa tiêu cực (suy giảm chất lượng).",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ nhóm 3 - Tự động từ / が]"
+            },
+            {
+                id: "n3-2-12",
+                cat: "cat-2",
+                catName: "2) Đồng âm - Gần nghĩa 'Tăng/Giảm'",
+                word: "下落",
+                wordFurigana: "げらく",
+                meaning: "Giảm sụt về giá trị tài chính (giá cổ phiếu, giá đất).",
+                tip: "“落 = Rơi rớt xuống”",
+                exampleJp: "株価が下落した。",
+                exampleVi: "Giá cổ phiếu trên thị trường đã sụt giảm mạnh.",
+                trap: "Chỉ dùng cho lĩnh vực kinh tế, giá cả thị trường.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Danh từ nhóm 3 - Tự động từ / が]"
+            },
+
+            // --- NHÓM 3: TỪ KATAKANA N3 (10 từ) ---
+            {
+                id: "n3-3-1",
+                cat: "cat-3",
+                catName: "3) Từ Katakana N3",
+                word: "ロマン",
+                wordFurigana: "ロマン",
+                meaning: "Sự lãng mạn, khát vọng mang tính tinh thần trừu tượng.",
+                tip: "“Roman = Tinh thần”",
+                exampleJp: "宇宙旅行にロマンを感じる。",
+                exampleVi: "Tôi cảm thấy sự lãng mạn bay bổng từ chuyến du hành vũ trụ.",
+                trap: "Không dùng để mô tả một chuyện tình lãng mạn cụ thể.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Danh từ]"
+            },
+            {
+                id: "n3-3-2",
+                cat: "cat-3",
+                catName: "3) Từ Katakana N3",
+                word: "ロマンス",
+                wordFurigana: "ロマンス",
+                meaning: "Chuyện tình, mối tình lãng mạn thực tế hoặc trong tác phẩm.",
+                tip: "“Romance = Mối tình”",
+                exampleJp: "ロマンス映画が好きだ。",
+                exampleVi: "Tôi cực kỳ thích những thể loại phim tình cảm.",
+                trap: "Thường dùng để phân loại thể loại phim ảnh, sách báo.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ]"
+            },
+            {
+                id: "n3-3-3",
+                cat: "cat-3",
+                catName: "3) Từ Katakana N3",
+                word: "ロマンチック",
+                wordFurigana: "ロマンチック",
+                meaning: "Lãng mạn (mô tả cảnh vật, câu chuyện, không khí).",
+                tip: "“Chic = Đẹp lộng lẫy”",
+                exampleJp: "このドラマはとてもロマンチックな話だ。",
+                exampleVi: "Bộ phim truyền hình này là một câu chuyện cực kỳ lãng mạn.",
+                trap: "Là tính từ đuôi な bổ nghĩa cho cảnh sắc, bữa tối.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Tính từ đuôi な]"
+            },
+            {
+                id: "n3-3-4",
+                cat: "cat-3",
+                catName: "3) Từ Katakana N3",
+                word: "ロマンチスト",
+                wordFurigana: "ロマンチスト",
+                meaning: "Người có tính cách hoặc tâm hồn lãng mạn.",
+                tip: "“-ist = Danh từ chỉ người”",
+                exampleJp: "彼は本当にロマンチストだと思う。",
+                exampleVi: "Tôi thực sự nghĩ anh ấy là một người rất lãng mạn.",
+                trap: "Chỉ dùng để mô tả tính cách con người.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Danh từ chỉ người]"
+            },
+            {
+                id: "n3-3-5",
+                cat: "cat-3",
+                catName: "3) Từ Katakana N3",
+                word: "サービス",
+                wordFurigana: "サービス",
+                meaning: "Dịch vụ phục vụ khách hàng, khuyến mại, ưu đãi thêm.",
+                tip: "“Service = Phục vụ”",
+                exampleJp: "この店はサービスがいい。",
+                exampleVi: "Cửa hàng ăn này chất lượng phục vụ rất tốt.",
+                trap: "Trong đời sống Nhật, từ này còn có nghĩa là 'tặng kèm miễn phí'.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ / Danh từ nhóm 3]"
+            },
+            {
+                id: "n3-3-6",
+                cat: "cat-3",
+                catName: "3) Từ Katakana N3",
+                word: "サポート",
+                wordFurigana: "サポート",
+                meaning: "Hỗ trợ (mang tính kỹ thuật, tinh thần hoặc tài chính).",
+                tip: "“Support = Nâng đỡ”",
+                exampleJp: "家族にサポートしてもらった。",
+                exampleVi: "Tôi đã nhận được sự hỗ trợ, giúp đỡ lớn từ phía gia đình.",
+                trap: "Dùng cho cả sự giúp đỡ trong đời sống lẫn kỹ thuật máy tính.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ nhóm 3 - Tha động từ / を]"
+            },
+            {
+                id: "n3-3-7",
+                cat: "cat-3",
+                catName: "3) Từ Katakana N3",
+                word: "ケア",
+                wordFurigana: "ケア",
+                meaning: "Chăm sóc (y tế, sức khỏe, làn da, cơ thể).",
+                tip: "“Care = Y tế & Sức khỏe”",
+                exampleJp: "毎日お肌のケアをする。",
+                exampleVi: "Hằng ngày tôi đều chăm sóc cho làn da của mình.",
+                trap: "Thường đi kèm trong các cụm từ chăm sóc sắc đẹp hoặc dưỡng bệnh.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ nhóm 3 - Tha động từ / を]"
+            },
+            {
+                id: "n3-3-8",
+                cat: "cat-3",
+                catName: "3) Từ Katakana N3",
+                word: "マナー",
+                wordFurigana: "マナー",
+                meaning: "Quy tắc lịch sự, phép xã giao nơi công cộng.",
+                tip: "“Manners = Phép lịch sự”",
+                exampleJp: "公共の場所でマナーを守ることは大切だ。",
+                exampleVi: "Việc tuân thủ quy tắc ứng xử lịch sự ở nơi công cộng là rất quan trọng.",
+                trap: "Khác với ルール (luật pháp bắt buộc), マナー là ý thức cá nhân.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Danh từ]"
+            },
+            {
+                id: "n3-3-9",
+                cat: "cat-3",
+                catName: "3) Từ Katakana N3",
+                word: "スマート",
+                wordFurigana: "スマート",
+                meaning: "Thanh lịch, gọn gàng, mảnh mai hoặc thông minh.",
+                tip: "“Smart = Thiết kế thanh thoát”",
+                exampleJp: "スマートなデザインが気に入った。",
+                exampleVi: "Tôi cực kỳ ưng thiết kế thon gọn, thanh lịch này.",
+                trap: "Ở Nhật thường dùng để khen vóc dáng thon gọn, mảnh mai của ai đó.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Tính từ đuôi な]"
+            },
+            {
+                id: "n3-3-10",
+                cat: "cat-3",
+                catName: "3) Từ Katakana N3",
+                word: "クール",
+                wordFurigana: "クール",
+                meaning: "Ngầu, lạnh lùng, điềm tĩnh.",
+                tip: "“Cool = Lạnh lùng ngầu”",
+                exampleJp: "彼はクールな人だ。",
+                exampleVi: "Anh ấy là một người cực kỳ điềm tĩnh và ngầu.",
+                trap: "Vừa có nghĩa là mát mẻ (nhiệt độ) vừa chỉ tính cách điềm tĩnh.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Tính từ đuôi な]"
+            },
+
+            // --- NHÓM 4: CỤM CỐ ĐỊNH JLPT (20 từ) ---
+            {
+                id: "n3-4-1",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "汗をかく",
+                wordFurigana: "あせをかく",
+                meaning: "Đổ mồ hôi, toát mồ hôi (do tập luyện hoặc nóng nực).",
+                tip: "“Kaku = Đào mồ hôi ra”",
+                exampleJp: "運動してたくさん汗をかいた。",
+                exampleVi: "Vận động thể thao nên tôi đổ rất nhiều mồ hôi.",
+                trap: "Không dùng các động từ khác như 流す trong cấu trúc tự nhiên cơ bản này.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Cụm Động từ hành động]"
+            },
+            {
+                id: "n3-4-2",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "息をする",
+                wordFurigana: "いきをする",
+                meaning: "Thở, hô hấp.",
+                tip: "“Làm hơi thở”",
+                exampleJp: "深く息をしてください。",
+                exampleVi: "Hãy hít thở một hơi thật sâu.",
+                trap: "Bắt buộc đi kèm với động từ する.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Cụm Động từ sinh lý]"
+            },
+            {
+                id: "n3-4-3",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "あくびが出る",
+                wordFurigana: "あくびがでる",
+                meaning: "Ngáp (ngáp ngủ do mệt mỏi).",
+                tip: "“Ngáp tự trồi ra”",
+                exampleJp: "眠くてあくびが出る。",
+                exampleVi: "Buồn ngủ quá nên tôi ngáp ngắn ngáp dài liên tục.",
+                trap: "あくび đi kèm với động từ 出る (tự nhiên xảy ra).",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Cụm Tự động từ / が]"
+            },
+            {
+                id: "n3-4-4",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "くしゃみが出る",
+                wordFurigana: "くしゃみがでる",
+                meaning: "Hắt hơi (do cảm lạnh hoặc dị ứng phấn hoa).",
+                tip: "“Hắt xì tự phát”",
+                exampleJp: "風邪でくしゃみが出る。",
+                exampleVi: "Vì bị cảm lạnh nên tôi liên tục bị hắt xì hơi.",
+                trap: "Thường dùng trợ từ が với động từ 出る.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Cụm Tự động từ / が]"
+            },
+            {
+                id: "n3-4-5",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "気に入る",
+                wordFurigana: "きにいる",
+                meaning: "Thích, ưng ý, hài lòng với món đồ hay ai đó.",
+                tip: "“Đi vào trong tim = Ưng”",
+                exampleJp: "この靴がとても気に入った。",
+                exampleVi: "Tôi thực sự rất ưng ý đôi giày này.",
+                trap: "Khác với 好き (là tính từ), 気に入る là một động từ.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Động từ nhóm 1 - Tự động từ / が]"
+            },
+            {
+                id: "n3-4-6",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "気になる",
+                wordFurigana: "き気になる",
+                meaning: "Bận tâm, lo lắng, tò mò muốn biết.",
+                tip: "“Hóa thành tâm trạng bận lòng”",
+                exampleJp: "彼の言葉がとても気になる。",
+                exampleVi: "Tôi vô cùng bận lòng về những gì anh ấy vừa nói.",
+                trap: "Bao gồm cả nghĩa lo lắng tiêu cực lẫn tò mò hứng thú.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Động từ nhóm 1 - Tự động từ / が]"
+            },
+            {
+                id: "n3-4-7",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "気がする",
+                wordFurigana: "きがする",
+                meaning: "Có cảm giác là, linh cảm thấy điều gì sắp tới.",
+                tip: "“Tạo ra cảm giác mơ hồ”",
+                exampleJp: "雨が降りそうな気がする。",
+                exampleVi: "Tôi có cảm giác mơ hồ là trời chuẩn bị mưa.",
+                trap: "Dùng khi nói về một phán đoán không có căn cứ rõ ràng.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Cụm Động từ trạng thái / が]"
+            },
+            {
+                id: "n3-4-8",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "気をつける",
+                wordFurigana: "きをつける",
+                meaning: "Cẩn thận, chú ý giữ an toàn.",
+                tip: "“Bám chặt sự chú ý”",
+                exampleJp: "車に気をつけて帰ってください。",
+                exampleVi: "Hãy cẩn thận xe cộ khi trên đường trở về nhà nhé.",
+                trap: "Dùng để nhắc nhở hoặc khuyên bảo người khác bảo trọng.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Cụm Tha động từ / を]"
+            },
+            {
+                id: "n3-4-9",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "迷惑をかける",
+                wordFurigana: "めいわくをかける",
+                meaning: "Gây phiền phức, làm ảnh hưởng tiêu cực đến người xung quanh.",
+                tip: "“Kakeru = Gieo rắc phiền phức”",
+                exampleJp: "ご迷惑をかけてすみません。",
+                exampleVi: "Tôi xin thành thật xin lỗi vì đã gây phiền hà cho bạn.",
+                trap: "Là cụm từ xin lỗi kinh điển thực hay gặp trong JLPT.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Cụm Tha động từ / を]"
+            },
+            {
+                id: "n3-4-10",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "注意を払う",
+                wordFurigana: "ちゅういをはらう",
+                meaning: "Chi trả sự chú ý, tập trung đề phòng rủi ro.",
+                tip: "“Trả tiền cho sự chú ý”",
+                exampleJp: "安全に細心の注意を払う。",
+                exampleVi: "Đặc biệt chú ý cực kỳ kỹ lưỡng tới sự an toàn.",
+                trap: "Thường dùng trong văn viết hoặc phát biểu trang trọng.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Cụm Tha động từ / を]"
+            },
+            {
+                id: "n3-4-11",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "約束を守る",
+                wordFurigana: "やくそくをまもる",
+                meaning: "Giữ lời hứa, thực hiện đúng những gì cam kết.",
+                tip: "“Bảo vệ lời hứa”",
+                exampleJp: "約束は必ず守るべきだ。",
+                exampleVi: "Lời cam kết của mình thì nhất định phải giữ gìn.",
+                trap: "Trái nghĩa với 約束を破る (thất hứa).",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Cụm Tha động từ / を]"
+            },
+            {
+                id: "n3-4-12",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "時間を守る",
+                wordFurigana: "じかんをまもる",
+                meaning: "Đúng giờ, tuân thủ nghiêm ngặt giờ giấc.",
+                tip: "“Bảo vệ thời gian”",
+                exampleJp: "日本では時間を守ることが大切だ。",
+                exampleVi: "Tại Nhật Bản việc tuân thủ đúng giờ giấc là tối quan trọng.",
+                trap: "Là nét văn hóa ứng xử cốt lõi khi làm việc với người Nhật.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Cụm Tha động từ / を]"
+            },
+            {
+                id: "n3-4-13",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "アンケートをとる",
+                wordFurigana: "アンケートをとる",
+                meaning: "Tiến hành làm khảo sát, thu thập ý kiến quần chúng.",
+                tip: "“Nhận khảo sát”",
+                exampleJp: "クラスでアンケートをとった。",
+                exampleVi: "Tôi đã thực hiện lấy phiếu ý kiến khảo sát trong lớp.",
+                trap: "Dùng động từ とる (lấy, thu thập) chứ không dùng する.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Cụm Tha động từ / を]"
+            },
+            {
+                id: "n3-4-14",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "メモをとる",
+                wordFurigana: "メモをとる",
+                meaning: "Ghi chép nhanh, ghi chú lại nội dung.",
+                tip: "“Hốt lấy ghi chép”",
+                exampleJp: "授業中に細かくメモをとる。",
+                exampleVi: "Ghi chép lại bài thật cẩn thận trong giờ giảng.",
+                trap: "Đi kèm động từ とる để thể hiện hành động ghi chép chủ động.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Cụm Tha động từ / を]"
+            },
+            {
+                id: "n3-4-15",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "連絡をとる",
+                wordFurigana: "れんらくをとる",
+                meaning: "Liên lạc, kết nối trao đổi thông tin với ai đó.",
+                tip: "“Bắt nhịp liên lạc”",
+                exampleJp: "友達とこまめに連絡をとる。",
+                exampleVi: "Thường xuyên liên lạc trao đổi thông tin với bạn bè.",
+                trap: "Dùng để diễn tả hành động chủ động chủ trì liên lạc.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Cụm Tha động từ / を]"
+            },
+            {
+                id: "n3-4-16",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "電話をかける",
+                wordFurigana: "でんわをかける",
+                meaning: "Gọi điện thoại cho ai đó.",
+                tip: "“Treo cuộc điện thoại”",
+                exampleJp: "夜、母に電話をかけた。",
+                exampleVi: "Buổi tối, tôi đã bấm máy gọi điện về cho mẹ.",
+                trap: "Trợ từ đi với đối tượng nhận cuộc gọi luôn là に.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Cụm Tha động từ / を]"
+            },
+            {
+                id: "n3-4-17",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "経験を積む",
+                wordFurigana: "けいけんをつむ",
+                meaning: "Tích lũy kinh nghiệm, bồi đắp kiến thức thực tế qua thời gian.",
+                tip: "“Xếp chồng kinh nghiệm lên”",
+                exampleJp: "今の仕事でしっかりと経験を積む。",
+                exampleVi: "Tích lũy vốn kinh nghiệm thực tế vững vàng qua công việc hiện tại.",
+                trap: "Dùng động từ 積む để thể hiện quá trình tích luỹ lâu dài.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Cụm Tha động từ / を]"
+            },
+            {
+                id: "n3-4-18",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "力を入れる",
+                wordFurigana: "ちからをいれる",
+                meaning: "Dồn toàn lực, nỗ lực tối đa, chú trọng phát triển mảng nào đó.",
+                tip: "“Bỏ sức lực vào”",
+                exampleJp: "日本語の勉強に特に力を入れている。",
+                exampleVi: "Tôi đang dồn rất nhiều sức lực và tâm huyết vào việc học tiếng Nhật.",
+                trap: "Thường đi kèm với trợ từ に trước đối tượng được dồn lực.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Cụm Tha động từ / を]"
+            },
+            {
+                id: "n3-4-19",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "締め切りを守る",
+                wordFurigana: "しめきりをまもる",
+                meaning: "Hoàn thành đúng thời hạn, đúng deadline.",
+                tip: "“Bảo vệ hạn chót”",
+                exampleJp: "締め切りを絶対に守る必要がある。",
+                exampleVi: "Bắt buộc tuyệt đối phải tuân thủ đúng hạn chót.",
+                trap: "Trái nghĩa trực tiếp là 締め切りに遅れる (muộn deadline).",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Cụm Tha động từ / を]"
+            },
+            {
+                id: "n3-4-20",
+                cat: "cat-4",
+                catName: "4) Cụm cố định JLPT",
+                word: "成績が上がる",
+                wordFurigana: "せいせきがあがる",
+                meaning: "Thành tích, điểm số được cải thiện rõ rệt.",
+                tip: "“Điểm số tự leo lên”",
+                exampleJp: "最近テストの成績が上がった。",
+                exampleVi: "Gần đây điểm thi thành tích của tôi đã có sự tiến bộ đi lên.",
+                trap: "Là tự động từ, đi kèm với trợ từ が.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Cụm Tự động từ / が]"
+            },
+
+            // --- NHÓM 5: TỪ TRÁI NGHĨA DỄ LẪN (7 từ) ---
+            {
+                id: "n3-5-1",
+                cat: "cat-5",
+                catName: "5) Từ trái nghĩa dễ lẫn",
+                word: "迎える vs 見送る",
+                wordFurigana: "むかえる vs みおくる",
+                meaning: "Đón (khách, năm mới) >< Tiễn (người ra ga, sân bay).",
+                tip: "“Mukaeru = Đón tiếp, Miokuru = Nhìn tiễn đi”",
+                exampleJp: "友達を駅で迎え、彼を空港まで見送った。",
+                exampleVi: "Tôi đón người bạn của mình ở nhà ga và tiễn anh ấy đến tận sân bay.",
+                trap: "Không hoán đổi hai hành động đón - tiễn này cho nhau.",
+                mondaiType: "Mondai 4 - Từ đồng/trái nghĩa",
+                grammarType: "[Cặp Tha động từ đối lập / を]"
+            },
+            {
+                id: "n3-5-2",
+                cat: "cat-5",
+                catName: "5) Từ trái nghĩa dễ lẫn",
+                word: "増える vs 減る",
+                wordFurigana: "ふえる vs へる",
+                meaning: "Tăng lên >< Giảm đi (Tự động từ đi với trợ từ が).",
+                tip: "“Fueru = Phình ra, Heru = Hụt đi”",
+                exampleJp: "人口が増えると、仕事が減る可能性がある。",
+                exampleVi: "Dân số mà tăng lên thì có khả năng việc làm sẽ bị sụt giảm.",
+                trap: "Bắt buộc dùng trợ từ が, không đi với trợ từ を.",
+                mondaiType: "Mondai 4 - Từ đồng/trái nghĩa",
+                grammarType: "[Cặp Tự động từ đối lập / が]"
+            },
+            {
+                id: "n3-5-3",
+                cat: "cat-5",
+                catName: "5) Từ trái nghĩa dễ lẫn",
+                word: "上がる vs 下がる",
+                wordFurigana: "あがる vs さがる",
+                meaning: "Tăng lên (giá cả, nhiệt độ) >< Giảm xuống (Đây là Tự động từ).",
+                tip: "“Aga = Nhô lên, Saga = Hạ xuống”",
+                exampleJp: "物価が上がると、生活費が足りなくなる。",
+                exampleVi: "Giá cả hàng hóa tăng lên thì chi phí sinh hoạt sẽ không đủ.",
+                trap: "Không dùng cho việc tiến bộ kỹ năng hay ngoại ngữ.",
+                mondaiType: "Mondai 4 - Từ đồng/trái nghĩa",
+                grammarType: "[Cặp Tự động từ đối lập / が]"
+            },
+            {
+                id: "n3-5-4",
+                cat: "cat-5",
+                catName: "5) Từ trái nghĩa dễ lẫn",
+                word: "得意 vs 苦手",
+                wordFurigana: "とくい vs にがて",
+                meaning: "Giỏi, tự tin >< Yếu kém, sợ làm việc gì.",
+                tip: "“Nigate = Không thích + Sợ làm”",
+                exampleJp: "私は数学が得意だが、英語は苦手だ。",
+                exampleVi: "Tôi khá giỏi và tự tin môn Toán nhưng lại cực kỳ kém tiếng Anh.",
+                trap: "苦手 bao hàm cả cảm giác sợ hãi, ngại ngùng khi phải thực hiện.",
+                mondaiType: "Mondai 4 - Từ đồng/trái nghĩa",
+                grammarType: "[Cặp Tính từ đuôi な đối lập]"
+            },
+            {
+                id: "n3-5-5",
+                cat: "cat-5",
+                catName: "5) Từ trái nghĩa dễ lẫn",
+                word: "成功 vs 失敗",
+                wordFurigana: "せいこう vs しっぱい",
+                meaning: "Thành công >< Thất bại.",
+                tip: "“Seikou = Đỗ đạt, Shippai = Bại trận”",
+                exampleJp: "何度も失敗したが、最後は成功した。",
+                exampleVi: "Tôi đã thất bại rất nhiều lần, nhưng cuối cùng đã thành công.",
+                trap: "成功 không dùng cho việc nói tay nghề tiến bộ.",
+                mondaiType: "Mondai 4 - Từ đồng/trái nghĩa",
+                grammarType: "[Cặp Danh từ nhóm 3 đối lập / に]"
+            },
+            {
+                id: "n3-5-6",
+                cat: "cat-5",
+                catName: "5) Từ trái nghĩa dễ lẫn",
+                word: "増やす vs 減らす",
+                wordFurigana: "ふやす vs へらす",
+                meaning: "Làm cho tăng lên >< Làm cho giảm đi (Tha động từ đi với trợ từ を).",
+                tip: "“Đuôi -su = Tác động trực tiếp thay đổi”",
+                exampleJp: "貯金を増やし、無駄な出費を減らしたい。",
+                exampleVi: "Tôi muốn tăng tiền tiết kiệm và hạn chế cắt giảm chi tiêu lãng phí.",
+                trap: "Bắt buộc đi kèm tân ngữ và dùng trợ từ を.",
+                mondaiType: "Mondai 4 - Từ đồng/trái nghĩa",
+                grammarType: "[Cặp Tha động từ đối lập / を]"
+            },
+            {
+                id: "n3-5-7",
+                cat: "cat-5",
+                catName: "5) Từ trái nghĩa dễ lẫn",
+                word: "上げる vs 下げる",
+                wordFurigana: "あげる vs さげる",
+                meaning: "Làm tăng lên >< Hạ xuống (Tha động từ đi với trợ từ を).",
+                tip: "“Tác động trực tiếp dịch chuyển giá trị”",
+                exampleJp: "お店の店長は値段を大幅に下げた。",
+                exampleVi: "Cửa hàng trưởng đã hạ mức giá bán sản phẩm xuống rất nhiều.",
+                trap: "Là hành động chủ quan của con người làm biến đổi giá trị vật thể.",
+                mondaiType: "Mondai 4 - Từ đồng/trái nghĩa",
+                grammarType: "[Cặp Tha động từ đối lập / を]"
+            },
+
+            // --- NHÓM 6: TỪ CHỈ MỨC ĐỘ - LƯỢNG N3 (8 từ) ---
+            {
+                id: "n3-6-1",
+                cat: "cat-6",
+                catName: "6) Từ chỉ mức độ - lượng",
+                word: "ほんの",
+                wordFurigana: "ほんの",
+                meaning: "Chỉ là, vỏn vẹn, nhấn mạnh sự cực kỳ ít ỏi không đáng kể.",
+                tip: "“Chỉ một tẹo”",
+                exampleJp: "ほんの少しだけ気持ちを伝えた。",
+                exampleVi: "Tôi chỉ thổ lộ một chút xíu tình cảm của mình thôi.",
+                trap: "Mang sắc thái khiêm tốn hoặc nhỏ bé, không dùng cho số lượng lớn.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Phó từ hạn định]"
+            },
+            {
+                id: "n3-6-2",
+                cat: "cat-6",
+                catName: "6) Từ chỉ mức độ - lượng",
+                word: "やや",
+                wordFurigana: "やや",
+                meaning: "Hơi hơi, một chút (sắc thái lịch sự, văn viết).",
+                tip: "“Hơi hơi trang trọng”",
+                exampleJp: "今年の冬はやや暖かい気がする。",
+                exampleVi: "Mùa đông năm nay tôi có cảm giác là hơi ấm áp một chút.",
+                trap: "Thường xuất hiện nhiều trong báo cáo khoa học hoặc văn viết lịch sự.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Phó từ chỉ mức độ nhẹ]"
+            },
+            {
+                id: "n3-6-3",
+                cat: "cat-6",
+                catName: "6) Từ chỉ mức độ - lượng",
+                word: "たった",
+                wordFurigana: "たった",
+                meaning: "Vỏn vẹn chỉ có (nhấn mạnh sự ít ỏi đến mức ngạc nhiên).",
+                tip: "“Thật ít đến bất ngờ”",
+                exampleJp: "たった五分で今日の作業が終わった。",
+                exampleVi: "Chỉ vỏn vẹn đúng 5 phút mà công việc ngày hôm nay đã xong xuôi.",
+                trap: "Mang ý chí ngạc nhiên, nuối tiếc mạnh mẽ hơn ほん của.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Phó từ hạn định cực hạn]"
+            },
+            {
+                id: "n3-6-4",
+                cat: "cat-6",
+                catName: "6) Từ chỉ mức độ - lượng",
+                word: "かなり",
+                wordFurigana: "かなり",
+                meaning: "Khá là, tương đối nhiều (vượt mức mong đợi trung bình).",
+                tip: "“Khá là nhiều”",
+                exampleJp: "彼の日本語力はかなり向上した。",
+                exampleVi: "Năng lực tiếng Nhật của anh ấy đã cải thiện khá nhiều đấy.",
+                trap: "Không dùng cho những trạng thái đạt mức tuyệt đối cao nhất.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Phó từ chỉ mức độ trung-cao]"
+            },
+            {
+                id: "n3-6-5",
+                cat: "cat-6",
+                catName: "6) Từ chỉ mức độ - lượng",
+                word: "ずいぶん",
+                wordFurigana: "ずいぶん",
+                meaning: "Rất nhiều, cực kỳ (kèm cảm xúc kinh ngạc, trầm trồ).",
+                tip: "“Kinh ngạc bất ngờ”",
+                exampleJp: "今日はずいぶん早く来たね。",
+                exampleVi: "Hôm nay cậu đến sớm một cách đáng ngạc nhiên thế nhỉ.",
+                trap: "Có thể mang sắc thái mỉa mai tùy thuộc ngữ cảnh đối thoại.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Phó từ chỉ cảm xúc trầm trồ]"
+            },
+            {
+                id: "n3-6-6",
+                cat: "cat-6",
+                catName: "6) Từ chỉ mức độ - lượng",
+                word: "すこし",
+                wordFurigana: "すこし",
+                meaning: "Một chút, một ít (mức độ nhỏ trung tính).",
+                tip: "“Chút ít phổ biến”",
+                exampleJp: "少々、少し疲れました。",
+                exampleVi: "Tôi có hơi mệt mỏi một chút thôi.",
+                trap: "Dùng trong giao tiếp đời sống hàng ngày, bình dân hơn やや.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Phó từ chỉ lượng cơ bản]"
+            },
+            {
+                id: "n3-6-7",
+                cat: "cat-6",
+                catName: "6) Từ chỉ mức độ - lượng",
+                word: "けっこう",
+                wordFurigana: "けっこう",
+                meaning: "Khá là tốt / Đủ rồi (từ chối lịch sự).",
+                tip: "“Khá ổn hoặc từ chối”",
+                exampleJp: "この料理はけっこうおいしいですね。",
+                exampleVi: "Món ăn này cũng thuộc dạng khá ngon đấy chứ.",
+                trap: "Chú ý cấu trúc けっこうです mang nghĩa từ chối lịch sự.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Phó từ / Tính từ đuôi な]"
+            },
+            {
+                id: "n3-6-8",
+                cat: "cat-6",
+                catName: "6) Từ chỉ mức độ - lượng",
+                word: "だいぶ",
+                wordFurigana: "だいぶ",
+                meaning: "Đáng kể, khá nhiều (thể hiện sự thay đổi trạng thái rõ rệt).",
+                tip: "“Thay đổi rõ rệt qua thời gian”",
+                exampleJp: "おかげさまで病気はだいぶ良くなった。",
+                exampleVi: "Nhờ trời mà bệnh tình của tôi đã tiến triển tốt lên rất nhiều.",
+                trap: "Không dùng trực tiếp để bổ nghĩa đếm số lượng.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Phó từ chỉ sự biến đổi lớn]"
+            },
+
+            // --- NHÓM 7: PHƯƠNG HƯỚNG & HƯỚNG ĐI (6 từ) ---
+            {
+                id: "n3-7-1",
+                cat: "cat-7",
+                catName: "7) Phương hướng & Hướng đi",
+                word: "向き",
+                wordFurigana: "むき",
+                meaning: "Phù hợp với tính chất tự nhiên của đối tượng.",
+                tip: "“Mức độ thích hợp sẵn có”",
+                exampleJp: "この服は子供向きのデザインだ。",
+                exampleVi: "Bộ quần áo này có kiểu dáng tự nhiên rất phù hợp với trẻ con.",
+                trap: "Khác với 向け (được thiết kế/sản xuất có chủ đích hướng tới).",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Hậu tố ghép danh từ]"
+            },
+            {
+                id: "n3-7-2",
+                cat: "cat-7",
+                catName: "7) Phương hướng & Hướng đi",
+                word: "向け",
+                wordFurigana: "むけ",
+                meaning: "Chế tạo, thiết kế dành riêng cho đối tượng mục tiêu.",
+                tip: "“Chế tạo riêng cho ai đó”",
+                exampleJp: "これは初心者向けの本です。",
+                exampleVi: "Đây là cuốn sách viết ra thiết kế riêng cho người mới bắt đầu.",
+                trap: "Không đơn giản chỉ là phù hợp tự nhiên, đây là sự sắp đặt cố ý.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Hậu tố ghép danh từ]"
+            },
+            {
+                id: "n3-7-3",
+                cat: "cat-7",
+                catName: "7) Phương hướng & Hướng đi",
+                word: "向かう",
+                wordFurigana: "むかう",
+                meaning: "Hướng về phía, di chuyển tiến về mục tiêu.",
+                tip: "“Chuyển động tiến lên”",
+                exampleJp: "現在、駅に向かって歩いている。",
+                exampleVi: "Hiện tại tôi đang rảo bước đi về phía nhà ga.",
+                trap: "Dùng để mô tả sự dịch chuyển vật lý hoặc định hướng cuộc đời.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Động từ nhóm 1 - Tự động từ / に]"
+            },
+            {
+                id: "n3-7-4",
+                cat: "cat-7",
+                catName: "7) Phương hướng & Hướng đi",
+                word: "方面",
+                wordFurigana: "ほうめん",
+                meaning: "Hướng đi của tàu xe, khu vực địa lý lớn.",
+                tip: "“Dùng trong tàu xe, định vị”",
+                exampleJp: "東京方面の電車に乗った。",
+                exampleVi: "Tôi đã bước lên chuyến tàu đi về hướng khu vực Tokyo.",
+                trap: "Không dùng cho phương hướng các đồ vật nhỏ lẻ trong phòng học.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ chỉ phương vị]"
+            },
+            {
+                id: "n3-7-5",
+                cat: "cat-7",
+                catName: "7) Phương hướng & Hướng đi",
+                word: "方角",
+                wordFurigana: "ほうがく",
+                meaning: "Phương hướng chính xác trên la bàn (đông, tây, nam, bắc).",
+                tip: "“La bàn địa lý”",
+                exampleJp: "地図を頼りに入口の方角を調べる。",
+                exampleVi: "Tôi dựa vào bản đồ để tra cứu phương hướng của cổng lối vào.",
+                trap: "Thường dùng trong lĩnh vực phong thủy hoặc định hướng khoa học.",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Danh từ chỉ hướng la bàn]"
+            },
+            {
+                id: "n3-7-6",
+                cat: "cat-7",
+                catName: "7) Phương hướng & Hướng đi",
+                word: "沿う",
+                wordFurigana: "そう",
+                meaning: "Dọc theo (đi dọc bờ sông, con đường).",
+                tip: "“Sông - Đường uốn lượn”",
+                exampleJp: "川に沿って桜の木が並んでいる。",
+                exampleVi: "Hàng cây hoa anh đào xếp hàng chạy dọc theo con sông.",
+                trap: "Đừng nhầm lẫn với 従う (tuân thủ theo quy định luật pháp).",
+                mondaiType: "Mondai 5 - Cách dùng từ",
+                grammarType: "[Động từ nhóm 1 - Tự động từ / に]"
+            },
+
+            // --- NHÓM 8: TỪ CHỈ CẢM XÚC N3 (7 từ) ---
+            {
+                id: "n3-8-1",
+                cat: "cat-8",
+                catName: "8) Từ chỉ cảm xúc N3",
+                word: "うらやましい",
+                wordFurigana: "うらやましい",
+                meaning: "Ghen tị tích cực (ngưỡng mộ, ao ước đạt được như vậy).",
+                tip: "“Ghen tị ngưỡng mộ”",
+                exampleJp: "彼の生活がうらやましい。",
+                exampleVi: "Thật lòng ghen tị ngưỡng mộ cuộc sống tự do tự tại của anh ấy.",
+                trap: "Không mang nghĩa tiêu cực thù hằn, ghét bỏ ác ý.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Tính từ đuôi い]"
+            },
+            {
+                id: "n3-8-2",
+                cat: "cat-8",
+                catName: "8) Từ chỉ cảm xúc N3",
+                word: "なつかしい",
+                wordFurigana: "なつかしい",
+                meaning: "Hoài niệm, nhớ nhung kỷ niệm tươi đẹp trong quá khứ.",
+                tip: "“Nhớ kỷ niệm xưa”",
+                exampleJp: "昔のアルバムを見ると子供のころがなつかしい。",
+                exampleVi: "Nhìn cuốn album cũ làm tôi thật hoài niệm thời thơ ấu ngày xưa.",
+                trap: "Không dùng để nói nhớ một ai đó cụ thể đang yêu ngay lúc này.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Tính từ đuôi い]"
+            },
+            {
+                id: "n3-8-3",
+                cat: "cat-8",
+                catName: "8) Từ chỉ cảm xúc N3",
+                word: "くやしい",
+                wordFurigana: "くやしい",
+                meaning: "Tiếc nuối, cay cú, hậm hực vì thua cuộc hoặc thất bại suýt soát.",
+                tip: "“Cay cú vì suýt được”",
+                exampleJp: "一瞬の差で試合に負けてくやしい。",
+                exampleVi: "Thua cuộc chỉ trong tích tắc khiến tôi vô cùng cay cú, tiếc nuối.",
+                trap: "Thể hiện cảm xúc mạnh mẽ khi nỗ lực cá nhân không đạt thành quả.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Tính từ đuôi い]"
+            },
+            {
+                id: "n3-8-4",
+                cat: "cat-8",
+                catName: "8) Từ chỉ cảm xúc N3",
+                word: "かわいそう",
+                wordFurigana: "かわいそう",
+                meaning: "Tội nghiệp, thương cảm cho hoàn cảnh đáng thương.",
+                tip: "“Thương xót hoàn cảnh”",
+                exampleJp: "捨てられた犬がかわいそうだ。",
+                exampleVi: "Chú chó bị bỏ rơi trông thật đáng thương tội nghiệp.",
+                trap: "Tránh nhầm lẫn sâu sắc với かわいい (dễ thương, xinh xắn).",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Tính từ đuôi な]"
+            },
+            {
+                id: "n3-8-5",
+                cat: "cat-8",
+                catName: "8) Từ chỉ cảm xúc N3",
+                word: "さびしい",
+                wordFurigana: "さびしい",
+                meaning: "Cô đơn, trống trải, thiếu vắng sự bầu bạn.",
+                tip: "“Một mình cô quạnh”",
+                exampleJp: "夜、一人で部屋にいるとさびしい。",
+                exampleVi: "Đêm xuống, ngồi một mình lủi thủi trong phòng thấy thật cô đơn trống trải.",
+                trap: "Dùng để diễn tả cảm giác cô đơn nội tâm.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Tính từ đuôi い]"
+            },
+            {
+                id: "n3-8-6",
+                cat: "cat-8",
+                catName: "8) Từ chỉ cảm xúc N3",
+                word: "かなしい",
+                wordFurigana: "かなしい",
+                meaning: "Buồn bã, đau lòng (do mất mát hoặc biến cố).",
+                tip: "“Đau buồn rơi lệ”",
+                exampleJp: "突然の別れにとても悲しい気持ちになった。",
+                exampleVi: "Cuộc biệt ly đột ngột khiến tâm can tôi vô cùng buồn bã đau lòng.",
+                trap: "Khác với さびしい, đây là cảm xúc đau khổ khách quan.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Tính từ đuôi い]"
+            },
+            {
+                id: "n3-8-7",
+                cat: "cat-8",
+                catName: "8) Từ chỉ cảm xúc N3",
+                word: "うれしい",
+                wordFurigana: "うれしい",
+                meaning: "Vui mừng, hạnh phúc khi đạt ước nguyện tốt đẹp.",
+                tip: "“Hân hoan đỗ đạt”",
+                exampleJp: "ついに試験に合格できて本当にうれしい。",
+                exampleVi: "Cuối cùng thì cũng thi đỗ rồi, thật sướng vui biết bao.",
+                trap: "Thường dùng mô tả cảm xúc vui sướng tức thời của bản thân.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Tính từ đuôi い]"
+            },
+
+            // --- NHÓM 9: TỪ CHỈ HIỆN TƯỢNG CƠ THỂ (6 từ) ---
+            {
+                id: "n3-9-1",
+                cat: "cat-9",
+                catName: "9) Từ chỉ hiện tượng cơ thể",
+                word: "あくび",
+                wordFurigana: "あくび",
+                meaning: "Hành động ngáp (do thiếu ngủ hoặc chán nản mệt mỏi).",
+                tip: "“Ngáp ngủ buồn ngủ”",
+                exampleJp: "授業中なのに何度もあくびが出る。",
+                exampleVi: "Đang giữa giờ học mà tôi cứ liên tục ngáp ngắn ngáp dài.",
+                trap: "Tránh nhầm lẫn sâu sắc với ため息 (Thở dài).",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ / Thường đi với が出る]"
+            },
+            {
+                id: "n3-9-2",
+                cat: "cat-9",
+                catName: "9) Từ chỉ hiện tượng cơ thể",
+                word: "くしゃみ",
+                wordFurigana: "くしゃみ",
+                meaning: "Hắt hơi, hắt xì.",
+                tip: "“Phản xạ hắt hơi”",
+                exampleJp: "花粉症の時期はくしゃみが止まらない。",
+                exampleVi: "Cứ đến mùa dị ứng phấn hoa là tôi lại hắt hơi không dứt.",
+                trap: "Thường đi kèm với cụm từ ~が出る.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ / Thường đi với が出る]"
+            },
+            {
+                id: "n3-9-3",
+                cat: "cat-9",
+                catName: "9) Từ chỉ hiện tượng cơ thể",
+                word: "せき",
+                wordFurigana: "せき",
+                meaning: "Ho (triệu chứng bệnh hô hấp hoặc cảm cúm).",
+                tip: "“Ho hen đau cổ”",
+                exampleJp: "風邪をひいて、ひどいせきが出る。",
+                exampleVi: "Bị dính cảm lạnh nên tôi bị những cơn ho rất nặng.",
+                trap: "Đi kèm với ~が出る hoặc せきをする.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ / Thường đi với が出る]"
+            },
+            {
+                id: "n3-9-4",
+                cat: "cat-9",
+                catName: "9) Từ chỉ hiện tượng cơ thể",
+                word: "げっぷ",
+                wordFurigana: "げっぷ",
+                meaning: "Ợ hơi (sau khi ăn no hoặc uống nước có ga).",
+                tip: "“Ợ hơi căng bụng”",
+                exampleJp: "炭酸水を一気に飲み、げっぷが出た。",
+                exampleVi: "Uống một hơi cạn cốc nước có ga làm tôi bị ợ hơi.",
+                trap: "Thường tránh làm việc này nơi công cộng lịch sự.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ / Thường đi với が出る]"
+            },
+            {
+                id: "n3-9-5",
+                cat: "cat-9",
+                catName: "9) Từ chỉ hiện tượng cơ thể",
+                word: "しゃっくり",
+                wordFurigana: "しゃっくり",
+                meaning: "Nấc cụt.",
+                tip: "“Tiếng nấc liên hồi”",
+                exampleJp: "急にしゃっくりが止まらなくなって困った。",
+                exampleVi: "Tự dưng bị nấc cụt liên hồi không dứt thật là khốn khổ.",
+                trap: "Thường đi kèm cấu trúc ~が止まらない.",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ / Thường đi với が止まらない]"
+            },
+            {
+                id: "n3-9-6",
+                cat: "cat-9",
+                catName: "9) Từ chỉ hiện tượng cơ thể",
+                word: "ため息",
+                wordFurigana: "ため息",
+                meaning: "Thở dài (thể hiện sự mệt mỏi, thất vọng hoặc lo âu).",
+                tip: "“Thở dài thườn thượt”",
+                exampleJp: "彼は大きなため息をついた。",
+                exampleVi: "Anh ấy đã khẽ thở dài một tiếng thật thườn thượt.",
+                trap: "Đi kèm cấu trúc động từ ため息をつく (Không dùng 出る).",
+                mondaiType: "Mondai 3 - Điền từ",
+                grammarType: "[Danh từ / Thường đi với をつく]"
+            },
+
+            // --- NHÓM 10: BẪY NGỮ PHÁP N3 (6 từ) ---
+            {
+                id: "n3-10-1",
+                cat: "cat-10",
+                catName: "10) Bẫy ngữ pháp N3",
+                word: "〜うちに",
+                wordFurigana: "〜うちに",
+                meaning: "Tranh thủ làm việc gì trong khi trạng thái tốt chưa biến mất.",
+                tip: "“Trước khi trạng thái tốt biến mất”",
+                exampleJp: "暗くならないうちに早く帰ろう。",
+                exampleVi: "Tranh thủ lúc trời chưa sập tối cản bước thì chúng ta mau về đi.",
+                trap: "Hành động vế sau không mang tính ý chí chủ động lên kế hoạch từ trước.",
+                mondaiType: "Mondai 1 - Ngữ pháp trống",
+                grammarType: "[Cấu trúc ngữ pháp N3]"
+            },
+            {
+                id: "n3-10-2",
+                cat: "cat-10",
+                catName: "10) Bẫy ngữ pháp N3",
+                word: "〜ところ",
+                wordFurigana: "〜ところ",
+                meaning: "Sắp sửa làm / Đang làm dở dang / Vừa mới làm xong tức thì.",
+                tip: "“3 lát cắt thời điểm cực hạn”",
+                exampleJp: "ちょうど今、家を出かけるところだ。",
+                exampleVi: "Đúng lúc ngay bây giờ tôi đang chuẩn bị bước chân ra khỏi nhà.",
+                trap: "Nhìn kỹ thì của động từ (Vる, Vている, Vた) để dịch đúng thời điểm chính xác.",
+                mondaiType: "Mondai 1 - Ngữ pháp trống",
+                grammarType: "[Cấu trúc ngữ pháp N3]"
+            },
+            {
+                id: "n3-10-3",
+                cat: "cat-10",
+                catName: "10) Bẫy ngữ pháp N3",
+                word: "〜ように",
+                wordFurigana: "〜ように",
+                meaning: "Để... / Mong ước sao cho... / Theo như chỉ dẫn.",
+                tip: "“Mục đích nhẹ nhàng”",
+                exampleJp: "忘れないように手帳にメモを書いた。",
+                exampleVi: "Tôi viết ghi chú vào sổ tay để bản thân không bị quên mất.",
+                trap: "Không nhầm với 〜ために (mục đích mang ý chí cá nhân cực kỳ mạnh mẽ).",
+                mondaiType: "Mondai 1 - Ngữ pháp trống",
+                grammarType: "[Cấu trúc ngữ pháp N3]"
+            },
+            {
+                id: "n3-10-4",
+                cat: "cat-10",
+                catName: "10) Bẫy ngữ pháp N3",
+                word: "〜によって",
+                wordFurigana: "〜によって",
+                meaning: "Tùy thuộc vào / Bởi vì tác nhân / Nhờ vào phương pháp.",
+                tip: "“Ngữ pháp vạn năng đa nghĩa”",
+                exampleJp: "人によって価値観や意見が違う。",
+                exampleVi: "Tùy thuộc vào mỗi cá nhân mà thế giới quan và ý kiến sẽ khác biệt.",
+                trap: "Cần phân tích ngữ cảnh cẩn thận để tránh dịch sai sắc thái nghĩa.",
+                mondaiType: "Mondai 1 - Ngữ pháp trống",
+                grammarType: "[Cấu trúc ngữ pháp N3]"
+            },
+            {
+                id: "n3-10-5",
+                cat: "cat-10",
+                catName: "10) Bẫy ngữ pháp N3",
+                word: "〜に対して",
+                wordFurigana: "にたいして",
+                meaning: "Đối với (Thái độ hành động trực tiếp hướng đến đối tượng) / Trái ngược với.",
+                tip: "“Đối diện hành động trực tiếp”",
+                exampleJp: "目上の人に対しては失礼がないようにしよう。",
+                exampleVi: "Đối với bề trên, chúng ta hãy ứng xử lịch sự chớ nên thất lễ.",
+                trap: "Tuyệt đối không nhầm lẫn với 〜について (nói bàn luận về chủ đề nào đó).",
+                mondaiType: "Mondai 1 - Ngữ pháp trống",
+                grammarType: "[Cấu trúc ngữ pháp N3]"
+            },
+            {
+                id: "n3-10-6",
+                cat: "cat-10",
+                catName: "10) Bẫy ngữ pháp N3",
+                word: "〜にとって",
+                wordFurigana: "にとって",
+                meaning: "Đối với (Đứng dưới góc nhìn quan điểm cá nhân để đưa ra đánh giá).",
+                tip: "“Đứng từ góc quan điểm”",
+                exampleJp: "私にとって何よりも家族が一番大切だ。",
+                exampleVi: "Đối với bản thân tôi, gia đình là điều quan trọng hơn cả.",
+                trap: "Vế sau thường là các đánh giá tốt/xấu/quan trọng, tuyệt đối không chứa hành động trực tiếp.",
+                mondaiType: "Mondai 1 - Ngữ pháp trống",
+                grammarType: "[Cấu trúc ngữ pháp N3]"
+            }
+        ];
+
+        // RIKI TRAP EXAM DATABASE (50 Selected High-Yield Traps - 5 per session)
+        const RIKI_TRAP_QUESTIONS = [
+            // Buổi 1 (Day 1)
+            {
+                session: 1,
+                id: "riki-1-1",
+                question: "けさは6時に目が(　　)。",
+                choices: ["あいた", "さめた", "ついた", "ひらいた"],
+                correct: 1, //さめた
+                meaning: "Sáng nay tôi thức giấc lúc 6 giờ.",
+                trap: "❌ Thức giấc là '目が覚める (さめる)'. Không nhầm với '目が開く (あく/ひらくだ - mắt vật lý mở ra)'. Bẫy cực kỳ quen thuộc của Mondai 3!"
+            },
+            {
+                session: 1,
+                id: "riki-1-2",
+                question: "すみません。今日は用事があるので、また(　　)さそってください。",
+                choices: ["今どき", "今回", "今後", "今度"],
+                correct: 3, //今度
+                meaning: "Xin lỗi, hôm nay tôi có việc bận mất rồi, lần sau lại rủ tôi nhé.",
+                trap: "❌ Bẫy '今度 (lần sau/lần tới)'. Tránh nhầm với '今回 (lần này)'. Cụm cố định 'また今度さそってください' là phản xạ phòng thi."
+            },
+            {
+                session: 1,
+                id: "riki-1-3",
+                question: "食事が終わったら、テーブルをきれいに (　　) ください。",
+                choices: ["かけて", "はいて", "ふいて", "みがいて"],
+                correct: 2, //ふいて
+                meaning: "Ăn cơm xong thì hãy lau bàn thật sạch nhé.",
+                trap: "❌ Bẫy động từ lau dọn: '拭く (ふく) = Lau (bàn, nước)'. '磨く (みがく) = Đánh bóng/Đánh răng'. '掃く (はく) = Quét nhà'."
+            },
+            {
+                session: 1,
+                id: "riki-1-4",
+                question: "あのデパートでは今、半額(　　)をしている。",
+                choices: ["セール", "ダウン", "セールス", "プライス"],
+                correct: 0, //セール
+                meaning: "Ở cửa hàng bách hóa kia hiện đang có đợt giảm giá một nửa.",
+                trap: "❌ Bẫy ghép từ Katakana: '半額セール (セール) = Giảm giá một nửa'. Tránh nhầm với 'セールス (sales - nhân viên bán hàng/tiếp thị)'."
+            },
+            {
+                session: 1,
+                id: "riki-1-5",
+                question: "この本を読んだら、ぜひ(　　)を聞かせてください。",
+                choices: ["感心", "感覚", "感想", "感謝"],
+                correct: 2, //感想
+                meaning: "Sau khi đọc xong cuốn sách này, nhất định hãy cho tôi nghe cảm tưởng của bạn nhé.",
+                trap: "❌ Bẫy đồng âm Kanji: '感想 (かんそう) = Cảm tưởng, nhận xét'. Tránh nhầm với '感心 (かんしん - khâm phục, ngưỡng mộ)' hoặc '感覚 (かんかく - cảm giác)'."
+            },
+
+            // Buổi 2
+            {
+                session: 2,
+                id: "riki-2-1",
+                question: "簡単なことなのに、何度やってもうまくできなくて(　　)する。",
+                choices: ["いらいら", "うとうと", "どきどき", "はらはら"],
+                correct: 0, //いらいら
+                meaning: "Dù là một việc đơn giản thế mà làm đi làm lại mãi không được khiến tôi phát sốt ruột/bực mình.",
+                trap: "❌ Bẫy từ tượng thanh/tượng hình: 'いらいら = Sốt ruột, nóng nảy bực bội'. 'うとうと = Ngủ gà ngủ gật'. 'はらはら = Lo lắng hồi hộp xem vật sắp rơi'."
+            },
+            {
+                session: 2,
+                id: "riki-2-2",
+                question: "道に(　　)、待ち合わせの時間に遅れてしまった。",
+                choices: ["困って", "違って", "迷って", "間違えて"],
+                correct: 2, //迷って
+                meaning: "Tôi bị lạc đường nên đã đến muộn giờ hẹn mất rồi.",
+                trap: "❌ Bẫy động từ: '道に迷う (みちにまよう) = Lạc đường'. Tránh nhầm với '間違える (まちがえる - nhầm lẫn, làm sai bài tập)'."
+            },
+            {
+                session: 2,
+                id: "riki-2-3",
+                question: "毎日、車で会社に(　　)している。",
+                choices: ["交通", "通学", "通勤", "通行"],
+                correct: 2, //通勤
+                meaning: "Hằng ngày tôi di chuyển bằng xe ô tô để đi làm.",
+                trap: "❌ Bẫy từ vựng Kanji ghép: '通勤 (つうきん) = Đi làm'. Tránh nhầm với '通学 (つうがく - đi học)' hoặc '通行 (つうこう - đi lại trên đường)'."
+            },
+            {
+                session: 2,
+                id: "riki-2-4",
+                question: "母を空港まで(　　)に行った。",
+                choices: ["見かけ", "見送り", "見回り", "見直し"],
+                correct: 1, //見送り
+                meaning: "Tôi đã ra tận sân bay để tiễn mẹ mình.",
+                trap: "❌ Cặp từ ghép đối lập: '見送り (みおくり) = Tiễn biệt'. Tránh nhầm với '見かけ (vẻ bề ngoài)' hay '見直し (xem xét lại/đánh giá lại)'."
+            },
+            {
+                session: 2,
+                id: "riki-2-5",
+                question: "スープに塩を(　　)少し入れてください。",
+                choices: ["やや", "たった", "ほんの", "ちょうど"],
+                correct: 2, //ほんの
+                meaning: "Hãy cho thêm vỏn vẹn một chút muối vào súp giúp tôi.",
+                trap: "❌ Bẫy phó từ chỉ lượng: 'ほんの少し = Một chút xíu (nhấn mạnh sự ít ỏi khiêm tốn)'. Tránh nhầm với 'やや (hơi hơi - dùng trong văn viết/báo chí)'."
+            },
+
+            // Buổi 3
+            {
+                session: 3,
+                id: "riki-3-1",
+                question: "宝くじが当たって海外旅行に行くなんて、(　　)なあ。",
+                choices: ["のぞましい", "やかましい", "あつかましい", "うらやましい"],
+                correct: 3, //うらやましい
+                meaning: "Trúng vé số rồi đi du lịch nước ngoài, thật là ghen tị ngưỡng mộ quá đi.",
+                trap: "❌ Bẫy tính từ đuôi い âm đọc gần giống: 'うらやましい = Đáng ghen tị, ao ước'. 'あつかましい = Mặt dày, vô liêm sỉ'. 'やかましい = Ồn ào náo nhiệt'."
+            },
+            {
+                session: 3,
+                id: "riki-3-2",
+                question: "この小説は(　　)が難しくて、一度読んだだけではよくわからなかった。",
+                choices: ["ページ", "シリーズ", "タイトル", "ストーリー"],
+                correct: 3, //ストーリー
+                meaning: "Cuốn tiểu thuyết này có cốt truyện vô cùng phức tạp, đọc một lần vẫn chưa hiểu nổi.",
+                trap: "❌ Bẫy từ Katakana danh từ: 'ストーリー = Cốt truyện/Story'. Tránh nhầm với 'シリーズ (loạt phim/chuỗi tập san - series)'."
+            },
+            {
+                session: 3,
+                id: "riki-3-3",
+                question: "インターネットの(　　)で、世界は大きく変わった。",
+                choices: ["発行", "発表", "発進", "発達"],
+                correct: 3, //発達
+                meaning: "Nhờ vào sự phát triển vượt bậc của mạng Internet, thế giới đã thay đổi rất nhiều.",
+                trap: "❌ Bẫy chữ ghép Kanji 'Hát': '発達 (はったつ) = Phát triển (khoa học/cơ thể)'. Tránh nhầm với '発行 (はっこう - phát hành sách/tiền)' hoặc '発表 (はっぴょう - phát biểu)'."
+            },
+            {
+                session: 3,
+                id: "riki-3-4",
+                question: "これは私が今まで見た中で(　　)の映画です。",
+                choices: ["最大", "最高", "絶大", "絶好"],
+                correct: 1, //最高
+                meaning: "Đây là bộ phim tuyệt vời nhất mà tôi từng được xem từ trước tới nay.",
+                trap: "❌ Bẫy tính từ trạng thái: '最高 (さいこう) = Tuyệt nhất, đỉnh nhất'. Tránh nhầm với '絶好 (ぜっこう - tuyệt hảo, thường đi với 絶好の機会 - cơ hội tuyệt hảo)'."
+            },
+            {
+                session: 3,
+                id: "riki-3-5",
+                question: "私の部屋は南(　　)で、日当たりがいい。",
+                choices: ["沿い", "向き", "方角", "方面"],
+                correct: 1, //向き
+                meaning: "Căn phòng của tôi quay về hướng Nam nên đón ánh nắng rất tốt.",
+                trap: "❌ Bẫy danh từ hướng: '南向き (みなみむき) = Hướng về phía Nam'. Tránh nhầm với '方面 (phía/khu vực lớn cho tàu xe)'."
+            },
+
+            // Buổi 4
+            {
+                session: 4,
+                id: "riki-4-1",
+                question: "このドラマはとても (　　) な話で、女性に人気がある。",
+                choices: ["ロマン", "ロマンス", "ロマンチスト", "ロマンチック"],
+                correct: 3, //ロマンチック
+                meaning: "Bộ phim truyền hình này là một câu chuyện cực kỳ lãng mạn nên rất được phái nữ yêu thích.",
+                trap: "❌ Bẫy tính từ đuôi な Katakana: 'ロマンチックな = Lãng mạn'. Tránh nhầm với 'ロマンチスト (danh từ chỉ người lãng mạn)'."
+            },
+            {
+                session: 4,
+                id: "riki-4-2",
+                question: "汗を(　　)ので、シャワーを浴びた。",
+                choices: ["した", "でた", "かいた", "きいた"],
+                correct: 2, //かいた
+                meaning: "Vì ra rất nhiều mồ hôi nên tôi đã đi tắm vòi hoa sen.",
+                trap: "❌ Quán dụng ngữ cơ thể bẫy: '汗をかく (かいた) = Đổ mồ hôi'. Tránh dùng động từ 'でる' vốn là tự động từ đi với trợ từ が ('汗が出る')."
+            },
+            {
+                session: 4,
+                id: "riki-4-3",
+                question: "(　　) さいふを忘れてしまった。",
+                choices: ["うっかり", "がっかり", "さっぱり", "はっきり"],
+                correct: 0, //うっかり
+                meaning: "Tôi đã lỡ vô ý để quên ví tiền mất rồi.",
+                trap: "❌ Bẫy trạng từ đuôi -ri: 'うっかり = Lỡ, vô ý'. Tránh nhầm với 'がっかり (thất vọng)' hay 'さっぱり (hoàn toàn không/sảng khoái)'."
+            },
+            {
+                session: 4,
+                id: "riki-4-4",
+                question: "優勝するのは彼だろうと思っていたら、(　　) そうだった。",
+                choices: ["しかも", "なぜか", "なぜなら", "やはり"],
+                correct: 3, //やはり
+                meaning: "Tôi đã nghĩ người vô địch chắc chắn là anh ấy, quả nhiên đúng là như vậy thật.",
+                trap: "❌ Bẫy trạng từ phán đoán: 'やはり / やっぱり = Quả nhiên đúng như dự đoán'. Tránh nhầm với 'しかも (hơn nữa)'."
+            },
+            {
+                session: 4,
+                id: "riki-4-5",
+                question: "家を建てるために、(　　)を買った。",
+                choices: ["地上", "地方", "土地", "場所"],
+                correct: 2, //土地
+                meaning: "Để xây dựng ngôi nhà của mình, tôi đã mua một mảnh đất.",
+                trap: "❌ Bẫy phân biệt từ vựng: '土地 (とち) = Đất đai, mảnh đất thực thể'. Tránh nhầm với '場所 (ばしょ - địa điểm, chỗ ngồi, vị trí trừu tượng)'."
+            },
+
+            // Buổi 5
+            {
+                session: 5,
+                id: "riki-5-1",
+                question: "この靴は歩きやすいので、とても(　　)いる。",
+                choices: ["気にしに", "気にいって", "気にかかって", "気にさわって"],
+                correct: 1, //気に入って
+                meaning: "Đôi giày này đi rất dễ chịu nên tôi vô cùng ưng ý nó.",
+                trap: "❌ Bẫy quán dụng ngữ 'Ki': '気に入る (きにいる) = Ưng ý, thích thú'. Tránh nhầm với '気にする (lo lắng, để ý tiêu cực)'."
+            },
+            {
+                session: 5,
+                id: "riki-5-2",
+                question: "電車が(　　)いて、乗れなかった。",
+                choices: ["おして", "つんで", "あまって", "こんで"],
+                correct: 3, //こんで
+                meaning: "Chuyến tàu quá đông đúc nên tôi không thể chen chân lên nổi.",
+                trap: "❌ Bẫy động từ trạng thái: '混む (こむ) -> 込んでいる = Đông đúc'. Tránh nhầm với '積む (つむ - xếp chồng lên)'."
+            },
+            {
+                session: 5,
+                id: "riki-5-3",
+                question: "太陽 của光を利用した(　　)の開発が進められている。",
+                choices: ["パワー", "ビタミン", "カロリー", "エネルギー"],
+                correct: 3, //エネルギー
+                meaning: "Việc nghiên cứu và phát triển nguồn năng lượng tận dụng ánh sáng mặt trời đang được tiến hành.",
+                trap: "❌ Bẫy Katakana vật lý: 'エネルギー = Năng lượng (Energy)'. Tránh nhầm với 'パワー (sức mạnh cơ bắp/Power)'."
+            },
+            {
+                session: 5,
+                id: "riki-5-4",
+                question: "そのかばん、今度の旅行に(　　)ですね。",
+                choices: ["がっかり", "すっかり", "たっぷり", "ぴったり"],
+                correct: 3, //ぴったり
+                meaning: "Cái túi xách kia quả thật là vừa khít và cực kỳ phù hợp cho chuyến du lịch sắp tới của bạn nhỉ.",
+                trap: "❌ Bẫy trạng từ chỉ sự tương thích: 'ぴったり = Vừa vặn, khít, cực kỳ hợp'. Tránh nhầm với 'たっぷり (đầy ắp, nhiều lượng)'."
+            },
+            {
+                session: 5,
+                id: "riki-5-5",
+                question: "本田さんなら、もう (　　) 前に帰りましたよ。",
+                choices: ["だいぶ", "たぶん", "だいたい", "たしかに"],
+                correct: 0, //だいぶ
+                meaning: "Nếu là anh Honda thì anh ấy đã ra về từ khá lâu rồi đấy.",
+                trap: "❌ Bẫy phó từ chỉ thời gian: 'だいぶ前 = Khá là lâu trước đây'. Tránh nhầm với 'たぶん (có lẽ - phỏng đoán vế sau đi với だろう)'."
+            },
+
+            // Buổi 6
+            {
+                session: 6,
+                id: "riki-6-1",
+                question: "私の(　　)の夢は、自分の会社をつくることです。",
+                choices: ["先日", "以降", "未来", "将来"],
+                correct: 3, //将来
+                meaning: "Ước mơ trong tương lai của tôi là thành lập một công ty của riêng mình.",
+                trap: "❌ Cặp từ tương lai dễ lẫn: '将来 (しょうらい) = Tương lai của bản thân con người'. '未来 (みらい) = Tương lai của xã hội loài người, trái đất'."
+            },
+            {
+                session: 6,
+                id: "riki-6-2",
+                question: "世界の人口はどんどん(　　)している。",
+                choices: ["増大", "増加", "増減", "増量"],
+                correct: 1, //増加
+                meaning: "Dân số trên toàn thế giới đang tăng lên nhanh chóng không ngừng.",
+                trap: "❌ Bẫy đồng nghĩa nhóm 'Tăng': '増加 (ぞうか) = Tăng số đếm được (dân số, số liệu)'. '増大 (ぞうだい) = Tăng quy mô trừu tượng (lo âu, nguy hiểm)'."
+            },
+            {
+                session: 6,
+                id: "riki-6-3",
+                question: "クラスで好きな本の(　　)をとったら、一位はマンガだった。",
+                choices: ["コメント", "アンケート", "インタビュー", "メッセージ"],
+                correct: 1, //アンケート
+                meaning: "Khi làm phiếu khảo sát về cuốn sách yêu thích trong lớp, vị trí số một chính là truyện tranh.",
+                trap: "❌ Cấu trúc đi kèm Katakana: 'アンケートをとる = Thực hiện khảo sát'. Đề thi rất hay bẫy động từ 'とる' đi cùng."
+            },
+            {
+                session: 6,
+                id: "riki-6-4",
+                question: "昨日は夜遅くまで起きていたので、眠くて(　　)が出る。",
+                choices: ["せき", "あくび", "ため息", "くしゃみ"],
+                correct: 1, //あくび
+                meaning: "Hôm qua thức khuya quá nên giờ tôi buồn ngủ ngáp ngắn ngáp dài suốt.",
+                trap: "❌ Bẫy từ cơ thể sinh lý: 'あくびが出る = Ngáp ngủ'. Tránh nhầm với 'ため息 (thở dài - đi kèm động từ つく: ため息をつく)'."
+            },
+            {
+                session: 6,
+                id: "riki-6-5",
+                question: "今日はたくさん遊んだので、子どもたちは(　　)寝ている。",
+                choices: ["ぐっすり", "すっきり", "はっきり", "ゆっくり"],
+                correct: 0, //ぐっすり
+                meaning: "Hôm nay đã nô đùa thỏa thích rồi nên bọn trẻ đang ngủ rất say giấc nồng.",
+                trap: "❌ Trạng từ mức độ ngủ: 'ぐっすり寝る = Ngủ ngon giấc say nồng'. Tránh nhầm với 'すっきり (sảng khoái đầu óc)'."
+            },
+
+            // Buổi 7
+            {
+                session: 7,
+                id: "riki-7-1",
+                question: "彼はまじめに働かなかったので、会社を(　　)になった。",
+                choices: ["足", "指", "首", "頭"],
+                correct: 2, //首
+                meaning: "Vì làm việc không nghiêm túc nên anh ta đã bị sa thải khỏi công ty.",
+                trap: "❌ Quán dụng ngữ bẫy cơ thể: '首になる (くびになる) = Bị sa thải đuổi việc'. '首にする' là đuổi việc ai đó."
+            },
+            {
+                session: 7,
+                id: "riki-7-2",
+                question: "エアコンを(　　)寝て、かぜをひいてしまった。",
+                choices: ["ついたまま", "つきながら", "つけたまま", "つけながら"],
+                correct: 2, //つけたまま
+                meaning: "Do tôi ngủ quên mà cứ để nguyên bật điều hòa nên đã bị cảm mất rồi.",
+                trap: "❌ Bẫy Tự/Tha động từ & trạng thái: 'つける (Tha động từ) -> つけたまま (giữ nguyên hành động có ý chí của con người)'. 'つく' là tự động từ."
+            },
+            {
+                session: 7,
+                id: "riki-7-3",
+                question: "子どものころ、父は出張に行く(　　)いつも私におみやげを買ってきてくれた。",
+                choices: ["なら", "たびに", "ところ", "ついでに"],
+                correct: 1, //たびに
+                meaning: "Hồi còn bé, cứ mỗi lần bố đi công tác là lại mang quà lưu niệm về cho tôi.",
+                trap: "❌ Bẫy ngữ pháp liên kết: '〜たびに = Cứ mỗi lần (hành động lặp lại mang tính quy luật)'. Tránh nhầm với 'ついでに (nhân tiện)'."
+            },
+            {
+                session: 7,
+                id: "riki-7-4",
+                question: "どんなスポーツでも、(　　)するには毎日練習するしかない。",
+                choices: ["上達", "進化", "進行", "発達"],
+                correct: 0, //上達
+                meaning: "Dù là môn thể thao nào đi nữa, muốn nâng cao tay nghề tiến bộ chỉ có cách luyện tập hằng ngày.",
+                trap: "❌ Cặp từ tiến bộ bẫy: '上達 (じょうたつ) = Tiến bộ kĩ năng, tay nghề cá nhân'. Tránh nhầm với '発達 (phát triển khoa học, cơ thể)'."
+            },
+            {
+                session: 7,
+                id: "riki-7-5",
+                question: "その黒い帽子は、彼によく(　　)いた。",
+                choices: ["似合って", "似て", "合って", "合わさって"],
+                correct: 0, //似合って
+                meaning: "Cái mũ màu đen đó cực kỳ hợp với anh ấy.",
+                trap: "❌ Bẫy động từ tương thích ngoại hình: '似合う (にあう) = Hợp (trang phục hợp với người)'. '似ている' là giống nhau về khuôn mặt."
+            },
+
+            // Buổi 8
+            {
+                session: 8,
+                id: "riki-8-1",
+                question: "ご(　　)をかけてすみません。今後気をつけます。",
+                choices: ["心配", "迷惑", "注意", "利用"],
+                correct: 1, //迷惑
+                meaning: "Tôi xin lỗi vì đã gây ra phiền toái cho bạn. Từ nay tôi sẽ chú ý cẩn thận.",
+                trap: "❌ Cụm từ xã giao cố định: '迷惑をかける = Gây phiền phức cho ai đó'. Thường kết hợp dạng lịch sự kính ngữ 'ご迷惑をかける'."
+            },
+            {
+                session: 8,
+                id: "riki-8-2",
+                question: "昨日先輩に何曲も(　　)せいで、今日はのどが痛い。",
+                choices: ["歌い続けた", "歌い切った", "歌わされた", "歌ってしまった"],
+                correct: 2, //歌わされた
+                meaning: "Hôm qua vì bị tiền bối ép hát bắt hát liên tục mấy bài nên nay cổ họng tôi đau buốt.",
+                trap: "❌ Bẫy thể bị động sai khiến: '歌わされた (bị bắt phải hát trong sự miễn cưỡng)'. Là dạng ngữ pháp cực kỳ ưu tiên của đề thi N3."
+            },
+            {
+                session: 8,
+                id: "riki-8-3",
+                question: "合格の知らせを聞いて、うれしさ(　　)言葉が出なかった。",
+                choices: ["うえで", "のあまり", "のおかげで", "ところで"],
+                correct: 1, //のあまり
+                meaning: "Khi nhận được tin báo thi đỗ, vì quá đỗi vui sướng nên tôi nghẹn ngào không thốt nên lời.",
+                trap: "❌ Bẫy cấu trúc cảm xúc quá đà: 'Danh từ + のあまり = Vì quá mức dẫn đến kết quả bất thường/tiêu cực'. 'うれしさ' là danh từ hóa của uureshii."
+            },
+            {
+                session: 8,
+                id: "riki-8-4",
+                question: "母はいつも妹に、もっと女の子(　　)服を着なさいと言っている。",
+                choices: ["そうな", "らしい", "のような", "みたいな"],
+                correct: 1, //らしい
+                meaning: "Mẹ lúc nào cũng bảo em gái là hãy mặc quần áo ra dáng đậm chất con gái đi.",
+                trap: "❌ Bẫy sắc thái so sánh: 'らしい = Bản chất thực sự của đối tượng (em gái vốn là con gái)'. Tránh nhầm với 'みたい' (chỉ là bắt chước/giống như)."
+            },
+            {
+                session: 8,
+                id: "riki-8-5",
+                question: "東京で生活する人(　　)、電車は rất quan trọng.",
+                choices: ["なら", "にとって", "だから", "ともなると"],
+                correct: 1, //にとって
+                meaning: "Đối với những người sinh sống làm việc tại Tokyo, tàu điện là phương tiện cực kỳ quan trọng.",
+                trap: "❌ Bẫy ngữ pháp đánh giá: '〜にとって = Đối với (đứng từ góc nhìn đánh giá của ai)'. Tránh nhầm với 'に対して' (hành động tác động vào ai)."
+            },
+
+            // Buổi 9
+            {
+                session: 9,
+                id: "riki-9-1",
+                question: "昨日の夜は、テレビを見ているうちに(　　)寝ていた。",
+                choices: ["いつのまにか", "いつでも", "いつまでも", "いつからか"],
+                correct: 0, //いつのまにか
+                meaning: "Tối hôm qua trong lúc đang mải xem tivi thì tôi đã ngủ thiếp đi lúc nào không hay biết.",
+                trap: "❌ Bẫy phó từ chỉ sự biến đổi: 'いつの間にか = Lúc nào không hay (trạng thái tự nhiên xảy ra)'. 'いつまでも' là mãi mãi."
+            },
+            {
+                session: 9,
+                id: "riki-9-2",
+                question: "前の車が急に止まった。もう少しで(　　)だった。",
+                choices: ["ぶつかるよう", "ぶつかったよう", "ぶつかるところ", "ぶつかったところ"],
+                correct: 2, //ぶつかるところ
+                meaning: "Chiếc xe đi phía trước phanh gấp, suýt chút nữa là tôi đâm sầm vào rồi.",
+                trap: "❌ Cấu trúc bẫy suýt chết: 'Động từ thể từ điển (Vる) + ところだった = Suýt chút nữa thì... (nhưng thực tế suýt đã tránh được)'."
+            },
+            {
+                session: 9,
+                id: "riki-9-3",
+                question: "暗く(　　)ホテルに着けるように急ぎましょう。",
+                choices: ["なる間に", "ならないうちに", "なるまで", "ならないかぎり"],
+                correct: 1, //ならないうちに
+                meaning: "Chúng ta hãy nhanh chân lên để đến được khách sạn tranh thủ trước khi trời tối sập nhé.",
+                trap: "❌ Bẫy ngữ pháp thời điểm tranh thủ: '〜うちに = Tranh thủ khi trạng thái vế trước chưa thay đổi (trước khi trời tối)'."
+            },
+            {
+                session: 9,
+                id: "riki-9-4",
+                question: "あ, エアコンが消えている。どうりで暑い(　　)。",
+                choices: ["ことだ", "までだ", "ものだ", "わけだ"],
+                correct: 3, //わけだ
+                meaning: "A, điều hòa bị tắt ngúm rồi kìa. Thảo nào mà phòng nóng nực thế.",
+                trap: "❌ Cấu trúc bẫy lý do hiển nhiên: 'どうりで 〜 わけだ = Thảo nào hèn chi mà (giải thích cho sự việc sờ sờ trước mắt)'."
+            },
+            {
+                session: 9,
+                id: "riki-9-5",
+                question: "はやく病院に行かないと、傷がひどく(　　)。",
+                choices: ["なりたがる", "なりかねない", "なるところだ", "なろうとする"],
+                correct: 1, //なりかねない
+                meaning: "Nếu không mau đi đến bệnh viện thì có nguy cơ vết thương sẽ chuyển biến cực xấu đấy.",
+                trap: "❌ Bẫy cấu trúc nguy cơ tiêu cực: 'V_stem (bỏ ます) + かねない = Có nguy cơ/khả năng cao xảy ra hậu quả tồi tệ nguy hiểm'."
+            },
+
+            // Buổi 10
+            {
+                session: 10,
+                id: "riki-10-1",
+                question: "説明書に(　　)組み立てたのに、うまくできなかった。",
+                choices: ["書いたふうに", "書いたとおりに", "書いておいたように", "書いてあるとおりに"],
+                correct: 3, //書いてあるとおりに
+                meaning: "Mặc dù đã lắp ráp đúng theo hướng dẫn đã được ghi chép lại nhưng vẫn không thành công.",
+                trap: "❌ Bẫy trạng thái in sẵn: 'V_てある + とおりに = Theo như những gì đã được viết sẵn khách quan (sách in)'. '書いてある' là trạng thái tồn tại."
+            },
+            {
+                session: 10,
+                id: "riki-10-2",
+                question: "伊藤さんはバレエを10年も習っていた(　　)、あまりダンスが上手じゃなかった。",
+                choices: ["とすると", "というと", "にしては", "にしても"],
+                correct: 2, //にしては
+                meaning: "Mặc dù chị Ito đã theo học múa Ba-lê tận 10 năm trời thế mà nhảy lại chẳng giỏi lắm.",
+                trap: "❌ Bẫy mâu thuẫn thực tế: '〜にしては = So với tiêu chuẩn thực tế thì vế sau lại mâu thuẫn hoàn toàn'. 10 năm học múa so với thực tế nhảy kém."
+            },
+            {
+                session: 10,
+                id: "riki-10-3",
+                question: "私はお酒は(　　)んですが、あまり好きじゃないんです。",
+                choices: ["飲むことはない", "飲むわけがない", "飲むべきじゃない", "飲めないことはない"],
+                correct: 3, //飲めないことはない
+                meaning: "Không phải là tôi hoàn toàn không thể uống được rượu đâu, chỉ là tôi không thích lắm mà thôi.",
+                trap: "❌ Cấu trúc phủ định kép: '〜ないことはない / ないでもない = Không phải là không... (khả năng ở mức thấp tối thiểu)'."
+            },
+            {
+                session: 10,
+                id: "riki-10-4",
+                question: "問題はすべて解決しました。もう何も心配する(　　)。",
+                choices: ["ことはありません", "わけはありません", "ことではありません", "わけにはいきません"],
+                correct: 0, //ことはありません
+                meaning: "Mọi việc đều đã được giải quyết êm đẹp ổn thỏa. Bạn không cần thiết phải bận tâm lo lắng gì nữa đâu.",
+                trap: "❌ Ngữ pháp khuyên nhủ tối giản: 'V_る + ことはない = Không cần thiết phải làm gì'."
+            },
+            {
+                session: 10,
+                id: "riki-10-5",
+                question: "窓を開け(　　)寝ていたら、部屋の中に虫が入ってきた。",
+                choices: ["しだい", "ながら", "っぱなしで", "ようとして"],
+                correct: 2, //っぱなしで
+                meaning: "Do ngủ quên mà cứ để hé mở toang cửa sổ suốt nên côn trùng đã bay vào trong phòng mất rồi.",
+                trap: "❌ Bẫy ngữ pháp bỏ bê tiêu cực: '〜っぱなし = Giữ nguyên trạng thái (kèm theo sự vô trách nhiệm, dẫn đến hậu quả tiêu cực)'."
+            }
+        ];
+
+        // State variables
+        let cardProgress = {}; // Spaced Repetition Box mappings
+        let currentFilterCategory = 'all';
+        let currentFilterBox = 'all'; 
+        let searchQuery = '';
+        let filteredCards = [];
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        // Interactive quiz stats
+        let quizChoices = [];
+        let currentStudyMode = 'flashcard'; // 'flashcard', 'mondai', or 'riki'
+        let hasAnsweredCurrentQuiz = false;
+
+        // Riki Trap Challenge State
+        let currentRikiSession = 'all';
+        let rikiFilteredQuestions = [];
+        let currentRikiIndex = 0;
+        let hasAnsweredCurrentRiki = false;
+        let rikiCorrectAnswersCount = 0;
+        let rikiTotalAttemptedCount = 0;
+
+        // Sound Synthesis API config
+        let speechSynth = window.speechSynthesis;
+        let jpVoice = null;
+        let speechRate = 0.9;
+
+        // Touch Swipe Variables
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        // App lifecycle initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            loadProgress();
+            initVoices();
+            filterCards();
+            renderCard();
+            updateLeitnerCounters();
+
+            // Keyboard navigation setup
+            document.addEventListener('keydown', (e) => {
+                if (document.activeElement === document.getElementById('search-input')) {
+                    return;
+                }
+                
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    if (currentStudyMode === 'flashcard') {
+                        toggleCard();
+                    }
+                } else if (e.code === 'ArrowLeft') {
+                    if (currentStudyMode === 'riki') {
+                        prevRikiQuestion();
+                    } else {
+                        prevCard();
+                    }
+                } else if (e.code === 'ArrowRight') {
+                    if (currentStudyMode === 'riki') {
+                        nextRikiQuestion();
+                    } else {
+                        nextCard();
+                    }
+                } else if (e.key === '1') {
+                    if (currentStudyMode === 'flashcard') {
+                        leitnerMark(false);
+                    }
+                } else if (e.key === '2') {
+                    if (currentStudyMode === 'flashcard') {
+                        leitnerMark(true);
+                    }
+                }
+            });
+
+            setupMobileSwipeGestures();
+            filterRikiQuestions();
+        });
+
+        // Touch Swipe Navigation Helper
+        function setupMobileSwipeGestures() {
+            const containerIds = ['flashcard-panel', 'mondai-panel', 'riki-panel'];
+            
+            containerIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+
+                el.addEventListener('touchstart', (e) => {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                }, { passive: true });
+
+                el.addEventListener('touchend', (e) => {
+                    const touchEndX = e.changedTouches[0].clientX;
+                    const touchEndY = e.changedTouches[0].clientY;
+
+                    const diffX = touchEndX - touchStartX;
+                    const diffY = touchEndY - touchStartY;
+
+                    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
+                        if (diffX < 0) {
+                            if (currentStudyMode === 'riki') {
+                                nextRikiQuestion();
+                            } else {
+                                nextCard();
+                            }
+                        } else {
+                            if (currentStudyMode === 'riki') {
+                                prevRikiQuestion();
+                            } else {
+                                prevCard();
+                            }
+                        }
+                    }
+                }, { passive: true });
+            });
+        }
+
+        // Natural Sound FX Synthesis using Web Audio API
+        function playSoundFX(type) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                } else if (type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                } else if (type === 'flip') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(480, audioCtx.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.12);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                }
+            } catch (err) {
+                // AudioContext fallback
+            }
+        }
+
+        // Localizing Native TTS voices
+        function initVoices() {
+            if (!speechSynth) {
+                document.getElementById('voice-status').innerText = "Trình duyệt không hỗ trợ đọc!";
+                return;
+            }
+
+            function setVoices() {
+                const voices = speechSynth.getVoices();
+                jpVoice = voices.find(voice => voice.lang === 'ja-JP' || voice.lang.startsWith('ja'));
+                
+                if (jpVoice) {
+                    document.getElementById('voice-status').innerHTML = `<span class="text-emerald-500">●</span> Sẵn sàng giọng bản xứ`;
+                } else {
+                    document.getElementById('voice-status').innerHTML = `<span class="text-amber-500">●</span> Giọng hệ thống mặc định`;
+                }
+            }
+
+            setVoices();
+            if (speechSynth.onvoiceschanged !== undefined) {
+                speechSynth.onvoiceschanged = setVoices;
+            }
+        }
+
+        function updateVoiceSpeed() {
+            const speedSelector = document.getElementById('voice-speed');
+            speechRate = parseFloat(speedSelector.value);
+            playSoundFX('click');
+        }
+
+        // Play standard Text-To-Speech (Japanese voices only)
+        function playVoice(type) {
+            if (!speechSynth) return;
+            speechSynth.cancel(); // Terminate current speaking
+
+            let textToSpeak = '';
+            
+            if (currentStudyMode === 'riki') {
+                const q = rikiFilteredQuestions[currentRikiIndex];
+                if (!q) return;
+                textToSpeak = q.question.replace('(　　)', q.choices[q.correct]);
+            } else {
+                const card = filteredCards[currentIndex];
+                if (!card) return;
+
+                if (type === 'vocab') {
+                    textToSpeak = card.word.replace(' vs ', ' と ');
+                } else if (type === 'example') {
+                    textToSpeak = card.exampleJp;
+                }
+            }
+
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
+            utterance.rate = speechRate;
+            if (jpVoice) utterance.voice = jpVoice;
+            utterance.lang = 'ja-JP';
+            speechSynth.speak(utterance);
+        }
+
+        // Local Storage Syncing
+        function loadProgress() {
+            const saved = localStorage.getItem('n3_elite_spaced_rep');
+            if (saved) {
+                try {
+                    cardProgress = JSON.parse(saved);
+                } catch (e) {
+                    cardProgress = {};
+                }
+            }
+            FLASHCARD_DATA.forEach(card => {
+                if (!cardProgress[card.id]) {
+                    cardProgress[card.id] = 1; // Default starting at Box 1
+                }
+            });
+            saveProgress();
+        }
+
+        function saveProgress() {
+            localStorage.setItem('n3_elite_spaced_rep', JSON.stringify(cardProgress));
+        }
+
+        function resetLeitnerProgress() {
+            playSoundFX('click');
+            if (confirm('Bạn có thực sự muốn di chuyển toàn bộ 90 thẻ bí kíp về lại Hộp số 1 không?')) {
+                FLASHCARD_DATA.forEach(card => {
+                    cardProgress[card.id] = 1;
+                });
+                saveProgress();
+                filterCards();
+                renderCard();
+                updateLeitnerCounters();
+                playSoundFX('success');
+            }
+        }
+
+        // Smart search input & categorization logic
+        function handleSearch() {
+            searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
+            const badge = document.getElementById('search-count-badge');
+            
+            if (searchQuery.length > 0) {
+                badge.classList.remove('hidden');
+                badge.innerText = `Tìm kiếm: "${searchQuery}"`;
+            } else {
+                badge.classList.add('hidden');
+            }
+            
+            filterCards();
+            renderCard();
+        }
+
+        function filterCards() {
+            filteredCards = FLASHCARD_DATA.filter(card => {
+                const matchCategory = (currentFilterCategory === 'all' || card.cat === currentFilterCategory);
+                
+                const cardBoxNum = cardProgress[card.id] || 1;
+                const matchBox = (currentFilterBox === 'all' || cardBoxNum == currentFilterBox);
+                
+                // Deep textual search matching
+                const matchSearch = searchQuery === '' || 
+                    card.word.toLowerCase().includes(searchQuery) ||
+                    (card.wordFurigana && card.wordFurigana.toLowerCase().includes(searchQuery)) ||
+                    card.meaning.toLowerCase().includes(searchQuery) ||
+                    card.exampleJp.toLowerCase().includes(searchQuery) ||
+                    card.exampleVi.toLowerCase().includes(searchQuery);
+
+                return matchCategory && matchBox && matchSearch;
+            });
+
+            currentIndex = 0;
+            isFlipped = false;
+            document.getElementById('flashcard').classList.remove('flipped');
+        }
+
+        // Dynamic Sidebar UI Selection
+        function selectCategory(catId) {
+            playSoundFX('click');
+            currentFilterCategory = catId;
+            
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.className = "cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition flex items-center justify-between";
+            });
+            
+            const activeBtn = document.getElementById(`cat-btn-${catId}`);
+            if (activeBtn) {
+                if (catId === 'all') {
+                    activeBtn.className = "cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-extrabold text-rose-600 bg-rose-50 border border-rose-100/50 transition";
+                } else {
+                    activeBtn.className = "cat-btn w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-extrabold text-rose-600 bg-rose-50/70 border border-rose-100/40 transition flex items-center justify-between";
+                }
+            }
+
+            const catText = catId === 'all' ? 'Tất cả 10 nhóm' : activeBtn.querySelector('span').innerText;
+            document.getElementById('current-group-badge').innerText = catText;
+
+            filterCards();
+            renderCard();
+        }
+
+        function selectBoxFilter(boxNum) {
+            playSoundFX('click');
+            
+            if (currentFilterBox === boxNum) {
+                currentFilterBox = 'all';
+                document.getElementById('current-box-badge').innerText = 'Mọi Hộp';
+            } else {
+                currentFilterBox = boxNum;
+                document.getElementById('current-box-badge').innerText = `Chỉ xem Hộp ${boxNum}`;
+            }
+
+            // Update selectors
+            document.querySelectorAll('.box-selector').forEach(btn => {
+                btn.className = "box-selector group flex flex-col justify-between p-3 rounded-2xl border border-slate-100 bg-white text-left transition duration-200 hover:border-indigo-400";
+            });
+
+            if (currentFilterBox !== 'all') {
+                const activeBoxBtn = document.getElementById(`box-btn-${boxNum}`);
+                const borderColors = { 
+                    1: 'border-rose-300 bg-rose-50/40 text-rose-700', 
+                    2: 'border-amber-300 bg-amber-50/30 text-amber-700', 
+                    3: 'border-emerald-300 bg-emerald-50/30 text-emerald-700' 
+                };
+                activeBoxBtn.className = `box-selector group flex flex-col justify-between p-3 rounded-2xl border ${borderColors[boxNum]} text-left transition duration-200`;
+            }
+
+            filterCards();
+            renderCard();
+        }
+
+        // Spaced Repetition Box calculations
+        function updateLeitnerCounters() {
+            let b1 = 0, b2 = 0, b3 = 0;
+            FLASHCARD_DATA.forEach(card => {
+                const box = cardProgress[card.id] || 1;
+                if (box === 1) b1++;
+                if (box === 2) b2++;
+                if (box === 3) b3++;
+            });
+
+            document.getElementById('box-count-1').innerText = b1;
+            document.getElementById('box-count-2').innerText = b2;
+            document.getElementById('box-count-3').innerText = b3;
+
+            // Mastery Index Calculation
+            const total = FLASHCARD_DATA.length;
+            const masteryPoints = (b2 * 0.5) + b3;
+            const percentage = Math.round((masteryPoints / total) * 100) || 0;
+
+            document.getElementById('mastery-percent').innerText = `${percentage}%`;
+            document.getElementById('mastery-progress-bar').style.width = `${percentage}%`;
+        }
+
+        // Furigana Builder Helper
+        function buildRubyText(text, furigana) {
+            if (text === furigana || !furigana) {
+                return text;
+            }
+            
+            // Checking for dual entries like '迎える vs 見送る'
+            if (text.includes(' vs ')) {
+                const parts = text.split(' vs ');
+                const furiganaParts = furigana.split(' vs ');
+                return `<ruby>${parts[0]}<rt>${furiganaParts[0]}</rt></ruby> <span class="text-rose-400 font-medium text-lg mx-1">vs</span> <ruby>${parts[1]}<rt>${furiganaParts[1] || ''}</rt></ruby>`;
+            }
+
+            return `<ruby>${text}<rt>${furigana}</rt></ruby>`;
+        }
+
+        // Switch between interactive study modes
+        function switchStudyMode(mode) {
+            playSoundFX('click');
+            currentStudyMode = mode;
+            
+            const btnFlashcard = document.getElementById('mode-btn-flashcard');
+            const btnMondai = document.getElementById('mode-btn-mondai');
+            const btnRiki = document.getElementById('mode-btn-riki');
+            const desc = document.getElementById('mode-desc');
+
+            const activeClass = "py-2.5 text-[10px] font-bold rounded-xl transition-all duration-200 bg-white text-slate-900 shadow";
+            const inactiveClass = "py-2.5 text-[10px] font-bold rounded-xl transition-all duration-200 text-indigo-100 hover:bg-white/5";
+
+            // Hide/Show correct Sidebars
+            const catSidebar = document.getElementById('sidebar-categories');
+            const rikiSidebar = document.getElementById('sidebar-riki-selector');
+
+            btnFlashcard.className = inactiveClass;
+            btnMondai.className = inactiveClass;
+            btnRiki.className = inactiveClass;
+
+            if (mode === 'flashcard') {
+                btnFlashcard.className = activeClass;
+                desc.innerHTML = `<i class="fa-solid fa-info-circle"></i> Chế độ Thẻ 3D giúp ghi nhớ nhanh mặt chữ, ngữ nghĩa và mẹo nhớ độc quyền.`;
+                document.getElementById('flashcard-panel').classList.remove('hidden');
+                document.getElementById('mondai-panel').classList.add('hidden');
+                document.getElementById('riki-panel').classList.add('hidden');
+                document.getElementById('leitner-controls-bar').classList.remove('hidden');
+
+                catSidebar.classList.remove('hidden');
+                rikiSidebar.classList.add('hidden');
+            } else if (mode === 'mondai') {
+                btnMondai.className = activeClass;
+                desc.innerHTML = `<i class="fa-solid fa-star text-amber-300 animate-pulse"></i> Chế độ Luyện đề sẽ ẩn từ khoá chính của thẻ và hiển thị trắc nghiệm điền khuyết bám sát cấu trúc đề thi.`;
+                document.getElementById('flashcard-panel').classList.add('hidden');
+                document.getElementById('mondai-panel').classList.remove('hidden');
+                document.getElementById('riki-panel').classList.add('hidden');
+                document.getElementById('leitner-controls-bar').classList.add('hidden');
+
+                catSidebar.classList.remove('hidden');
+                rikiSidebar.classList.add('hidden');
+                generateQuizForCurrentCard();
+            } else if (mode === 'riki') {
+                btnRiki.className = activeClass;
+                desc.innerHTML = `<i class="fa-solid fa-fire text-rose-400 animate-bounce"></i> Chiến thần diệt bẫy Riki: Chứa 30 câu hỏi bẫy kinh điển tuyển chọn giúp bạn dập tan mọi mánh khóe lừa đảo trong phòng thi!`;
+                document.getElementById('flashcard-panel').classList.add('hidden');
+                document.getElementById('mondai-panel').classList.add('hidden');
+                document.getElementById('riki-panel').classList.remove('hidden');
+                document.getElementById('leitner-controls-bar').classList.add('hidden');
+
+                catSidebar.classList.add('hidden');
+                rikiSidebar.classList.remove('hidden');
+                
+                filterRikiQuestions();
+                renderRikiQuestion();
+            }
+            renderCard();
+        }
+
+        // Populating the UI Card elements
+        function renderCard() {
+            if (currentStudyMode === 'riki') {
+                renderRikiQuestion();
+                return;
+            }
+
+            const card = filteredCards[currentIndex];
+            const counterEl = document.getElementById('card-counter');
+            
+            if (!card) {
+                document.getElementById('card-front-word').innerHTML = `<span class="text-2xl text-slate-400 font-bold">Trống rỗng!</span>`;
+                document.getElementById('card-front-romaji').innerText = "";
+                document.getElementById('card-front-cat').innerText = "KHÔNG CÓ DỮ LIỆU";
+                document.getElementById('card-front-tip').innerText = "Hãy thử chọn Hộp khác hoặc xoá thanh tìm kiếm để tiếp tục.";
+                counterEl.innerText = "0 / 0";
+                return;
+            }
+
+            counterEl.innerText = `Thẻ ${currentIndex + 1} / ${filteredCards.length}`;
+
+            // FRONT POPULATING
+            document.getElementById('card-front-cat').innerText = card.catName;
+            document.getElementById('card-front-word').innerHTML = buildRubyText(card.word, card.wordFurigana);
+            document.getElementById('card-front-tip').innerText = card.tip || "Hãy cố gắng liên tưởng xem!";
+            document.getElementById('card-front-romaji').innerText = card.wordFurigana !== card.word ? card.wordFurigana : "";
+            
+            // JLPT Specific tags mapping
+            document.getElementById('card-front-mondai-tag').innerText = `🎯 Đề thi: ${card.mondaiType || 'Mondai 3 - Điền từ'}`;
+
+            // BACK SIDE POPULATING
+            document.getElementById('card-back-cat').innerText = card.catName;
+            document.getElementById('card-back-word').innerHTML = buildRubyText(card.word, card.wordFurigana);
+            document.getElementById('card-back-meaning').innerText = card.meaning;
+            document.getElementById('card-back-example-jp').innerText = card.exampleJp;
+            document.getElementById('card-back-example-vi').innerText = card.exampleVi;
+            document.getElementById('card-back-tip').innerText = card.tip;
+            
+            // Grammar help tag
+            document.getElementById('card-back-grammar-tag').innerText = card.grammarType || '[Từ vựng N3]';
+
+            // Box Badge setup
+            const currentBox = cardProgress[card.id] || 1;
+            const boxBadge = document.getElementById('card-back-box-badge');
+            boxBadge.innerText = `Hộp ${currentBox}`;
+
+            const badgeStyles = {
+                1: 'bg-rose-50 text-rose-600 border border-rose-100',
+                2: 'bg-amber-50 text-amber-600 border border-amber-100',
+                3: 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+            };
+            boxBadge.className = `text-[10px] font-extrabold px-2.5 py-1.5 rounded-xl ${badgeStyles[currentBox]}`;
+
+            // Trap Section Setup
+            const trapContainer = document.getElementById('card-back-trap-container');
+            if (card.trap) {
+                trapContainer.style.display = 'flex';
+                document.getElementById('card-back-trap').innerText = card.trap;
+            } else {
+                trapContainer.style.display = 'none';
+            }
+
+            // Sync quiz display
+            if (currentStudyMode === 'mondai') {
+                generateQuizForCurrentCard();
+            }
+
+            // Autoplay vocal on render if checked
+            if (document.getElementById('auto-play-voice').checked) {
+                setTimeout(() => {
+                    if (currentStudyMode === 'flashcard' && isFlipped) {
+                        playVoice('example');
+                    } else {
+                        playVoice('vocab');
+                    }
+                }, 200);
+            }
+        }
+
+        // Quiz generation logic specifically targeting Mondai format
+        function generateQuizForCurrentCard() {
+            const card = filteredCards[currentIndex];
+            if (!card) return;
+
+            hasAnsweredCurrentQuiz = false;
+            document.getElementById('quiz-feedback-box').classList.add('hidden');
+
+            // Set up type badge
+            document.getElementById('quiz-tag-type').innerText = card.mondaiType || "Mondai 3 - Điền từ";
+
+            // Format example sentence into a blank filling puzzle
+            const wordToHide = card.word.split(' vs ')[0]; // Handle dual entries cleanly
+            const regex = new RegExp(wordToHide, 'gi');
+            const blankedSentence = card.exampleJp.replace(regex, ' ______ ');
+            document.getElementById('quiz-question-text').innerText = blankedSentence;
+            document.getElementById('quiz-question-meaning').innerText = `→ (Gợi ý nghĩa: ${card.exampleVi})`;
+
+            // Generate 3 distractors from the SAME category to make it authentic!
+            let possibleDistractors = FLASHCARD_DATA.filter(item => item.cat === card.cat && item.id !== card.id);
+            if (possibleDistractors.length < 3) {
+                // Fallback to random cards if current category is small
+                possibleDistractors = FLASHCARD_DATA.filter(item => item.id !== card.id);
+            }
+
+            // Shuffle and pick 3
+            possibleDistractors.sort(() => 0.5 - Math.random());
+            const distractors = possibleDistractors.slice(0, 3).map(item => item.word.split(' vs ')[0]);
+
+            // Combine correct answer and distractors
+            quizChoices = [wordToHide, ...distractors];
+            quizChoices.sort(() => 0.5 - Math.random()); // Randomize positions
+
+            // Reset quiz button styles
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`choice-${i}`);
+                const btnText = document.getElementById(`choice-text-${i}`);
+                btnText.innerText = quizChoices[i];
+                
+                // Restore default classes
+                btn.className = "quiz-choice-btn group w-full text-left p-4 rounded-2xl border border-slate-200 hover:border-indigo-400 bg-slate-50/50 hover:bg-indigo-50/30 transition flex items-center justify-between";
+                btn.disabled = false;
+                
+                // Reset circular icon
+                const icon = btn.querySelector('i');
+                icon.className = "fa-regular fa-circle text-slate-300 group-hover:text-indigo-400";
+            }
+        }
+
+        // Evaluate user's quiz choice
+        function checkQuizAnswer(selectedIndex) {
+            if (hasAnsweredCurrentQuiz) return; // Prevent double answering
+            hasAnsweredCurrentQuiz = true;
+
+            const card = filteredCards[currentIndex];
+            const wordToHide = card.word.split(' vs ')[0];
+            const correctIndex = quizChoices.indexOf(wordToHide);
+
+            const feedbackBox = document.getElementById('quiz-feedback-box');
+            const feedbackIcon = document.getElementById('feedback-icon');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackDesc = document.getElementById('feedback-desc');
+
+            // Disable all buttons and highlight right/wrong answers
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`choice-${i}`);
+                btn.disabled = true;
+                const icon = btn.querySelector('i');
+
+                if (i === correctIndex) {
+                    btn.className = "quiz-choice-btn w-full text-left p-4 rounded-2xl border-emerald-500 bg-emerald-50 text-emerald-900 transition flex items-center justify-between";
+                    icon.className = "fa-solid fa-circle-check text-emerald-500";
+                } else if (i === selectedIndex) {
+                    btn.className = "quiz-choice-btn w-full text-left p-4 rounded-2xl border-rose-500 bg-rose-50 text-rose-900 transition flex items-center justify-between";
+                    icon.className = "fa-solid fa-circle-xmark text-rose-500";
+                }
+            }
+
+            // Play correct/incorrect audio cues and show feedback card
+            if (selectedIndex === correctIndex) {
+                playSoundFX('success');
+                feedbackBox.className = "p-3.5 rounded-2xl flex items-start gap-2.5 transition-all bg-emerald-50 text-emerald-950 border border-emerald-200";
+                feedbackIcon.innerText = "🎉";
+                feedbackTitle.innerText = "CHÍNH XÁC!";
+                feedbackDesc.innerText = `Xuất sắc! Đáp án đúng là "${wordToHide}". Mẹo ghi nhớ: ${card.tip || 'Không có mẹo'}.`;
+            } else {
+                playSoundFX('wrong');
+                feedbackBox.className = "p-3.5 rounded-2xl flex items-start gap-2.5 transition-all bg-rose-50 text-rose-950 border border-rose-200";
+                feedbackIcon.innerText = "❌";
+                feedbackTitle.innerText = "CHƯA ĐÚNG MẤT RỒI...";
+                feedbackDesc.innerText = `Đáp án chuẩn phải là "${wordToHide}". Bạn hãy chú ý bẫy JLPT: ${card.trap || 'Cố gắng ôn kỹ câu ví dụ để quen ngữ cảnh nhé.'}`;
+            }
+            feedbackBox.classList.remove('hidden');
+        }
+
+        // RIKI TRAP CHALLENGE IMPLEMENTATION
+        function filterRikiQuestions() {
+            if (currentRikiSession === 'all') {
+                rikiFilteredQuestions = RIKI_TRAP_QUESTIONS;
+            } else {
+                const sessionNum = parseInt(currentRikiSession);
+                rikiFilteredQuestions = RIKI_TRAP_QUESTIONS.filter(q => q.session === sessionNum);
+            }
+            currentRikiIndex = 0;
+            hasAnsweredCurrentRiki = false;
+        }
+
+        function changeRikiSession() {
+            playSoundFX('click');
+            currentRikiSession = document.getElementById('riki-session-select').value;
+            filterRikiQuestions();
+            renderRikiQuestion();
+        }
+
+        function renderRikiQuestion() {
+            const q = rikiFilteredQuestions[currentRikiIndex];
+            const counterEl = document.getElementById('card-counter');
+            
+            if (!q) {
+                document.getElementById('riki-question-text').innerHTML = `<span class="text-xl text-slate-400 font-bold">Không có câu bẫy phù hợp!</span>`;
+                counterEl.innerText = "0 / 0";
+                return;
+            }
+
+            counterEl.innerText = `Bẫy ${currentRikiIndex + 1} / ${rikiFilteredQuestions.length}`;
+            hasAnsweredCurrentRiki = false;
+
+            // Header state
+            document.getElementById('riki-session-tag').innerText = `Riki N3 - Buổi ${q.session}`;
+            document.getElementById('riki-score-badge').innerText = `Đúng: ${rikiCorrectAnswersCount} / ${rikiTotalAttemptedCount}`;
+
+            // Core question
+            document.getElementById('riki-question-text').innerText = q.question;
+
+            // Explanation box hiding
+            document.getElementById('riki-explanation-box').classList.add('hidden');
+
+            // Populating choices
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`riki-choice-${i}`);
+                const btnText = document.getElementById(`riki-choice-text-${i}`);
+                btnText.innerText = q.choices[i];
+
+                // Reset standard style
+                btn.className = "riki-choice-btn group w-full text-left p-3.5 rounded-2xl border border-slate-200 hover:border-rose-400 bg-slate-50/50 hover:bg-rose-50/30 transition flex items-center justify-between";
+                btn.disabled = false;
+
+                // Reset icon
+                const icon = btn.querySelector('i');
+                icon.className = "fa-regular fa-circle text-slate-300 group-hover:text-rose-400";
+            }
+
+            if (document.getElementById('auto-play-voice').checked) {
+                setTimeout(() => {
+                    playVoice();
+                }, 300);
+            }
+        }
+
+        function checkRikiAnswer(selectedIndex) {
+            if (hasAnsweredCurrentRiki) return;
+            hasAnsweredCurrentRiki = true;
+
+            const q = rikiFilteredQuestions[currentRikiIndex];
+            const isCorrect = (selectedIndex === q.correct);
+
+            rikiTotalAttemptedCount++;
+            if (isCorrect) {
+                rikiCorrectAnswersCount++;
+                playSoundFX('success');
+            } else {
+                playSoundFX('wrong');
+            }
+
+            document.getElementById('riki-score-badge').innerText = `Đúng: ${rikiCorrectAnswersCount} / ${rikiTotalAttemptedCount}`;
+
+            // Style buttons to show answer
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`riki-choice-${i}`);
+                btn.disabled = true;
+                const icon = btn.querySelector('i');
+
+                if (i === q.correct) {
+                    btn.className = "riki-choice-btn w-full text-left p-3.5 rounded-2xl border-emerald-500 bg-emerald-50 text-emerald-900 transition flex items-center justify-between";
+                    icon.className = "fa-solid fa-circle-check text-emerald-500";
+                } else if (i === selectedIndex) {
+                    btn.className = "riki-choice-btn w-full text-left p-3.5 rounded-2xl border-rose-500 bg-rose-50 text-rose-900 transition flex items-center justify-between";
+                    icon.className = "fa-solid fa-circle-xmark text-rose-500";
+                }
+            }
+
+            // Populating explanation box
+            const expBox = document.getElementById('riki-explanation-box');
+            const expIcon = document.getElementById('riki-exp-icon');
+            const expTitle = document.getElementById('riki-exp-title');
+            const expDesc = document.getElementById('riki-exp-desc');
+
+            if (isCorrect) {
+                expBox.className = "p-3.5 rounded-2xl flex flex-col gap-1 transition-all bg-emerald-50 border border-emerald-200";
+                expIcon.innerText = "🏆";
+                expTitle.innerText = "CHÍNH XÁC - DIỆT BẪY THÀNH CÔNG!";
+            } else {
+                expBox.className = "p-3.5 rounded-2xl flex flex-col gap-1 transition-all bg-rose-50 border border-rose-200";
+                expIcon.innerText = "🚨";
+                expTitle.innerText = "BẠN ĐÃ SẬP BẪY KINH ĐIỂN!";
+            }
+
+            expDesc.innerHTML = `<span class="font-extrabold text-slate-800">Dịch nghĩa:</span> ${q.meaning}<br><span class="font-extrabold text-slate-800 mt-1 block">Mánh khóe bẫy N3:</span> ${q.trap}`;
+            expBox.classList.remove('hidden');
+        }
+
+        function nextRikiQuestion() {
+            if (rikiFilteredQuestions.length === 0) return;
+            currentRikiIndex = (currentRikiIndex + 1) % rikiFilteredQuestions.length;
+            renderRikiQuestion();
+        }
+
+        function prevRikiQuestion() {
+            if (rikiFilteredQuestions.length === 0) return;
+            currentRikiIndex = (currentRikiIndex - 1 + rikiFilteredQuestions.length) % rikiFilteredQuestions.length;
+            renderRikiQuestion();
+        }
+
+        // 3D Toggle Flip state
+        function toggleCard() {
+            if (filteredCards.length === 0) return;
+            isFlipped = !isFlipped;
+            playSoundFX('flip');
+            
+            const cardEl = document.getElementById('flashcard');
+            if (isFlipped) {
+                cardEl.classList.add('flipped');
+                if (document.getElementById('auto-play-voice').checked) {
+                    playVoice('example');
+                }
+            } else {
+                cardEl.classList.remove('flipped');
+            }
+        }
+
+        // Leitner algorithm marking
+        function leitnerMark(isCorrect) {
+            if (filteredCards.length === 0) return;
+            const card = filteredCards[currentIndex];
+            let currentBox = cardProgress[card.id] || 1;
+
+            if (isCorrect) {
+                playSoundFX('success');
+                if (currentBox < 3) {
+                    cardProgress[card.id] = currentBox + 1;
+                }
+            } else {
+                playSoundFX('click');
+                cardProgress[card.id] = 1;
+            }
+
+            saveProgress();
+            updateLeitnerCounters();
+            nextCard();
+        }
+
+        // Navigation actions
+        function nextCard() {
+            if (currentStudyMode === 'riki') {
+                nextRikiQuestion();
+                return;
+            }
+            if (filteredCards.length === 0) return;
+            isFlipped = false;
+            document.getElementById('flashcard').classList.remove('flipped');
+            
+            currentIndex = (currentIndex + 1) % filteredCards.length;
+            setTimeout(() => {
+                renderCard();
+            }, 150);
+        }
+
+        function prevCard() {
+            if (currentStudyMode === 'riki') {
+                prevRikiQuestion();
+                return;
+            }
+            if (filteredCards.length === 0) return;
+            isFlipped = false;
+            document.getElementById('flashcard').classList.remove('flipped');
+
+            currentIndex = (currentIndex - 1 + filteredCards.length) % filteredCards.length;
+            setTimeout(() => {
+                renderCard();
+            }, 150);
+        }
+    </script>
+</body>
+</html>
